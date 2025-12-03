@@ -9,6 +9,11 @@ Este plano foi desenhado para garantir que o desenvolvimento flua perfeitamente 
 *   **Backend:** Supabase
 *   **Vídeo:** Daily.co
 
+## 📚 Fase 0: Definição & Requisitos (Novo)
+**Objetivo:** Garantir alinhamento total antes do código.
+*   [x] **Histórias de Usuário:** Criado `USER_STORIES.md` com regras de negócio e técnicas detalhadas.
+*   [ ] **Revisão:** Validar histórias com o stakeholder.
+
 ## 🌊 Fase 1: A Fundação Estética (Design System & "Vibe")
 **Objetivo:** Definir a alma visual do projeto. Antes de qualquer lógica complexa, o app precisa *parecer* incrível.
 
