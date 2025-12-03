@@ -1,0 +1,81 @@
+import { Meta, IconGallery, IconItem } from "@storybook/blocks";
+import * as Icons from "lucide-react";
+
+<Meta title="Design System/Iconography" />
+
+# Iconography
+
+We use [Lucide React](https://lucide.dev/) for our icons. They are clean, consistent, and customizable.
+
+## Common Icons
+
+<IconGallery>
+  <IconItem name="User">
+    <Icons.User />
+  </IconItem>
+  <IconItem name="Search">
+    <Icons.Search />
+  </IconItem>
+  <IconItem name="Menu">
+    <Icons.Menu />
+  </IconItem>
+  <IconItem name="Calendar">
+    <Icons.Calendar />
+  </IconItem>
+  <IconItem name="Clock">
+    <Icons.Clock />
+  </IconItem>
+  <IconItem name="MapPin">
+    <Icons.MapPin />
+  </IconItem>
+  <IconItem name="Star">
+    <Icons.Star />
+  </IconItem>
+  <IconItem name="Check">
+    <Icons.Check />
+  </IconItem>
+  <IconItem name="X">
+    <Icons.X />
+  </IconItem>
+  <IconItem name="ChevronDown">
+    <Icons.ChevronDown />
+  </IconItem>
+  <IconItem name="ChevronRight">
+    <Icons.ChevronRight />
+  </IconItem>
+  <IconItem name="ArrowRight">
+    <Icons.ArrowRight />
+  </IconItem>
+  <IconItem name="LogOut">
+    <Icons.LogOut />
+  </IconItem>
+  <IconItem name="Settings">
+    <Icons.Settings />
+  </IconItem>
+  <IconItem name="Video">
+    <Icons.Video />
+  </IconItem>
+  <IconItem name="Phone">
+    <Icons.Phone />
+  </IconItem>
+  <IconItem name="Mail">
+    <Icons.Mail />
+  </IconItem>
+</IconGallery>
+
+## Usage
+
+Import icons directly from `lucide-react`:
+
+```tsx
+import { User, Search } from "lucide-react";
+
+function MyComponent() {
+  return (
+    <div>
+      <User className="h-4 w-4" />
+      <Search className="h-4 w-4 text-muted-foreground" />
+    </div>
+  );
+}
+```
