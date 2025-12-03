@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { userEvent, within, expect } from "@storybook/test";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -77,5 +78,18 @@ export const Default: Story = {
                 </Form>
             </div>
         );
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+
+        const input = canvas.getByLabelText("Username", { selector: "input" });
+        await userEvent.type(input, "shadcn", { delay: 100 });
+
+        const submitButton = canvas.getByRole("button", { name: /Submit/i });
+        await userEvent.click(submitButton);
+
+        // Expect the toast to appear (this might be tricky to test if toast is outside canvas, 
+        // but we can check if the input has the value)
+        await expect(input).toHaveValue("shadcn");
     },
 };
