@@ -13,4 +13,29 @@ const meta: Meta<typeof Navbar> = {
 export default meta;
 type Story = StoryObj<typeof Navbar>;
 
-export const Default: Story = {};
+export const LoggedOut: Story = {
+    args: {
+        isLoggedIn: false,
+    },
+};
+
+export const ClientLoggedIn: Story = {
+    args: {
+        isLoggedIn: true,
+        userRole: "client",
+    },
+};
+
+export const PsychologistLoggedIn: Story = {
+    args: {
+        isLoggedIn: true,
+        userRole: "psychologist",
+    },
+};
+
+export const CompanyLoggedIn: Story = {
+    args: {
+        isLoggedIn: true,
+        userRole: "company",
+    },
+};
