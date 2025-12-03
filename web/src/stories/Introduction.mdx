@@ -1,0 +1,37 @@
+import { Meta } from "@storybook/blocks";
+
+<Meta title="Introduction" />
+
+# Welcome to T-rapy Design System
+
+This is the Storybook for the T-rapy web application. It serves as a living documentation for our UI components, ensuring consistency and reusability across the project.
+
+## Organization
+
+The components are organized into the following categories:
+
+- **UI**: Core UI components (buttons, inputs, cards, etc.) built with Radix UI and Tailwind CSS.
+- **Layout**: High-level layout components like Navbar and Footer.
+- **Pages**: Full page stories to visualize how components come together.
+
+## Tech Stack
+
+- **Framework**: Next.js 14
+- **Styling**: Tailwind CSS
+- **Components**: Radix UI (Headless UI primitives)
+- **Icons**: Lucide React
+- **Validation**: Zod + React Hook Form
+
+## Getting Started
+
+To use these components in your application, simply import them from `@/components/ui/[component-name]`.
+
+Example:
+
+```tsx
+import { Button } from "@/components/ui/button";
+
+export default function MyComponent() {
+  return <Button>Click me</Button>;
+}
+```

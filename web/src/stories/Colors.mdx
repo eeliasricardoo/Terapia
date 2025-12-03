@@ -1,0 +1,77 @@
+import { Meta, ColorPalette, ColorItem } from "@storybook/blocks";
+
+<Meta title="Design System/Colors" />
+
+# Color Palette
+
+This project uses a semantic color system built with Tailwind CSS variables.
+
+<ColorPalette>
+  <ColorItem
+    title="Backgrounds"
+    subtitle="Base background colors"
+    colors={{
+      Background: "hsl(var(--background))",
+      Foreground: "hsl(var(--foreground))",
+    }}
+  />
+  <ColorItem
+    title="Primary"
+    subtitle="Primary brand color"
+    colors={{
+      DEFAULT: "hsl(var(--primary))",
+      Foreground: "hsl(var(--primary-foreground))",
+    }}
+  />
+  <ColorItem
+    title="Secondary"
+    subtitle="Secondary brand color"
+    colors={{
+      DEFAULT: "hsl(var(--secondary))",
+      Foreground: "hsl(var(--secondary-foreground))",
+    }}
+  />
+  <ColorItem
+    title="Muted"
+    subtitle="Muted backgrounds and text"
+    colors={{
+      DEFAULT: "hsl(var(--muted))",
+      Foreground: "hsl(var(--muted-foreground))",
+    }}
+  />
+  <ColorItem
+    title="Accent"
+    subtitle="Accent colors for interactive elements"
+    colors={{
+      DEFAULT: "hsl(var(--accent))",
+      Foreground: "hsl(var(--accent-foreground))",
+    }}
+  />
+  <ColorItem
+    title="Destructive"
+    subtitle="Destructive actions"
+    colors={{
+      DEFAULT: "hsl(var(--destructive))",
+      Foreground: "hsl(var(--destructive-foreground))",
+    }}
+  />
+  <ColorItem
+    title="Border & Input"
+    subtitle="Borders and inputs"
+    colors={{
+      Border: "hsl(var(--border))",
+      Input: "hsl(var(--input))",
+      Ring: "hsl(var(--ring))",
+    }}
+  />
+  <ColorItem
+    title="Card & Popover"
+    subtitle="Surface colors"
+    colors={{
+      Card: "hsl(var(--card))",
+      "Card Foreground": "hsl(var(--card-foreground))",
+      Popover: "hsl(var(--popover))",
+      "Popover Foreground": "hsl(var(--popover-foreground))",
+    }}
+  />
+</ColorPalette>
