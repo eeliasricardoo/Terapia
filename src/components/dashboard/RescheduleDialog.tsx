@@ -4,78 +4,152 @@ import { useState } from "react"
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
     DialogTrigger,
-    DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar as CalendarIcon, Clock } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { ChevronLeft, ChevronRight, Star, Video, Clock } from "lucide-react"
 
 interface RescheduleDialogProps {
     children: React.ReactNode
     session: {
         id: number
         doctor: string
+        role: string
+        image: string
         date: string
         time: string
     }
 }
 
+// Mock dates for the carousel
+const DATES = [
+    { day: "QUA", date: "03", month: "DEZ" },
+    { day: "QUI", date: "04", month: "DEZ" },
+    { day: "SEX", date: "05", month: "DEZ" },
+    { day: "SÁB", date: "06", month: "DEZ" },
+    { day: "DOM", date: "07", month: "DEZ" },
+]
+
+// Mock times
+const TIMES = [
+    "10:00", "10:30", "11:00", "11:30",
+    "14:00", "14:30", "15:00", "15:30",
+    "16:00", "16:30", "17:00", "17:30"
+]
+
 export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
-    const [date, setDate] = useState<Date | undefined>(new Date())
     const [open, setOpen] = useState(false)
+    const [selectedDate, setSelectedDate] = useState(0)
+    const [selectedTime, setSelectedTime] = useState<string | null>(null)
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Reagendar Sessão</DialogTitle>
-                    <DialogDescription>
-                        Escolha uma nova data e horário para sua sessão com {session.doctor}.
-                    </DialogDescription>
-                </DialogHeader>
+            <DialogContent className="sm:max-w-[900px] p-0 overflow-hidden gap-0">
+                <div className="flex flex-col md:flex-row h-[600px] md:h-[550px]">
+                    {/* Left Side - Profile Info */}
+                    <div className="w-full md:w-1/3 bg-slate-50 p-6 flex flex-col border-r">
+                        <div className="flex items-start gap-4 mb-4">
+                            <Avatar className="h-16 w-16 border-2 border-white shadow-sm">
+                                <AvatarImage src={session.image} />
+                                <AvatarFallback>{session.doctor.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <h3 className="font-bold text-lg leading-tight">{session.doctor}</h3>
+                                <p className="text-sm text-muted-foreground">{session.role}</p>
+                                <p className="text-xs text-muted-foreground mt-1">CRP: 04/51372</p>
+                            </div>
+                        </div>
 
-                <div className="grid gap-4 py-4">
-                    <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium">Nova Data</label>
-                        <div className="border rounded-md p-2 flex justify-center">
-                            <Calendar
-                                mode="single"
-                                selected={date}
-                                onSelect={setDate}
-                                className="rounded-md border shadow-sm"
-                            />
+                        <div className="flex flex-wrap gap-2 mb-6">
+                            <Badge variant="secondary" className="font-normal text-xs">Autoestima</Badge>
+                            <Badge variant="secondary" className="font-normal text-xs">Ansiedade</Badge>
+                            <Badge variant="secondary" className="font-normal text-xs">TCC</Badge>
+                        </div>
+
+                        <div className="mt-auto space-y-4">
+                            <div className="flex items-center gap-1 text-sm">
+                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                <span className="font-bold">4.9</span>
+                                <span className="text-muted-foreground">(204 comentários)</span>
+                            </div>
+
+                            <div className="pt-4 border-t">
+                                <div className="flex justify-between items-end">
+                                    <span className="text-sm text-muted-foreground">Sessão 50 min</span>
+                                    <div className="text-right">
+                                        <span className="text-xs text-muted-foreground line-through block">R$ 150</span>
+                                        <span className="text-xl font-bold text-green-600">R$ 0</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium">Novo Horário</label>
-                        <Select>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Selecione um horário" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="09:00">09:00 - 09:50</SelectItem>
-                                <SelectItem value="10:00">10:00 - 10:50</SelectItem>
-                                <SelectItem value="14:00">14:00 - 14:50</SelectItem>
-                                <SelectItem value="15:00">15:00 - 15:50</SelectItem>
-                                <SelectItem value="16:00">16:00 - 16:50</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    {/* Right Side - Calendar & Time */}
+                    <div className="flex-1 p-6 flex flex-col bg-white">
+                        {/* Date Carousel */}
+                        <div className="flex items-center justify-between mb-6">
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <div className="flex gap-2 overflow-x-auto no-scrollbar flex-1 justify-center px-2">
+                                {DATES.map((date, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setSelectedDate(index)}
+                                        className={`flex flex-col items-center justify-center min-w-[60px] p-2 rounded-lg border transition-all ${selectedDate === index
+                                                ? 'bg-primary text-primary-foreground border-primary shadow-md'
+                                                : 'bg-white hover:bg-slate-50 border-transparent hover:border-slate-200'
+                                            }`}
+                                    >
+                                        <span className="text-[10px] font-medium uppercase">{date.day}</span>
+                                        <span className="text-xl font-bold">{date.date}</span>
+                                        <span className="text-[10px] uppercase">{date.month}</span>
+                                    </button>
+                                ))}
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        {/* Banner */}
+                        <div className="bg-indigo-600 text-white text-center py-2 rounded-md text-sm font-medium mb-6 shadow-sm">
+                            Próximo horário: hoje, 14:00
+                        </div>
+
+                        {/* Time Slots */}
+                        <div className="flex-1 overflow-y-auto pr-2">
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                                {TIMES.map((time) => (
+                                    <Button
+                                        key={time}
+                                        variant={selectedTime === time ? "default" : "outline"}
+                                        className={`w-full ${selectedTime === time ? 'bg-primary text-primary-foreground' : 'hover:border-primary hover:text-primary'}`}
+                                        onClick={() => setSelectedTime(time)}
+                                    >
+                                        {time}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Footer Action */}
+                        <div className="mt-6 flex justify-end items-center gap-4 pt-4 border-t">
+                            <span className="text-sm text-muted-foreground hidden sm:inline-block">
+                                {selectedTime ? `Selecionado: ${DATES[selectedDate].date}/${DATES[selectedDate].month} às ${selectedTime}` : 'Selecione um horário'}
+                            </span>
+                            <Button disabled={!selectedTime} onClick={() => setOpen(false)} className="w-full sm:w-auto">
+                                Confirmar Reagendamento
+                            </Button>
+                        </div>
                     </div>
                 </div>
-
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                    <Button onClick={() => setOpen(false)}>Confirmar Reagendamento</Button>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     )

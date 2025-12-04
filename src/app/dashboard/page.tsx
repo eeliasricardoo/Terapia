@@ -1,242 +1,162 @@
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import {
-    Clock,
-    Settings,
-    Search,
-    Star,
-    ChevronRight,
-    Bell,
     Video,
-    MessageSquare
+    Calendar as CalendarIcon,
+    Search,
+    PlusCircle,
+    FileText,
+    MapPin
 } from "lucide-react"
 import Link from "next/link"
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
+import { RescheduleDialog } from "@/components/dashboard/RescheduleDialog"
 
-// Mock data
+// Mock Data
 const NEXT_SESSION = {
-    doctor: "Dra. Ana María Rojas",
-    role: "Psicóloga Clínica",
-    date: "Quinta-feira, 12 de Dezembro",
-    time: "14:00 - 14:50",
-    image: "/avatars/01.png",
-    link: "#"
+    id: 1,
+    doctor: "Dr. Carlos Pereira",
+    role: "Psicólogo Clínico",
+    date: "Amanhã, 15 de Outubro",
+    time: "14:30",
+    image: "/avatars/02.png",
+    countdown: "23 horas e 15 minutos"
 }
 
-const NOTIFICATIONS = [
-    { id: 1, title: "Complete seu perfil", desc: "Adicione informações de saúde para melhor atendimento.", type: "warning" },
-    { id: 2, title: "Sessão confirmada", desc: "Sua consulta com Dr. Carlos foi confirmada.", type: "success" },
-]
-
-const RECOMMENDED_PSYCHOLOGISTS = [
-    {
-        id: 1,
-        name: "Dra. Ana María Rojas",
-        title: "Psicóloga Clínica",
-        rating: 4.9,
-        reviews: 123,
-        tags: ["Ansiedade", "TCC"],
-        image: "/avatars/01.png",
-    },
-    {
-        id: 2,
-        name: "Dr. Carlos Fuentes",
-        title: "Terapia de Casal",
-        rating: 4.8,
-        reviews: 98,
-        tags: ["Relacionamentos", "Comunicação"],
-        image: "/avatars/02.png",
-    },
-    {
-        id: 3,
-        name: "Dra. Sofia Vergara",
-        title: "Psicóloga Infantil",
-        rating: 5.0,
-        reviews: 76,
-        tags: ["Crianças", "Família"],
-        image: "/avatars/03.png",
-    },
+const HISTORY = [
+    { id: 1, doctor: "Dr. Carlos Pereira", date: "08 de Outubro de 2025" },
+    { id: 2, doctor: "Dr. Carlos Pereira", date: "01 de Outubro de 2025" },
+    { id: 3, doctor: "Dr. Carlos Pereira", date: "24 de Setembro de 2025" },
 ]
 
 export default function DashboardPage() {
     return (
-        <>
+        <div className="space-y-8">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Visão Geral</h1>
-                    <p className="text-muted-foreground">Acompanhe seu progresso e próximas atividades.</p>
-                </div>
-                <div className="flex gap-2">
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant="outline" size="icon" className="relative">
-                                <Bell className="h-4 w-4" />
-                                <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80" align="end">
-                            <div className="space-y-4">
-                                <h4 className="font-medium leading-none">Notificações</h4>
-                                <div className="grid gap-4">
-                                    {NOTIFICATIONS.map((notif) => (
-                                        <div key={notif.id} className="flex items-start gap-3 pb-3 border-b last:border-0 last:pb-0">
-                                            <div className={`w-2 h-2 mt-2 rounded-full flex-shrink-0 ${notif.type === 'warning' ? 'bg-yellow-500' : 'bg-green-500'}`} />
-                                            <div>
-                                                <p className="text-sm font-medium leading-none">{notif.title}</p>
-                                                <p className="text-xs text-muted-foreground mt-1">{notif.desc}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <Button variant="ghost" className="w-full text-xs h-8">
-                                    Marcar todas como lidas
-                                </Button>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-
-                    <Button asChild>
-                        <Link href="/busca">Agendar Sessão</Link>
-                    </Button>
-                </div>
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900">Olá, João!</h1>
+                <p className="text-muted-foreground mt-1">Bem-vindo de volta, estamos felizes em te ver.</p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
-                {/* Main Column (2/3) */}
-                <div className="md:col-span-2 space-y-6">
-
-                    {/* Next Session Card */}
-                    <Card className="border-l-4 border-l-primary shadow-sm">
-                        <CardHeader className="pb-2">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <Badge variant="outline" className="mb-2 bg-primary/5 text-primary border-primary/20">Próxima Sessão</Badge>
-                                    <CardTitle className="text-xl">{NEXT_SESSION.date}</CardTitle>
-                                    <CardDescription className="flex items-center gap-2 mt-1">
-                                        <Clock className="h-4 w-4" /> {NEXT_SESSION.time}
-                                    </CardDescription>
-                                </div>
-                                <Button size="icon" variant="ghost" className="rounded-full">
-                                    <Settings className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg border">
-                                <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
+            {/* Next Session Section */}
+            <div className="space-y-4">
+                <h2 className="text-xl font-bold text-slate-900">Sua Próxima Sessão</h2>
+                <Card className="border-none shadow-sm bg-white overflow-hidden">
+                    <CardContent className="p-0 flex flex-col md:flex-row">
+                        <div className="p-6 flex-1 flex flex-col justify-center">
+                            <div className="flex items-center gap-4 mb-4">
+                                <Avatar className="h-16 w-16 border-2 border-white shadow-sm">
                                     <AvatarImage src={NEXT_SESSION.image} />
-                                    <AvatarFallback>DA</AvatarFallback>
+                                    <AvatarFallback>CP</AvatarFallback>
                                 </Avatar>
-                                <div className="flex-1">
-                                    <p className="font-semibold">{NEXT_SESSION.doctor}</p>
-                                    <p className="text-sm text-muted-foreground">{NEXT_SESSION.role}</p>
+                                <div>
+                                    <h3 className="font-bold text-lg text-slate-900">Terapia com {NEXT_SESSION.doctor}</h3>
+                                    <p className="text-slate-500">{NEXT_SESSION.date} às {NEXT_SESSION.time}</p>
                                 </div>
-                                <Button className="gap-2">
-                                    <Video className="h-4 w-4" />
-                                    Entrar na Sala
-                                </Button>
                             </div>
+
+                            <p className="text-sm text-slate-600 mb-6">
+                                Faltam: <span className="text-blue-600 font-medium">{NEXT_SESSION.countdown}</span>
+                            </p>
+
+                            <div className="flex gap-3">
+                                <Button className="bg-blue-500 hover:bg-blue-600 text-white gap-2 px-6">
+                                    <Video className="h-4 w-4" />
+                                    Entrar na Sessão
+                                </Button>
+                                <RescheduleDialog session={NEXT_SESSION}>
+                                    <Button variant="secondary" className="bg-slate-100 hover:bg-slate-200 text-slate-700">
+                                        Remarcar
+                                    </Button>
+                                </RescheduleDialog>
+                            </div>
+                        </div>
+
+                        {/* Decorative Map/Image Area */}
+                        <div className="w-full md:w-1/3 bg-blue-50 relative min-h-[200px]">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                {/* Using a placeholder pattern or map-like graphic */}
+                                <div className="text-blue-200 opacity-20">
+                                    <MapPin className="h-32 w-32" />
+                                </div>
+                            </div>
+                            {/* You could use an actual image here if available */}
+                            {/* <Image src="/map-placeholder.png" fill className="object-cover" /> */}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="space-y-4">
+                <h2 className="text-xl font-bold text-slate-900">Ações Rápidas</h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                        <CardContent className="p-6">
+                            <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                                <PlusCircle className="h-6 w-6 text-blue-500" />
+                            </div>
+                            <h3 className="font-bold text-lg mb-2">Agendar nova sessão</h3>
+                            <p className="text-sm text-muted-foreground mb-6">
+                                Marque um novo horário com seu psicólogo atual.
+                            </p>
+                            <RescheduleDialog session={NEXT_SESSION}>
+                                <Button variant="secondary" className="bg-blue-50 text-blue-600 hover:bg-blue-100 w-full justify-start">
+                                    Reagendar com {NEXT_SESSION.doctor.split(' ')[1]}
+                                </Button>
+                            </RescheduleDialog>
                         </CardContent>
                     </Card>
 
-                    {/* Stats */}
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">Sessões Realizadas</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-bold">12</div>
-                                <p className="text-xs text-muted-foreground mt-1">+2 esse mês</p>
-                                <Progress value={60} className="h-1.5 mt-3" />
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">Plano Atual</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-bold">Premium</div>
-                                <p className="text-xs text-muted-foreground mt-1">Renova em 01/01/2026</p>
-                                <div className="mt-3 flex gap-2">
-                                    <Badge variant="secondary">Ativo</Badge>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
+                    <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                        <CardContent className="p-6">
+                            <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                                <Search className="h-6 w-6 text-blue-500" />
+                            </div>
+                            <h3 className="font-bold text-lg mb-2">Buscar novo psicólogo</h3>
+                            <p className="text-sm text-muted-foreground mb-6">
+                                Explore outros profissionais para encontrar o ideal para você.
+                            </p>
+                            <Button asChild variant="secondary" className="bg-blue-50 text-blue-600 hover:bg-blue-100 w-full justify-start">
+                                <Link href="/busca">Encontrar Psicólogos</Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
 
-                    {/* Recommended Specialists */}
-                    <div>
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg font-semibold">Especialistas Recomendados</h2>
-                            <Link href="/busca" className="text-sm text-primary hover:underline flex items-center">
-                                Ver todos <ChevronRight className="h-4 w-4" />
-                            </Link>
-                        </div>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            {RECOMMENDED_PSYCHOLOGISTS.slice(0, 2).map((doctor) => (
-                                <Card key={doctor.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                                    <CardContent className="p-4 flex gap-4">
-                                        <Avatar className="h-12 w-12 rounded-lg">
-                                            <AvatarImage src={doctor.image} />
-                                            <AvatarFallback>{doctor.name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="font-semibold truncate">{doctor.name}</h4>
-                                            <p className="text-xs text-muted-foreground truncate">{doctor.title}</p>
-                                            <div className="flex items-center gap-1 mt-1">
-                                                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                                                <span className="text-xs font-medium">{doctor.rating}</span>
-                                            </div>
+            {/* Session History */}
+            <div className="space-y-4">
+                <h2 className="text-xl font-bold text-slate-900">Histórico de Sessões</h2>
+                <Card className="border-none shadow-sm">
+                    <CardContent className="p-0">
+                        <div className="divide-y">
+                            {HISTORY.map((session) => (
+                                <div key={session.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                                            <CalendarIcon className="h-5 w-5" />
                                         </div>
-                                    </CardContent>
-                                </Card>
+                                        <div>
+                                            <p className="font-medium text-slate-900">Sessão com {session.doctor}</p>
+                                            <p className="text-sm text-muted-foreground">{session.date}</p>
+                                        </div>
+                                    </div>
+                                    <Button variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm font-medium">
+                                        Ver Resumo
+                                    </Button>
+                                </div>
                             ))}
                         </div>
-                    </div>
-                </div>
-
-                {/* Right Column (1/3) */}
-                <div className="space-y-6">
-                    {/* Mood Tracker */}
-                    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-none">
-                        <CardHeader>
-                            <CardTitle className="text-base">Como você está hoje?</CardTitle>
-                            <CardDescription>Registre seu humor para acompanhar sua evolução.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex justify-between px-2">
-                                <button className="text-2xl hover:scale-125 transition-transform p-2">😢</button>
-                                <button className="text-2xl hover:scale-125 transition-transform p-2">😕</button>
-                                <button className="text-2xl hover:scale-125 transition-transform p-2">😐</button>
-                                <button className="text-2xl hover:scale-125 transition-transform p-2">🙂</button>
-                                <button className="text-2xl hover:scale-125 transition-transform p-2">😁</button>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Support */}
-                    <Card>
-                        <CardContent className="p-4 flex items-center gap-4">
-                            <div className="bg-primary/10 p-2 rounded-full">
-                                <MessageSquare className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                                <p className="font-medium text-sm">Precisa de ajuda?</p>
-                                <p className="text-xs text-muted-foreground">Fale com nosso suporte</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                        <div className="p-4 border-t text-center">
+                            <Button variant="link" className="text-blue-600" asChild>
+                                <Link href="/dashboard/sessoes">Ver todo o histórico</Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
-        </>
+        </div>
     )
 }
