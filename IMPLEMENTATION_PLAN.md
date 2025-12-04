@@ -11,7 +11,7 @@ Este plano foi desenhado para garantir que o desenvolvimento flua perfeitamente 
 
 ## 📚 Fase 0: Definição & Requisitos (Novo)
 **Objetivo:** Garantir alinhamento total antes do código.
-*   [x] **Histórias de Usuário:** Criado `USER_STORIES.md` com regras de negócio e técnicas detalhadas.
+*   [x] **Histórias de Usuário:** Documentação completa em `docs/user-stories/` cobrindo todos os módulos.
 *   [ ] **Revisão:** Validar histórias com o stakeholder.
 
 ## 🌊 Fase 1: A Fundação Estética (Design System & "Vibe")
