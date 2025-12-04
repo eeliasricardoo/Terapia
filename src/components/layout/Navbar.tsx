@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, User } from "lucide-react";
+import { RoleSelectionDialog } from "@/components/auth/RoleSelectionDialog";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -85,9 +86,9 @@ export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps)
                                 <Link href="/login">
                                     <Button variant="ghost">Entrar</Button>
                                 </Link>
-                                <Link href="/cadastro">
+                                <RoleSelectionDialog>
                                     <Button>Começar Agora</Button>
-                                </Link>
+                                </RoleSelectionDialog>
                             </>
                         ) : (
                             <DropdownMenu>
@@ -146,9 +147,9 @@ export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps)
                                                     Entrar
                                                 </Button>
                                             </Link>
-                                            <Link href="/cadastro">
+                                            <RoleSelectionDialog>
                                                 <Button className="w-full">Começar Agora</Button>
-                                            </Link>
+                                            </RoleSelectionDialog>
                                         </>
                                     ) : (
                                         <Button variant="outline" className="w-full">
