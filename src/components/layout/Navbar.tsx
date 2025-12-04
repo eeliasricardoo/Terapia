@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -19,6 +22,9 @@ interface NavbarProps {
 }
 
 export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps) {
+    const [loginOpen, setLoginOpen] = useState(false);
+    const [registerOpen, setRegisterOpen] = useState(false);
+
     const getNavLinks = () => {
         if (!isLoggedIn) {
             return [
@@ -83,12 +89,12 @@ export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps)
                     <div className="hidden md:flex items-center gap-4">
                         {!isLoggedIn ? (
                             <>
-                                <Link href="/login">
-                                    <Button variant="ghost">Entrar</Button>
-                                </Link>
-                                <RoleSelectionDialog>
-                                    <Button>Começar Agora</Button>
-                                </RoleSelectionDialog>
+                                <Button variant="ghost" onClick={() => setLoginOpen(true)}>
+                                    Entrar
+                                </Button>
+                                <Button onClick={() => setRegisterOpen(true)}>
+                                    Começar Agora
+                                </Button>
                             </>
                         ) : (
                             <DropdownMenu>
@@ -142,14 +148,12 @@ export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps)
                                 <div className="flex flex-col gap-2 mt-4">
                                     {!isLoggedIn ? (
                                         <>
-                                            <Link href="/login">
-                                                <Button variant="outline" className="w-full">
-                                                    Entrar
-                                                </Button>
-                                            </Link>
-                                            <RoleSelectionDialog>
-                                                <Button className="w-full">Começar Agora</Button>
-                                            </RoleSelectionDialog>
+                                            <Button variant="outline" className="w-full" onClick={() => setLoginOpen(true)}>
+                                                Entrar
+                                            </Button>
+                                            <Button className="w-full" onClick={() => setRegisterOpen(true)}>
+                                                Começar Agora
+                                            </Button>
                                         </>
                                     ) : (
                                         <Button variant="outline" className="w-full">
@@ -162,6 +166,17 @@ export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps)
                     </Sheet>
                 </div>
             </div>
+
+            <RoleSelectionDialog
+                open={loginOpen}
+                onOpenChange={setLoginOpen}
+                mode="login"
+            />
+            <RoleSelectionDialog
+                open={registerOpen}
+                onOpenChange={setRegisterOpen}
+                mode="register"
+            />
         </header>
     );
 }

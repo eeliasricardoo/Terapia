@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { RoleSelectionDialog } from "@/components/auth/RoleSelectionDialog"
@@ -20,7 +22,7 @@ export function Hero() {
                         <Button asChild size="lg">
                             <Link href="/busca">Encontrar Psicólogo</Link>
                         </Button>
-                        <RoleSelectionDialog>
+                        <RoleSelectionDialog mode="register">
                             <Button variant="outline" size="lg">
                                 Criar Conta
                             </Button>

@@ -6,6 +6,9 @@ test('registration flow with multi-step wizard', async ({ page }) => {
     // Click "Criar Conta" in Hero
     await page.getByRole('button', { name: 'Criar Conta' }).first().click();
 
+    // Wait for dialog
+    await expect(page.getByRole('dialog')).toBeVisible();
+
     // Select "Cliente"
     await page.getByText('Cliente').click();
 
@@ -49,6 +52,37 @@ test('registration flow with multi-step wizard', async ({ page }) => {
     await page.getByRole('button', { name: 'Mais ouvinte' }).click();
     await page.getByRole('button', { name: 'Seguinte' }).click();
 
-    // --- Onboarding Step 3 (Placeholder) ---
-    await expect(page.getByText('Passo 3', { exact: true })).toBeVisible();
+    // --- Onboarding Step 3: Availability ---
+    await expect(page.getByText('Qual sua disponibilidade?')).toBeVisible();
+    // Wait for animation/render
+    await page.waitForTimeout(500);
+
+    // Select days (using text to avoid ambiguity if any)
+    await page.getByText('Seg', { exact: true }).click();
+    await page.getByText('Qua', { exact: true }).click();
+
+    // Select time
+    await page.getByRole('button', { name: 'Noite' }).click();
+
+    await page.getByRole('button', { name: 'Seguinte' }).click();
+
+    // --- Onboarding Step 4: History ---
+    await expect(page.getByText('Conte-nos um pouco sobre seu histórico')).toBeVisible();
+
+    // Wait for animation/render
+    await page.waitForTimeout(500);
+
+    // Select options. Using nth-match or specific text if possible.
+    // "Sim" for previous therapy
+    await page.locator('button:has-text("Sim")').first().click();
+
+    // "Não" for medication (it's the second group of Sim/Não)
+    // We can scope by the heading to be safer
+    const medicationSection = page.locator('div').filter({ hasText: 'Toma alguma medicação?' });
+    await medicationSection.getByRole('button', { name: 'Não' }).click();
+
+    await page.getByPlaceholder('Sinta-se à vontade para escrever...').fill('Teste de bio');
+
+    // Finish
+    await page.getByRole('button', { name: 'Finalizar' }).click();
 });
