@@ -44,7 +44,7 @@ export default function PaymentPage() {
                     <div>
                         <h2 className="text-xl font-semibold mb-6 text-slate-900">Resumo da sua compra</h2>
                         <Card className="overflow-hidden border-none shadow-lg">
-                            <div className="h-48 bg-gradient-to-br from-teal-600 to-emerald-800 relative">
+                            <div className="h-48 bg-gradient-to-br from-rose-500 to-rose-700 relative">
                                 <div className="absolute inset-0 bg-black/10" />
                             </div>
                             <CardContent className="p-6">
@@ -71,7 +71,7 @@ export default function PaymentPage() {
 
                                 <div className="flex justify-between items-center mt-8 pt-4 border-t border-slate-100">
                                     <span className="font-bold text-lg text-slate-900">Total a pagar:</span>
-                                    <span className="font-extrabold text-2xl text-blue-600">{price}</span>
+                                    <span className="font-extrabold text-2xl text-rose-600">{price}</span>
                                 </div>
                             </CardContent>
                         </Card>
@@ -142,7 +142,7 @@ export default function PaymentPage() {
                                             </div>
                                         </div>
 
-                                        <Button className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg mt-4 shadow-md transition-all hover:shadow-lg">
+                                        <Button className="w-full h-12 bg-rose-500 hover:bg-rose-600 text-white font-bold text-lg mt-4 shadow-md transition-all hover:shadow-lg">
                                             Pagar Agora {price}
                                         </Button>
 
@@ -164,24 +164,24 @@ export default function PaymentPage() {
                                         </Button>
                                     </TabsContent>
 
-                                    <TabsContent value="bill" className="space-y-6">
-                                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 flex items-start gap-4">
-                                            <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 text-blue-600">
-                                                <Ticket className="h-5 w-5" />
+                                    <TabsContent value="bill" className="space-y-8 mt-12">
+                                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex items-start gap-4">
+                                            <div className="h-12 w-12 bg-rose-100 rounded-full flex items-center justify-center flex-shrink-0 text-rose-600">
+                                                <Ticket className="h-6 w-6" />
                                             </div>
                                             <div>
-                                                <h3 className="font-semibold text-slate-900">Plano Corporativo</h3>
-                                                <p className="text-sm text-slate-600 mt-1">
+                                                <h3 className="font-semibold text-lg text-slate-900">Plano Corporativo</h3>
+                                                <p className="text-slate-600 mt-1 mb-4">
                                                     Sua empresa <strong>Tech Solutions</strong> cobre este atendimento.
                                                 </p>
-                                                <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-md text-sm font-medium border border-green-100">
+                                                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-md text-sm font-medium border border-green-100">
                                                     <Ticket className="h-4 w-4" />
                                                     4 sessões disponíveis este mês
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <Button className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg mt-4 shadow-md transition-all hover:shadow-lg">
+                                        <Button className="w-full h-12 bg-rose-500 hover:bg-rose-600 text-white font-bold text-lg shadow-md transition-all hover:shadow-lg">
                                             Confirmar e Usar Saldo
                                         </Button>
                                     </TabsContent>

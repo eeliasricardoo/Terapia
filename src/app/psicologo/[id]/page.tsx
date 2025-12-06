@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar"
 import {
     CheckCircle2,
     Briefcase,
@@ -15,7 +16,8 @@ import {
     ChevronLeft,
     ChevronRight,
     MapPin,
-    Calendar as CalendarIcon
+    Calendar as CalendarIcon,
+    ArrowRight
 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 
@@ -92,225 +94,229 @@ export default function PsychologistProfilePage() {
     const daysInMonth = getDaysInMonth(currentDate)
 
     return (
-        <div className="min-h-screen flex flex-col bg-slate-50">
+        <div className="min-h-screen flex flex-col bg-slate-50/50">
             <Navbar isLoggedIn={true} userRole="client" />
 
-            <main className="flex-1 container py-8">
-                <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Left Sidebar - Profile Card */}
-                    <aside className="w-full lg:w-80 space-y-6">
-                        <Card className="border-none shadow-sm overflow-hidden">
-                            <CardContent className="p-6 flex flex-col items-center text-center">
-                                <div className="relative mb-4">
-                                    <Avatar className="h-32 w-32 border-4 border-white shadow-lg">
-                                        <AvatarImage src={DOCTOR.image} />
-                                        <AvatarFallback className="text-4xl">{DOCTOR.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                </div>
-
-                                <h1 className="text-2xl font-bold text-slate-900">{DOCTOR.name}</h1>
-                                <p className="text-blue-600 font-medium">{DOCTOR.title}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{DOCTOR.license}</p>
-
-                                {DOCTOR.verified && (
-                                    <div className="flex items-center gap-1 mt-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
-                                        <CheckCircle2 className="h-3 w-3" />
-                                        Verificada
+            <div className="flex-1 container py-8 flex flex-col lg:flex-row gap-8">
+                <DashboardSidebar />
+                <main className="flex-1 space-y-6">
+                    <div className="flex flex-col xl:flex-row gap-8">
+                        {/* Left Sidebar - Profile Card */}
+                        <aside className="w-full xl:w-80 space-y-6">
+                            <Card className="border-none shadow-sm overflow-hidden">
+                                <CardContent className="p-6 flex flex-col items-center text-center">
+                                    <div className="relative mb-4">
+                                        <Avatar className="h-32 w-32 border-4 border-white shadow-lg">
+                                            <AvatarImage src={DOCTOR.image} />
+                                            <AvatarFallback className="text-4xl">{DOCTOR.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
                                     </div>
-                                )}
 
-                                <p className="text-sm text-slate-600 mt-4 mb-6">
-                                    {DOCTOR.specialty_summary}
-                                </p>
+                                    <h1 className="text-2xl font-bold text-slate-900">{DOCTOR.name}</h1>
+                                    <p className="text-rose-600 font-medium">{DOCTOR.title}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">{DOCTOR.license}</p>
 
-                                <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white shadow-md">
-                                    Agendar Consulta
-                                </Button>
-                            </CardContent>
-                        </Card>
+                                    {DOCTOR.verified && (
+                                        <div className="flex items-center gap-1 mt-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
+                                            <CheckCircle2 className="h-3 w-3" />
+                                            Verificada
+                                        </div>
+                                    )}
 
-                        {/* Stats Cards */}
-                        <div className="grid gap-4">
-                            <Card className="border-none shadow-sm">
-                                <CardContent className="p-4 flex items-center gap-4">
-                                    <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
-                                        <Briefcase className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Anos de Experiência</p>
-                                        <p className="text-lg font-bold text-slate-900">{DOCTOR.experience}</p>
-                                    </div>
+                                    <p className="text-sm text-slate-600 mt-4 mb-6">
+                                        {DOCTOR.specialty_summary}
+                                    </p>
+
+                                    <Button className="w-full bg-rose-500 hover:bg-rose-600 text-white shadow-md">
+                                        Agendar Consulta
+                                    </Button>
                                 </CardContent>
                             </Card>
-                            <Card className="border-none shadow-sm">
-                                <CardContent className="p-4 flex items-center gap-4">
-                                    <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
-                                        <Users className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Sessões Realizadas</p>
-                                        <p className="text-lg font-bold text-slate-900">{DOCTOR.sessions}</p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                            <Card className="border-none shadow-sm">
-                                <CardContent className="p-4 flex items-center gap-4">
-                                    <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
-                                        <Star className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Avaliação Média</p>
-                                        <p className="text-lg font-bold text-slate-900">{DOCTOR.rating} / 5</p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </aside>
 
-                    {/* Main Content */}
-                    <div className="flex-1 space-y-6">
-                        {/* About */}
-                        <Card className="border-none shadow-sm">
-                            <CardContent className="p-8">
-                                <h2 className="text-xl font-bold text-slate-900 mb-4">Sobre mim</h2>
-                                <p className="text-slate-600 leading-relaxed">
-                                    {DOCTOR.about}
-                                </p>
-                            </CardContent>
-                        </Card>
-
-                        {/* Specialties */}
-                        <Card className="border-none shadow-sm">
-                            <CardContent className="p-8">
-                                <h2 className="text-xl font-bold text-slate-900 mb-4">Especialidades</h2>
-                                <div className="flex flex-wrap gap-2">
-                                    {DOCTOR.specialties.map((spec) => (
-                                        <Badge key={spec} variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1 text-sm font-normal">
-                                            {spec}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Availability */}
-                        <Card className="border-none shadow-sm">
-                            <CardContent className="p-8">
-                                <h2 className="text-xl font-bold text-slate-900 mb-6">Minha Disponibilidade</h2>
-
-                                <div className="flex flex-col md:flex-row gap-8">
-                                    {/* Calendar Mock */}
-                                    <div className="flex-1">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handlePrevMonth}>
-                                                <ChevronLeft className="h-4 w-4" />
-                                            </Button>
-                                            <span className="font-semibold text-slate-900">{currentMonthName} {currentYear}</span>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleNextMonth}>
-                                                <ChevronRight className="h-4 w-4" />
-                                            </Button>
+                            {/* Stats Cards */}
+                            <div className="grid gap-4">
+                                <Card className="border-none shadow-sm">
+                                    <CardContent className="p-4 flex items-center gap-4">
+                                        <div className="h-10 w-10 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600">
+                                            <Briefcase className="h-5 w-5" />
                                         </div>
-
-                                        <div className="grid grid-cols-7 gap-1 text-center text-sm mb-2">
-                                            <span className="text-muted-foreground text-xs py-2">DO</span>
-                                            <span className="text-muted-foreground text-xs py-2">SE</span>
-                                            <span className="text-muted-foreground text-xs py-2">TE</span>
-                                            <span className="text-muted-foreground text-xs py-2">QU</span>
-                                            <span className="text-muted-foreground text-xs py-2">QU</span>
-                                            <span className="text-muted-foreground text-xs py-2">SE</span>
-                                            <span className="text-muted-foreground text-xs py-2">SÁ</span>
-                                        </div>
-                                        <div className="grid grid-cols-7 gap-1 text-center text-sm">
-                                            {/* Mock days */}
-                                            {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => (
-                                                <button
-                                                    key={day}
-                                                    onClick={() => setSelectedDay(day)}
-                                                    className={`h-8 w-8 rounded-full flex items-center justify-center text-sm transition-colors
-                                                        ${day === selectedDay ? 'bg-blue-500 text-white font-bold' : 'hover:bg-slate-100 text-slate-700'}
-                                                    `}
-                                                >
-                                                    {day}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Time Slots */}
-                                    <div className="flex-1 border-l pl-0 md:pl-8 pt-6 md:pt-0 border-t md:border-t-0 flex flex-col justify-between">
                                         <div>
-                                            <h3 className="font-semibold text-slate-900 mb-4">
-                                                {selectedDay} de {currentMonthName}, {currentYear}
-                                            </h3>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                {TIME_SLOTS.map((time) => (
-                                                    <Button
-                                                        key={time}
-                                                        variant={selectedTime === time ? "default" : "outline"}
-                                                        className={`
-                                                            ${selectedTime === time
-                                                                ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                                                                : "border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"}
+                                            <p className="text-xs text-muted-foreground">Anos de Experiência</p>
+                                            <p className="text-lg font-bold text-slate-900">{DOCTOR.experience}</p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                                <Card className="border-none shadow-sm">
+                                    <CardContent className="p-4 flex items-center gap-4">
+                                        <div className="h-10 w-10 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600">
+                                            <Users className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground">Sessões Realizadas</p>
+                                            <p className="text-lg font-bold text-slate-900">{DOCTOR.sessions}</p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                                <Card className="border-none shadow-sm">
+                                    <CardContent className="p-4 flex items-center gap-4">
+                                        <div className="h-10 w-10 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600">
+                                            <Star className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground">Avaliação Média</p>
+                                            <p className="text-lg font-bold text-slate-900">{DOCTOR.rating} / 5</p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </aside>
+
+                        {/* Main Content */}
+                        <div className="flex-1 space-y-6">
+                            {/* About */}
+                            <Card className="border-none shadow-sm">
+                                <CardContent className="p-8">
+                                    <h2 className="text-xl font-bold text-slate-900 mb-4">Sobre mim</h2>
+                                    <p className="text-slate-600 leading-relaxed">
+                                        {DOCTOR.about}
+                                    </p>
+                                </CardContent>
+                            </Card>
+
+                            {/* Specialties */}
+                            <Card className="border-none shadow-sm">
+                                <CardContent className="p-8">
+                                    <h2 className="text-xl font-bold text-slate-900 mb-4">Especialidades</h2>
+                                    <div className="flex flex-wrap gap-2">
+                                        {DOCTOR.specialties.map((spec) => (
+                                            <Badge key={spec} variant="secondary" className="bg-rose-50 text-rose-700 hover:bg-rose-100 px-3 py-1 text-sm font-normal">
+                                                {spec}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Availability */}
+                            <Card className="border-none shadow-sm">
+                                <CardContent className="p-8">
+                                    <h2 className="text-xl font-bold text-slate-900 mb-6">Minha Disponibilidade</h2>
+
+                                    <div className="flex flex-col md:flex-row gap-8">
+                                        {/* Calendar Mock */}
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handlePrevMonth}>
+                                                    <ChevronLeft className="h-4 w-4" />
+                                                </Button>
+                                                <span className="font-semibold text-slate-900">{currentMonthName} {currentYear}</span>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleNextMonth}>
+                                                    <ChevronRight className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+
+                                            <div className="grid grid-cols-7 gap-1 text-center text-sm mb-2">
+                                                <span className="text-muted-foreground text-xs py-2">DO</span>
+                                                <span className="text-muted-foreground text-xs py-2">SE</span>
+                                                <span className="text-muted-foreground text-xs py-2">TE</span>
+                                                <span className="text-muted-foreground text-xs py-2">QU</span>
+                                                <span className="text-muted-foreground text-xs py-2">QU</span>
+                                                <span className="text-muted-foreground text-xs py-2">SE</span>
+                                                <span className="text-muted-foreground text-xs py-2">SÁ</span>
+                                            </div>
+                                            <div className="grid grid-cols-7 gap-1 text-center text-sm">
+                                                {/* Mock days */}
+                                                {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => (
+                                                    <button
+                                                        key={day}
+                                                        onClick={() => setSelectedDay(day)}
+                                                        className={`h-8 w-8 rounded-full flex items-center justify-center text-sm transition-colors
+                                                            ${day === selectedDay ? 'bg-rose-500 text-white font-bold' : 'hover:bg-slate-100 text-slate-700'}
                                                         `}
-                                                        onClick={() => setSelectedTime(time)}
                                                     >
-                                                        {time}
-                                                    </Button>
+                                                        {day}
+                                                    </button>
                                                 ))}
                                             </div>
                                         </div>
 
-                                        {selectedTime && (
-                                            <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                                                <div className="bg-slate-50 p-4 rounded-lg mb-4 text-sm text-slate-600 border border-slate-100">
-                                                    <p className="flex justify-between mb-1">
-                                                        <span>Consulta:</span>
-                                                        <span className="font-semibold text-slate-900">50 min</span>
-                                                    </p>
-                                                    <p className="flex justify-between text-lg font-bold text-slate-900 mt-2 pt-2 border-t border-slate-200">
-                                                        <span>Total:</span>
-                                                        <span className="text-blue-600">R$ 150,00</span>
-                                                    </p>
-                                                </div>
-                                                <Button
-                                                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 text-lg shadow-lg hover:shadow-xl transition-all"
-                                                    onClick={() => window.location.href = `/pagamento?doctor=${DOCTOR.id}&date=${currentYear}-${currentDate.getMonth() + 1}-${selectedDay}&time=${selectedTime}`}
-                                                >
-                                                    Ir para o Pagamento
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Reviews */}
-                        <Card className="border-none shadow-sm">
-                            <CardContent className="p-8">
-                                <h2 className="text-xl font-bold text-slate-900 mb-6">Opiniões de pacientes</h2>
-                                <div className="space-y-6">
-                                    {DOCTOR.reviews.map((review, index) => (
-                                        <div key={review.id}>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="flex text-yellow-400">
-                                                    {Array.from({ length: 5 }).map((_, i) => (
-                                                        <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'fill-current' : 'text-slate-200'}`} />
+                                        {/* Time Slots */}
+                                        <div className="flex-1 border-l pl-0 md:pl-8 pt-6 md:pt-0 border-t md:border-t-0 flex flex-col justify-between">
+                                            <div>
+                                                <h3 className="font-semibold text-slate-900 mb-4">
+                                                    {selectedDay} de {currentMonthName}, {currentYear}
+                                                </h3>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    {TIME_SLOTS.map((time) => (
+                                                        <Button
+                                                            key={time}
+                                                            variant={selectedTime === time ? "default" : "outline"}
+                                                            className={`
+                                                                ${selectedTime === time
+                                                                    ? "bg-rose-600 hover:bg-rose-700 text-white border-rose-600"
+                                                                    : "border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"}
+                                                            `}
+                                                            onClick={() => setSelectedTime(time)}
+                                                        >
+                                                            {time}
+                                                        </Button>
                                                     ))}
                                                 </div>
-                                                <span className="text-xs text-muted-foreground">{review.date}</span>
                                             </div>
-                                            <p className="text-slate-600 text-sm italic mb-2">"{review.text}"</p>
-                                            <p className="text-sm font-bold text-slate-900">- {review.author}</p>
-                                            {index < DOCTOR.reviews.length - 1 && <Separator className="mt-6" />}
+
+                                            {selectedTime && (
+                                                <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                                    <div className="bg-slate-50 p-4 rounded-lg mb-4 text-sm text-slate-600 border border-slate-100">
+                                                        <p className="flex justify-between mb-1">
+                                                            <span>Consulta:</span>
+                                                            <span className="font-semibold text-slate-900">50 min</span>
+                                                        </p>
+                                                        <p className="flex justify-between text-lg font-bold text-slate-900 mt-2 pt-2 border-t border-slate-200">
+                                                            <span>Total:</span>
+                                                            <span className="text-rose-600">R$ 150,00</span>
+                                                        </p>
+                                                    </div>
+                                                    <Button
+                                                        className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold h-12 text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-between px-6"
+                                                        onClick={() => window.location.href = `/pagamento?doctor=${DOCTOR.id}&date=${currentYear}-${currentDate.getMonth() + 1}-${selectedDay}&time=${selectedTime}`}
+                                                    >
+                                                        Ir para o Pagamento
+                                                        <ArrowRight className="h-5 w-5" />
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Reviews */}
+                            <Card className="border-none shadow-sm">
+                                <CardContent className="p-8">
+                                    <h2 className="text-xl font-bold text-slate-900 mb-6">Opiniões de pacientes</h2>
+                                    <div className="space-y-6">
+                                        {DOCTOR.reviews.map((review, index) => (
+                                            <div key={review.id}>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex text-yellow-400">
+                                                        {Array.from({ length: 5 }).map((_, i) => (
+                                                            <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'fill-current' : 'text-slate-200'}`} />
+                                                        ))}
+                                                    </div>
+                                                    <span className="text-xs text-muted-foreground">{review.date}</span>
+                                                </div>
+                                                <p className="text-slate-600 text-sm italic mb-2">"{review.text}"</p>
+                                                <p className="text-sm font-bold text-slate-900">- {review.author}</p>
+                                                {index < DOCTOR.reviews.length - 1 && <Separator className="mt-6" />}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
-                </div>
-            </main>
+                </main>
+            </div>
             <Footer />
         </div>
     )

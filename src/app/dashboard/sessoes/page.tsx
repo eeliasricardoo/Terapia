@@ -62,7 +62,7 @@ export default function SessionsPage() {
                                     <div className="flex items-center gap-2">
                                         <h3 className="font-semibold text-lg">{session.doctor}</h3>
                                         {session.status === 'upcoming' && (
-                                            <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200">Agendada</Badge>
+                                            <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-200 border-rose-200">Agendada</Badge>
                                         )}
                                         {session.status === 'completed' && (
                                             <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200">Realizada</Badge>
