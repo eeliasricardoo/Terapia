@@ -84,9 +84,10 @@ export default function PaymentPage() {
                         <Card className="border-slate-200 shadow-sm">
                             <CardContent className="p-6">
                                 <Tabs defaultValue="card" className="w-full">
-                                    <TabsList className="grid w-full grid-cols-2 mb-8 bg-slate-100 p-1 h-12">
-                                        <TabsTrigger value="card" className="data-[state=active]:bg-white data-[state=active]:shadow-sm h-10 font-medium">Cartão de Crédito / Débito</TabsTrigger>
+                                    <TabsList className="grid w-full grid-cols-3 mb-8 bg-slate-100 p-1 h-12">
+                                        <TabsTrigger value="card" className="data-[state=active]:bg-white data-[state=active]:shadow-sm h-10 font-medium">Cartão</TabsTrigger>
                                         <TabsTrigger value="pix" className="data-[state=active]:bg-white data-[state=active]:shadow-sm h-10 font-medium">Pix</TabsTrigger>
+                                        <TabsTrigger value="bill" className="data-[state=active]:bg-white data-[state=active]:shadow-sm h-10 font-medium">Plano</TabsTrigger>
                                     </TabsList>
 
                                     <TabsContent value="card" className="space-y-6">
@@ -158,6 +159,31 @@ export default function PaymentPage() {
                                         <p className="text-sm text-muted-foreground px-8">
                                             Escaneie o QR Code acima com o app do seu banco para realizar o pagamento instantâneo.
                                         </p>
+                                        <Button className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg mt-4 shadow-md transition-all hover:shadow-lg">
+                                            Copiar Código Pix
+                                        </Button>
+                                    </TabsContent>
+
+                                    <TabsContent value="bill" className="space-y-6">
+                                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 flex items-start gap-4">
+                                            <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 text-blue-600">
+                                                <Ticket className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold text-slate-900">Plano Corporativo</h3>
+                                                <p className="text-sm text-slate-600 mt-1">
+                                                    Sua empresa <strong>Tech Solutions</strong> cobre este atendimento.
+                                                </p>
+                                                <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-md text-sm font-medium border border-green-100">
+                                                    <Ticket className="h-4 w-4" />
+                                                    4 sessões disponíveis este mês
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <Button className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg mt-4 shadow-md transition-all hover:shadow-lg">
+                                            Confirmar e Usar Saldo
+                                        </Button>
                                     </TabsContent>
                                 </Tabs>
                             </CardContent>
