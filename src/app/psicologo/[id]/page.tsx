@@ -71,6 +71,7 @@ const MONTHS = [
 export default function PsychologistProfilePage() {
     const [selectedDay, setSelectedDay] = useState(15)
     const [currentDate, setCurrentDate] = useState(new Date(2024, 9)) // Start in October 2024
+    const [selectedTime, setSelectedTime] = useState<string | null>(null)
 
     const handlePrevMonth = () => {
         setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1))
@@ -236,17 +237,49 @@ export default function PsychologistProfilePage() {
                                     </div>
 
                                     {/* Time Slots */}
-                                    <div className="flex-1 border-l pl-0 md:pl-8 pt-6 md:pt-0 border-t md:border-t-0">
-                                        <h3 className="font-semibold text-slate-900 mb-4">
-                                            {selectedDay} de {currentMonthName}, {currentYear}
-                                        </h3>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {TIME_SLOTS.map((time) => (
-                                                <Button key={time} variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700">
-                                                    {time}
-                                                </Button>
-                                            ))}
+                                    <div className="flex-1 border-l pl-0 md:pl-8 pt-6 md:pt-0 border-t md:border-t-0 flex flex-col justify-between">
+                                        <div>
+                                            <h3 className="font-semibold text-slate-900 mb-4">
+                                                {selectedDay} de {currentMonthName}, {currentYear}
+                                            </h3>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {TIME_SLOTS.map((time) => (
+                                                    <Button
+                                                        key={time}
+                                                        variant={selectedTime === time ? "default" : "outline"}
+                                                        className={`
+                                                            ${selectedTime === time
+                                                                ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                                                                : "border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"}
+                                                        `}
+                                                        onClick={() => setSelectedTime(time)}
+                                                    >
+                                                        {time}
+                                                    </Button>
+                                                ))}
+                                            </div>
                                         </div>
+
+                                        {selectedTime && (
+                                            <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                                <div className="bg-slate-50 p-4 rounded-lg mb-4 text-sm text-slate-600 border border-slate-100">
+                                                    <p className="flex justify-between mb-1">
+                                                        <span>Consulta:</span>
+                                                        <span className="font-semibold text-slate-900">50 min</span>
+                                                    </p>
+                                                    <p className="flex justify-between text-lg font-bold text-slate-900 mt-2 pt-2 border-t border-slate-200">
+                                                        <span>Total:</span>
+                                                        <span className="text-blue-600">R$ 150,00</span>
+                                                    </p>
+                                                </div>
+                                                <Button
+                                                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 text-lg shadow-lg hover:shadow-xl transition-all"
+                                                    onClick={() => window.location.href = `/pagamento?doctor=${DOCTOR.id}&date=${currentYear}-${currentDate.getMonth() + 1}-${selectedDay}&time=${selectedTime}`}
+                                                >
+                                                    Ir para o Pagamento
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </CardContent>
