@@ -64,7 +64,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-3">
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button className="bg-rose-500 hover:bg-rose-600 text-white gap-2 px-6">
+                            <Button className="bg-blue-500 hover:bg-blue-600 text-white gap-2 px-6">
                                 <Video className="h-4 w-4" />
                                 Iniciar Sessão Agora
                             </Button>
@@ -78,7 +78,7 @@ export default function DashboardPage() {
                             </DialogHeader>
                             <div className="flex items-center justify-center py-6">
                                 <div className="text-center space-y-4">
-                                    <div className="h-20 w-20 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                                    <div className="h-20 w-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto animate-pulse">
                                         <Video className="h-10 w-10" />
                                     </div>
                                     <p className="text-sm text-muted-foreground">O link para a videochamada estará disponível 5 minutos antes.</p>
@@ -100,11 +100,11 @@ export default function DashboardPage() {
                 {/* Next Session Card (Hero) */}
                 <Card className="col-span-1 md:col-span-2 lg:col-span-2 border-none shadow-md overflow-hidden relative">
                     <div className="absolute top-0 right-0 p-6 opacity-10 hidden md:block">
-                        <CalendarIcon className="h-32 w-32 text-rose-600" />
+                        <CalendarIcon className="h-32 w-32 text-blue-600" />
                     </div>
                     <div className="flex flex-col md:flex-row h-full">
                         <div className="p-8 flex-1">
-                            <div className="inline-flex items-center rounded-full border border-rose-200 px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-rose-100 text-rose-700 mb-4">
+                            <div className="inline-flex items-center rounded-full border border-blue-200 px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-blue-100 text-blue-700 mb-4">
                                 Próxima Sessão
                             </div>
                             <h2 className="text-2xl font-bold text-slate-900 mb-2">Terapia Individual</h2>
@@ -124,18 +124,18 @@ export default function DashboardPage() {
                             </div>
 
                             <div className="flex gap-3">
-                                <Button variant="outline" className="border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800">
+                                <Button variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
                                     Detalhes
                                 </Button>
-                                <Button className="bg-rose-600 text-white hover:bg-rose-700 shadow-md">
+                                <Button className="bg-blue-600 text-white hover:bg-blue-700 shadow-md">
                                     Entrar na Sala
                                 </Button>
                             </div>
                         </div>
-                        <div className="w-full md:w-1/3 bg-rose-50 relative min-h-[200px]">
+                        <div className="w-full md:w-1/3 bg-blue-50 relative min-h-[200px]">
                             {/* Illustration or decorative pattern could go here */}
                             <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-                                <p className="text-sm text-rose-800 italic">"O autoconhecimento é o começo de toda sabedoria."</p>
+                                <p className="text-sm text-blue-800 italic">"O autoconhecimento é o começo de toda sabedoria."</p>
                             </div>
                         </div>
                     </div>
@@ -163,7 +163,7 @@ export default function DashboardPage() {
                                     <span className="text-slate-600">Sessões este mês</span>
                                     <span className="font-bold text-slate-900">3/4</span>
                                 </div>
-                                <Progress value={75} className="h-2 bg-slate-100" indicatorClassName="bg-rose-500" />
+                                <Progress value={75} className="h-2 bg-slate-100" indicatorClassName="bg-blue-500" />
                             </div>
                         </div>
                     </CardContent>
@@ -173,12 +173,12 @@ export default function DashboardPage() {
                 <div className="col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
                     <Card className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
                         <CardContent className="p-6">
-                            <div className="h-10 w-10 rounded-full bg-rose-50 flex items-center justify-center mb-4 group-hover:bg-rose-100 transition-colors">
-                                <User className="h-5 w-5 text-rose-600" />
+                            <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
+                                <User className="h-5 w-5 text-blue-600" />
                             </div>
                             <h3 className="font-semibold text-slate-900 mb-1">Meu Perfil</h3>
                             <p className="text-sm text-slate-500 mb-4">Gerencie seus dados e preferências</p>
-                            <Button variant="secondary" className="bg-rose-50 text-rose-600 hover:bg-rose-100 w-full justify-start group-hover:pl-4 transition-all">
+                            <Button variant="secondary" className="bg-blue-50 text-blue-600 hover:bg-blue-100 w-full justify-start group-hover:pl-4 transition-all">
                                 Editar Perfil <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </Button>
                         </CardContent>
@@ -186,12 +186,12 @@ export default function DashboardPage() {
 
                     <Card className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
                         <CardContent className="p-6">
-                            <div className="h-10 w-10 rounded-full bg-rose-50 flex items-center justify-center mb-4 group-hover:bg-rose-100 transition-colors">
-                                <FileText className="h-5 w-5 text-rose-600" />
+                            <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
+                                <FileText className="h-5 w-5 text-blue-600" />
                             </div>
                             <h3 className="font-semibold text-slate-900 mb-1">Diário Emocional</h3>
                             <p className="text-sm text-slate-500 mb-4">Escreva sobre seus sentimentos</p>
-                            <Button asChild variant="secondary" className="bg-rose-50 text-rose-600 hover:bg-rose-100 w-full justify-start group-hover:pl-4 transition-all">
+                            <Button asChild variant="secondary" className="bg-blue-50 text-blue-600 hover:bg-blue-100 w-full justify-start group-hover:pl-4 transition-all">
                                 <Link href="/dashboard/diario">
                                     Abrir Diário <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </Link>
@@ -212,7 +212,7 @@ export default function DashboardPage() {
                                 <Button variant="ghost" className="text-white hover:text-white hover:bg-white/10 text-sm font-medium px-2">
                                     Conteúdos
                                 </Button>
-                                <Button variant="ghost" className="text-rose-300 hover:text-rose-200 hover:bg-white/5 text-sm font-medium px-2 ml-auto">
+                                <Button variant="ghost" className="text-blue-300 hover:text-blue-200 hover:bg-white/5 text-sm font-medium px-2 ml-auto">
                                     Suporte
                                 </Button>
                             </div>
@@ -227,7 +227,7 @@ export default function DashboardPage() {
                             <CardTitle className="text-lg">Histórico Recente</CardTitle>
                             <CardDescription>Suas últimas atividades na plataforma</CardDescription>
                         </div>
-                        <Button variant="ghost" className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 text-sm font-medium">
+                        <Button variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm font-medium">
                             Ver Tudo
                         </Button>
                     </CardHeader>
@@ -244,14 +244,14 @@ export default function DashboardPage() {
                                             <p className="text-sm text-muted-foreground">{session.date}</p>
                                         </div>
                                     </div>
-                                    <Button variant="ghost" className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 text-sm font-medium">
+                                    <Button variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm font-medium">
                                         Ver Resumo
                                     </Button>
                                 </div>
                             ))}
                         </div>
                         <div className="p-4 border-t text-center">
-                            <Button variant="link" className="text-rose-600" asChild>
+                            <Button variant="link" className="text-blue-600" asChild>
                                 <Link href="/dashboard/sessoes">Ver todo o histórico</Link>
                             </Button>
                         </div>

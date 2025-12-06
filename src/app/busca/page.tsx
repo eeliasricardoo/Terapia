@@ -203,7 +203,7 @@ export default function SearchPage() {
                                                 ))}
                                             </div>
 
-                                            <Button asChild className="w-full bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 border-none shadow-none font-semibold h-10">
+                                            <Button asChild className="w-full bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border-none shadow-none font-semibold h-10">
                                                 <Link href={`/psicologo/${doctor.id}`}>
                                                     Ver Perfil
                                                 </Link>
