@@ -22,7 +22,6 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { PageHeader } from "./PageHeader"
 import { FileUpload } from "./FileUpload"
 import { SpecializationTags } from "./SpecializationTags"
 import { Calendar as CalendarIcon } from "lucide-react"
@@ -72,7 +71,14 @@ export function ProfessionalDataForm() {
 
     return (
         <div className="space-y-8">
-            <PageHeader />
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">
+                    Dados Profissionais
+                </h1>
+                <p className="text-muted-foreground mt-2">
+                    Complete suas informações profissionais para continuar.
+                </p>
+            </div>
 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
