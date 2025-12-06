@@ -19,7 +19,7 @@ const MENU_ITEMS = [
     { href: "/dashboard/sessoes", label: "Sessões", icon: Calendar },
     { href: "/dashboard/mensagens", label: "Mensagens", icon: MessageSquare },
     { href: "/busca", label: "Buscar Psicólogos", icon: Search },
-    { href: "/perfil", label: "Meu Perfil", icon: User },
+    { href: "/dashboard/perfil", label: "Meu Perfil", icon: User },
 ]
 
 export function DashboardSidebar() {
