@@ -78,6 +78,8 @@ const PSYCHOLOGISTS = [
 export default function SearchPage() {
     return (
         <div className="min-h-screen flex flex-col bg-slate-50/50">
+            <MobileNav />
+
             <div className="flex-1 container py-8 flex flex-col lg:flex-row gap-8">
                 {/* Dashboard Sidebar for Patient Context */}
                 <div className="hidden lg:block">

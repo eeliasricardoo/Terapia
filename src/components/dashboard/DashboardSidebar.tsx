@@ -22,11 +22,15 @@ const MENU_ITEMS = [
     { href: "/dashboard/perfil", label: "Meu Perfil", icon: User },
 ]
 
-export function DashboardSidebar() {
+interface DashboardSidebarProps {
+    className?: string
+}
+
+export function DashboardSidebar({ className }: DashboardSidebarProps) {
     const pathname = usePathname()
 
     return (
-        <aside className="w-full lg:w-64 flex-shrink-0 flex flex-col h-[calc(100vh-2rem)] sticky top-4">
+        <aside className={cn("w-full lg:w-64 flex-shrink-0 flex flex-col h-[calc(100vh-2rem)] sticky top-4", className)}>
             {/* User Profile */}
             <div className="flex items-center gap-3 mb-8 px-2">
                 <Avatar className="h-12 w-12">
