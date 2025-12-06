@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -55,21 +58,38 @@ const DOCTOR = {
     ]
 }
 
-const DATES = [
-    { day: "SEG", num: "29" },
-    { day: "TER", num: "30" },
-    { day: "QUA", num: "01", active: true },
-    { day: "QUI", num: "02" },
-    { day: "SEX", num: "03" },
-    { day: "SÁB", num: "04" },
-]
-
 const TIME_SLOTS = [
     "09:00", "10:00", "11:00",
     "14:00", "15:00", "16:00"
 ]
 
+const MONTHS = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+]
+
 export default function PsychologistProfilePage() {
+    const [selectedDay, setSelectedDay] = useState(15)
+    const [currentDate, setCurrentDate] = useState(new Date(2024, 9)) // Start in October 2024
+
+    const handlePrevMonth = () => {
+        setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1))
+        setSelectedDay(1) // Reset day to 1 when changing month
+    }
+
+    const handleNextMonth = () => {
+        setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1))
+        setSelectedDay(1) // Reset day to 1 when changing month
+    }
+
+    const getDaysInMonth = (date: Date) => {
+        return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+    }
+
+    const currentMonthName = MONTHS[currentDate.getMonth()]
+    const currentYear = currentDate.getFullYear()
+    const daysInMonth = getDaysInMonth(currentDate)
+
     return (
         <div className="min-h-screen flex flex-col bg-slate-50">
             <Navbar isLoggedIn={true} userRole="client" />
@@ -181,11 +201,11 @@ export default function PsychologistProfilePage() {
                                     {/* Calendar Mock */}
                                     <div className="flex-1">
                                         <div className="flex items-center justify-between mb-4">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handlePrevMonth}>
                                                 <ChevronLeft className="h-4 w-4" />
                                             </Button>
-                                            <span className="font-semibold text-slate-900">Outubro 2024</span>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                            <span className="font-semibold text-slate-900">{currentMonthName} {currentYear}</span>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleNextMonth}>
                                                 <ChevronRight className="h-4 w-4" />
                                             </Button>
                                         </div>
@@ -201,11 +221,12 @@ export default function PsychologistProfilePage() {
                                         </div>
                                         <div className="grid grid-cols-7 gap-1 text-center text-sm">
                                             {/* Mock days */}
-                                            {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                                            {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => (
                                                 <button
                                                     key={day}
+                                                    onClick={() => setSelectedDay(day)}
                                                     className={`h-8 w-8 rounded-full flex items-center justify-center text-sm transition-colors
-                                                        ${day === 15 ? 'bg-blue-500 text-white font-bold' : 'hover:bg-slate-100 text-slate-700'}
+                                                        ${day === selectedDay ? 'bg-blue-500 text-white font-bold' : 'hover:bg-slate-100 text-slate-700'}
                                                     `}
                                                 >
                                                     {day}
@@ -216,7 +237,9 @@ export default function PsychologistProfilePage() {
 
                                     {/* Time Slots */}
                                     <div className="flex-1 border-l pl-0 md:pl-8 pt-6 md:pt-0 border-t md:border-t-0">
-                                        <h3 className="font-semibold text-slate-900 mb-4">Quarta-feira, 15 de Outubro</h3>
+                                        <h3 className="font-semibold text-slate-900 mb-4">
+                                            {selectedDay} de {currentMonthName}, {currentYear}
+                                        </h3>
                                         <div className="grid grid-cols-2 gap-3">
                                             {TIME_SLOTS.map((time) => (
                                                 <Button key={time} variant="outline" className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700">
