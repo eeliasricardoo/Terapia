@@ -2,10 +2,10 @@ export function Hero() {
     return (
         <div className="space-y-2">
             <h1 className="text-3xl font-black tracking-tight">
-                Únete a nuestra red profesional
+                Junte-se à nossa rede profissional
             </h1>
             <p className="text-muted-foreground">
-                Conecta con pacientes en toda Colombia y haz crecer tu práctica en línea.
+                Conecte-se com pacientes em toda a Colômbia e expanda sua prática online.
             </p>
         </div>
     )

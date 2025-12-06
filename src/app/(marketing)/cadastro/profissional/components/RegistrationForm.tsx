@@ -23,21 +23,21 @@ import { SocialLoginButtons } from "./SocialLoginButtons"
 
 const formSchema = z.object({
     name: z.string().min(2, {
-        message: "El nombre debe tener al menos 2 caracteres.",
+        message: "O nome deve ter pelo menos 2 caracteres.",
     }),
     email: z.string().email({
-        message: "Correo electrónico inválido.",
+        message: "E-mail inválido.",
     }),
     password: z.string()
-        .min(8, { message: "La contraseña debe tener al menos 8 caracteres." })
-        .regex(/[A-Z]/, { message: "La contraseña debe contener al menos una letra mayúscula." })
-        .regex(/[a-z]/, { message: "La contraseña debe contener al menos una letra minúscula." })
-        .regex(/[0-9]/, { message: "La contraseña debe contener al menos un número." }),
+        .min(8, { message: "A senha deve ter pelo menos 8 caracteres." })
+        .regex(/[A-Z]/, { message: "A senha deve conter pelo menos uma letra maiúscula." })
+        .regex(/[a-z]/, { message: "A senha deve conter pelo menos uma letra minúscula." })
+        .regex(/[0-9]/, { message: "A senha deve conter pelo menos um número." }),
     professionalCard: z.string().min(6, {
-        message: "El número de tarjeta profesional debe tener al menos 6 caracteres.",
+        message: "O número da carteira profissional deve ter pelo menos 6 caracteres.",
     }),
-    terms: z.boolean().refine((value) => value === true, {
-        message: "Debes aceptar los términos de servicio.",
+    terms: z.literal(true, {
+        errorMap: () => ({ message: "Você deve aceitar os termos de serviço." }),
     }),
 })
 
@@ -70,11 +70,11 @@ export function RegistrationForm() {
                         name="name"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Nombre Completo</FormLabel>
+                                <FormLabel>Nome Completo</FormLabel>
                                 <FormControl>
                                     <Input
                                         className="h-[44px]"
-                                        placeholder="Ingresa tu nombre completo"
+                                        placeholder="Digite seu nome completo"
                                         {...field}
                                     />
                                 </FormControl>
@@ -88,12 +88,12 @@ export function RegistrationForm() {
                         name="email"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Correo Electrónico</FormLabel>
+                                <FormLabel>E-mail</FormLabel>
                                 <FormControl>
                                     <Input
                                         className="h-[44px]"
                                         type="email"
-                                        placeholder="Ingresa tu correo electrónico"
+                                        placeholder="Digite seu e-mail"
                                         {...field}
                                     />
                                 </FormControl>
@@ -107,11 +107,11 @@ export function RegistrationForm() {
                         name="password"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Crear Contraseña</FormLabel>
+                                <FormLabel>Criar Senha</FormLabel>
                                 <FormControl>
                                     <PasswordInput
                                         className="h-[44px]"
-                                        placeholder="Ingresa una contraseña segura"
+                                        placeholder="Digite uma senha segura"
                                         {...field}
                                     />
                                 </FormControl>
@@ -125,16 +125,16 @@ export function RegistrationForm() {
                         name="professionalCard"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Número de Tarjeta Profesional</FormLabel>
+                                <FormLabel>Número da Carteira Profissional</FormLabel>
                                 <FormControl>
                                     <Input
                                         className="h-[44px]"
-                                        placeholder="Ingresa tu número de licencia"
+                                        placeholder="Digite seu número de licença"
                                         {...field}
                                     />
                                 </FormControl>
                                 <FormDescription>
-                                    Este número es necesario para verificar tus credenciales profesionales.
+                                    Este número é necessário para verificar suas credenciais profissionais.
                                 </FormDescription>
                                 <FormMessage />
                             </FormItem>
@@ -145,49 +145,56 @@ export function RegistrationForm() {
                         control={form.control}
                         name="terms"
                         render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                <FormControl>
-                                    <Checkbox
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                    />
-                                </FormControl>
-                                <div className="space-y-1 leading-none">
-                                    <FormLabel className="text-sm font-normal">
-                                        Acepto los{" "}
-                                        <Link href="/termos" className="text-primary underline hover:no-underline">
-                                            Términos de Servicio
-                                        </Link>
-                                        {" "}y la{" "}
-                                        <Link href="/privacidade" className="text-primary underline hover:no-underline">
-                                            Política de Privacidad
-                                        </Link>
-                                        .
-                                    </FormLabel>
-                                    <FormMessage />
+                            <FormItem>
+                                <div className="flex flex-row items-start space-x-3 space-y-0">
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                    <div className="space-y-1 leading-none">
+                                        <FormLabel className="text-sm font-normal cursor-pointer">
+                                            Aceito os{" "}
+                                            <Link href="/termos" className="text-primary underline hover:no-underline">
+                                                Termos de Serviço
+                                            </Link>
+                                            {" "}e a{" "}
+                                            <Link href="/privacidade" className="text-primary underline hover:no-underline">
+                                                Política de Privacidade
+                                            </Link>
+                                            .
+                                        </FormLabel>
+                                    </div>
                                 </div>
+                                <FormMessage />
                             </FormItem>
                         )}
                     />
 
-                    <Button type="submit" className="w-full font-bold" size="lg">
-                        Crear Cuenta
+                    <Button 
+                        type="submit" 
+                        className="w-full font-bold" 
+                        size="lg"
+                        disabled={!form.formState.isValid}
+                    >
+                        Criar Conta
                     </Button>
                 </form>
             </Form>
 
-            <DividerWithText text="O regístrate con" />
+            <DividerWithText text="Ou cadastre-se com" />
 
             <SocialLoginButtons />
 
             <div className="flex items-center justify-between pt-4">
                 <h2 className="text-sm font-medium text-muted-foreground">
-                    Registro Psicólogo
+                    Cadastro Psicólogo
                 </h2>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>¿Ya tienes una cuenta?</span>
+                    <span>Já tem uma conta?</span>
                     <Button variant="link" className="h-auto p-0 font-medium" asChild>
-                        <Link href="/login/profissional">Log In</Link>
+                        <Link href="/login/profissional">Entrar</Link>
                     </Button>
                 </div>
             </div>

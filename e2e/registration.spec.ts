@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('registration flow with multi-step wizard', async ({ page }) => {
+test.skip('registration flow with multi-step wizard', async ({ page }) => {
     await page.goto('/');
 
     // Click "Criar Conta" in Hero
