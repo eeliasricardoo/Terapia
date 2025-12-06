@@ -68,3 +68,18 @@
     @apply bg-background text-foreground;
   }
 }
+@layer utilities {
+  .calendar-fixed-size .rdp-day button[aria-selected="true"],
+  .calendar-fixed-size .rdp-day[data-scheduled] button,
+  .calendar-fixed-size .rdp-day[data-unavailable] button {
+    height: 2rem !important;
+    width: 2rem !important;
+    min-height: 2rem !important;
+    min-width: 2rem !important;
+    max-height: 2rem !important;
+    max-width: 2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+}
