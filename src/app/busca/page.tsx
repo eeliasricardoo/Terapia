@@ -10,6 +10,7 @@ import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar"
 import Link from "next/link"
+import { MobileNav } from "@/components/dashboard/MobileNav"
 
 // Mock data for psychologists
 const PSYCHOLOGISTS = [
