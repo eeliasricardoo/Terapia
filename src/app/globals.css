@@ -24,6 +24,8 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83% 53%;
     --radius: 0.75rem;
+    --professional-primary: 340 72% 61%;
+    --professional-primary-foreground: 0 0% 100%;
   }
 
   .dark {
@@ -45,7 +47,15 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 221.2 83% 53%;
+    --ring: 217.2 91.2% 59.8%;
+    --professional-primary: 340 72% 61%;
+    --professional-primary-foreground: 0 0% 100%;
+  }
+
+  .professional-theme {
+    --primary: var(--professional-primary);
+    --primary-foreground: var(--professional-primary-foreground);
+    --ring: var(--professional-primary);
   }
 }
 
@@ -56,5 +66,20 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+@layer utilities {
+  .calendar-fixed-size .rdp-day button[aria-selected="true"],
+  .calendar-fixed-size .rdp-day[data-scheduled] button,
+  .calendar-fixed-size .rdp-day[data-unavailable] button {
+    height: 2rem !important;
+    width: 2rem !important;
+    min-height: 2rem !important;
+    min-width: 2rem !important;
+    max-height: 2rem !important;
+    max-width: 2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 }
