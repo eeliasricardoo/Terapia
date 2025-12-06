@@ -30,6 +30,31 @@ export default function ProfilePage() {
         }, 1000)
     }
 
+    const [passwords, setPasswords] = useState({
+        current: "",
+        new: "",
+        confirm: ""
+    })
+
+    const handlePasswordChange = () => {
+        if (passwords.new !== passwords.confirm) {
+            alert("A nova senha e a confirmação não coincidem.")
+            return
+        }
+        if (!passwords.current || !passwords.new) {
+            alert("Por favor, preencha todos os campos.")
+            return
+        }
+
+        setIsLoading(true)
+        // Simulate API call
+        setTimeout(() => {
+            setIsLoading(false)
+            setPasswords({ current: "", new: "", confirm: "" })
+            alert("Senha alterada com sucesso!")
+        }, 1000)
+    }
+
     return (
         <div className="space-y-6">
             <div>
@@ -250,7 +275,13 @@ export default function ProfilePage() {
                                 <Label htmlFor="current-password">Senha Atual</Label>
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input id="current-password" type="password" className="pl-9" />
+                                    <Input
+                                        id="current-password"
+                                        type="password"
+                                        className="pl-9"
+                                        value={passwords.current}
+                                        onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                                    />
                                 </div>
                             </div>
                             <Separator />
@@ -258,20 +289,32 @@ export default function ProfilePage() {
                                 <Label htmlFor="new-password">Nova Senha</Label>
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input id="new-password" type="password" className="pl-9" />
+                                    <Input
+                                        id="new-password"
+                                        type="password"
+                                        className="pl-9"
+                                        value={passwords.new}
+                                        onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+                                    />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="confirm-password">Confirmar Nova Senha</Label>
                                 <div className="relative">
                                     <Shield className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input id="confirm-password" type="password" className="pl-9" />
+                                    <Input
+                                        id="confirm-password"
+                                        type="password"
+                                        className="pl-9"
+                                        value={passwords.confirm}
+                                        onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                                    />
                                 </div>
                             </div>
                         </CardContent>
                         <CardFooter className="flex justify-end border-t p-6">
                             <Button variant="outline" className="mr-4">Cancelar</Button>
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleSave} disabled={isLoading}>
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handlePasswordChange} disabled={isLoading}>
                                 Alterar Senha
                             </Button>
                         </CardFooter>
