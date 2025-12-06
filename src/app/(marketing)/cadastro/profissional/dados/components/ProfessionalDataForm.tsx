@@ -70,12 +70,12 @@ export function ProfessionalDataForm() {
     }
 
     return (
-        <div className="space-y-8">
-            <div>
+        <>
+            <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight">
                     Dados Profissionais
                 </h1>
-                <p className="text-muted-foreground mt-2">
+                <p className="text-muted-foreground">
                     Complete suas informações profissionais para continuar.
                 </p>
             </div>
@@ -316,7 +316,7 @@ export function ProfessionalDataForm() {
                     </div>
                 </form>
             </Form>
-        </div>
+        </>
     )
 }
 
