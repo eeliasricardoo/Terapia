@@ -24,9 +24,16 @@ create policy "Users can update own profile"
 create table public.psychologists (
   id uuid references public.profiles(id) on delete cascade not null primary key,
   name text not null,
-  crp text not null,
+  university text,
+  academic_level text,
+  title text,
+  registration_number text,
+  expiration_date date,
+  years_of_experience integer,
   bio text,
   avatar_url text,
+  diploma_url text,
+  license_url text,
   price decimal(10,2),
   specialties text[], -- Array of strings
   availability jsonb, -- JSON structure for schedule
