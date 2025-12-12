@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
     Form,
@@ -16,56 +16,22 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
+import { PhoneInput } from "@/components/ui/phone-input"
+import type { E164Number } from "react-phone-number-input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { ArrowLeft, ArrowRight } from "lucide-react"
-import { useRouter } from "next/navigation"
-
-const formSchema = z.object({
-    name: z.string().min(2, {
-        message: "Nome deve ter pelo menos 2 caracteres.",
-    }),
-    email: z.string().email({
-        message: "Email inválido.",
-    }),
-    document: z.string().min(6, {
-        message: "Cédula deve ter no mínimo 6 dígitos.",
-    }).max(10, {
-        message: "Cédula deve ter no máximo 10 dígitos.",
-    }).regex(/^\d+$/, {
-        message: "Cédula deve conter apenas números.",
-    }),
-    phone: z.string().min(10, {
-        message: "Telefone inválido.",
-    }),
-    birthDate: z.string().refine((value) => {
-        const date = new Date(value)
-        const now = new Date()
-        const age = now.getFullYear() - date.getFullYear()
-        return age >= 18
-    }, {
-        message: "Você deve ter pelo menos 18 anos.",
-    }),
-    password: z.string()
-        .min(8, { message: "Senha deve ter pelo menos 8 caracteres." })
-        .regex(/[A-Z]/, { message: "Senha deve conter pelo menos uma letra maiúscula." })
-        .regex(/[a-z]/, { message: "Senha deve conter pelo menos uma letra minúscula." })
-        .regex(/[0-9]/, { message: "Senha deve conter pelo menos um número." })
-        .regex(/[\W_]/, { message: "Senha deve conter pelo menos um caractere especial." }),
-    confirmPassword: z.string(),
-    terms: z.boolean().refine((value) => value === true, {
-        message: "Você deve aceitar os termos de uso.",
-    }),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "As senhas não coincidem.",
-    path: ["confirmPassword"],
-})
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react"
+import { registrationSchema, type RegistrationInput } from "@/lib/validations/registration"
+import { registerPatient } from "@/app/actions/auth"
+import { toast } from "sonner"
+import { maskCPF, cleanCPF, isValidCPF } from "@/lib/utils/cpf"
 
 export function RegistrationForm() {
     const router = useRouter()
     const [step, setStep] = useState(1)
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const [isPending, startTransition] = useTransition()
+    const form = useForm<RegistrationInput>({
+        resolver: zodResolver(registrationSchema),
         defaultValues: {
             name: "",
             email: "",
@@ -76,14 +42,43 @@ export function RegistrationForm() {
             confirmPassword: "",
             terms: false,
         },
-        shouldUnregister: false,
-        mode: "onChange",
+        mode: "onChange", // Validação em tempo real
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // TODO: Integrate with Supabase Auth
-        // router.push("/onboarding")
-        window.location.href = "/onboarding"
+    const { formState: { isDirty, isValid, errors } } = form
+
+    async function onSubmit(values: RegistrationInput) {
+        startTransition(async () => {
+            const formData = new FormData()
+            formData.append("name", values.name)
+            formData.append("email", values.email)
+            formData.append("document", values.document)
+            formData.append("phone", values.phone)
+            formData.append("birthDate", values.birthDate)
+            formData.append("password", values.password)
+            formData.append("confirmPassword", values.confirmPassword)
+            formData.append("terms", values.terms.toString())
+
+            const result = await registerPatient(formData)
+
+            if (!result.success) {
+                if (result.fieldErrors) {
+                    // Aplicar erros de campo
+                    Object.entries(result.fieldErrors).forEach(([field, messages]) => {
+                        form.setError(field as keyof RegistrationInput, {
+                            type: "server",
+                            message: messages[0],
+                        })
+                    })
+                } else if (result.error) {
+                    toast.error(result.error)
+                }
+            } else {
+                toast.success("Conta criada com sucesso!")
+                // Redirecionar após sucesso
+                router.push("/onboarding")
+            }
+        })
     }
 
     const nextStep = async () => {
@@ -93,21 +88,25 @@ export function RegistrationForm() {
         }
     }
 
+    // Verificar se o step 1 está válido (apenas CPF)
+    const documentValue = form.watch("document")
+    const cleanedCPF = documentValue ? cleanCPF(documentValue) : ""
+    const isStep1Valid = step === 1 && 
+      documentValue && 
+      cleanedCPF.length === 11 &&
+      isValidCPF(documentValue) &&
+      !form.formState.errors.document
+
+    // Verificar se o step 2 está válido e dirty
+    const isStep2Valid = step === 2 && isValid && isDirty
+
     const prevStep = () => {
         setStep(1)
     }
 
-    // Simple masking functions
+    // Máscara de CPF
     const maskDocument = (value: string) => {
-        return value.replace(/\D/g, "").slice(0, 10)
-    }
-
-    const maskPhone = (value: string) => {
-        return value
-            .replace(/\D/g, "")
-            .replace(/(\d{3})(\d)/, "$1 $2")
-            .replace(/(\d{3})(\d)/, "$1 $2")
-            .replace(/(\d{4})\d+?$/, "$1")
+        return maskCPF(value)
     }
 
     return (
@@ -133,26 +132,32 @@ export function RegistrationForm() {
                                     name="document"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Cédula de Ciudadanía</FormLabel>
+                                            <FormLabel>CPF</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="1234567890"
+                                                    placeholder="000.000.000-00"
+                                                    maxLength={14}
                                                     {...field}
                                                     onChange={(e) => {
-                                                        field.onChange(maskDocument(e.target.value))
+                                                        const masked = maskDocument(e.target.value)
+                                                        field.onChange(masked)
                                                     }}
                                                 />
                                             </FormControl>
+                                            <FormDescription>
+                                                Digite apenas os números do seu CPF
+                                            </FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <Button
                                     type="button"
-                                    onClick={() => setStep(2)}
+                                    onClick={nextStep}
                                     className="w-full"
+                                    disabled={!isStep1Valid}
                                 >
-                                    Continuar (Debug: Sem Validação) <ArrowRight className="ml-2 h-4 w-4" />
+                                    Continuar <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
                             </div>
                         )}
@@ -194,12 +199,13 @@ export function RegistrationForm() {
                                             <FormItem>
                                                 <FormLabel>Celular</FormLabel>
                                                 <FormControl>
-                                                    <Input
-                                                        placeholder="300 123 4567"
-                                                        {...field}
-                                                        onChange={(e) => {
-                                                            field.onChange(maskPhone(e.target.value))
+                                                    <PhoneInput
+                                                        value={field.value as E164Number | undefined}
+                                                        onChange={(value) => {
+                                                            field.onChange(value || "")
                                                         }}
+                                                        defaultCountry="BR"
+                                                        placeholder="(00) 00000-0000"
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -312,11 +318,18 @@ export function RegistrationForm() {
                                         <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
                                     </Button>
                                     <Button
-                                        type="button"
+                                        type="submit"
                                         className="w-full"
-                                        onClick={() => window.location.href = "/onboarding"}
+                                        disabled={!isStep2Valid || isPending}
                                     >
-                                        Criar Conta (Debug: Sem Validação)
+                                        {isPending ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Criando conta...
+                                            </>
+                                        ) : (
+                                            "Criar Conta"
+                                        )}
                                     </Button>
                                 </div>
                             </div>

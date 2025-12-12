@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/components/providers/session-provider";
 
 
 const inter = Inter({
@@ -30,7 +31,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${outfit.variable} antialiased font-sans`}
       >
-        <main className="flex-1">{children}</main>
+        <AuthProvider>
+          <main className="flex-1">{children}</main>
+        </AuthProvider>
       </body>
     </html>
   );

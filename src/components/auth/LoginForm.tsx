@@ -1,8 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
     Form,
@@ -15,28 +17,46 @@ import {
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-
-const formSchema = z.object({
-    email: z.string().optional(),
-    password: z.string().optional(),
-})
+import { loginSchema, type LoginInput } from "@/lib/validations/auth"
+import { toast } from "sonner"
 
 export function LoginForm() {
     const router = useRouter()
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const [isLoading, setIsLoading] = useState(false)
+    
+    const form = useForm<LoginInput>({
+        resolver: zodResolver(loginSchema),
         defaultValues: {
             email: "",
             password: "",
         },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values)
-        // TODO: Integrate with Supabase Auth
-        // For now, redirect to dashboard or home
-        router.push("/dashboard")
+    async function onSubmit(values: LoginInput) {
+        setIsLoading(true)
+        
+        try {
+            const result = await signIn("credentials", {
+                email: values.email,
+                password: values.password,
+                redirect: false,
+            })
+
+            if (result?.error) {
+                toast.error("Credenciais inválidas")
+                return
+            }
+
+            if (result?.ok) {
+                toast.success("Login realizado com sucesso!")
+                router.push("/dashboard")
+                router.refresh()
+            }
+        } catch (error) {
+            toast.error("Erro ao fazer login. Tente novamente.")
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     return (
@@ -76,8 +96,8 @@ export function LoginForm() {
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit" className="w-full">
-                            Entrar
+                        <Button type="submit" className="w-full" disabled={isLoading}>
+                            {isLoading ? "Entrando..." : "Entrar"}
                         </Button>
                     </form>
                 </Form>
