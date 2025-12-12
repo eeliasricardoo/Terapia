@@ -14,3 +14,4 @@ rl.question('Digite a senha do banco: ', (password) => {
   rl.close();
 });
 
+
