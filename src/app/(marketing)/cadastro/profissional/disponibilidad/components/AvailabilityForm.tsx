@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -96,6 +97,7 @@ const generateTimeSlots = (sessionDuration: number, interval: number = 10) => {
 }
 
 export function AvailabilityForm() {
+  const router = useRouter()
   const [selectedTimes, setSelectedTimes] = useState<string[]>([])
   const [isNotAvailable, setIsNotAvailable] = useState(false)
   const [openDialog, setOpenDialog] = useState(false)
@@ -729,6 +731,29 @@ export function AvailabilityForm() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Navigation Buttons */}
+      <div className="flex justify-between pt-6 border-t">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.push('/cadastro/profissional/dados')}
+        >
+          Voltar
+        </Button>
+        <Button
+          type="button"
+          onClick={() => router.push('/cadastro/profissional/pagamento')}
+          disabled={recurringSchedules.length === 0 && specificDateSchedules.length === 0}
+          className="font-bold"
+          style={{
+            backgroundColor: 'hsl(340 72% 61%)',
+            color: 'white'
+          }}
+        >
+          Siguiente
+        </Button>
+      </div>
 
     </Form>
   )
