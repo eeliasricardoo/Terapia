@@ -121,6 +121,19 @@ export function RegistrationForm() {
                         : "Preencha seus dados para finalizar o cadastro."}
                 </CardDescription>
             </CardHeader>
+            {step === 1 && (
+                <div className="px-6 pb-4">
+                    <p className="text-sm text-muted-foreground text-center">
+                        É um profissional?{" "}
+                        <Link 
+                            href="/cadastro/profissional" 
+                            className="text-primary hover:underline font-medium"
+                        >
+                            Cadastre-se como especialista
+                        </Link>
+                    </p>
+                </div>
+            )}
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

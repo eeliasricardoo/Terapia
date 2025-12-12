@@ -1,8 +1,9 @@
 "use client"
 
+import { useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
     Form,
@@ -20,30 +21,17 @@ import { Hero } from "./Hero"
 import { PasswordInput } from "./PasswordInput"
 import { DividerWithText } from "./DividerWithText"
 import { SocialLoginButtons } from "./SocialLoginButtons"
-
-const formSchema = z.object({
-    name: z.string().min(2, {
-        message: "O nome deve ter pelo menos 2 caracteres.",
-    }),
-    email: z.string().email({
-        message: "E-mail inválido.",
-    }),
-    password: z.string()
-        .min(8, { message: "A senha deve ter pelo menos 8 caracteres." })
-        .regex(/[A-Z]/, { message: "A senha deve conter pelo menos uma letra maiúscula." })
-        .regex(/[a-z]/, { message: "A senha deve conter pelo menos uma letra minúscula." })
-        .regex(/[0-9]/, { message: "A senha deve conter pelo menos um número." }),
-    professionalCard: z.string().min(6, {
-        message: "O número da carteira profissional deve ter pelo menos 6 caracteres.",
-    }),
-    terms: z.literal(true, {
-        errorMap: () => ({ message: "Você deve aceitar os termos de serviço." }),
-    }),
-})
+import { professionalRegistrationSchema, type ProfessionalRegistrationInput } from "@/lib/validations/professional-registration"
+import { registerProfessional } from "@/app/actions/auth"
+import { toast } from "sonner"
+import { Loader2 } from "lucide-react"
+import { maskCRP } from "@/lib/utils/crp"
 
 export function RegistrationForm() {
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const router = useRouter()
+    const [isPending, startTransition] = useTransition()
+    const form = useForm<ProfessionalRegistrationInput>({
+        resolver: zodResolver(professionalRegistrationSchema),
         defaultValues: {
             name: "",
             email: "",
@@ -54,9 +42,35 @@ export function RegistrationForm() {
         mode: "onChange",
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // TODO: Integrate with Supabase Auth
-        console.log(values)
+    const { formState: { isDirty, isValid } } = form
+
+    async function onSubmit(values: ProfessionalRegistrationInput) {
+        startTransition(async () => {
+            const formData = new FormData()
+            formData.append("name", values.name)
+            formData.append("email", values.email)
+            formData.append("password", values.password)
+            formData.append("professionalCard", values.professionalCard)
+            formData.append("terms", values.terms.toString())
+
+            const result = await registerProfessional(formData)
+
+            if (!result.success) {
+                if (result.fieldErrors) {
+                    Object.entries(result.fieldErrors).forEach(([field, messages]) => {
+                        form.setError(field as keyof ProfessionalRegistrationInput, {
+                            type: "server",
+                            message: messages[0],
+                        })
+                    })
+                } else if (result.error) {
+                    toast.error(result.error)
+                }
+            } else {
+                toast.success("Conta criada com sucesso!")
+                router.push("/cadastro/profissional/dados")
+            }
+        })
     }
 
     return (
@@ -125,16 +139,21 @@ export function RegistrationForm() {
                         name="professionalCard"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Número da Carteira Profissional</FormLabel>
+                                <FormLabel>Número da Carteira Profissional (CRP)</FormLabel>
                                 <FormControl>
                                     <Input
                                         className="h-[44px]"
-                                        placeholder="Digite seu número de licença"
+                                        placeholder="XX/XXXXX"
+                                        maxLength={8}
                                         {...field}
+                                        onChange={(e) => {
+                                            const masked = maskCRP(e.target.value)
+                                            field.onChange(masked)
+                                        }}
                                     />
                                 </FormControl>
                                 <FormDescription>
-                                    Este número é necessário para verificar suas credenciais profissionais.
+                                    Digite seu CRP no formato XX/XXXXX (ex: 06/123456)
                                 </FormDescription>
                                 <FormMessage />
                             </FormItem>
@@ -176,9 +195,16 @@ export function RegistrationForm() {
                         type="submit" 
                         className="w-full font-bold" 
                         size="lg"
-                        disabled={!form.formState.isValid}
+                        disabled={!isValid || !isDirty || isPending}
                     >
-                        Criar Conta
+                        {isPending ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Criando conta...
+                            </>
+                        ) : (
+                            "Criar Conta"
+                        )}
                     </Button>
                 </form>
             </Form>
