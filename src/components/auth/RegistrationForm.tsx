@@ -64,7 +64,7 @@ export function RegistrationForm() {
                         toast.error(error.message || 'Erro ao criar conta. Tente novamente.')
                     }
                 } else {
-                    toast.success("Conta criada com sucesso! Verifique seu email.")
+                    toast.success("Conta criada com sucesso! Enviamos um email de confirmação. Por favor, verifique sua caixa de entrada e confirme seu email antes de fazer login.")
                     router.push("/login/paciente")
                 }
             } catch (error) {
