@@ -6,7 +6,8 @@ import { Calendar, Clock, Video, FileText, Download } from "lucide-react"
 import { ReceiptDialog } from "@/components/dashboard/ReceiptDialog"
 import { RescheduleDialog } from "@/components/dashboard/RescheduleDialog"
 
-// Mock data
+// TODO: Replace with real session data when sessions table is created
+// Mock data for sessions
 const SESSIONS = [
     {
         id: 1,

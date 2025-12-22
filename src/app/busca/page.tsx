@@ -11,72 +11,12 @@ import { Footer } from "@/components/layout/Footer"
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar"
 import Link from "next/link"
 import { MobileNav } from "@/components/dashboard/MobileNav"
+import { getPsychologists } from "@/lib/actions/psychologists"
 
-// Mock data for psychologists
-const PSYCHOLOGISTS = [
-    {
-        id: 1,
-        name: "Dra. Ana María Rojas",
-        title: "Psicóloga Clínica",
-        rating: 4.9,
-        reviews: 123,
-        tags: ["Ansiedade", "TCC"],
-        image: "/avatars/01.png",
-        price: 150
-    },
-    {
-        id: 2,
-        name: "Dr. Carlos Fuentes",
-        title: "Terapia de Casal",
-        rating: 4.8,
-        reviews: 98,
-        tags: ["Relacionamentos", "Comunicação"],
-        image: "/avatars/02.png",
-        price: 180
-    },
-    {
-        id: 3,
-        name: "Dra. Sofia Vergara",
-        title: "Psicóloga Infantil",
-        rating: 5.0,
-        reviews: 76,
-        tags: ["Crianças", "Família"],
-        image: "/avatars/03.png",
-        price: 160
-    },
-    {
-        id: 4,
-        name: "Dra. Isabella Gómez",
-        title: "Psicóloga Clínica",
-        rating: 4.9,
-        reviews: 110,
-        tags: ["Depressão", "Mindfulness"],
-        image: "/avatars/04.png",
-        price: 140
-    },
-    {
-        id: 5,
-        name: "Dr. Juan David Pérez",
-        title: "Terapia Humanista",
-        rating: 4.7,
-        reviews: 85,
-        tags: ["Autoestima", "Crescimento"],
-        image: "/avatars/05.png",
-        price: 170
-    },
-    {
-        id: 6,
-        name: "Dra. Valentina Ortiz",
-        title: "Neuropsicologia",
-        rating: 4.9,
-        reviews: 150,
-        tags: ["Avaliação", "TDAH"],
-        image: "/avatars/06.png",
-        price: 200
-    },
-]
+export default async function SearchPage() {
+    // Fetch real psychologists from database
+    const psychologists = await getPsychologists()
 
-export default function SearchPage() {
     return (
         <div className="min-h-screen flex flex-col bg-slate-50/50">
             <MobileNav />
@@ -163,7 +103,7 @@ export default function SearchPage() {
                         {/* Results Grid */}
                         <div className="flex-1">
                             <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <p className="text-sm text-muted-foreground">Mostrando 6 de 150 psicólogos</p>
+                                <p className="text-sm text-muted-foreground">Mostrando {psychologists.length} psicólogos</p>
                                 <div className="flex flex-wrap gap-2">
                                     <Badge variant="secondary" className="px-3 py-1 cursor-pointer hover:bg-secondary/80 transition-colors text-blue-600 bg-blue-50 hover:bg-blue-100 border-blue-100">
                                         Ansiedade &times;
@@ -175,43 +115,50 @@ export default function SearchPage() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {PSYCHOLOGISTS.map((doctor) => (
-                                    <Card key={doctor.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-slate-200">
-                                        <CardContent className="p-6 flex flex-col items-center text-center">
-                                            <div className="mb-4 relative">
-                                                <Avatar className="h-24 w-24 border-4 border-white shadow-md">
-                                                    <AvatarImage src={doctor.image} />
-                                                    <AvatarFallback className="text-2xl bg-slate-100 text-slate-400">
-                                                        {doctor.name.charAt(0)}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                            </div>
+                                {psychologists.map((psychologist) => {
+                                    const profile = psychologist.profile
+                                    const displayName = profile?.full_name || 'Psicólogo'
+                                    const firstSpecialty = psychologist.specialties?.[0] || 'Psicologia'
+                                    const price = psychologist.price_per_session ? Number(psychologist.price_per_session) : 0
 
-                                            <h3 className="font-bold text-lg mb-1 text-slate-900">{doctor.name}</h3>
-                                            <p className="text-sm text-muted-foreground mb-3">{doctor.title}</p>
+                                    return (
+                                        <Card key={psychologist.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-slate-200">
+                                            <CardContent className="p-6 flex flex-col items-center text-center">
+                                                <div className="mb-4 relative">
+                                                    <Avatar className="h-24 w-24 border-4 border-white shadow-md">
+                                                        <AvatarImage src={profile?.avatar_url || undefined} />
+                                                        <AvatarFallback className="text-2xl bg-slate-100 text-slate-400">
+                                                            {displayName.charAt(0)}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                </div>
 
-                                            <div className="flex items-center justify-center gap-1 mb-4 bg-yellow-50 px-3 py-1 rounded-full">
-                                                <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                                                <span className="font-bold text-sm text-slate-700">{doctor.rating}</span>
-                                                <span className="text-muted-foreground text-xs">({doctor.reviews})</span>
-                                            </div>
+                                                <h3 className="font-bold text-lg mb-1 text-slate-900">{displayName}</h3>
+                                                <p className="text-sm text-muted-foreground mb-3">{firstSpecialty}</p>
 
-                                            <div className="flex flex-wrap justify-center gap-2 mb-6">
-                                                {doctor.tags.map(tag => (
-                                                    <Badge key={tag} variant="secondary" className="font-normal text-xs bg-slate-100 text-slate-600 hover:bg-slate-200">
-                                                        {tag}
-                                                    </Badge>
-                                                ))}
-                                            </div>
+                                                <div className="flex items-center justify-center gap-1 mb-4 bg-yellow-50 px-3 py-1 rounded-full">
+                                                    <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                                                    <span className="font-bold text-sm text-slate-700">4.9</span>
+                                                    <span className="text-muted-foreground text-xs">(0)</span>
+                                                </div>
 
-                                            <Button asChild className="w-full bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border-none shadow-none font-semibold h-10">
-                                                <Link href={`/psicologo/${doctor.id}`}>
-                                                    Ver Perfil
-                                                </Link>
-                                            </Button>
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                                                <div className="flex flex-wrap justify-center gap-2 mb-6">
+                                                    {psychologist.specialties?.slice(0, 2).map((specialty) => (
+                                                        <Badge key={specialty} variant="secondary" className="font-normal text-xs bg-slate-100 text-slate-600 hover:bg-slate-200">
+                                                            {specialty}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+
+                                                <Button asChild className="w-full bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border-none shadow-none font-semibold h-10">
+                                                    <Link href={`/psicologo/${psychologist.user_id}`}>
+                                                        Ver Perfil
+                                                    </Link>
+                                                </Button>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                })}
                             </div>
 
                             {/* Pagination */}

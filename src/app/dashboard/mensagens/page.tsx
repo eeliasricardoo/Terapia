@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Search, Send, Phone, Video, MoreVertical, Paperclip } from "lucide-react"
 
-// Mock Data
+// TODO: Replace with real messaging data when messaging system is implemented
+// Mock Data for conversations and messages
 const CONVERSATIONS = [
     {
         id: 1,
@@ -155,8 +156,8 @@ export default function MessagesPage() {
                         >
                             <div
                                 className={`max-w-[80%] rounded-2xl p-3 px-4 ${msg.sender === 'me'
-                                        ? 'bg-primary text-primary-foreground rounded-br-none'
-                                        : 'bg-white border rounded-bl-none shadow-sm'
+                                    ? 'bg-primary text-primary-foreground rounded-br-none'
+                                    : 'bg-white border rounded-bl-none shadow-sm'
                                     }`}
                             >
                                 <p className="text-sm">{msg.content}</p>
