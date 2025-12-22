@@ -21,29 +21,18 @@ export const registrationSchema = z.object({
     .refine((value) => isValidCPF(value), {
       message: "CPF inválido. Verifique os dígitos.",
     }),
-  phone: z.string()
-    .min(1, {
-      message: "Telefone é obrigatório.",
-    })
-    .refine((value) => {
-      // Remove código do país e espaços para validar
-      const cleaned = value.replace(/^\+\d+\s*/, "").replace(/\D/g, "")
-      // Mínimo 10 dígitos (sem código do país)
-      return cleaned.length >= 10
-    }, {
-      message: "Telefone deve ter pelo menos 10 dígitos.",
-    }),
+  phone: z.string().optional(),
   birthDate: z.string().refine((value) => {
     const date = new Date(value)
     const now = new Date()
     const age = now.getFullYear() - date.getFullYear()
     const monthDiff = now.getMonth() - date.getMonth()
     const dayDiff = now.getDate() - date.getDate()
-    
-    const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) 
-      ? age - 1 
+
+    const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)
+      ? age - 1
       : age
-    
+
     return actualAge >= 18
   }, {
     message: "Você deve ter pelo menos 18 anos.",
