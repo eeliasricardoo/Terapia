@@ -1,22 +1,38 @@
 "use client"
 
+import { auth } from "@/lib/supabase/auth"
+import { toast } from "sonner"
+import { useState } from "react"
+
 export function SocialLoginButtons() {
-    const handleGoogleLogin = () => {
-        // TODO: Implement Google OAuth
-        console.log("Google signup")
+    const [loading, setLoading] = useState(false)
+
+    const handleGoogleLogin = async () => {
+        setLoading(true)
+        try {
+            const { error } = await auth.signInWithOAuth('google')
+            if (error) {
+                toast.error(error.message)
+                setLoading(false)
+            }
+        } catch (error) {
+            toast.error('Erro ao fazer login com Google')
+            setLoading(false)
+        }
     }
 
     const handleLinkedInLogin = () => {
-        // TODO: Implement LinkedIn OAuth
-        console.log("LinkedIn signup")
+        // TODO: Implement LinkedIn OAuth when available in Supabase
+        toast.info("Login com LinkedIn em breve!")
     }
 
     return (
         <div className="grid grid-cols-2 gap-4">
             <button
                 type="button"
-                className="flex items-center justify-center gap-2 w-full h-[44px] px-4 bg-white border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-center gap-2 w-full h-[44px] px-4 bg-white border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleGoogleLogin}
+                disabled={loading}
             >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                     <path

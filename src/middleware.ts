@@ -1,18 +1,38 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { getToken } from "next-auth/jwt"
+import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
-  const token = await getToken({ 
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET 
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
   })
 
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value)
+            response.cookies.set(name, value, options)
+          })
+        },
+      },
+    }
+  )
+
+  const { data: { session } } = await supabase.auth.getSession()
   const { pathname } = request.nextUrl
 
   // Protect dashboard and admin routes
   if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
-    if (!token) {
+    if (!session) {
       const url = request.nextUrl.clone()
       url.pathname = "/login/paciente"
       return NextResponse.redirect(url)
@@ -20,13 +40,13 @@ export async function middleware(request: NextRequest) {
   }
 
   // Redirect authenticated users away from login/register
-  if ((pathname.startsWith("/login") || pathname.startsWith("/cadastro")) && token) {
+  if ((pathname.startsWith("/login") || pathname.startsWith("/cadastro")) && session) {
     const url = request.nextUrl.clone()
     url.pathname = "/dashboard"
     return NextResponse.redirect(url)
   }
 
-  return NextResponse.next()
+  return response
 }
 
 export const config = {

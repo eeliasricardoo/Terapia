@@ -22,10 +22,10 @@ import { PasswordInput } from "./PasswordInput"
 import { DividerWithText } from "./DividerWithText"
 import { SocialLoginButtons } from "./SocialLoginButtons"
 import { professionalRegistrationSchema, type ProfessionalRegistrationInput } from "@/lib/validations/professional-registration"
-import { registerProfessional } from "@/app/actions/auth"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 import { maskCRP } from "@/lib/utils/crp"
+import { auth } from "@/lib/supabase/auth"
 
 export function RegistrationForm() {
     const router = useRouter()
@@ -46,29 +46,27 @@ export function RegistrationForm() {
 
     async function onSubmit(values: ProfessionalRegistrationInput) {
         startTransition(async () => {
-            const formData = new FormData()
-            formData.append("name", values.name)
-            formData.append("email", values.email)
-            formData.append("password", values.password)
-            formData.append("professionalCard", values.professionalCard)
-            formData.append("terms", values.terms.toString())
+            try {
+                const { error } = await auth.signUp(values.email, values.password, {
+                    role: 'PSYCHOLOGIST',
+                    full_name: values.name,
+                    // CRP será armazenado no perfil de psicólogo posteriormente
+                })
 
-            const result = await registerProfessional(formData)
-
-            if (!result.success) {
-                if (result.fieldErrors) {
-                    Object.entries(result.fieldErrors).forEach(([field, messages]) => {
-                        form.setError(field as keyof ProfessionalRegistrationInput, {
-                            type: "server",
-                            message: messages[0],
-                        })
-                    })
-                } else if (result.error) {
-                    toast.error(result.error)
+                if (error) {
+                    if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+                        toast.error('E-mail já cadastrado. Tente fazer login ou recuperar sua senha.')
+                    } else {
+                        toast.error(error.message || 'Erro ao criar conta. Tente novamente.')
+                    }
+                } else {
+                    toast.success("Conta criada com sucesso!")
+                    // Redirecionar para completar dados profissionais
+                    router.push("/cadastro/profissional/dados")
                 }
-            } else {
-                toast.success("Conta criada com sucesso!")
-                router.push("/cadastro/profissional/dados")
+            } catch (error) {
+                console.error('Registration error:', error)
+                toast.error('Erro ao criar conta. Tente novamente mais tarde.')
             }
         })
     }
@@ -191,9 +189,9 @@ export function RegistrationForm() {
                         )}
                     />
 
-                    <Button 
-                        type="submit" 
-                        className="w-full font-bold" 
+                    <Button
+                        type="submit"
+                        className="w-full font-bold"
                         size="lg"
                         disabled={!isValid || !isDirty || isPending}
                     >
