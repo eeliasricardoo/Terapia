@@ -17,14 +17,13 @@ import {
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { PhoneInput } from "@/components/ui/phone-input"
-import type { E164Number } from "react-phone-number-input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react"
 import { registrationSchema, type RegistrationInput } from "@/lib/validations/registration"
-import { registerPatient } from "@/app/actions/auth"
 import { toast } from "sonner"
 import { maskCPF, cleanCPF, isValidCPF } from "@/lib/utils/cpf"
+import { auth } from "@/lib/supabase/auth"
 
 export function RegistrationForm() {
     const router = useRouter()
@@ -49,34 +48,28 @@ export function RegistrationForm() {
 
     async function onSubmit(values: RegistrationInput) {
         startTransition(async () => {
-            const formData = new FormData()
-            formData.append("name", values.name)
-            formData.append("email", values.email)
-            formData.append("document", values.document)
-            formData.append("phone", values.phone)
-            formData.append("birthDate", values.birthDate)
-            formData.append("password", values.password)
-            formData.append("confirmPassword", values.confirmPassword)
-            formData.append("terms", values.terms.toString())
+            try {
+                const { error } = await auth.signUp(values.email, values.password, {
+                    role: 'PATIENT',
+                    full_name: values.name,
+                    phone: values.phone,
+                    birth_date: values.birthDate,
+                    document: cleanCPF(values.document),
+                })
 
-            const result = await registerPatient(formData)
-
-            if (!result.success) {
-                if (result.fieldErrors) {
-                    // Aplicar erros de campo
-                    Object.entries(result.fieldErrors).forEach(([field, messages]) => {
-                        form.setError(field as keyof RegistrationInput, {
-                            type: "server",
-                            message: messages[0],
-                        })
-                    })
-                } else if (result.error) {
-                    toast.error(result.error)
+                if (error) {
+                    if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+                        toast.error('E-mail já cadastrado. Tente fazer login ou recuperar sua senha.')
+                    } else {
+                        toast.error(error.message || 'Erro ao criar conta. Tente novamente.')
+                    }
+                } else {
+                    toast.success("Conta criada com sucesso! Verifique seu email.")
+                    router.push("/login/paciente")
                 }
-            } else {
-                toast.success("Conta criada com sucesso!")
-                // Redirecionar após sucesso
-                router.push("/onboarding")
+            } catch (error) {
+                console.error('Registration error:', error)
+                toast.error('Erro ao criar conta. Tente novamente mais tarde.')
             }
         })
     }
@@ -91,11 +84,11 @@ export function RegistrationForm() {
     // Verificar se o step 1 está válido (apenas CPF)
     const documentValue = form.watch("document")
     const cleanedCPF = documentValue ? cleanCPF(documentValue) : ""
-    const isStep1Valid = step === 1 && 
-      documentValue && 
-      cleanedCPF.length === 11 &&
-      isValidCPF(documentValue) &&
-      !form.formState.errors.document
+    const isStep1Valid = step === 1 &&
+        documentValue &&
+        cleanedCPF.length === 11 &&
+        isValidCPF(documentValue) &&
+        !form.formState.errors.document
 
     // Verificar se o step 2 está válido e dirty
     const isStep2Valid = step === 2 && isValid && isDirty
@@ -125,8 +118,8 @@ export function RegistrationForm() {
                 <div className="px-6 pb-4">
                     <p className="text-sm text-muted-foreground text-center">
                         É um profissional?{" "}
-                        <Link 
-                            href="/cadastro/profissional" 
+                        <Link
+                            href="/cadastro/profissional"
                             className="text-primary hover:underline font-medium"
                         >
                             Cadastre-se como especialista
@@ -213,7 +206,7 @@ export function RegistrationForm() {
                                                 <FormLabel>Celular</FormLabel>
                                                 <FormControl>
                                                     <PhoneInput
-                                                        value={field.value as E164Number | undefined}
+                                                        value={field.value}
                                                         onChange={(value) => {
                                                             field.onChange(value || "")
                                                         }}

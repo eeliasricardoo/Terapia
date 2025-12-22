@@ -2,13 +2,12 @@
 
 import * as React from "react"
 import PhoneInputWithCountry, { type Country } from "react-phone-number-input"
-import type { E164Number } from "react-phone-number-input"
 import "react-phone-number-input/style.css"
 import { cn } from "@/lib/utils"
 
 interface PhoneInputProps {
   value?: string
-  onChange?: (value: E164Number | undefined) => void
+  onChange?: (value: string | undefined) => void
   defaultCountry?: Country
   className?: string
   placeholder?: string
@@ -29,8 +28,8 @@ export function PhoneInput({
       <PhoneInputWithCountry
         international
         defaultCountry={defaultCountry}
-        value={value as E164Number | undefined}
-        onChange={onChange}
+        value={value as any}
+        onChange={onChange as any}
         disabled={disabled}
         className={cn(
           "PhoneInput",
