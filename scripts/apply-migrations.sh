@@ -1,31 +1,32 @@
 #!/bin/bash
-# Script to apply Supabase migrations
-# This script applies all pending migrations to the Supabase database
+# Quick guide to apply Supabase migration
 
-set -e
+echo "🔍 Checking for Supabase CLI..."
 
-echo "🔄 Applying Supabase migrations..."
-
-# Check if NEXT_PUBLIC_SUPABASE_URL is set
-if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then
-  echo "❌ Error: NEXT_PUBLIC_SUPABASE_URL is not set"
-  echo "Please set your Supabase URL in .env.local"
-  exit 1
+if ! command -v supabase &> /dev/null; then
+    echo "❌ Supabase CLI not found"
+    echo ""
+    echo "📋 To apply the migration, use one of these options:"
+    echo ""
+    echo "Option 1: Supabase Dashboard (RECOMMENDED)"
+    echo "  1. Go to https://app.supabase.com"
+    echo "  2. Select your project"
+    echo "  3. Navigate to SQL Editor"
+    echo "  4. Click 'New Query'"
+    echo "  5. Copy and paste the content from:"
+    echo "     supabase/migrations/002_psychologists_seed.sql"
+    echo "  6. Click 'Run'"
+    echo ""
+    echo "Option 2: Install Supabase CLI"
+    echo "  macOS: brew install supabase/tap/supabase"
+    echo "  Then run: supabase db push"
+    echo ""
+    echo "Option 3: Use psql directly"
+    echo "  Get your connection string from Supabase Dashboard"
+    echo "  Run: psql 'your-connection-string' -f supabase/migrations/002_psychologists_seed.sql"
+    exit 1
 fi
 
-# Apply migrations using psql or Supabase CLI
-# Note: This requires Supabase CLI to be installed
-# Install with: npm install -g supabase
-
-if command -v supabase &> /dev/null; then
-  echo "✅ Supabase CLI found"
-  supabase db push
-else
-  echo "⚠️  Supabase CLI not found"
-  echo "Please apply migrations manually through Supabase Dashboard:"
-  echo "1. Go to your Supabase project dashboard"
-  echo "2. Navigate to SQL Editor"
-  echo "3. Copy and paste the contents of supabase/migrations/*.sql"
-  echo ""
-  echo "Or install Supabase CLI with: npm install -g supabase"
-fi
+echo "✅ Supabase CLI found"
+echo "🚀 Applying migrations..."
+supabase db push
