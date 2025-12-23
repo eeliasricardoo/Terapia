@@ -51,9 +51,8 @@ export function PhoneInput({
         countrySelectProps={{
           className: cn(
             "PhoneInputCountrySelect",
-            "flex h-full items-center justify-center rounded-l-md border-0 bg-transparent px-2 text-sm shrink-0",
-            "focus-visible:outline-none",
-            "border-r border-input"
+            "flex h-full items-center justify-center border-0 bg-transparent px-3 text-sm shrink-0",
+            "focus-visible:outline-none"
           ),
         }}
         {...props}

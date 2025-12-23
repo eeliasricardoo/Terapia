@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,22 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// NextAuth required models
 model User {
-  id            String    @id @default(uuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?   // Hashed password for credentials provider
-  role          UserRole  @default(PATIENT)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  accounts      Account[]
-  sessions      Session[]
-  profile       Profile?
+  id                  String               @id @default(uuid())
+  name                String?
+  email               String               @unique
+  emailVerified       DateTime?
+  image               String?
+  password            String?
+  role                UserRole             @default(PATIENT)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  accounts            Account[]
+  profiles            Profile?
   psychologistProfile PsychologistProfile?
+  sessions            Session[]
 
   @@map("users")
 }
@@ -36,15 +31,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?  @db.Text
-  access_token      String?  @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?  @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -69,42 +63,41 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
-// User roles enum
+model Profile {
+  id        String    @id @default(uuid())
+  userId    String    @unique @map("user_id")
+  fullName  String?   @map("full_name")
+  avatarUrl String?   @map("avatar_url")
+  role      UserRole  @default(PATIENT)
+  phone     String?
+  birthDate DateTime? @map("birth_date") @db.Date
+  document  String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model PsychologistProfile {
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  crp                  String?  @unique
+  bio                  String?
+  specialties          String[] @default([])
+  pricePerSession      Decimal? @map("price_per_session") @db.Decimal(10, 2)
+  videoPresentationUrl String?  @map("video_presentation_url")
+  isVerified           Boolean  @default(false) @map("is_verified")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("psychologist_profiles")
+}
+
 enum UserRole {
   PATIENT
   PSYCHOLOGIST
   COMPANY
   ADMIN
-}
-
-// Profile - dados públicos/privados dos usuários
-model Profile {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  fullName  String?  @map("full_name")
-  avatarUrl String?  @map("avatar_url")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("profiles")
-}
-
-// Psychologist Profile - dados específicos para profissionais
-model PsychologistProfile {
-  id                    String   @id @default(uuid())
-  userId                String   @unique
-  crp                   String?  @unique
-  bio                   String?
-  specialties           String[] @default([])
-  pricePerSession       Decimal? @map("price_per_session") @db.Decimal(10, 2)
-  videoPresentationUrl  String?  @map("video_presentation_url")
-  isVerified            Boolean  @default(false) @map("is_verified")
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("psychologist_profiles")
 }

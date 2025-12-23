@@ -19,15 +19,17 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { PhoneInput } from "@/components/ui/phone-input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react"
+import { ArrowLeft, ArrowRight, Loader2, Check, X, ShieldCheck, Mail } from "lucide-react"
 import { registrationSchema, type RegistrationInput } from "@/lib/validations/registration"
 import { toast } from "sonner"
 import { maskCPF, cleanCPF, isValidCPF } from "@/lib/utils/cpf"
 import { auth } from "@/lib/supabase/auth"
+import { cn } from "@/lib/utils"
 
 export function RegistrationForm() {
     const router = useRouter()
     const [step, setStep] = useState(1)
+    const [otpCode, setOtpCode] = useState("")
     const [isPending, startTransition] = useTransition()
     const form = useForm<RegistrationInput>({
         resolver: zodResolver(registrationSchema),
@@ -64,8 +66,8 @@ export function RegistrationForm() {
                         toast.error(error.message || 'Erro ao criar conta. Tente novamente.')
                     }
                 } else {
-                    toast.success("Conta criada com sucesso! Enviamos um email de confirmação. Por favor, verifique sua caixa de entrada e confirme seu email antes de fazer login.")
-                    router.push("/login/paciente")
+                    toast.success("Conta criada! Enviamos um código para o seu e-mail.")
+                    setStep(3)
                 }
             } catch (error) {
                 console.error('Registration error:', error)
@@ -94,7 +96,31 @@ export function RegistrationForm() {
     const isStep2Valid = step === 2 && isValid && isDirty
 
     const prevStep = () => {
-        setStep(1)
+        if (step === 3) setStep(2)
+        else setStep(1)
+    }
+
+    const handleVerifyOTP = async () => {
+        if (otpCode.length !== 6) {
+            toast.error("Por favor, digite o código de 6 dígitos.")
+            return
+        }
+
+        startTransition(async () => {
+            try {
+                const { error } = await auth.verifyOtp(form.getValues("email"), otpCode, 'signup')
+
+                if (error) {
+                    toast.error(error.message || "Código inválido ou expirado.")
+                } else {
+                    toast.success("E-mail verificado com sucesso!")
+                    router.push("/login/paciente")
+                }
+            } catch (error) {
+                console.error('OTP verification error:', error)
+                toast.error('Erro ao verificar código. Tente novamente.')
+            }
+        })
     }
 
     // Máscara de CPF
@@ -103,36 +129,25 @@ export function RegistrationForm() {
     }
 
     return (
-        <Card className="w-full max-w-md mx-auto">
-            <CardHeader>
-                <CardTitle className="text-xl">
-                    {step === 1 ? "Identificação" : "Dados Pessoais"}
+        <Card className="w-full max-w-2xl mx-auto">
+            <CardHeader className="text-center pb-2">
+                <CardTitle className="text-2xl font-bold">
+                    {step === 1 ? "Criar conta" : step === 2 ? "Dados Pessoais" : "Verifique seu e-mail"}
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-base">
                     {step === 1
-                        ? "Informe seu documento para continuar."
-                        : "Preencha seus dados para finalizar o cadastro."}
+                        ? "Para começar, informe seu CPF"
+                        : step === 2
+                            ? "Preencha seus dados para finalizar o cadastro."
+                            : `Enviamos um código de confirmação para ${form.getValues("email")}`}
                 </CardDescription>
             </CardHeader>
-            {step === 1 && (
-                <div className="px-6 pb-4">
-                    <p className="text-sm text-muted-foreground text-center">
-                        É um profissional?{" "}
-                        <Link
-                            href="/cadastro/profissional"
-                            className="text-primary hover:underline font-medium"
-                        >
-                            Cadastre-se como especialista
-                        </Link>
-                    </p>
-                </div>
-            )}
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
                         {step === 1 && (
-                            <div className="space-y-4">
+                            <div className="space-y-6 max-w-sm mx-auto py-4">
                                 <FormField
                                     control={form.control}
                                     name="document"
@@ -143,14 +158,15 @@ export function RegistrationForm() {
                                                 <Input
                                                     placeholder="000.000.000-00"
                                                     maxLength={14}
+                                                    className="h-12 text-lg text-center tracking-widest"
                                                     {...field}
                                                     onChange={(e) => {
-                                                        const masked = maskDocument(e.target.value)
+                                                        const masked = maskCPF(e.target.value)
                                                         field.onChange(masked)
                                                     }}
                                                 />
                                             </FormControl>
-                                            <FormDescription>
+                                            <FormDescription className="text-center">
                                                 Digite apenas os números do seu CPF
                                             </FormDescription>
                                             <FormMessage />
@@ -160,11 +176,21 @@ export function RegistrationForm() {
                                 <Button
                                     type="button"
                                     onClick={nextStep}
-                                    className="w-full"
+                                    className="w-full h-12 text-base font-semibold transition-all hover:shadow-md"
                                     disabled={!isStep1Valid}
                                 >
                                     Continuar <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
+
+                                <p className="text-sm text-muted-foreground text-center pt-2">
+                                    É um profissional?{" "}
+                                    <Link
+                                        href="/cadastro/profissional"
+                                        className="text-blue-600 hover:underline font-medium"
+                                    >
+                                        Cadastre-se como especialista
+                                    </Link>
+                                </p>
                             </div>
                         )}
 
@@ -234,7 +260,7 @@ export function RegistrationForm() {
                                     )}
                                 />
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                                     <FormField
                                         control={form.control}
                                         name="password"
@@ -255,7 +281,7 @@ export function RegistrationForm() {
                                             ].filter(Boolean).length;
 
                                             return (
-                                                <FormItem>
+                                                <FormItem className="flex flex-col">
                                                     <FormLabel>Senha</FormLabel>
                                                     <FormControl>
                                                         <Input type="password" placeholder="Sua senha forte" {...field} />
@@ -264,18 +290,26 @@ export function RegistrationForm() {
                                                         {[...Array(5)].map((_, i) => (
                                                             <div
                                                                 key={i}
-                                                                className={`h-full w-full rounded-full transition-colors ${i < strength
-                                                                    ? strength <= 2
-                                                                        ? "bg-red-500"
-                                                                        : strength <= 4
-                                                                            ? "bg-yellow-500"
-                                                                            : "bg-green-500"
-                                                                    : "bg-gray-200"
-                                                                    }`}
+                                                                className={cn(
+                                                                    "h-full w-full rounded-full transition-colors",
+                                                                    i < strength
+                                                                        ? strength <= 2
+                                                                            ? "bg-red-500"
+                                                                            : strength <= 4
+                                                                                ? "bg-yellow-500"
+                                                                                : "bg-green-500"
+                                                                        : "bg-gray-200"
+                                                                )}
                                                             />
                                                         ))}
                                                     </div>
-                                                    <FormMessage />
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1 mt-3">
+                                                        <PasswordRequirement label="8+ caracteres" met={isLengthValid} />
+                                                        <PasswordRequirement label="Letra maiúscula" met={hasUpperCase} />
+                                                        <PasswordRequirement label="Letra minúscula" met={hasLowerCase} />
+                                                        <PasswordRequirement label="Um número" met={hasNumber} />
+                                                        <PasswordRequirement label="Caractere especial" met={hasSpecialChar} />
+                                                    </div>
                                                 </FormItem>
                                             )
                                         }}
@@ -284,7 +318,7 @@ export function RegistrationForm() {
                                         control={form.control}
                                         name="confirmPassword"
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="flex flex-col">
                                                 <FormLabel>Confirmar Senha</FormLabel>
                                                 <FormControl>
                                                     <Input type="password" placeholder="Confirme sua senha" {...field} />
@@ -319,7 +353,7 @@ export function RegistrationForm() {
                                     )}
                                 />
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-4 pt-4">
                                     <Button type="button" variant="outline" onClick={prevStep} className="w-full">
                                         <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
                                     </Button>
@@ -340,10 +374,77 @@ export function RegistrationForm() {
                                 </div>
                             </div>
                         )}
+
+                        {step === 3 && (
+                            <div className="space-y-6 max-w-sm mx-auto py-4 text-center">
+                                <div className="flex justify-center mb-4">
+                                    <div className="p-4 bg-blue-50 rounded-full">
+                                        <Mail className="h-8 w-8 text-blue-600" />
+                                    </div>
+                                </div>
+                                <div className="space-y-2 text-left">
+                                    <FormLabel className="text-sm font-medium">Código de Verificação</FormLabel>
+                                    <Input
+                                        type="text"
+                                        placeholder="000000"
+                                        maxLength={6}
+                                        value={otpCode}
+                                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                                        className="h-12 text-2xl text-center tracking-[0.5em] font-bold"
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                                        Digite o código de 6 dígitos enviado para seu e-mail.
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3 pt-4">
+                                    <Button
+                                        type="button"
+                                        onClick={handleVerifyOTP}
+                                        className="w-full h-12 text-base font-semibold"
+                                        disabled={otpCode.length !== 6 || isPending}
+                                    >
+                                        {isPending ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                Verificando...
+                                            </>
+                                        ) : (
+                                            "Confirmar Código"
+                                        )}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={() => setStep(2)}
+                                        className="text-sm text-slate-500"
+                                        disabled={isPending}
+                                    >
+                                        Alterar e-mail
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </form>
                 </Form>
             </CardContent>
-        </Card>
+        </Card >
+    )
+}
+
+function PasswordRequirement({ label, met }: { label: string; met: boolean }) {
+    return (
+        <div className={cn(
+            "flex items-center gap-1.5 text-[11px] transition-colors",
+            met ? "text-green-600" : "text-slate-400"
+        )}>
+            {met ? (
+                <Check className="h-3 w-3 shrink-0" />
+            ) : (
+                <div className="h-3 w-3 rounded-full border border-slate-300 shrink-0" />
+            )}
+            <span>{label}</span>
+        </div>
     )
 }
 

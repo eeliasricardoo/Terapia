@@ -15,6 +15,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 interface NavbarProps {
     isLoggedIn?: boolean;
@@ -24,6 +26,14 @@ interface NavbarProps {
 export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps) {
     const [loginOpen, setLoginOpen] = useState(false);
     const [registerOpen, setRegisterOpen] = useState(false);
+    const router = useRouter();
+
+    const handleSignOut = async () => {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+        router.push("/login/paciente");
+        router.refresh();
+    };
 
     const getNavLinks = () => {
         if (!isLoggedIn) {
@@ -121,7 +131,9 @@ export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps)
                                     <DropdownMenuItem>Perfil</DropdownMenuItem>
                                     <DropdownMenuItem>Configurações</DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem>Sair</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleSignOut}>
+                                        Sair
+                                    </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         )}
@@ -156,7 +168,7 @@ export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps)
                                             </Button>
                                         </>
                                     ) : (
-                                        <Button variant="outline" className="w-full">
+                                        <Button variant="outline" className="w-full" onClick={handleSignOut}>
                                             Sair
                                         </Button>
                                     )}

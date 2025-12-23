@@ -7,6 +7,8 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 
 const MENU_ITEMS = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
@@ -16,8 +18,44 @@ const MENU_ITEMS = [
     { href: "/dashboard/perfil", label: "Meu Perfil", icon: User },
 ]
 
-export function MobileNav() {
+interface MobileNavProps {
+    userData?: {
+        name: string
+        email: string
+        role: string
+        avatar: string | null
+    }
+}
+
+export function MobileNav({ userData }: MobileNavProps = {}) {
     const pathname = usePathname()
+    const router = useRouter()
+
+    const handleSignOut = async () => {
+        const supabase = createClient()
+        await supabase.auth.signOut()
+        router.push("/login/paciente")
+        router.refresh()
+    }
+
+    const getInitials = (name: string) => {
+        return name
+            .split(" ")
+            .map(n => n[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2)
+    }
+
+    const roleMap: Record<string, string> = {
+        'PATIENT': 'Paciente',
+        'PSYCHOLOGIST': 'Psicólogo',
+        'COMPANY': 'Empresa',
+        'ADMIN': 'Administrador'
+    }
+
+    const displayName = userData?.name || 'Usuário'
+    const displayRole = userData?.role ? (roleMap[userData.role] || userData.role) : 'Paciente'
 
     return (
         <div className="lg:hidden flex items-center justify-between p-4 border-b bg-white sticky top-0 z-50">
@@ -38,12 +76,12 @@ export function MobileNav() {
                         {/* Profile Info */}
                         <div className="flex items-center gap-3 mb-8">
                             <Avatar className="h-12 w-12">
-                                <AvatarImage src="/avatars/user.png" />
-                                <AvatarFallback>JP</AvatarFallback>
+                                <AvatarImage src={userData?.avatar || undefined} />
+                                <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
                             </Avatar>
                             <div>
-                                <p className="font-semibold text-sm">João Perez</p>
-                                <p className="text-xs text-muted-foreground">Paciente</p>
+                                <p className="font-semibold text-sm">{displayName}</p>
+                                <p className="text-xs text-muted-foreground">{displayRole}</p>
                             </div>
                         </div>
 
@@ -73,6 +111,7 @@ export function MobileNav() {
                             <Button
                                 variant="ghost"
                                 className="w-full justify-start gap-3 text-slate-600 hover:text-red-600 hover:bg-red-50 px-4"
+                                onClick={handleSignOut}
                             >
                                 <LogOut className="h-5 w-5" />
                                 Sair

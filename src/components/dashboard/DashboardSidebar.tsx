@@ -13,6 +13,8 @@ import {
     LogOut
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 
 const MENU_ITEMS = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
@@ -24,22 +26,55 @@ const MENU_ITEMS = [
 
 interface DashboardSidebarProps {
     className?: string
+    userData?: {
+        name: string
+        email: string
+        role: string
+        avatar: string | null
+    }
 }
 
-export function DashboardSidebar({ className }: DashboardSidebarProps) {
+export function DashboardSidebar({ className, userData }: DashboardSidebarProps) {
     const pathname = usePathname()
+    const router = useRouter()
+
+    const handleSignOut = async () => {
+        const supabase = createClient()
+        await supabase.auth.signOut()
+        router.push("/login/paciente")
+        router.refresh()
+    }
+
+    const getInitials = (name: string) => {
+        return name
+            .split(" ")
+            .map(n => n[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2)
+    }
+
+    const roleMap: Record<string, string> = {
+        'PATIENT': 'Paciente',
+        'PSYCHOLOGIST': 'Psicólogo',
+        'COMPANY': 'Empresa',
+        'ADMIN': 'Administrador'
+    }
+
+    const displayName = userData?.name || 'Usuário'
+    const displayRole = userData?.role ? (roleMap[userData.role] || userData.role) : 'Paciente'
 
     return (
         <aside className={cn("w-full lg:w-64 flex-shrink-0 flex flex-col h-[calc(100vh-2rem)] sticky top-4", className)}>
             {/* User Profile */}
             <div className="flex items-center gap-3 mb-8 px-2">
                 <Avatar className="h-12 w-12">
-                    <AvatarImage src="/avatars/user.png" />
-                    <AvatarFallback>JP</AvatarFallback>
+                    <AvatarImage src={userData?.avatar || undefined} />
+                    <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
                 </Avatar>
                 <div className="overflow-hidden">
-                    <p className="font-semibold text-sm">João Perez</p>
-                    <p className="text-xs text-muted-foreground">Paciente</p>
+                    <p className="font-semibold text-sm">{displayName}</p>
+                    <p className="text-xs text-muted-foreground">{displayRole}</p>
                 </div>
             </div>
 
@@ -70,6 +105,7 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
                 <Button
                     variant="ghost"
                     className="w-full justify-start gap-3 text-slate-600 hover:text-red-600 hover:bg-red-50 px-4"
+                    onClick={handleSignOut}
                 >
                     <LogOut className="h-5 w-5" />
                     Sair

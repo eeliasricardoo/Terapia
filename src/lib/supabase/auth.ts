@@ -97,6 +97,17 @@ export const auth = {
         return { data, error }
     },
 
+    // Verify OTP (Code)
+    async verifyOtp(email: string, token: string, type: 'signup' | 'recovery' | 'email' | 'invite') {
+        const supabase = createClient()
+        const { data, error } = await supabase.auth.verifyOtp({
+            email,
+            token,
+            type,
+        })
+        return { data, error }
+    },
+
     // Update user metadata
     async updateMetadata(metadata: Partial<UserMetadata>) {
         const supabase = createClient()

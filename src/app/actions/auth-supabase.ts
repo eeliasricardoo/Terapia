@@ -73,20 +73,8 @@ export async function registerPatientSupabase(
             }
         }
 
-        // Create profile in database if needed
-        if (authData.user) {
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .insert({
-                    user_id: authData.user.id,
-                    full_name: data.name,
-                    avatar_url: null,
-                })
-
-            if (profileError) {
-                console.error('Profile creation error:', profileError)
-            }
-        }
+        // Profile is automatically created by database trigger (handle_new_user)
+        // No need to manually create it here
 
         revalidatePath('/')
 
@@ -158,9 +146,4 @@ export async function loginSupabase(
     }
 }
 
-export async function signOutSupabase() {
-    const supabase = await createClient()
-    await supabase.auth.signOut()
-    revalidatePath('/')
-    redirect('/login/paciente')
-}
+
