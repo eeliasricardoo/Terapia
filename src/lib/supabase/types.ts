@@ -18,7 +18,7 @@ export interface Profile {
 
 export interface PsychologistProfile {
     id: string
-    userId: string
+    user_id: string
     crp: string | null
     bio: string | null
     specialties: string[]

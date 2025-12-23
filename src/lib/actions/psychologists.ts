@@ -43,7 +43,7 @@ export async function getPsychologistById(
       *,
       profile:profiles(*)
     `)
-        .eq('userId', userId)
+        .eq('user_id', userId)
         .eq('is_verified', true)
         .single()
 

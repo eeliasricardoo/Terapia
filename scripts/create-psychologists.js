@@ -106,7 +106,7 @@ async function createPsychologist(psychologist) {
             .from('profiles')
             .insert({
                 id: userId,
-                userId: userId,
+                user_id: userId,
                 full_name: psychologist.full_name,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
@@ -123,7 +123,7 @@ async function createPsychologist(psychologist) {
         const { error: psychProfileError } = await supabase
             .from('psychologist_profiles')
             .insert({
-                userId: userId,
+                user_id: userId,
                 crp: psychologist.crp,
                 bio: psychologist.bio,
                 specialties: psychologist.specialties,
