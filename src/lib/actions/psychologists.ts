@@ -16,7 +16,7 @@ export async function getPsychologists(): Promise<PsychologistWithProfile[]> {
         .from('psychologist_profiles')
         .select(`
       *,
-      profile:profiles!psychologist_profiles_userId_fkey (*)
+      profile:profiles(*)
     `)
         .eq('is_verified', true)
         .order('created_at', { ascending: false })
@@ -41,7 +41,7 @@ export async function getPsychologistById(
         .from('psychologist_profiles')
         .select(`
       *,
-      profile:profiles!psychologist_profiles_userId_fkey (*)
+      profile:profiles(*)
     `)
         .eq('userId', userId)
         .eq('is_verified', true)
@@ -67,7 +67,7 @@ export async function searchPsychologists(
         .from('psychologist_profiles')
         .select(`
       *,
-      profile:profiles!psychologist_profiles_userId_fkey (*)
+      profile:profiles(*)
     `)
         .eq('is_verified', true)
 
