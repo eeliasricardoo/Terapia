@@ -32,8 +32,9 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { RescheduleDialog } from "@/components/dashboard/RescheduleDialog"
+import { getCurrentUserProfile } from "@/lib/actions/profile"
 
-// Mock Data
+// Mock Data - TODO: Replace with real session data when sessions table is created
 const NEXT_SESSION = {
     id: 1,
     doctor: "Dr. Carlos Pereira",
@@ -50,15 +51,19 @@ const HISTORY = [
     { id: 3, doctor: "Dr. Carlos Pereira", date: "24 de Setembro de 2025" },
 ]
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+    // Fetch current user profile
+    const userProfile = await getCurrentUserProfile()
+    const userName = userProfile?.full_name?.split(' ')[0] || 'Usuário'
+
     return (
         <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-8">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">Olá, Ana! 👋</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">Olá, {userName}! 👋</h1>
                     <p className="text-muted-foreground mt-1">
-                        Bem-vinda de volta ao seu espaço de cuidado.
+                        Bem-vindo de volta ao seu espaço de cuidado.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
