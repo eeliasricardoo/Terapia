@@ -1,0 +1,14 @@
+
+const { PrismaClient } = require('@prisma/client')
+const prisma = new PrismaClient()
+
+async function main() {
+    const result = await prisma.$queryRaw`
+    SELECT column_name, data_type, is_nullable, column_default
+    FROM information_schema.columns
+    WHERE table_name = 'users'
+  `
+    console.log(JSON.stringify(result, null, 2))
+}
+
+main().finally(() => prisma.$disconnect())

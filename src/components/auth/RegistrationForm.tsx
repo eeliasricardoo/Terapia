@@ -203,7 +203,7 @@ export function RegistrationForm() {
                                         <FormItem>
                                             <FormLabel>Nome Completo</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Seu nome" {...field} />
+                                                <Input placeholder="Seu nome" autoComplete="name" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -218,7 +218,7 @@ export function RegistrationForm() {
                                             <FormItem>
                                                 <FormLabel>Data de Nascimento</FormLabel>
                                                 <FormControl>
-                                                    <Input type="date" {...field} />
+                                                    <Input type="date" autoComplete="bday" {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -253,7 +253,7 @@ export function RegistrationForm() {
                                         <FormItem>
                                             <FormLabel>Email</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="m@example.com" {...field} />
+                                                <Input placeholder="m@example.com" autoComplete="email" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -284,7 +284,7 @@ export function RegistrationForm() {
                                                 <FormItem className="flex flex-col">
                                                     <FormLabel>Senha</FormLabel>
                                                     <FormControl>
-                                                        <Input type="password" placeholder="Sua senha forte" {...field} />
+                                                        <Input type="password" placeholder="Sua senha forte" autoComplete="new-password" {...field} />
                                                     </FormControl>
                                                     <div className="flex gap-1 h-1 mt-1">
                                                         {[...Array(5)].map((_, i) => (
@@ -321,7 +321,7 @@ export function RegistrationForm() {
                                             <FormItem className="flex flex-col">
                                                 <FormLabel>Confirmar Senha</FormLabel>
                                                 <FormControl>
-                                                    <Input type="password" placeholder="Confirme sua senha" {...field} />
+                                                    <Input type="password" placeholder="Confirme sua senha" autoComplete="new-password" {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>

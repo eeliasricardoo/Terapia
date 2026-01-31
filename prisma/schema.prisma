@@ -65,15 +65,15 @@ model VerificationToken {
 
 model Profile {
   id        String    @id @default(uuid())
-  userId    String    @unique @map("user_id")
   fullName  String?   @map("full_name")
   avatarUrl String?   @map("avatar_url")
-  role      UserRole  @default(PATIENT)
-  phone     String?
-  birthDate DateTime? @map("birth_date") @db.Date
-  document  String?
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
+  birthDate DateTime? @map("birth_date") @db.Date
+  document  String?
+  phone     String?
+  role      UserRole  @default(PATIENT)
+  userId    String    @unique @map("user_id")
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("profiles")
