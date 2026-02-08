@@ -104,6 +104,7 @@
     "prisma": "^6.19.1",
     "storybook": "8.2.9",
     "style-loader": "^4.0.0",
+    "supabase": "^2.76.4",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5",
