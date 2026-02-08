@@ -79,7 +79,7 @@ export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps)
                 <div className="flex items-center gap-8">
                     <Link href="/" className="flex items-center space-x-2">
                         <span className="text-xl font-bold tracking-tight font-heading">
-                            T-rapy
+                            Terapia
                         </span>
                     </Link>
                     <nav className="hidden md:flex items-center gap-6 text-sm font-medium">

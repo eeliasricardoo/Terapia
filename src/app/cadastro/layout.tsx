@@ -13,7 +13,7 @@ export default function RegistrationLayout({
             <header className="border-b bg-white py-4">
                 <div className="container flex items-center justify-between">
                     <Link href="/" className="text-xl font-bold tracking-tight font-heading">
-                        T-rapy
+                        Terapia
                     </Link>
                     <Link href="/login/paciente" className="text-sm font-medium text-blue-600 hover:underline">
                         Já tem uma conta? Entrar

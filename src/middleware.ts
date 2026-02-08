@@ -31,13 +31,13 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Protect dashboard and admin routes
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
-    if (!session) {
-      const url = request.nextUrl.clone()
-      url.pathname = "/login/paciente"
-      return NextResponse.redirect(url)
-    }
-  }
+  // if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
+  //   if (!session) {
+  //     const url = request.nextUrl.clone()
+  //     url.pathname = "/login/paciente"
+  //     return NextResponse.redirect(url)
+  //   }
+  // }
 
   // Redirect authenticated users away from login/register
   if ((pathname.startsWith("/login") || pathname.startsWith("/cadastro")) && session) {

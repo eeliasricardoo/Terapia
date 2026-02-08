@@ -155,6 +155,17 @@ export function LoginForm() {
                         Cadastre-se
                     </Link>
                 </div>
+
+                {/* DEV ONLY BUTTON */}
+                <div className="mt-8 pt-4 border-t border-dashed">
+                    <Button
+                        variant="ghost"
+                        className="w-full text-xs text-muted-foreground hover:text-blue-600 h-auto py-2"
+                        onClick={() => router.push('/dashboard')}
+                    >
+                        [DEV] Entrar sem Login &rarr;
+                    </Button>
+                </div>
             </CardContent>
         </Card>
     )
