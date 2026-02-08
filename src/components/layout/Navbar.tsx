@@ -16,14 +16,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+import { useAuth } from "@/components/providers/auth-provider";
+
 interface NavbarProps {
     isLoggedIn?: boolean;
-    userRole?: "client" | "psychologist" | "company";
+    userRole?: "client" | "psychologist" | "company" | "PATIENT" | "PSYCHOLOGIST" | "COMPANY" | string;
 }
 
-export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps) {
+export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: NavbarProps) {
+    const { isAuthenticated, role } = useAuth();
     const [loginOpen, setLoginOpen] = useState(false);
     const [registerOpen, setRegisterOpen] = useState(false);
+
+    // Use props if provided (prioritize props for overrides), otherwise use auth context
+    const isLoggedIn = propIsLoggedIn ?? isAuthenticated;
+    const userRole = propUserRole ?? role;
 
     const getNavLinks = () => {
         if (!isLoggedIn) {
@@ -37,12 +44,14 @@ export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps)
 
         switch (userRole) {
             case "client":
+            case "PATIENT": // Handle database role string
                 return [
                     { href: "/dashboard", label: "Meus Agendamentos" },
                     { href: "/busca", label: "Buscar Psicólogos" },
                     { href: "/perfil", label: "Meu Perfil" },
                 ];
             case "psychologist":
+            case "PSYCHOLOGIST":
                 return [
                     { href: "/agenda", label: "Minha Agenda" },
                     { href: "/pacientes", label: "Pacientes" },
@@ -50,6 +59,7 @@ export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps)
                     { href: "/perfil", label: "Meu Perfil" },
                 ];
             case "company":
+            case "COMPANY":
                 return [
                     { href: "/dashboard", label: "Dashboard" },
                     { href: "/colaboradores", label: "Colaboradores" },
@@ -57,7 +67,11 @@ export function Navbar({ isLoggedIn = false, userRole = "client" }: NavbarProps)
                     { href: "/configuracoes", label: "Configurações" },
                 ];
             default:
-                return [];
+                // Fallback for unknown roles or if role is missing but logged in
+                return [
+                    { href: "/dashboard", label: "Dashboard" },
+                    { href: "/busca", label: "Buscar Psicólogos" },
+                ];
         }
     };
 
