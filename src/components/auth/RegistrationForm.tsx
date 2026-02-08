@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { cn } from "@/lib/utils"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
@@ -103,7 +104,7 @@ export function RegistrationForm() {
     }
 
     return (
-        <Card className="w-full max-w-md mx-auto">
+        <Card className={cn("w-full mx-auto transition-all duration-300", step === 1 ? "max-w-md" : "max-w-2xl")}>
             <CardHeader>
                 <CardTitle className="text-xl">
                     {step === 1 ? "Identificação" : "Dados Pessoais"}
@@ -161,7 +162,7 @@ export function RegistrationForm() {
                                     type="button"
                                     onClick={nextStep}
                                     className="w-full"
-                                    disabled={!isStep1Valid}
+                                    disabled={false}
                                 >
                                     Continuar <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
@@ -212,6 +213,7 @@ export function RegistrationForm() {
                                                         }}
                                                         defaultCountry="BR"
                                                         placeholder="(00) 00000-0000"
+                                                        className="h-[44px]"
                                                     />
                                                 </FormControl>
                                                 <FormMessage />
@@ -326,7 +328,7 @@ export function RegistrationForm() {
                                     <Button
                                         type="submit"
                                         className="w-full"
-                                        disabled={!isStep2Valid || isPending}
+                                        disabled={isPending}
                                     >
                                         {isPending ? (
                                             <>

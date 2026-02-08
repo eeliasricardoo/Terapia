@@ -68,7 +68,9 @@
     @apply bg-background text-foreground;
   }
 }
+
 @layer utilities {
+
   .calendar-fixed-size .rdp-day button[aria-selected="true"],
   .calendar-fixed-size .rdp-day[data-scheduled] button,
   .calendar-fixed-size .rdp-day[data-unavailable] button {
