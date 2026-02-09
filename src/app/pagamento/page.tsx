@@ -7,10 +7,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Lock, CreditCard, ShieldCheck, Ticket, Check } from "lucide-react"
+import { Lock, CreditCard, ShieldCheck, Ticket, Check, ChevronRight } from "lucide-react"
 import Link from "next/link"
 
 export default function PaymentPage() {
@@ -41,9 +40,22 @@ export default function PaymentPage() {
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50">
-            <Navbar isLoggedIn={true} userRole="client" />
+            <main className="flex-1 container py-12 max-w-7xl">
+                {/* Breadcrumb integrado ao conteúdo */}
+                <div className="mb-8">
+                    <div className="flex items-center text-sm text-slate-500 gap-2">
+                        <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
+                            Home
+                        </Link>
+                        <ChevronRight className="h-4 w-4" />
+                        <Link href="/busca" className="hover:text-blue-600 transition-colors">
+                            Buscar Psicólogos
+                        </Link>
+                        <ChevronRight className="h-4 w-4" />
+                        <span className="text-slate-700 font-medium">Pagamento</span>
+                    </div>
+                </div>
 
-            <main className="flex-1 container py-12 max-w-5xl">
                 {isSuccess ? (
                     <div className="flex flex-col items-center justify-center py-8 text-center max-w-lg mx-auto animate-in fade-in zoom-in duration-500">
                         <div className="h-24 w-24 bg-blue-100 rounded-full flex items-center justify-center mb-8 shadow-sm">

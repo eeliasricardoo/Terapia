@@ -7,7 +7,7 @@ import { Slider } from "@/components/ui/slider"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Filter, Star, ArrowLeft, ListFilter } from "lucide-react"
+import { Search, Filter, Star, ListFilter, ChevronRight } from "lucide-react"
 import { Footer } from "@/components/layout/Footer"
 import Link from "next/link"
 import { Separator } from "@/components/ui/separator"
@@ -28,13 +28,11 @@ import {
 } from "@/components/ui/sheet"
 import { useAuth } from "@/components/providers/auth-provider"
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 
 export default function SearchPage() {
     const { isAuthenticated } = useAuth()
     const [psychologists, setPsychologists] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
-    const router = useRouter()
 
     useEffect(() => {
         async function loadPsychologists() {
@@ -51,40 +49,21 @@ export default function SearchPage() {
         loadPsychologists()
     }, [])
 
-    const handleBack = () => {
-        if (isAuthenticated) {
-            router.push('/dashboard')
-        } else {
-            router.push('/')
-        }
-    }
-
     // Layout dedicado sem sidebar - mais espaço para filtros e resultados
     return (
         <div className="min-h-screen flex flex-col bg-slate-50">
-            {/* Header com botão de voltar */}
-            <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-                <div className="container mx-auto px-4 py-4">
-                    <div className="flex items-center gap-4">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleBack}
-                            className="flex items-center gap-2 hover:bg-slate-100"
-                        >
-                            <ArrowLeft className="h-4 w-4" />
-                            <span className="hidden sm:inline">Voltar</span>
-                        </Button>
-                        <div className="flex-1">
-                            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
-                                Buscar Psicólogos
-                            </h1>
-                        </div>
+            <main className="flex-1 container mx-auto px-4 py-6 max-w-7xl">
+                {/* Breadcrumb integrado ao conteúdo */}
+                <div className="mb-6">
+                    <div className="flex items-center text-sm text-slate-500 gap-2">
+                        <Link href={isAuthenticated ? "/dashboard" : "/"} className="hover:text-blue-600 transition-colors">
+                            Home
+                        </Link>
+                        <ChevronRight className="h-4 w-4" />
+                        <span className="text-slate-700 font-medium">Buscar Psicólogos</span>
                     </div>
                 </div>
-            </header>
 
-            <main className="flex-1 container mx-auto px-4 py-6">
                 <SearchContent psychologists={psychologists} loading={loading} />
             </main>
 
@@ -239,7 +218,46 @@ function SearchFilters() {
             <div className="space-y-2.5">
                 <h4 className="text-sm font-medium leading-none text-slate-900">Especialidades</h4>
                 <div className="grid grid-cols-1 gap-2">
-                    {["Ansiedade", "Depressão", "Terapia de Casal", "TDAH", "Autoestima", "Carreira"].map((item) => (
+                    {[
+                        "Ansiedade",
+                        "Depressão",
+                        "Terapia de Casal",
+                        "TDAH",
+                        "Autoestima",
+                        "Carreira",
+                        "Burnout",
+                        "Luto",
+                        "Transtornos Alimentares",
+                        "TOC",
+                        "Fobias",
+                        "Estresse Pós-Traumático"
+                    ].map((item) => (
+                        <div key={item} className="flex items-center space-x-2">
+                            <Checkbox id={`filter-${item}`} />
+                            <label
+                                htmlFor={`filter-${item}`}
+                                className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-slate-600 hover:text-slate-900"
+                            >
+                                {item}
+                            </label>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2.5">
+                <h4 className="text-sm font-medium leading-none text-slate-900">Abordagem Terapêutica</h4>
+                <div className="grid grid-cols-1 gap-2">
+                    {[
+                        "Cognitivo-Comportamental (TCC)",
+                        "Psicanálise",
+                        "Humanista",
+                        "Gestalt-terapia",
+                        "Sistêmica",
+                        "Psicodrama"
+                    ].map((item) => (
                         <div key={item} className="flex items-center space-x-2">
                             <Checkbox id={`filter-${item}`} />
                             <label
@@ -268,7 +286,45 @@ function SearchFilters() {
             <div className="space-y-2.5">
                 <h4 className="text-sm font-medium leading-none text-slate-900">Disponibilidade</h4>
                 <div className="grid grid-cols-1 gap-2">
-                    {["Hoje", "Esta semana", "Próxima semana"].map((item) => (
+                    {["Hoje", "Esta semana", "Próxima semana", "Finais de semana", "Horário noturno"].map((item) => (
+                        <div key={item} className="flex items-center space-x-2">
+                            <Checkbox id={`filter-${item}`} />
+                            <label
+                                htmlFor={`filter-${item}`}
+                                className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-slate-600 hover:text-slate-900"
+                            >
+                                {item}
+                            </label>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2.5">
+                <h4 className="text-sm font-medium leading-none text-slate-900">Idiomas</h4>
+                <div className="grid grid-cols-1 gap-2">
+                    {["Português", "Inglês", "Espanhol", "Francês", "Italiano", "Libras"].map((item) => (
+                        <div key={item} className="flex items-center space-x-2">
+                            <Checkbox id={`filter-${item}`} />
+                            <label
+                                htmlFor={`filter-${item}`}
+                                className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-slate-600 hover:text-slate-900"
+                            >
+                                {item}
+                            </label>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2.5">
+                <h4 className="text-sm font-medium leading-none text-slate-900">Experiência</h4>
+                <div className="grid grid-cols-1 gap-2">
+                    {["Menos de 2 anos", "2-5 anos", "5-10 anos", "Mais de 10 anos"].map((item) => (
                         <div key={item} className="flex items-center space-x-2">
                             <Checkbox id={`filter-${item}`} />
                             <label
@@ -287,7 +343,45 @@ function SearchFilters() {
             <div className="space-y-2.5">
                 <h4 className="text-sm font-medium leading-none text-slate-900">Gênero</h4>
                 <div className="grid grid-cols-1 gap-2">
-                    {["Feminino", "Masculino", "Outro"].map((item) => (
+                    {["Feminino", "Masculino", "Não-binário", "Sem preferência"].map((item) => (
+                        <div key={item} className="flex items-center space-x-2">
+                            <Checkbox id={`filter-${item}`} />
+                            <label
+                                htmlFor={`filter-${item}`}
+                                className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-slate-600 hover:text-slate-900"
+                            >
+                                {item}
+                            </label>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2.5">
+                <h4 className="text-sm font-medium leading-none text-slate-900">Formato de Atendimento</h4>
+                <div className="grid grid-cols-1 gap-2">
+                    {["Online", "Presencial", "Híbrido"].map((item) => (
+                        <div key={item} className="flex items-center space-x-2">
+                            <Checkbox id={`filter-${item}`} />
+                            <label
+                                htmlFor={`filter-${item}`}
+                                className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-slate-600 hover:text-slate-900"
+                            >
+                                {item}
+                            </label>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2.5">
+                <h4 className="text-sm font-medium leading-none text-slate-900">Público-Alvo</h4>
+                <div className="grid grid-cols-1 gap-2">
+                    {["Crianças", "Adolescentes", "Adultos", "Idosos", "Casais", "Famílias"].map((item) => (
                         <div key={item} className="flex items-center space-x-2">
                             <Checkbox id={`filter-${item}`} />
                             <label
