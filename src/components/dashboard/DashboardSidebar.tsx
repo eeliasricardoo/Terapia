@@ -26,8 +26,19 @@ interface DashboardSidebarProps {
     className?: string
 }
 
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+
 export function DashboardSidebar({ className }: DashboardSidebarProps) {
     const pathname = usePathname()
+    const router = useRouter()
+    const supabase = createClient()
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut()
+        router.refresh()
+        router.push("/")
+    }
 
     return (
         <aside className={cn("w-full lg:w-64 flex-shrink-0 flex flex-col h-[calc(100vh-2rem)] sticky top-4", className)}>
@@ -70,6 +81,7 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
                 <Button
                     variant="ghost"
                     className="w-full justify-start gap-3 text-slate-600 hover:text-red-600 hover:bg-red-50 px-4"
+                    onClick={handleLogout}
                 >
                     <LogOut className="h-5 w-5" />
                     Sair

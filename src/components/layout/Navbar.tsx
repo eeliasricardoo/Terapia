@@ -48,7 +48,7 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                 return [
                     { href: "/dashboard", label: "Meus Agendamentos" },
                     { href: "/busca", label: "Buscar Psicólogos" },
-                    { href: "/perfil", label: "Meu Perfil" },
+                    { href: "/dashboard/perfil", label: "Meu Perfil" },
                 ];
             case "psychologist":
             case "PSYCHOLOGIST":

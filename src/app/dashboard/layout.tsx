@@ -1,7 +1,5 @@
-import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar"
-
 import { MobileNav } from "@/components/dashboard/MobileNav"
 
 export default function DashboardLayout({

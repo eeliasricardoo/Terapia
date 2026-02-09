@@ -16,8 +16,19 @@ const MENU_ITEMS = [
     { href: "/dashboard/perfil", label: "Meu Perfil", icon: User },
 ]
 
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+
 export function MobileNav() {
     const pathname = usePathname()
+    const router = useRouter()
+    const supabase = createClient()
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut()
+        router.refresh()
+        router.push("/")
+    }
 
     return (
         <div className="lg:hidden flex items-center justify-between p-4 border-b bg-white sticky top-0 z-50">
@@ -73,6 +84,7 @@ export function MobileNav() {
                             <Button
                                 variant="ghost"
                                 className="w-full justify-start gap-3 text-slate-600 hover:text-red-600 hover:bg-red-50 px-4"
+                                onClick={handleLogout}
                             >
                                 <LogOut className="h-5 w-5" />
                                 Sair
