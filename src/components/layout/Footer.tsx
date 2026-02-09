@@ -6,7 +6,7 @@ export function Footer() {
             <div className="container py-12 md:py-16 lg:py-20">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
                     <div className="space-y-4">
-                        <h3 className="text-lg font-bold font-heading">T-rapy</h3>
+                        <h3 className="text-lg font-bold font-heading">MindCare</h3>
                         <p className="text-sm text-muted-foreground max-w-xs">
                             A plataforma de saúde mental mais completa da América Latina.
                             Conectamos você aos melhores profissionais.
@@ -69,7 +69,7 @@ export function Footer() {
                     </div>
                 </div>
                 <div className="mt-12 border-t pt-8 text-center text-sm text-muted-foreground">
-                    © {new Date().getFullYear()} T-rapy. Todos os direitos reservados.
+                    © {new Date().getFullYear()} MindCare. Todos os direitos reservados.
                 </div>
             </div>
         </footer>

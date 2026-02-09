@@ -17,7 +17,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "T-rapy - Terapia Online",
+  title: "MindCare - Terapia Online",
   description: "Plataforma de saúde mental e bem-estar.",
 };
 

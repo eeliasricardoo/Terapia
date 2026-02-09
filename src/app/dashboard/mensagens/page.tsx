@@ -30,7 +30,7 @@ const CONVERSATIONS = [
     },
     {
         id: 3,
-        name: "Suporte T-rapy",
+        name: "Suporte MindCare",
         role: "Atendimento",
         image: "/avatars/support.png",
         lastMessage: "Como posso ajudar?",
