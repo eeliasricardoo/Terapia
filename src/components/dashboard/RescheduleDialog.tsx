@@ -9,7 +9,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, ChevronRight, Star, Video, Clock } from "lucide-react"
+import { ChevronLeft, ChevronRight, Star } from "lucide-react"
+import { addDays, format, startOfToday, startOfWeek } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
 interface RescheduleDialogProps {
     children: React.ReactNode
@@ -23,15 +25,6 @@ interface RescheduleDialogProps {
     }
 }
 
-// Mock dates for the carousel
-const DATES = [
-    { day: "QUA", date: "03", month: "DEZ" },
-    { day: "QUI", date: "04", month: "DEZ" },
-    { day: "SEX", date: "05", month: "DEZ" },
-    { day: "SÁB", date: "06", month: "DEZ" },
-    { day: "DOM", date: "07", month: "DEZ" },
-]
-
 // Mock times
 const TIMES = [
     "10:00", "10:30", "11:00", "11:30",
@@ -41,8 +34,27 @@ const TIMES = [
 
 export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
     const [open, setOpen] = useState(false)
-    const [selectedDate, setSelectedDate] = useState(0)
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null)
     const [selectedTime, setSelectedTime] = useState<string | null>(null)
+    const [startIndex, setStartIndex] = useState(0)
+
+    const today = startOfToday()
+    const startDate = startOfWeek(today, { weekStartsOn: 0 }) // Sunday
+    const visibleDates = Array.from({ length: 7 }).map((_, i) => addDays(startDate, startIndex + i))
+
+    const handlePrevDate = () => {
+        if (startIndex > 0) {
+            setStartIndex((prev) => Math.max(0, prev - 7))
+        }
+    }
+
+    const handleNextDate = () => {
+        setStartIndex((prev) => prev + 7)
+    }
+
+    const formatDate = (date: Date, formatStr: string) => {
+        return format(date, formatStr, { locale: ptBR })
+    }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -94,32 +106,50 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
                     <div className="flex-1 p-6 flex flex-col bg-white">
                         {/* Date Carousel */}
                         <div className="flex items-center justify-between mb-6">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={handlePrevDate}
+                                disabled={startIndex === 0}
+                            >
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
-                            <div className="flex gap-2 overflow-x-auto no-scrollbar flex-1 justify-center px-2">
-                                {DATES.map((date, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setSelectedDate(index)}
-                                        className={`flex flex-col items-center justify-center min-w-[60px] p-2 rounded-lg border transition-all ${selectedDate === index
+                            <div className="flex gap-2 overflow-x-auto no-scrollbar flex-1 justify-center px-1">
+                                {visibleDates.map((date) => {
+                                    const isSelected = selectedDate && format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
+                                    return (
+                                        <button
+                                            key={date.toISOString()}
+                                            onClick={() => setSelectedDate(date)}
+                                            className={`flex flex-col items-center justify-center min-w-[60px] p-2 rounded-lg border transition-all ${isSelected
                                                 ? 'bg-primary text-primary-foreground border-primary shadow-md'
                                                 : 'bg-white hover:bg-slate-50 border-transparent hover:border-slate-200'
-                                            }`}
-                                    >
-                                        <span className="text-[10px] font-medium uppercase">{date.day}</span>
-                                        <span className="text-xl font-bold">{date.date}</span>
-                                        <span className="text-[10px] uppercase">{date.month}</span>
-                                    </button>
-                                ))}
+                                                }`}
+                                        >
+                                            <span className="text-[10px] font-medium uppercase text-muted-foreground/80">
+                                                {formatDate(date, 'EEE').replace('.', '')}
+                                            </span>
+                                            <span className="text-xl font-bold">{format(date, 'dd')}</span>
+                                            <span className="text-[10px] uppercase text-muted-foreground/80">
+                                                {formatDate(date, 'MMM').replace('.', '')}
+                                            </span>
+                                        </button>
+                                    )
+                                })}
                             </div>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={handleNextDate}
+                            >
                                 <ChevronRight className="h-4 w-4" />
                             </Button>
                         </div>
 
                         {/* Banner */}
-                        <div className="bg-indigo-600 text-white text-center py-2 rounded-md text-sm font-medium mb-6 shadow-sm">
+                        <div className="bg-primary text-primary-foreground text-center py-2 rounded-md text-sm font-medium mb-6 shadow-sm">
                             Próximo horário: hoje, 14:00
                         </div>
 
@@ -142,9 +172,11 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
                         {/* Footer Action */}
                         <div className="mt-6 flex justify-end items-center gap-4 pt-4 border-t">
                             <span className="text-sm text-muted-foreground hidden sm:inline-block">
-                                {selectedTime ? `Selecionado: ${DATES[selectedDate].date}/${DATES[selectedDate].month} às ${selectedTime}` : 'Selecione um horário'}
+                                {selectedDate && selectedTime
+                                    ? `Selecionado: ${format(selectedDate, 'dd/MM')} às ${selectedTime}`
+                                    : 'Selecione um horário'}
                             </span>
-                            <Button disabled={!selectedTime} onClick={() => setOpen(false)} className="w-full sm:w-auto">
+                            <Button disabled={!selectedTime || !selectedDate} onClick={() => setOpen(false)} className="w-full sm:w-auto">
                                 Confirmar Reagendamento
                             </Button>
                         </div>
