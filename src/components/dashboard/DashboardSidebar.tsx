@@ -41,9 +41,9 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
     }
 
     return (
-        <aside className={cn("w-full lg:w-64 flex-shrink-0 flex flex-col h-[calc(100vh-2rem)] sticky top-4", className)}>
+        <aside className={cn("hidden lg:flex w-64 flex-col fixed inset-y-0 z-50 bg-white border-r", className)}>
             {/* User Profile */}
-            <div className="flex items-center gap-3 mb-8 px-2">
+            <div className="flex items-center gap-3 h-16 px-6 border-b">
                 <Avatar className="h-12 w-12">
                     <AvatarImage src="/avatars/user.png" />
                     <AvatarFallback>JP</AvatarFallback>
@@ -55,7 +55,7 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 space-y-1">
+            <nav className="flex-1 space-y-1 p-4">
                 {MENU_ITEMS.map((item) => {
                     const isActive = pathname === item.href
                     return (
