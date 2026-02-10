@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,9 +9,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Camera, Mail, User, Phone, Lock, Save, Shield } from "lucide-react"
+import { toast } from "sonner"
 
 export default function ProfilePage() {
     const [isLoading, setIsLoading] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     // Mock User Data
     const [user, setUser] = useState({
@@ -21,6 +23,44 @@ export default function ProfilePage() {
         role: "Paciente",
         image: "/avatars/01.png" // Placeholder
     })
+
+    const [bio, setBio] = useState("")
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                toast.error('Arquivo inválido', {
+                    description: 'Por favor, selecione uma imagem.',
+                })
+                return
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('Arquivo muito grande', {
+                    description: 'A imagem deve ter no máximo 5MB.',
+                })
+                return
+            }
+
+            // Create preview URL
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setUser({ ...user, image: reader.result as string })
+                toast.success('Foto atualizada!', {
+                    description: 'Sua foto de perfil foi alterada com sucesso.',
+                    duration: 3000,
+                })
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click()
+    }
 
     const handleSave = () => {
         setIsLoading(true)
@@ -36,13 +76,57 @@ export default function ProfilePage() {
         confirm: ""
     })
 
+    const [passwordErrors, setPasswordErrors] = useState<string[]>([])
+
+    const validatePassword = (password: string): string[] => {
+        const errors: string[] = []
+
+        if (password.length < 8) {
+            errors.push("Senha deve ter pelo menos 8 caracteres")
+        }
+        if (!/[A-Z]/.test(password)) {
+            errors.push("Senha deve conter pelo menos uma letra maiúscula")
+        }
+        if (!/[a-z]/.test(password)) {
+            errors.push("Senha deve conter pelo menos uma letra minúscula")
+        }
+        if (!/[0-9]/.test(password)) {
+            errors.push("Senha deve conter pelo menos um número")
+        }
+        if (!/[\W_]/.test(password)) {
+            errors.push("Senha deve conter pelo menos um caractere especial")
+        }
+
+        return errors
+    }
+
     const handlePasswordChange = () => {
-        if (passwords.new !== passwords.confirm) {
-            alert("A nova senha e a confirmação não coincidem.")
+        // Clear previous errors
+        setPasswordErrors([])
+
+        // Validate all fields are filled
+        if (!passwords.current || !passwords.new || !passwords.confirm) {
+            toast.error('Preencha todos os campos', {
+                description: 'Todos os campos de senha são obrigatórios.',
+            })
             return
         }
-        if (!passwords.current || !passwords.new) {
-            alert("Por favor, preencha todos os campos.")
+
+        // Validate new password strength
+        const errors = validatePassword(passwords.new)
+        if (errors.length > 0) {
+            setPasswordErrors(errors)
+            toast.error('Senha não atende aos requisitos', {
+                description: 'Verifique os requisitos abaixo.',
+            })
+            return
+        }
+
+        // Validate passwords match
+        if (passwords.new !== passwords.confirm) {
+            toast.error('As senhas não coincidem', {
+                description: 'A nova senha e a confirmação devem ser iguais.',
+            })
             return
         }
 
@@ -51,7 +135,11 @@ export default function ProfilePage() {
         setTimeout(() => {
             setIsLoading(false)
             setPasswords({ current: "", new: "", confirm: "" })
-            alert("Senha alterada com sucesso!")
+            setPasswordErrors([])
+            toast.success('Senha alterada com sucesso!', {
+                description: 'Sua senha foi atualizada.',
+                duration: 3000,
+            })
         }, 1000)
     }
 
@@ -79,7 +167,14 @@ export default function ProfilePage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex items-center gap-6">
-                            <div className="relative group cursor-pointer">
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="hidden"
+                            />
+                            <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
                                 <Avatar className="h-24 w-24 border-4 border-slate-50 shadow-sm group-hover:opacity-90 transition-opacity">
                                     <AvatarImage src={user.image} />
                                     <AvatarFallback className="text-xl">AS</AvatarFallback>
@@ -108,11 +203,30 @@ export default function ProfilePage() {
                                 <Label htmlFor="bio">Bio</Label>
                                 <textarea
                                     id="bio"
+                                    value={bio}
+                                    onChange={(e) => setBio(e.target.value)}
                                     className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     placeholder="Conte um pouco sobre sua jornada, hobbies ou o que busca na terapia..."
                                 />
+                                <p className="text-xs text-muted-foreground">
+                                    {bio.length} caracteres
+                                </p>
                             </div>
                         </CardContent>
+                        <CardFooter className="flex justify-end border-t p-6">
+                            <Button
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                                onClick={() => {
+                                    toast.success('Bio salva com sucesso!', {
+                                        description: 'Suas informações foram atualizadas.',
+                                        duration: 3000,
+                                    })
+                                }}
+                            >
+                                <Save className="mr-2 h-4 w-4" />
+                                Salvar Bio
+                            </Button>
+                        </CardFooter>
                     </Card>
 
                     {/* Personal Info Form */}
@@ -297,6 +411,28 @@ export default function ProfilePage() {
                                         onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
                                     />
                                 </div>
+                                {passwordErrors.length > 0 && (
+                                    <div className="space-y-1 mt-2">
+                                        {passwordErrors.map((error, index) => (
+                                            <p key={index} className="text-xs text-red-600 flex items-center gap-1">
+                                                <span className="text-red-600">•</span> {error}
+                                            </p>
+                                        ))}
+                                    </div>
+                                )}
+                                {passwordErrors.length === 0 && passwords.new.length > 0 && (
+                                    <p className="text-xs text-green-600">✓ Senha atende aos requisitos</p>
+                                )}
+                                {passwords.new.length === 0 && (
+                                    <div className="text-xs text-muted-foreground space-y-1 mt-2">
+                                        <p className="font-medium">Requisitos da senha:</p>
+                                        <p>• Mínimo de 8 caracteres</p>
+                                        <p>• Pelo menos uma letra maiúscula</p>
+                                        <p>• Pelo menos uma letra minúscula</p>
+                                        <p>• Pelo menos um número</p>
+                                        <p>• Pelo menos um caractere especial</p>
+                                    </div>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="confirm-password">Confirmar Nova Senha</Label>

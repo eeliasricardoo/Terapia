@@ -33,6 +33,7 @@ import {
 import Link from "next/link"
 import { RescheduleDialog } from "@/components/dashboard/RescheduleDialog"
 import { SessionDetailsDialog } from "@/components/dashboard/SessionDetailsDialog"
+import { MoodTracker } from "@/components/dashboard/MoodTracker"
 import { getCurrentUserProfile } from "@/lib/actions/profile"
 
 // Mock Data - TODO: Replace with real session data when sessions table is created
@@ -172,32 +173,7 @@ export default async function DashboardPage() {
                 </Card>
 
                 {/* Quick Stats / Mood Tracker */}
-                <Card className="border-none shadow-md bg-white">
-                    <CardHeader>
-                        <CardTitle className="text-lg">Como você está hoje?</CardTitle>
-                        <CardDescription>Registre seu humor diário</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-5 gap-2">
-                            {/* Mock Mood Buttons */}
-                            {['😢', '😕', '😐', '🙂', '😄'].map((emoji, i) => (
-                                <button key={i} className="aspect-square rounded-xl hover:bg-slate-100 flex items-center justify-center text-2xl transition-transform hover:scale-110">
-                                    {emoji}
-                                </button>
-                            ))}
-                        </div>
-                        <div className="mt-8 pt-6 border-t border-slate-100">
-                            <h4 className="text-sm font-semibold text-slate-900 mb-4">Seu progresso</h4>
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-600">Sessões este mês</span>
-                                    <span className="font-bold text-slate-900">3/4</span>
-                                </div>
-                                <Progress value={75} className="h-2 bg-slate-100" indicatorClassName="bg-blue-500" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <MoodTracker />
 
                 {/* Quick Actions Grid */}
                 <div className="col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
