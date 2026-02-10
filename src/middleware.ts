@@ -39,8 +39,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect authenticated users away from login/register
-  if ((pathname.startsWith("/login") || pathname.startsWith("/cadastro")) && session) {
+  // Redirect authenticated users away from home, login, and register pages
+  if ((pathname === "/" || pathname.startsWith("/login") || pathname.startsWith("/cadastro")) && session) {
     const url = request.nextUrl.clone()
     url.pathname = "/dashboard"
     return NextResponse.redirect(url)

@@ -16,9 +16,9 @@ import { cn } from "@/lib/utils"
 
 const MENU_ITEMS = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
+    { href: "/busca", label: "Buscar Psicólogos", icon: Search },
     { href: "/dashboard/sessoes", label: "Sessões", icon: Calendar },
     { href: "/dashboard/mensagens", label: "Mensagens", icon: MessageSquare },
-    { href: "/busca", label: "Buscar Psicólogos", icon: Search },
     { href: "/dashboard/perfil", label: "Meu Perfil", icon: User },
 ]
 
@@ -55,7 +55,7 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 space-y-1 p-4">
+            <nav className="flex-1 space-y-2 p-4">
                 {MENU_ITEMS.map((item) => {
                     const isActive = pathname === item.href
                     return (
@@ -77,10 +77,10 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
             </nav>
 
             {/* Logout */}
-            <div className="mt-auto pt-4">
+            <div className="pt-4 pb-4 px-4">
                 <Button
                     variant="ghost"
-                    className="w-full justify-start gap-3 text-slate-600 hover:text-red-600 hover:bg-red-50 px-4"
+                    className="w-full justify-start gap-3 text-slate-600 hover:text-red-600 hover:bg-red-50"
                     onClick={handleLogout}
                 >
                     <LogOut className="h-5 w-5" />

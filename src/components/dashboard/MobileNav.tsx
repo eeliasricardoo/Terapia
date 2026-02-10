@@ -10,9 +10,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const MENU_ITEMS = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
+    { href: "/busca", label: "Buscar Psicólogos", icon: Search },
     { href: "/dashboard/sessoes", label: "Sessões", icon: Calendar },
     { href: "/dashboard/mensagens", label: "Mensagens", icon: MessageSquare },
-    { href: "/busca", label: "Buscar Psicólogos", icon: Search },
     { href: "/dashboard/perfil", label: "Meu Perfil", icon: User },
 ]
 
@@ -80,7 +80,7 @@ export function MobileNav() {
                             })}
                         </nav>
 
-                        <div className="mt-auto pt-4">
+                        <div className="pt-4">
                             <Button
                                 variant="ghost"
                                 className="w-full justify-start gap-3 text-slate-600 hover:text-red-600 hover:bg-red-50 px-4"
