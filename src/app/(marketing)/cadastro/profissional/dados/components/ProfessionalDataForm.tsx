@@ -63,8 +63,7 @@ export function ProfessionalDataForm() {
     })
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        // TODO: Integrate with Supabase
-        console.log(values)
+        // TODO: Integrate with Supabase to save professional data
         // Navigate to next step
         router.push('/cadastro/profissional/disponibilidad')
     }
@@ -302,8 +301,8 @@ export function ProfessionalDataForm() {
                     </Card>
 
                     <div className="flex justify-end">
-                        <Button 
-                            type="submit" 
+                        <Button
+                            type="submit"
                             className="font-bold h-[44px]"
                             disabled={!form.formState.isValid}
                             style={{

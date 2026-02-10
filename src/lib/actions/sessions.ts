@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { SessionWithDetails } from '@/lib/supabase/types'
+import { logger } from '@/lib/utils/logger'
 
 /**
  * Get all sessions for a user
@@ -13,7 +14,7 @@ export async function getUserSessions(
 
     // TODO: Implement when sessions table is created
     // For now, return empty array
-    console.log('getUserSessions called for:', userId)
+    logger.debug('getUserSessions called', { userId })
     return []
 }
 
@@ -27,7 +28,7 @@ export async function getNextSession(
 
     // TODO: Implement when sessions table is created
     // For now, return null
-    console.log('getNextSession called for:', userId)
+    logger.debug('getNextSession called', { userId })
     return null
 }
 
@@ -42,7 +43,7 @@ export async function getSessionHistory(
 
     // TODO: Implement when sessions table is created
     // For now, return empty array
-    console.log('getSessionHistory called for:', userId, 'limit:', limit)
+    logger.debug('getSessionHistory called', { userId, limit })
     return []
 }
 
@@ -58,7 +59,7 @@ export async function createSession(data: {
     const supabase = await createClient()
 
     // TODO: Implement when sessions table is created
-    console.log('createSession called with:', data)
+    logger.debug('createSession called', { data })
     return { success: false, error: 'Sessions table not yet implemented' }
 }
 
@@ -69,6 +70,6 @@ export async function cancelSession(sessionId: string) {
     const supabase = await createClient()
 
     // TODO: Implement when sessions table is created
-    console.log('cancelSession called for:', sessionId)
+    logger.debug('cancelSession called', { sessionId })
     return { success: false, error: 'Sessions table not yet implemented' }
 }

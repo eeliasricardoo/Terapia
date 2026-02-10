@@ -66,7 +66,6 @@ export function PaymentConfigForm() {
 
     try {
       // TODO: Implement API call to save payment configuration
-      console.log('Payment config:', formData);
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));

@@ -1,7 +1,8 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -13,6 +14,7 @@ import {
     LogOut
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/lib/supabase/client"
 
 const MENU_ITEMS = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
@@ -26,13 +28,35 @@ interface DashboardSidebarProps {
     className?: string
 }
 
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-
 export function DashboardSidebar({ className }: DashboardSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
     const supabase = createClient()
+    const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null)
+
+    useEffect(() => {
+        async function loadUser() {
+            const { data: { user: authUser } } = await supabase.auth.getUser()
+            if (authUser) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('full_name, role')
+                    .eq('user_id', authUser.id)
+                    .single()
+
+                setUser({
+                    name: profile?.full_name || authUser.email?.split('@')[0] || 'Usuário',
+                    email: authUser.email || '',
+                    role: profile?.role === 'PSYCHOLOGIST' ? 'Psicólogo' : 'Paciente'
+                })
+            }
+        }
+        loadUser()
+    }, [supabase])
+
+    const getInitials = (name: string) => {
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    }
 
     const handleLogout = async () => {
         await supabase.auth.signOut()
@@ -46,11 +70,11 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
             <div className="flex items-center gap-3 h-16 px-6 border-b">
                 <Avatar className="h-12 w-12">
                     <AvatarImage src="/avatars/user.png" />
-                    <AvatarFallback>JP</AvatarFallback>
+                    <AvatarFallback>{user ? getInitials(user.name) : 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="overflow-hidden">
-                    <p className="font-semibold text-sm">João Perez</p>
-                    <p className="text-xs text-muted-foreground">Paciente</p>
+                    <p className="font-semibold text-sm">{user?.name || 'Carregando...'}</p>
+                    <p className="text-xs text-muted-foreground">{user?.role || ''}</p>
                 </div>
             </div>
 

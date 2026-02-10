@@ -21,8 +21,28 @@ model User {
   profiles            Profile?
   psychologistProfile PsychologistProfile?
   sessions            Session[]
+  patientAppointments      Appointment[] @relation("PatientAppointments")
+  psychologistAppointments Appointment[] @relation("PsychologistAppointments")
 
   @@map("users")
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  patientId       String            @map("patient_id")
+  psychologistId  String            @map("psychologist_id")
+  scheduledAt     DateTime          @map("scheduled_at")
+  durationMinutes Int               @default(50) @map("duration_minutes")
+  status          AppointmentStatus @default(SCHEDULED)
+  price           Decimal           @db.Decimal(10, 2)
+  meetingUrl      String?           @map("meeting_url")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  patient      User @relation("PatientAppointments", fields: [patientId], references: [id])
+  psychologist User @relation("PsychologistAppointments", fields: [psychologistId], references: [id])
+
+  @@map("appointments")
 }
 
 model Account {
@@ -93,6 +113,13 @@ model PsychologistProfile {
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("psychologist_profiles")
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELED
+  NO_SHOW
 }
 
 enum UserRole {

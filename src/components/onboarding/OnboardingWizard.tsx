@@ -76,7 +76,8 @@ export function OnboardingWizard() {
         if (step < 4) {
             setStep(step + 1)
         } else {
-            console.log("Finished", { selectedAreas, preferences, availability, history })
+            // Dados do onboarding: selectedAreas, preferences, availability, history
+            // TODO: Salvar no perfil do usuário via API
             router.push("/busca")
         }
     }
