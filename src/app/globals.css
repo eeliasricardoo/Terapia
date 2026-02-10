@@ -139,3 +139,93 @@
   outline: none !important;
   padding: 0.5rem 0.75rem !important;
 }
+
+/* Toast Animations - Simple Fade */
+[data-sonner-toast] {
+  animation: toast-fade-in 0.2s ease-out !important;
+}
+
+[data-sonner-toast][data-removed="true"] {
+  animation: toast-fade-out 0.2s ease-in !important;
+}
+
+@keyframes toast-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes toast-fade-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Dialog/Modal Animations - Simple Fade Only */
+[data-slot="dialog-content"] {
+  animation: dialog-fade-in 0.2s ease-out !important;
+}
+
+[data-slot="dialog-content"][data-state="closed"] {
+  animation: dialog-fade-out 0.15s ease-in !important;
+}
+
+[data-slot="dialog-overlay"] {
+  animation: overlay-fade-in 0.2s ease-out !important;
+}
+
+[data-slot="dialog-overlay"][data-state="closed"] {
+  animation: overlay-fade-out 0.15s ease-in !important;
+}
+
+@keyframes dialog-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlay-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}

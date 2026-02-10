@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 import { addDays, format, startOfToday, startOfWeek } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { toast } from "sonner"
 
 interface RescheduleDialogProps {
     children: React.ReactNode
@@ -33,12 +34,11 @@ const TIMES = [
 ]
 
 export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
+    const today = startOfToday()
     const [open, setOpen] = useState(false)
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+    const [selectedDate, setSelectedDate] = useState<Date | null>(today)
     const [selectedTime, setSelectedTime] = useState<string | null>(null)
     const [startIndex, setStartIndex] = useState(0)
-
-    const today = startOfToday()
     const startDate = startOfWeek(today, { weekStartsOn: 0 }) // Sunday
     const visibleDates = Array.from({ length: 7 }).map((_, i) => addDays(startDate, startIndex + i))
 
@@ -54,6 +54,20 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
 
     const formatDate = (date: Date, formatStr: string) => {
         return format(date, formatStr, { locale: ptBR })
+    }
+
+    const handleConfirmReschedule = () => {
+        if (selectedDate && selectedTime) {
+            const formattedDate = format(selectedDate, "dd 'de' MMMM", { locale: ptBR })
+            toast.success('Sessão reagendada com sucesso!', {
+                description: `Nova data: ${formattedDate} às ${selectedTime}`,
+                duration: 4000,
+            })
+            setOpen(false)
+            // Reset selections
+            setSelectedTime(null)
+            setSelectedDate(today)
+        }
     }
 
     return (
@@ -176,7 +190,7 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
                                     ? `Selecionado: ${format(selectedDate, 'dd/MM')} às ${selectedTime}`
                                     : 'Selecione um horário'}
                             </span>
-                            <Button disabled={!selectedTime || !selectedDate} onClick={() => setOpen(false)} className="w-full sm:w-auto">
+                            <Button disabled={!selectedTime || !selectedDate} onClick={handleConfirmReschedule} className="w-full sm:w-auto">
                                 Confirmar Reagendamento
                             </Button>
                         </div>

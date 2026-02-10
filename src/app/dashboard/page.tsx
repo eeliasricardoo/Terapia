@@ -32,6 +32,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { RescheduleDialog } from "@/components/dashboard/RescheduleDialog"
+import { SessionDetailsDialog } from "@/components/dashboard/SessionDetailsDialog"
 import { getCurrentUserProfile } from "@/lib/actions/profile"
 
 // Mock Data - TODO: Replace with real session data when sessions table is created
@@ -151,9 +152,11 @@ export default async function DashboardPage() {
                             </div>
 
                             <div className="flex gap-3">
-                                <Button variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
-                                    Detalhes
-                                </Button>
+                                <SessionDetailsDialog>
+                                    <Button variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800">
+                                        Detalhes
+                                    </Button>
+                                </SessionDetailsDialog>
                                 <Button className="bg-blue-600 text-white hover:bg-blue-700 shadow-md">
                                     Entrar na Sala
                                 </Button>
@@ -197,20 +200,7 @@ export default async function DashboardPage() {
                 </Card>
 
                 {/* Quick Actions Grid */}
-                <div className="col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-                        <CardContent className="p-6">
-                            <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
-                                <User className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <h3 className="font-semibold text-slate-900 mb-1">Meu Perfil</h3>
-                            <p className="text-sm text-slate-500 mb-4">Gerencie seus dados e preferências</p>
-                            <Button variant="secondary" className="bg-blue-50 text-blue-600 hover:bg-blue-100 w-full justify-start group-hover:pl-4 transition-all">
-                                Editar Perfil <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </Button>
-                        </CardContent>
-                    </Card>
-
+                <div className="col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
                         <CardContent className="p-6">
                             <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
