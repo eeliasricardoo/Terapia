@@ -34,6 +34,7 @@ import Link from "next/link"
 import { RescheduleDialog } from "@/components/dashboard/RescheduleDialog"
 import { SessionDetailsDialog } from "@/components/dashboard/SessionDetailsDialog"
 import { MoodTracker } from "@/components/dashboard/MoodTracker"
+import { SessionSummaryDialog } from "@/components/dashboard/SessionSummaryDialog"
 import { getCurrentUserProfile } from "@/lib/actions/profile"
 
 // Mock Data - TODO: Replace with real session data when sessions table is created
@@ -237,9 +238,11 @@ export default async function DashboardPage() {
                                             <p className="text-sm text-muted-foreground">{session.date}</p>
                                         </div>
                                     </div>
-                                    <Button variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm font-medium">
-                                        Ver Resumo
-                                    </Button>
+                                    <SessionSummaryDialog session={session}>
+                                        <Button variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm font-medium">
+                                            Ver Resumo
+                                        </Button>
+                                    </SessionSummaryDialog>
                                 </div>
                             ))}
                         </div>
