@@ -2,6 +2,9 @@
 -- Description: Creates auth users and their profiles for testing
 -- Note: This uses Supabase's auth.users table
 
+-- Enable pgcrypto for password hashing
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- Create psychologist 1: Dra. Ana María Rojas
 INSERT INTO auth.users (
   instance_id,
@@ -19,13 +22,14 @@ INSERT INTO auth.users (
   email_change,
   email_change_token_new,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
-  gen_random_uuid(),
+  extensions.uuid_generate_v4(),
   'authenticated',
   'authenticated',
   'ana.rojas@terapia.com',
-  crypt('Senha123!', gen_salt('bf')),
+  extensions.crypt('Senha123!', extensions.gen_salt('bf')),
   NOW(),
   '{"provider":"email","providers":["email"]}',
   '{"full_name":"Dra. Ana María Rojas"}',
@@ -35,6 +39,8 @@ INSERT INTO auth.users (
   '',
   '',
   ''
+WHERE NOT EXISTS (
+    SELECT 1 FROM auth.users WHERE email = 'ana.rojas@terapia.com'
 ) RETURNING id;
 
 -- Note: The above approach requires pgcrypto extension and direct access to auth schema
