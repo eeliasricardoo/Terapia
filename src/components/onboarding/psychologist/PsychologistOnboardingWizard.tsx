@@ -12,14 +12,14 @@ import { useRouter } from "next/navigation"
 import { SPECIALTIES, APPROACHES } from "./constants"
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react"
 import { useAuth } from "@/components/providers/auth-provider"
-
-// We will simulate saving profile data for now
-// In real app, this would be a server action
+import { savePsychologistProfile } from "@/lib/actions/onboarding"
+import { toast } from "@/components/ui/use-toast"
 
 export function PsychologistOnboardingWizard() {
     const [step, setStep] = useState(1)
     const router = useRouter()
     const { user } = useAuth()
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const [formData, setFormData] = useState({
         crp: "",
@@ -73,13 +73,42 @@ export function PsychologistOnboardingWizard() {
     }
 
     const handleSubmit = async () => {
-        // TODO: Call server action to save psychologist profile
-        console.log("Submitting psychologist profile:", formData)
+        setIsSubmitting(true)
 
-        // Simulate loading
-        setTimeout(() => {
-            router.push("/dashboard") // Redirect to psychologist dashboard
-        }, 1500)
+        try {
+            const result = await savePsychologistProfile({
+                fullName: formData.fullName,
+                crp: formData.crp,
+                specialties: formData.specialties,
+                approaches: formData.approaches,
+                bio: formData.bio,
+                price: parseFloat(formData.price),
+                videoUrl: formData.videoUrl
+            })
+
+            if (result.success) {
+                toast({
+                    title: "Perfil criado com sucesso!",
+                    description: "Redirecionando para seu painel...",
+                })
+                router.push("/dashboard")
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Erro ao criar perfil",
+                    description: result.error || "Tente novamente mais tarde.",
+                })
+            }
+        } catch (error) {
+            console.error(error)
+            toast({
+                variant: "destructive",
+                title: "Erro inesperado",
+                description: "Ocorreu um erro ao salvar seus dados." + error,
+            })
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     // Render Step Content based on current step
@@ -308,6 +337,7 @@ export function PsychologistOnboardingWizard() {
                                 : "bg-blue-600 hover:bg-blue-700 shadow-blue-600/20"
                         )}
                         disabled={
+                            isSubmitting ||
                             (step === 1 && (!formData.fullName || !formData.crp)) ||
                             (step === 2 && formData.specialties.length === 0) ||
                             (step === 3 && formData.approaches.length === 0) ||
@@ -315,8 +345,18 @@ export function PsychologistOnboardingWizard() {
                             (step === 5 && !formData.price)
                         }
                     >
-                        {step === 5 ? "Começar a Atender" : "Continuar"}
-                        {step !== 5 && <ArrowRight className="ml-2 h-4 w-4" />}
+                        {isSubmitting ? (
+                            <span className="flex items-center gap-2">
+                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                Salvando...
+                            </span>
+                        ) : step === 5 ? (
+                            "Começar a Atender"
+                        ) : (
+                            <>
+                                Continuar <ArrowRight className="ml-2 h-4 w-4" />
+                            </>
+                        )}
                     </Button>
                 </div>
             </CardContent>
