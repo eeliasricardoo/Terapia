@@ -680,9 +680,10 @@ export function ScheduleManager() {
                                         )}
                                     </div>
                                 )}
-                            </>
+                            </div>
+                        </>
                     )}
-                        </Card>
+                </Card>
             </div>
         </div>
     )
