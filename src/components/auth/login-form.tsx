@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { UserAuthForm } from "@/components/auth/user-auth-form"
+
 
 // Reusing UserAuthForm logic but focusing on existing users
 export function LoginForm() {
@@ -101,5 +101,4 @@ export function LoginForm() {
     )
 }
 
-// Just export UserAuthForm for consistency elsewhere if needed
-export { UserAuthForm } from "@/components/auth/user-auth-form"
+// End of file

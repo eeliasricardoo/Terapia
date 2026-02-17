@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
-import { Plus, Trash2, Clock, Save, Calendar as CalendarIcon, Ban, RotateCcw, Settings2, Info, CheckCircle2 } from "lucide-react"
+import { Plus, Trash2, Clock, Save, Calendar as CalendarIcon, Ban, RotateCcw, Settings2, Info, CheckCircle2, Users } from "lucide-react"
 import { toast } from "sonner"
 import { ptBR } from "date-fns/locale"
 import { format, isSameDay } from "date-fns"
@@ -37,6 +37,14 @@ type DateOverride = {
 
 type OverridesMap = {
     [dateStr: string]: DateOverride
+}
+
+type ScheduledAppointment = {
+    id: string
+    scheduled_at: string
+    duration: number
+    status: string
+    patient_name: string
 }
 
 // --- Constants ---
@@ -73,6 +81,7 @@ export function ScheduleManager() {
 
     // Overrides (The "Exception" Layer)
     const [overrides, setOverrides] = useState<OverridesMap>({})
+    const [appointments, setAppointments] = useState<ScheduledAppointment[]>([])
 
     // Dialog State
     const [isWeeklyConfigOpen, setIsWeeklyConfigOpen] = useState(false)
@@ -111,6 +120,30 @@ export function ScheduleManager() {
                         }
                     })
                     setOverrides(newOverrides)
+                }
+
+                // Load Appointments
+                const { data: dbAppointments } = await supabase
+                    .from('appointments')
+                    .select(`
+                        id,
+                        scheduled_at,
+                        duration_minutes,
+                        status,
+                        patient:patient_id (
+                            full_name
+                        )
+                    `)
+                    .eq('psychologist_id', profile.id)
+
+                if (dbAppointments) {
+                    setAppointments(dbAppointments.map(a => ({
+                        id: a.id,
+                        scheduled_at: a.scheduled_at,
+                        duration: a.duration_minutes,
+                        status: a.status,
+                        patient_name: (a.patient as any)?.full_name || 'Paciente'
+                    })))
                 }
             }
         }
@@ -461,13 +494,19 @@ export function ScheduleManager() {
                                 hasRoutine: (date: Date) => {
                                     const key = getWeekDayKey(date)
                                     return weeklySchedule[key]?.enabled && !overrides[format(date, 'yyyy-MM-dd')]
+                                },
+                                hasAppointment: (date: Date) => {
+                                    const dateStr = format(date, 'yyyy-MM-dd')
+                                    return appointments.some(a => a.scheduled_at.startsWith(dateStr))
                                 }
                             }}
                             components={{
                                 DayContent: ({ date }: { date: Date }) => {
-                                    const isBlocked = overrides[format(date, 'yyyy-MM-dd')]?.type === 'blocked'
-                                    const isCustom = overrides[format(date, 'yyyy-MM-dd')]?.type === 'custom'
+                                    const dateStr = format(date, 'yyyy-MM-dd')
+                                    const isBlocked = overrides[dateStr]?.type === 'blocked'
+                                    const isCustom = overrides[dateStr]?.type === 'custom'
                                     const hasRoutine = weeklySchedule[getWeekDayKey(date)]?.enabled && !isBlocked && !isCustom
+                                    const hasAppt = appointments.some(a => a.scheduled_at.startsWith(dateStr))
 
                                     return (
                                         <div className="w-full h-full flex flex-col items-center justify-center relative">
@@ -477,6 +516,7 @@ export function ScheduleManager() {
                                                 {isCustom && <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />}
                                                 {hasRoutine && <div className="h-1.5 w-1.5 rounded-full bg-slate-300" />}
                                                 {!hasRoutine && !isBlocked && !isCustom && <div className="h-1.5 w-1.5 rounded-full border border-slate-200" />}
+                                                {hasAppt && <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
                                             </div>
                                         </div>
                                     )
@@ -488,6 +528,7 @@ export function ScheduleManager() {
                         <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-slate-300" /> Padrão</div>
                         <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-blue-500" /> Personalizado</div>
                         <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-red-400" /> Bloqueado</div>
+                        <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-emerald-500" /> Agendamento</div>
                     </CardFooter>
                 </Card>
 
@@ -601,10 +642,47 @@ export function ScheduleManager() {
                                         )}
                                     </div>
                                 )}
-                            </div>
-                        </>
+
+                                {/* Appointments List for Selected Day */}
+                                {effective?.type !== 'blocked' && (
+                                    <div className="pt-6 border-t border-slate-100 mt-6 md:pb-6">
+                                        <h4 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                            <Users className="h-4 w-4 text-slate-500" />
+                                            Agendamentos do Dia
+                                        </h4>
+
+                                        {appointments.filter(a => a.scheduled_at.startsWith(format(selectedDate, 'yyyy-MM-dd'))).length === 0 ? (
+                                            <p className="text-xs text-slate-400 italic">Nenhum agendamento para este dia.</p>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                {appointments
+                                                    .filter(a => a.scheduled_at.startsWith(format(selectedDate, 'yyyy-MM-dd')))
+                                                    .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+                                                    .map((appt) => (
+                                                        <div key={appt.id} className="flex items-start gap-3 p-3 rounded-lg bg-emerald-50 border border-emerald-100">
+                                                            <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-emerald-600 font-bold text-xs border border-emerald-100">
+                                                                {appt.patient_name.charAt(0)}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-semibold text-slate-900">{appt.patient_name}</p>
+                                                                <p className="text-xs text-emerald-700 flex items-center gap-1.5 mt-0.5">
+                                                                    <Clock className="h-3 w-3" />
+                                                                    {format(new Date(appt.scheduled_at), 'HH:mm')}
+                                                                    <span className="opacity-50">•</span>
+                                                                    {appt.duration} min
+                                                                    <span className="opacity-50">•</span>
+                                                                    {appt.status}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </>
                     )}
-                </Card>
+                        </Card>
             </div>
         </div>
     )
