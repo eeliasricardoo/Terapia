@@ -91,10 +91,12 @@ export function PsychologistDashboard({ userProfile }: Props) {
                         <Bell className="h-4 w-4" />
                         <span className="absolute top-2.5 right-2.5 h-1.5 w-1.5 bg-red-500 rounded-full" />
                     </Button>
-                    <Button variant="outline" className="gap-2 text-slate-700 border-slate-200 hover:bg-slate-50">
-                        <Settings className="h-4 w-4" />
-                        Ajustes
-                    </Button>
+                    <Link href="/dashboard/ajustes">
+                        <Button variant="outline" className="gap-2 text-slate-700 border-slate-200 hover:bg-slate-50">
+                            <Settings className="h-4 w-4" />
+                            Ajustes
+                        </Button>
+                    </Link>
                     <Button className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-200 border border-transparent transition-all">
                         <Video className="h-4 w-4" />
                         Sala Virtual

@@ -211,6 +211,7 @@ export type Database = {
           updated_at: string
           userId: string
           video_presentation_url: string | null
+          weekly_schedule: Json | null
         }
         Insert: {
           bio?: string | null
@@ -223,6 +224,7 @@ export type Database = {
           updated_at: string
           userId: string
           video_presentation_url?: string | null
+          weekly_schedule?: Json | null
         }
         Update: {
           bio?: string | null
@@ -235,6 +237,7 @@ export type Database = {
           updated_at?: string
           userId?: string
           video_presentation_url?: string | null
+          weekly_schedule?: Json | null
         }
         Relationships: [
           {
@@ -242,6 +245,41 @@ export type Database = {
             columns: ["userId"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedule_overrides: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          psychologist_id: string
+          slots: Json | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          psychologist_id: string
+          slots?: Json | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          psychologist_id?: string
+          slots?: Json | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_overrides_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "psychologist_profiles"
             referencedColumns: ["id"]
           },
         ]

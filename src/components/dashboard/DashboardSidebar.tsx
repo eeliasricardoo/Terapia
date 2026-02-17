@@ -35,6 +35,7 @@ const PSYCHOLOGIST_MENU = [
     { href: "/dashboard/configuracoes", label: "Serviços & Tarifas", icon: DollarSign },
     { href: "/dashboard/financeiro", label: "Financeiro", icon: BarChart3 },
     { href: "/dashboard/perfil", label: "Meu Perfil", icon: User },
+    { href: "/dashboard/ajustes", label: "Ajustes", icon: Settings },
 ]
 
 interface DashboardSidebarProps {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -12,6 +12,7 @@ import { toast } from "sonner"
 import { ptBR } from "date-fns/locale"
 import { format, isSameDay } from "date-fns"
 import { Badge } from "@/components/ui/badge"
+import { createClient } from "@/lib/supabase/client"
 
 // --- Types ---
 
@@ -57,6 +58,7 @@ const DEFAULT_SLOTS: TimeSlot[] = [{ start: "09:00", end: "12:00" }, { start: "1
 export function ScheduleManager() {
     // --- State ---
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
+    const [isLoading, setIsLoading] = useState(false)
 
     // Weekly Routine (The "Base" Layer)
     const [weeklySchedule, setWeeklySchedule] = useState<WeeklySchedule>({
@@ -74,6 +76,46 @@ export function ScheduleManager() {
 
     // Dialog State
     const [isWeeklyConfigOpen, setIsWeeklyConfigOpen] = useState(false)
+
+    // --- Load Data ---
+    useEffect(() => {
+        const loadData = async () => {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return
+
+            // Load Profile (Weekly Schedule)
+            const { data: profile } = await supabase
+                .from('psychologist_profiles')
+                .select('id, weekly_schedule')
+                .eq('userId', user.id)
+                .single()
+
+            if (profile?.weekly_schedule) {
+                setWeeklySchedule(profile.weekly_schedule as unknown as WeeklySchedule)
+            }
+
+            if (profile) {
+                // Load Overrides
+                const { data: dbOverrides } = await supabase
+                    .from('schedule_overrides')
+                    .select('*')
+                    .eq('psychologist_id', profile.id)
+
+                if (dbOverrides) {
+                    const newOverrides: OverridesMap = {}
+                    dbOverrides.forEach(o => {
+                        newOverrides[o.date] = {
+                            type: o.type as 'blocked' | 'custom',
+                            slots: (o.slots as any[])?.map(s => ({ start: s.start, end: s.end })) || []
+                        }
+                    })
+                    setOverrides(newOverrides)
+                }
+            }
+        }
+        loadData()
+    }, [])
 
     // --- Helpers ---
 
@@ -217,9 +259,70 @@ export function ScheduleManager() {
         }))
     }
 
-    const handleSave = () => {
-        console.log({ weeklySchedule, overrides })
-        toast.success("Alterações salvas!", { description: "Sua disponibilidade foi atualizada." })
+    const handleSave = async () => {
+        setIsLoading(true)
+        try {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return
+
+            // 1. Get Profile ID
+            const { data: profile } = await supabase
+                .from('psychologist_profiles')
+                .select('id')
+                .eq('userId', user.id)
+                .single()
+
+            if (!profile) throw new Error("Perfil não encontrado")
+
+            // 2. Save Weekly Schedule
+            await supabase
+                .from('psychologist_profiles')
+                .update({ weekly_schedule: weeklySchedule as any })
+                .eq('id', profile.id)
+
+            // 3. Save Overrides
+            // 3a. Get existing overrides to know what to delete
+            const { data: dbOverrides } = await supabase
+                .from('schedule_overrides')
+                .select('date')
+                .eq('psychologist_id', profile.id)
+
+            const dbDates = dbOverrides?.map(o => o.date) || []
+            const stateDates = Object.keys(overrides)
+
+            // Dates to delete: in DB but not in State
+            const datesToDelete = dbDates.filter(d => !stateDates.includes(d))
+
+            // Dates to upsert: all in State
+            const overridesToUpsert = stateDates.map(date => ({
+                psychologist_id: profile.id,
+                date: date,
+                type: overrides[date].type,
+                slots: overrides[date].slots as any
+            }))
+
+            if (datesToDelete.length > 0) {
+                await supabase
+                    .from('schedule_overrides')
+                    .delete()
+                    .eq('psychologist_id', profile.id)
+                    .in('date', datesToDelete)
+            }
+
+            if (overridesToUpsert.length > 0) {
+                await supabase
+                    .from('schedule_overrides')
+                    .upsert(overridesToUpsert, { onConflict: 'psychologist_id,date' })
+            }
+
+            toast.success("Alterações salvas!", { description: "Sua disponibilidade foi atualizada." })
+        } catch (error) {
+            console.error(error)
+            toast.error("Erro ao salvar", { description: "Tente novamente mais tarde." })
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     // --- Render ---
