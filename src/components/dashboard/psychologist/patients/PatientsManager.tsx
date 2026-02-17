@@ -23,7 +23,15 @@ import {
     Phone,
     Mail,
     Clock,
-    ChevronRight
+    ChevronRight,
+    Smile,
+    Meh,
+    Frown,
+    AlertCircle,
+    List,
+    Activity,
+    FilePlus,
+    Stethoscope
 } from "lucide-react"
 import {
     DropdownMenu,
@@ -216,7 +224,7 @@ export function PatientsManager() {
                         <div className="flex flex-col h-full bg-white">
                             <Tabs defaultValue="records" className="flex flex-col h-full">
                                 {/* Header */}
-                                <div className="bg-slate-50 border-b border-slate-200 p-6 pb-0">
+                                <div className="bg-slate-50 border-b border-slate-200 p-6 pr-12 pb-0">
                                     <div className="flex items-start justify-between mb-6">
                                         <div className="flex items-center gap-4">
                                             <Avatar className="h-16 w-16 border-2 border-white shadow-sm">
@@ -263,47 +271,176 @@ export function PatientsManager() {
 
                                 {/* Content */}
                                 <div className="flex-1 p-6 overflow-y-auto bg-white">
-                                    <TabsContent value="records" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                        <div className="flex justify-between items-center">
-                                            <h3 className="font-semibold text-slate-900 flex items-center gap-2 text-lg">
-                                                <FileText className="h-5 w-5 text-blue-600" />
-                                                Anotações
-                                            </h3>
-                                            <span className="text-xs font-medium text-slate-400 bg-slate-50 px-2 py-1 rounded-full">Privado (apenas você vê)</span>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            <Textarea
-                                                placeholder="Escreva uma nova anotação sobre a sessão de hoje..."
-                                                className="min-h-[150px] resize-none border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-200 focus:ring-4 focus:ring-blue-50 transition-all shadow-sm rounded-xl p-4 text-base"
-                                            />
-                                            <div className="flex justify-end">
-                                                <Button className="bg-slate-900 text-white shadow-sm hover:bg-slate-800 rounded-lg px-6">Salvar Anotação</Button>
+                                    <TabsContent value="records" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300 h-full flex flex-col">
+                                        <Tabs defaultValue="evolution" className="flex flex-col h-full">
+                                            <div className="flex items-center justify-between mb-4 px-1">
+                                                <TabsList className="bg-slate-100 p-1 rounded-lg">
+                                                    <TabsTrigger value="evolution" className="text-xs px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all">Evoluções</TabsTrigger>
+                                                    <TabsTrigger value="anamnesis" className="text-xs px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all">Anamnese</TabsTrigger>
+                                                    <TabsTrigger value="files" className="text-xs px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all">Arquivos</TabsTrigger>
+                                                </TabsList>
+                                                <Button size="sm" className="h-8 gap-2 bg-slate-900 text-white hover:bg-slate-800">
+                                                    <FilePlus className="h-3.5 w-3.5" />
+                                                    Nova Evolução
+                                                </Button>
                                             </div>
-                                        </div>
 
-                                        <div className="border-t border-slate-100 pt-8 mt-8">
-                                            <h4 className="text-sm font-bold text-slate-900 mb-6 flex items-center gap-2 uppercase tracking-wide">
-                                                <Clock className="h-4 w-4 text-slate-400" />
-                                                Histórico de Anotações
-                                            </h4>
-                                            <div className="space-y-4">
-                                                {[1, 2].map((i) => (
-                                                    <div key={i} className="bg-white border border-slate-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-all group">
-                                                        <div className="flex items-center justify-between mb-3">
-                                                            <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100 group-hover:border-slate-200 transition-colors">
-                                                                <Calendar className="h-3.5 w-3.5 text-slate-400" /> 15 Fev, 2026
-                                                            </span>
-                                                            <Badge variant="outline" className="text-[10px] h-5 border-slate-200 text-slate-500 font-medium">Sessão Regular</Badge>
+                                            <ScrollArea className="flex-1 pr-4 -mr-4">
+                                                <TabsContent value="evolution" className="space-y-6 mt-0">
+                                                    {/* New Evolution Area */}
+                                                    <Card className="border-slate-200 shadow-sm bg-slate-50/50">
+                                                        <CardHeader className="pb-3 pt-4 px-4 bg-white border-b border-slate-100 rounded-t-xl">
+                                                            <div className="flex justify-between items-center">
+                                                                <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                                                                    <Activity className="h-4 w-4 text-blue-600" />
+                                                                    Registro de Sessão
+                                                                </CardTitle>
+                                                                <span className="text-xs text-slate-400 font-mono">{new Date().toLocaleDateString('pt-BR')}</span>
+                                                            </div>
+                                                        </CardHeader>
+                                                        <CardContent className="space-y-4 p-4">
+                                                            <div>
+                                                                <label className="text-xs font-medium text-slate-500 mb-2 block uppercase tracking-wide">Como o paciente chegou hoje?</label>
+                                                                <div className="flex gap-2">
+                                                                    {[
+                                                                        { icon: Smile, label: 'Bem', color: 'text-emerald-500 bg-emerald-50 border-emerald-200' },
+                                                                        { icon: Meh, label: 'Neutro', color: 'text-amber-500 bg-amber-50 border-amber-200' },
+                                                                        { icon: Frown, label: 'Mal', color: 'text-red-500 bg-red-50 border-red-200' },
+                                                                        { icon: AlertCircle, label: 'Crise', color: 'text-purple-500 bg-purple-50 border-purple-200' },
+                                                                    ].map((mood) => (
+                                                                        <button key={mood.label} className={`flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 hover:border-slate-300 transition-all bg-white hover:shadow-sm group`}>
+                                                                            <mood.icon className={`h-4 w-4 ${mood.color.split(' ')[0]} grayscale group-hover:grayscale-0 transition-all`} />
+                                                                            <span className="text-xs font-medium text-slate-600">{mood.label}</span>
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                <div className="space-y-2">
+                                                                    <label className="text-xs font-medium text-slate-500 block uppercase tracking-wide">Resumo da Sessão (Público no Prontuário)</label>
+                                                                    <Textarea
+                                                                        placeholder="O que foi discutido hoje?"
+                                                                        className="min-h-[100px] text-sm resize-none bg-white focus:bg-white"
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <label className="text-xs font-medium text-slate-500 block uppercase tracking-wide flex items-center gap-2">
+                                                                        Análise Técnica Privada
+                                                                        <Badge variant="outline" className="text-[9px] h-4 px-1 bg-slate-100 text-slate-500 border-slate-200">Sigiloso</Badge>
+                                                                    </label>
+                                                                    <Textarea
+                                                                        placeholder="Suas impressões técnicas..."
+                                                                        className="min-h-[100px] text-sm resize-none bg-amber-50/30 border-amber-100 focus:bg-amber-50/50 focus:border-amber-200"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex justify-end pt-2">
+                                                                <Button size="sm" className="bg-slate-900 text-white">Salvar Registro</Button>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+
+                                                    {/* Timeline */}
+                                                    <div className="space-y-6 pt-2">
+                                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">Histórico Recente</h3>
+                                                        <div className="relative border-l border-slate-200 ml-4 space-y-8 pl-8 pb-4">
+                                                            {[1, 2].map((i) => (
+                                                                <div key={i} className="relative group">
+                                                                    <div className="absolute -left-[37px] top-0 h-3 w-3 rounded-full border-2 border-white bg-slate-300 group-hover:bg-blue-500 transition-all shadow-sm z-10 box-content" />
+                                                                    <Card className="border border-slate-100 shadow-sm hover:shadow-md transition-all group-hover:border-blue-100">
+                                                                        <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between space-y-0">
+                                                                            <div className="flex items-center gap-3">
+                                                                                <Badge variant="secondary" className="bg-slate-100 text-slate-600 hover:bg-slate-200">Sessão Regular</Badge>
+                                                                                <span className="text-xs text-slate-400 flex items-center gap-1">
+                                                                                    <Calendar className="h-3 w-3" /> 15 Fev • 14:00
+                                                                                </span>
+                                                                            </div>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-none flex items-center gap-1 px-2">
+                                                                                    <Smile className="h-3 w-3" /> Bem
+                                                                                </Badge>
+                                                                            </div>
+                                                                        </CardHeader>
+                                                                        <CardContent className="p-4 pt-2">
+                                                                            <p className="text-sm text-slate-600 leading-relaxed">
+                                                                                Paciente relatou melhora significativa na ansiedade social. Discutimos a exposição gradual a situações de trabalho.
+                                                                            </p>
+                                                                            <div className="mt-3 pt-3 border-t border-slate-50">
+                                                                                <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-1">Análise Técnica</p>
+                                                                                <p className="text-xs text-slate-500 italic">
+                                                                                    Nota-se avanço na estruturação cognitiva. Manter foco em TCC nas próximas sessões.
+                                                                                </p>
+                                                                            </div>
+                                                                        </CardContent>
+                                                                    </Card>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                        <p className="text-sm text-slate-600 leading-relaxed">
-                                                            Paciente relatou melhoria nos quadros de ansiedade durante a semana.
-                                                            Discutimos técnicas de respiração e enfrentamento de situações de estresse no trabalho.
-                                                        </p>
                                                     </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                                </TabsContent>
+
+                                                <TabsContent value="anamnesis" className="space-y-6 mt-0">
+                                                    <Card className="border-slate-200 shadow-sm">
+                                                        <CardHeader className="bg-slate-50 border-b border-slate-100 pb-4">
+                                                            <CardTitle className="text-base flex items-center gap-2">
+                                                                <Stethoscope className="h-4 w-4 text-blue-600" />
+                                                                Anamnese & Histórico
+                                                            </CardTitle>
+                                                            <CardDescription>Informações coletadas na primeira sessão.</CardDescription>
+                                                        </CardHeader>
+                                                        <CardContent className="p-6 space-y-6">
+                                                            <div className="space-y-2">
+                                                                <label className="text-sm font-medium text-slate-700">Queixa Principal</label>
+                                                                <Textarea
+                                                                    className="bg-slate-50 border-slate-200 focus:bg-white min-h-[80px] resize-none"
+                                                                    defaultValue="Ansiedade excessiva relacionada ao trabalho e dificuldade de dormir."
+                                                                />
+                                                            </div>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                                <div className="space-y-2">
+                                                                    <label className="text-sm font-medium text-slate-700">Histórico Familiar</label>
+                                                                    <Textarea
+                                                                        className="bg-slate-50 border-slate-200 focus:bg-white min-h-[100px] resize-none"
+                                                                        defaultValue="Mãe com histórico de depressão. Pai falecido (infarto)."
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <label className="text-sm font-medium text-slate-700">Medicamentos em Uso</label>
+                                                                    <Textarea
+                                                                        className="bg-slate-50 border-slate-200 focus:bg-white min-h-[100px] resize-none"
+                                                                        defaultValue="Sertralina 50mg (manhã)."
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <label className="text-sm font-medium text-slate-700">Hipótese Diagnóstica</label>
+                                                                <Input
+                                                                    className="bg-slate-50 border-slate-200 focus:bg-white"
+                                                                    defaultValue="TAG (Transtorno de Ansiedade Generalizada) - F41.1"
+                                                                />
+                                                            </div>
+                                                            <div className="flex justify-end">
+                                                                <Button variant="outline" className="text-slate-600">Atualizar Anamnese</Button>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                </TabsContent>
+
+                                                <TabsContent value="files" className="space-y-6 mt-0">
+                                                    <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                                                        <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+                                                            <FilePlus className="h-6 w-6 text-slate-400" />
+                                                        </div>
+                                                        <h3 className="text-sm font-medium text-slate-900">Nenhum arquivo anexado</h3>
+                                                        <p className="text-xs text-slate-500 mt-1 mb-4 text-center max-w-[200px]">
+                                                            Faça upload de exames, encaminhamentos ou documentos assinados.
+                                                        </p>
+                                                        <Button size="sm" variant="outline">Fazer Upload</Button>
+                                                    </div>
+                                                </TabsContent>
+                                            </ScrollArea>
+                                        </Tabs>
                                     </TabsContent>
 
                                     <TabsContent value="history" className="space-y-8 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
