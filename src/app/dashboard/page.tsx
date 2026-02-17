@@ -1,3 +1,6 @@
+import { PsychologistDashboard } from "@/components/dashboard/psychologist/PsychologistDashboard"
+import { redirect } from "next/navigation"
+
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -57,6 +60,15 @@ const HISTORY = [
 export default async function DashboardPage() {
     // Fetch current user profile
     const userProfile = await getCurrentUserProfile()
+
+    if (!userProfile) {
+        redirect("/auth/login")
+    }
+
+    if (userProfile.role === 'PSYCHOLOGIST') {
+        return <PsychologistDashboard userProfile={userProfile} />
+    }
+
     const userName = userProfile?.full_name?.split(' ')[0] || 'Usuário'
 
     return (
