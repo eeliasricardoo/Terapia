@@ -14,7 +14,8 @@ import {
     LogOut,
     Users,
     DollarSign,
-    Settings
+    Settings,
+    BarChart3
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
@@ -31,9 +32,9 @@ const PSYCHOLOGIST_MENU = [
     { href: "/dashboard", label: "Visão Geral", icon: LayoutGrid },
     { href: "/dashboard/agenda", label: "Minha Agenda", icon: Calendar },
     { href: "/dashboard/pacientes", label: "Meus Pacientes", icon: Users },
-    { href: "/dashboard/financeiro", label: "Financeiro", icon: DollarSign },
+    { href: "/dashboard/financeiro", label: "Financeiro", icon: BarChart3 },
     { href: "/dashboard/perfil", label: "Meu Perfil", icon: User },
-    { href: "/dashboard/configuracoes", label: "Configurações", icon: Settings },
+    { href: "/dashboard/configuracoes", label: "Serviços & Tarifas", icon: DollarSign },
 ]
 
 interface DashboardSidebarProps {
