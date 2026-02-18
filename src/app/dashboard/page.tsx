@@ -271,13 +271,13 @@ export default async function DashboardPage() {
                         <div className="divide-y">
                             {HISTORY.map((session) => (
                                 <div key={session.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                                        <div className="h-10 w-10 shrink-0 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
                                             <CalendarIcon className="h-5 w-5" />
                                         </div>
-                                        <div>
-                                            <p className="font-medium text-slate-900">Sessão com {session.doctor}</p>
-                                            <p className="text-sm text-muted-foreground">{session.date}</p>
+                                        <div className="min-w-0">
+                                            <p className="font-medium text-slate-900 truncate">Sessão com {session.doctor}</p>
+                                            <p className="text-sm text-muted-foreground truncate">{session.date}</p>
                                         </div>
                                     </div>
                                     <SessionSummaryDialog session={session}>

@@ -493,7 +493,7 @@ export function ScheduleManager() {
             </div>
 
             {/* Main Content Areas */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[600px]">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-[600px] h-auto">
                 {/* Visual Calendar */}
                 <Card className="lg:col-span-8 border border-slate-200 shadow-sm bg-white overflow-hidden flex flex-col">
                     <CardHeader className="border-b border-slate-50 pb-4 bg-slate-50/30">

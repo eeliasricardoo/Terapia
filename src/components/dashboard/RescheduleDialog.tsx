@@ -76,7 +76,7 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
                 {children}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[900px] p-0 overflow-hidden gap-0">
-                <div className="flex flex-col md:flex-row h-[600px] md:h-[550px]">
+                <div className="flex flex-col md:flex-row h-[80vh] md:h-[550px]">
                     {/* Left Side - Profile Info */}
                     <div className="w-full md:w-1/3 bg-slate-50 p-6 flex flex-col border-r">
                         <div className="flex items-start gap-4 mb-4">
