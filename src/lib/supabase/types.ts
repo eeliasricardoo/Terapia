@@ -211,6 +211,7 @@ export type Database = {
           updated_at: string
           userId: string
           video_presentation_url: string | null
+          weekly_schedule: Json | null
         }
         Insert: {
           bio?: string | null
@@ -223,6 +224,7 @@ export type Database = {
           updated_at: string
           userId: string
           video_presentation_url?: string | null
+          weekly_schedule?: Json | null
         }
         Update: {
           bio?: string | null
@@ -235,6 +237,7 @@ export type Database = {
           updated_at?: string
           userId?: string
           video_presentation_url?: string | null
+          weekly_schedule?: Json | null
         }
         Relationships: [
           {
@@ -242,6 +245,41 @@ export type Database = {
             columns: ["userId"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedule_overrides: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          psychologist_id: string
+          slots: Json | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          psychologist_id: string
+          slots?: Json | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          psychologist_id?: string
+          slots?: Json | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_overrides_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "psychologist_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -474,21 +512,25 @@ export const Constants = {
     },
   },
 } as const
-
-// Custom Types Helpers
-export type Profile = Database['public']['Tables']['profiles']['Row']
-export type PsychologistProfile = Database['public']['Tables']['psychologist_profiles']['Row']
+// Helper Types
+export type Profile = Tables<'profiles'>
+export type PsychologistProfile = Tables<'psychologist_profiles'>
+export type User = Tables<'users'>
+export type Appointment = Tables<'appointments'>
+export type Session = Tables<'sessions'>
+export type Account = Tables<'accounts'>
+export type VerificationToken = Tables<'verification_tokens'>
 
 export type PsychologistWithProfile = PsychologistProfile & {
   profile: Profile | null
 }
 
-export type SessionWithDetails = Database['public']['Tables']['appointments']['Row'] & {
+export type SessionWithDetails = Appointment & {
   psychologist: Profile | null
   patient: Profile | null
 }
 
-export interface PsychologistSearchFilters {
+export type PsychologistSearchFilters = {
   specialties?: string[]
   minPrice?: number
   maxPrice?: number

@@ -22,8 +22,7 @@ model User {
   psychologistProfile PsychologistProfile?
   sessions            Session[]
   patientAppointments      Appointment[] @relation("PatientAppointments")
-  psychologistAppointments Appointment[] @relation("PsychologistAppointments")
-
+  
   @@map("users")
 }
 
@@ -39,8 +38,8 @@ model Appointment {
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @updatedAt @map("updated_at")
 
-  patient      User @relation("PatientAppointments", fields: [patientId], references: [id])
-  psychologist User @relation("PsychologistAppointments", fields: [psychologistId], references: [id])
+  patient      User                @relation("PatientAppointments", fields: [patientId], references: [id])
+  psychologist PsychologistProfile @relation(fields: [psychologistId], references: [id])
 
   @@map("appointments")
 }
@@ -110,9 +109,29 @@ model PsychologistProfile {
   isVerified           Boolean  @default(false) @map("is_verified")
   createdAt            DateTime @default(now()) @map("created_at")
   updatedAt            DateTime @updatedAt @map("updated_at")
+  
+  weeklySchedule       Json?    @map("weekly_schedule")
+  
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments         Appointment[]
+  scheduleOverrides    ScheduleOverride[]
 
   @@map("psychologist_profiles")
+}
+
+model ScheduleOverride {
+  id              String             @id @default(uuid())
+  psychologistId  String             @map("psychologist_id")
+  date            String             // Format YYYY-MM-DD
+  type            String             // 'blocked' | 'custom'
+  slots           Json               // Array of { start, end }
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+
+  psychologist    PsychologistProfile @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+
+  @@unique([psychologistId, date])
+  @@map("schedule_overrides")
 }
 
 enum AppointmentStatus {
