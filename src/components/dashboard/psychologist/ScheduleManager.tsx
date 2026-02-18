@@ -114,9 +114,10 @@ export function ScheduleManager() {
                 if (dbOverrides) {
                     const newOverrides: OverridesMap = {}
                     dbOverrides.forEach(o => {
+                        const slots = (o.slots as unknown as TimeSlot[]) || []
                         newOverrides[o.date] = {
                             type: o.type as 'blocked' | 'custom',
-                            slots: (o.slots as any[])?.map(s => ({ start: s.start, end: s.end })) || []
+                            slots: slots.map(s => ({ start: s.start, end: s.end }))
                         }
                     })
                     setOverrides(newOverrides)
@@ -142,7 +143,7 @@ export function ScheduleManager() {
                         scheduled_at: a.scheduled_at,
                         duration: a.duration_minutes,
                         status: a.status,
-                        patient_name: (a.patient as any)?.full_name || 'Paciente'
+                        patient_name: (a.patient as unknown as { full_name: string })?.full_name || 'Paciente'
                     })))
                 }
             }
@@ -309,9 +310,10 @@ export function ScheduleManager() {
             if (!profile) throw new Error("Perfil não encontrado")
 
             // 2. Save Weekly Schedule
+            // Using unknown here to satisfy Supabase's Json type constraint while passing our defined type
             await supabase
                 .from('psychologist_profiles')
-                .update({ weekly_schedule: weeklySchedule as any })
+                .update({ weekly_schedule: weeklySchedule as unknown as { [key: string]: any } })
                 .eq('id', profile.id)
 
             // 3. Save Overrides
@@ -332,7 +334,7 @@ export function ScheduleManager() {
                 psychologist_id: profile.id,
                 date: date,
                 type: overrides[date].type,
-                slots: overrides[date].slots as any
+                slots: overrides[date].slots as unknown as { [key: string]: any }
             }))
 
             if (datesToDelete.length > 0) {
