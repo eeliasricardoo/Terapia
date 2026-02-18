@@ -111,6 +111,7 @@ model PsychologistProfile {
   updatedAt            DateTime @updatedAt @map("updated_at")
   
   weeklySchedule       Json?    @map("weekly_schedule")
+  timezone             String   @default("America/Sao_Paulo")
   
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   appointments         Appointment[]

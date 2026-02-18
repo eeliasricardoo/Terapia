@@ -23,6 +23,7 @@ import { Separator } from "@/components/ui/separator"
 import type { PsychologistWithProfile } from "@/lib/supabase/types"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import { getTimeZoneLabel } from "@/lib/date-utils"
 
 const TIME_SLOTS = [
     "09:00", "10:00", "11:00",
@@ -302,10 +303,13 @@ export function PsychologistProfileClient({ psychologist }: Props) {
                                     )}
                                 </div>
                                 <CardContent className="p-6">
-                                    <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                    <h3 className="font-bold text-slate-900 mb-1 flex items-center gap-2">
                                         <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
                                         Selecione um horário
                                     </h3>
+                                    <p className="text-xs text-slate-500 mb-4 ml-4">
+                                        Fuso horário: {getTimeZoneLabel(psychologist.timezone || "America/Sao_Paulo")}
+                                    </p>
 
                                     <div className="mb-6 bg-slate-50 rounded-xl p-4 border border-slate-100">
                                         <div className="flex items-center justify-between mb-4">

@@ -63,10 +63,24 @@ const HOURS = Array.from({ length: 24 }).map((_, i) => i.toString().padStart(2, 
 
 const DEFAULT_SLOTS: TimeSlot[] = [{ start: "09:00", end: "12:00" }, { start: "14:00", end: "18:00" }]
 
+const TIMEZONES = [
+    "America/Sao_Paulo",
+    "America/Manaus",
+    "America/Belem",
+    "America/Fortaleza",
+    "America/Recife",
+    "America/Cuiaba",
+    "America/Bahia",
+    "Europe/Lisbon",
+    "Europe/London",
+    "UTC"
+]
+
 export function ScheduleManager() {
     // --- State ---
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
     const [isLoading, setIsLoading] = useState(false)
+    const [timezone, setTimezone] = useState("America/Sao_Paulo")
 
     // Weekly Routine (The "Base" Layer)
     const [weeklySchedule, setWeeklySchedule] = useState<WeeklySchedule>({
@@ -96,12 +110,15 @@ export function ScheduleManager() {
             // Load Profile (Weekly Schedule)
             const { data: profile } = await supabase
                 .from('psychologist_profiles')
-                .select('id, weekly_schedule')
+                .select('id, weekly_schedule, timezone')
                 .eq('userId', user.id)
                 .single()
 
             if (profile?.weekly_schedule) {
                 setWeeklySchedule(profile.weekly_schedule as unknown as WeeklySchedule)
+            }
+            if (profile?.timezone) {
+                setTimezone(profile.timezone)
             }
 
             if (profile) {
@@ -313,7 +330,10 @@ export function ScheduleManager() {
             // Using unknown here to satisfy Supabase's Json type constraint while passing our defined type
             await supabase
                 .from('psychologist_profiles')
-                .update({ weekly_schedule: weeklySchedule as unknown as { [key: string]: any } })
+                .update({
+                    weekly_schedule: weeklySchedule as unknown as { [key: string]: any },
+                    timezone: timezone
+                })
                 .eq('id', profile.id)
 
             // 3. Save Overrides
@@ -370,6 +390,19 @@ export function ScheduleManager() {
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight text-slate-900">Gerenciar Agenda</h2>
                     <p className="text-slate-500">Controle total sobre seus dias de atendimento e horários.</p>
+                    <div className="mt-2 flex items-center gap-2">
+                        <span className="text-sm text-slate-500">Fuso Horário:</span>
+                        <Select value={timezone} onValueChange={setTimezone}>
+                            <SelectTrigger className="w-[180px] h-8 text-xs">
+                                <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {TIMEZONES.map(tz => (
+                                    <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-3">
