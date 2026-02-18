@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Lock, CreditCard, ShieldCheck, Ticket, Check, ChevronRight } from "lucide-react"
 import Link from "next/link"
 
-export default function PaymentPage() {
+function PaymentContent() {
     const searchParams = useSearchParams()
     const doctorId = searchParams.get("doctor")
     const date = searchParams.get("date")
@@ -278,5 +278,13 @@ export default function PaymentPage() {
             </main>
             <Footer />
         </div>
+    )
+}
+
+export default function PaymentPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Carregando...</div>}>
+            <PaymentContent />
+        </Suspense>
     )
 }

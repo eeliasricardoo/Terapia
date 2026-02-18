@@ -56,34 +56,6 @@ export async function savePsychologistProfile(data: PsychologistOnboardingData) 
         const { error: psychError } = await supabase
             .from('psychologist_profiles')
             .upsert({
-                userId: user.id, // Using the column name from schema which maps to userId usually, but Supabase uses snake_case usually if mapped.
-                // Let's check prisma schema mapping: `userId String @unique` but no `@map`. Wait.
-                // In `PsychologistProfile`: `userId String @unique`
-                // BUT usually prisma camelCases fields. In DB it might be `userId` or `user_id`.
-                // Looking at `schema.prisma`:
-                // `userId String @unique` -> No @map, so column name is `userId`?
-                // `pricePerSession` -> `@map("price_per_session")`
-                // `createdAt` -> `@map("created_at")`
-                // `videPresentationUrl` -> `@map("video_presentation_url")`
-
-                // However, Prisma default for foreign keys might be camelCase if not mapped.
-                // BUT, looking at `Profile` model: `user_id String @unique`.
-                // Let's look at `Appointment` model: `patientId String @map("patient_id")`.
-
-                // CRITICAL: Supabase API uses the DATABASE column names.
-                // I need to be sure about `psychologist_profiles` user id column name.
-                // In `schema.prisma`: `model PsychologistProfile { userId String @unique ...`
-                // It does NOT have a @map. This means Prisma thinks the column is `userId`.
-                // However, `Profile` has `user_id`.
-                // If the table was created via Prisma push, it handles it.
-                // If I assume standard naming conventions, it might be `userId` (mixed case) if not mapped to snake_case.
-                // Let's try `userId` first as per schema definition without map. 
-                // Wait, if I look at `getPsychologistById` in `psychologists.ts`:
-                // `.eq('userId', userId)`
-                // So it seems the column name IS `userId` (camelCase) in the DB? Or the Supabase client wrapper handles it?
-                // The Supabase JS client takes the column name directly.
-                // `psychologists.ts` uses `.eq('userId', userId)`. This suggests the column is indeed `userId`.
-
                 userId: user.id,
                 crp: data.crp,
                 bio: data.bio,

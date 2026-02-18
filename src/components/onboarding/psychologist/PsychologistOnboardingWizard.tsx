@@ -13,17 +13,17 @@ import { SPECIALTIES, APPROACHES } from "./constants"
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react"
 import { useAuth } from "@/components/providers/auth-provider"
 import { savePsychologistProfile } from "@/lib/actions/onboarding"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 
 export function PsychologistOnboardingWizard() {
     const [step, setStep] = useState(1)
     const router = useRouter()
-    const { user } = useAuth()
+    const { user, fullName } = useAuth()
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const [formData, setFormData] = useState({
         crp: "",
-        fullName: user?.name || "",
+        fullName: fullName || "",
         specialties: [] as string[],
         approaches: [] as string[],
         bio: "",
@@ -87,23 +87,18 @@ export function PsychologistOnboardingWizard() {
             })
 
             if (result.success) {
-                toast({
-                    title: "Perfil criado com sucesso!",
+                toast.success("Perfil criado com sucesso!", {
                     description: "Redirecionando para seu painel...",
                 })
                 router.push("/dashboard")
             } else {
-                toast({
-                    variant: "destructive",
-                    title: "Erro ao criar perfil",
+                toast.error("Erro ao criar perfil", {
                     description: result.error || "Tente novamente mais tarde.",
                 })
             }
         } catch (error) {
             console.error(error)
-            toast({
-                variant: "destructive",
-                title: "Erro inesperado",
+            toast.error("Erro inesperado", {
                 description: "Ocorreu um erro ao salvar seus dados." + error,
             })
         } finally {

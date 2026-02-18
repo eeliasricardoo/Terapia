@@ -62,7 +62,7 @@ export default async function DashboardPage() {
     const userProfile = await getCurrentUserProfile()
 
     if (!userProfile) {
-        redirect("/auth/login")
+        redirect("/onboarding")
     }
 
     if (userProfile.role === 'PSYCHOLOGIST') {
