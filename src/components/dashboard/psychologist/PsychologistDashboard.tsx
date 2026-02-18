@@ -270,13 +270,13 @@ export function PsychologistDashboard({ userProfile }: Props) {
                 {/* Quick Actions / Recent Patients */}
                 <div className="space-y-6">
                     <Card className="border-none shadow-sm bg-white">
-                        <CardHeader className="pb-3 border-b border-slate-50 pt-5">
+                        <CardHeader className="pb-2 border-b border-slate-50 pt-4 px-4">
                             <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                                 <Settings className="h-3 w-3" />
                                 Acesso Rápido
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-2">
+                        <CardContent className="p-2 pt-3">
                             <div className="space-y-1">
                                 <Button variant="ghost" className="w-full justify-start h-10 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 px-3 transition-colors" asChild>
                                     <Link href="/dashboard/agenda">
@@ -299,7 +299,7 @@ export function PsychologistDashboard({ userProfile }: Props) {
                     </Card>
 
                     <Card className="border-none shadow-sm bg-white">
-                        <CardHeader className="pb-3 border-b border-slate-50 pt-5">
+                        <CardHeader className="pb-2 border-b border-slate-50 pt-4 px-4">
                             <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                                 <Clock className="h-3 w-3" />
                                 Histórico Recente

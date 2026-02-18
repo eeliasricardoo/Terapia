@@ -60,11 +60,14 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
                         .eq('user_id', authUser.id)
                         .single()
 
+                    const metaRole = authUser.user_metadata?.role as string | undefined
+                    const finalRole = profile?.role || (metaRole === 'PSYCHOLOGIST' ? 'PSYCHOLOGIST' : 'PATIENT')
+
                     setUser({
-                        name: profile?.full_name || authUser.email?.split('@')[0] || 'Usuário',
+                        name: profile?.full_name || authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Usuário',
                         email: authUser.email || '',
-                        role: profile?.role === 'PSYCHOLOGIST' ? 'Psicólogo' : 'Paciente',
-                        rawRole: profile?.role || 'PATIENT'
+                        role: finalRole === 'PSYCHOLOGIST' ? 'Psicólogo' : 'Paciente',
+                        rawRole: finalRole
                     })
                 }
             } catch (error) {

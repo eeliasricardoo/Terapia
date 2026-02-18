@@ -1,5 +1,6 @@
 import { PsychologistDashboard } from "@/components/dashboard/psychologist/PsychologistDashboard"
 import { redirect } from "next/navigation"
+import { cookies } from "next/headers"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -40,6 +41,8 @@ import { MoodTracker } from "@/components/dashboard/MoodTracker"
 import { SessionSummaryDialog } from "@/components/dashboard/SessionSummaryDialog"
 import { getCurrentUserProfile } from "@/lib/actions/profile"
 
+import { createClient } from "@/lib/supabase/server"
+
 // Mock Data - TODO: Replace with real session data when sessions table is created
 const NEXT_SESSION = {
     id: 1,
@@ -59,10 +62,37 @@ const HISTORY = [
 
 export default async function DashboardPage() {
     // Fetch current user profile
-    const userProfile = await getCurrentUserProfile()
+    let userProfile = await getCurrentUserProfile()
 
     if (!userProfile) {
-        redirect("/onboarding")
+        // Fallback: se o perfil não existir, tentamos pegar os dados do Auth
+        // isso evita o erro "Perfil não encontrado" para usuários antigos ou criados manualmente
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (user) {
+            // Tenta pegar o role do metadata, default para PATIENT
+            const metaRole = user.user_metadata?.role as string | undefined
+
+            // Valida se o role é um dos valores permitidos, senão usa PATIENT
+            const validRoles = ['PATIENT', 'PSYCHOLOGIST', 'COMPANY', 'ADMIN']
+            const role = (validRoles.includes(metaRole || '') ? metaRole : 'PATIENT') as 'PATIENT' | 'PSYCHOLOGIST' | 'COMPANY' | 'ADMIN'
+
+            userProfile = {
+                id: 'temp',
+                user_id: user.id,
+                full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário',
+                role: (user.user_metadata?.role || 'PATIENT') as 'PATIENT' | 'PSYCHOLOGIST' | 'COMPANY' | 'ADMIN',
+                avatar_url: null,
+                phone: null,
+                birth_date: null,
+                document: null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            }
+        } else {
+            redirect('/login/paciente')
+        }
     }
 
     if (userProfile.role === 'PSYCHOLOGIST') {
