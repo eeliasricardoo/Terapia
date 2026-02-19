@@ -240,10 +240,12 @@ export function PsychologistDashboard({ userProfile }: Props) {
 
                                             <div className="flex items-center gap-3">
                                                 {isNext ? (
-                                                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 h-9 shadow-md shadow-blue-200 text-xs font-semibold transition-all hover:scale-105">
-                                                        <Video className="w-3 h-3 mr-2" />
-                                                        Iniciar Atendimento
-                                                    </Button>
+                                                    <Link href={`/sala/${session.id}`} className="w-full">
+                                                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 h-9 shadow-md shadow-blue-200 text-xs font-semibold transition-all hover:scale-105 w-full">
+                                                            <Video className="w-3 h-3 mr-2" />
+                                                            Iniciar Atendimento
+                                                        </Button>
+                                                    </Link>
                                                 ) : (
                                                     <Button variant="ghost" size="icon" className="text-slate-400 hover:text-slate-900 h-8 w-8 hover:bg-slate-100 rounded-full">
                                                         <MoreHorizontal className="h-4 w-4" />
