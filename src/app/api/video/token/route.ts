@@ -83,7 +83,12 @@ export async function POST(req: Request) {
             : (appointment.patient.name || "Paciente")
 
         try {
-            const token = await createDailyToken(roomName, userName, isOwner)
+            // Security: Set token duration to Appointment Duration + 20 minutes buffer
+            // This ensures the call automatically cuts off preventing billing overages
+            const durationBuffer = 20; // 20 minutes
+            const durationInSeconds = ((appointment.durationMinutes || 50) + durationBuffer) * 60;
+
+            const token = await createDailyToken(roomName, userName, isOwner, durationInSeconds)
             return NextResponse.json({ token, url: roomUrl })
         } catch (error) {
             console.error("Error creating Daily token:", error)

@@ -34,8 +34,9 @@ export async function createDailyRoom(roomName?: string): Promise<CreateRoomResp
         properties: {
             enable_chat: true,
             enable_screenshare: true,
-            // Default expiration: 24 hours from now
-            exp: Math.round(Date.now() / 1000) + 24 * 60 * 60,
+            // SECURITY: Hard limit room life to 2 hours
+            // The room will be automatically deleted after this timestamp
+            exp: Math.round(Date.now() / 1000) + 2 * 60 * 60,
         },
     };
 
@@ -57,23 +58,34 @@ export async function createDailyRoom(roomName?: string): Promise<CreateRoomResp
     return res.json();
 }
 
+/**
+ * Create a secure access token with strict time limits.
+ * @param durationInSeconds Max duration for the token validity (default 60 mins)
+ */
 export async function createDailyToken(
     roomName: string,
     userName: string,
-    isOwner: boolean = false
+    isOwner: boolean = false,
+    durationInSeconds: number = 3600 // 1 hour default
 ): Promise<string> {
     const headers = {
         "Content-Type": "application/json",
         Authorization: `Bearer ${DAILY_API_KEY}`,
     };
 
+    // Calculate strict expiration
+    const expirationTime = Math.round(Date.now() / 1000) + durationInSeconds;
+
     const body = {
         properties: {
             room_name: roomName,
             user_name: userName,
             is_owner: isOwner,
-            // Token expires in 2 hours
-            exp: Math.round(Date.now() / 1000) + 2 * 60 * 60,
+            // SECURITY: Token expires strictly
+            exp: expirationTime,
+            // CRITICAL: Force user ejection when token expires to prevent runaway billing
+            eject_at_token_exp: true,
+            // Optional: prevent joining before start time? (Not implemented here for simplicity)
         },
     };
 
