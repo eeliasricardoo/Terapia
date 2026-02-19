@@ -46,17 +46,19 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
     const supabase = createClient()
-    const [user, setUser] = useState<{ name: string; email: string; role: string; rawRole: string } | null>(null)
+    const [user, setUser] = useState<{ name: string; email: string; role: string; rawRole: string; avatar_url?: string } | null>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+        let channel: any;
+
         async function loadUser() {
             try {
                 const { data: { user: authUser } } = await supabase.auth.getUser()
                 if (authUser) {
                     const { data: profile } = await supabase
                         .from('profiles')
-                        .select('full_name, role')
+                        .select('full_name, role, avatar_url')
                         .eq('user_id', authUser.id)
                         .single()
 
@@ -67,8 +69,34 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
                         name: profile?.full_name || authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Usuário',
                         email: authUser.email || '',
                         role: finalRole === 'PSYCHOLOGIST' ? 'Psicólogo' : 'Paciente',
-                        rawRole: finalRole
+                        rawRole: finalRole,
+                        avatar_url: profile?.avatar_url
                     })
+
+                    // Realtime subscription
+                    channel = supabase
+                        .channel(`sidebar-profile-${authUser.id}`)
+                        .on(
+                            'postgres_changes',
+                            {
+                                event: 'UPDATE',
+                                schema: 'public',
+                                table: 'profiles',
+                                filter: `user_id=eq.${authUser.id}`,
+                            },
+                            (payload) => {
+                                const newProfile = payload.new as any
+                                setUser((prev) => {
+                                    if (!prev) return null
+                                    return {
+                                        ...prev,
+                                        name: newProfile.full_name || prev.name,
+                                        avatar_url: newProfile.avatar_url
+                                    }
+                                })
+                            }
+                        )
+                        .subscribe()
                 }
             } catch (error) {
                 console.error('Error loading user:', error)
@@ -77,6 +105,10 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
             }
         }
         loadUser()
+
+        return () => {
+            if (channel) supabase.removeChannel(channel)
+        }
     }, [supabase])
 
     const getInitials = (name: string) => {
@@ -115,7 +147,7 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
             {/* User Profile */}
             <div className="flex items-center gap-3 h-20 px-6 border-b border-slate-100">
                 <Avatar className="h-10 w-10 border border-slate-200">
-                    <AvatarImage src="/avatars/user.png" />
+                    <AvatarImage src={user?.avatar_url || "/avatars/user.png"} />
                     <AvatarFallback className="bg-slate-100 text-slate-600 font-medium">
                         {user ? getInitials(user.name) : 'U'}
                     </AvatarFallback>
