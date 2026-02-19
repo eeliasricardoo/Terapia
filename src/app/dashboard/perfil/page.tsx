@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { createClient } from "@/lib/supabase/client"
+
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,48 +15,130 @@ import { toast } from "sonner"
 
 export default function ProfilePage() {
     const [isLoading, setIsLoading] = useState(false)
+    const [isSaving, setIsSaving] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const supabase = createClient()
 
-    // Mock User Data
-    const [user, setUser] = useState({
-        name: "Ana Silva",
-        email: "ana.silva@email.com",
-        phone: "(11) 98765-4321",
-        role: "Paciente",
-        image: "/avatars/01.png" // Placeholder
-    })
+    // User Data State
+    const [user, setUser] = useState<{
+        id: string
+        name: string
+        email: string
+        phone: string
+        role: string
+        image: string | undefined
+        rawRole: string
+    } | null>(null)
 
     const [bio, setBio] = useState("")
+    const [originalBio, setOriginalBio] = useState("")
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Fetch User Data
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const { data: { user: authUser } } = await supabase.auth.getUser()
+
+                if (!authUser) return
+
+                // Fetch Profile
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('user_id', authUser.id)
+                    .single()
+
+                if (profileError && profileError.code !== 'PGRST116') {
+                    console.error('Error fetching profile:', profileError)
+                }
+
+                const isPsychologist = profile?.role === 'PSYCHOLOGIST' || authUser.user_metadata?.role === 'PSYCHOLOGIST'
+
+                setUser({
+                    id: authUser.id,
+                    name: profile?.full_name || authUser.user_metadata?.full_name || '',
+                    email: authUser.email || '',
+                    phone: profile?.phone || '',
+                    role: isPsychologist ? "Psicólogo" : "Paciente",
+                    rawRole: isPsychologist ? 'PSYCHOLOGIST' : 'PATIENT',
+                    image: profile?.avatar_url || "/avatars/01.png"
+                })
+
+                // If Psychologist, fetch bio
+                if (isPsychologist) {
+                    const { data: psychProfile } = await supabase
+                        .from('psychologist_profiles')
+                        .select('bio')
+                        .eq('userId', authUser.id)
+                        .single()
+
+                    if (psychProfile?.bio) {
+                        setBio(psychProfile.bio)
+                        setOriginalBio(psychProfile.bio)
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching user:', error)
+                toast.error('Erro ao carregar perfil')
+            }
+        }
+
+        fetchUser()
+    }, [])
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
-        if (file) {
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                toast.error('Arquivo inválido', {
-                    description: 'Por favor, selecione uma imagem.',
-                })
-                return
-            }
+        if (!file || !user) return
 
-            // Validate file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error('Arquivo muito grande', {
-                    description: 'A imagem deve ter no máximo 5MB.',
-                })
-                return
-            }
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error('Arquivo inválido', { description: 'Por favor, selecione uma imagem.' })
+            return
+        }
 
-            // Create preview URL
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setUser({ ...user, image: reader.result as string })
-                toast.success('Foto atualizada!', {
-                    description: 'Sua foto de perfil foi alterada com sucesso.',
-                    duration: 3000,
-                })
-            }
-            reader.readAsDataURL(file)
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Arquivo muito grande', { description: 'A imagem deve ter no máximo 5MB.' })
+            return
+        }
+
+        try {
+            setIsLoading(true)
+
+            // Upload to Supabase Storage
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${user.id}-${Math.random()}.${fileExt}`
+            const filePath = `avatars/${fileName}`
+
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file)
+
+            if (uploadError) throw uploadError
+
+            // Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath)
+
+            // Update Profile
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ avatar_url: publicUrl })
+                .eq('user_id', user.id)
+
+            if (updateError) throw updateError
+
+            // Update Local State
+            setUser(prev => prev ? { ...prev, image: publicUrl } : null)
+
+            toast.success('Foto atualizada!', { description: 'Sua foto de perfil foi alterada com sucesso.' })
+
+        } catch (error) {
+            console.error('Error uploading image:', error)
+            toast.error('Erro ao atualizar foto')
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -62,12 +146,52 @@ export default function ProfilePage() {
         fileInputRef.current?.click()
     }
 
-    const handleSave = () => {
-        setIsLoading(true)
-        // Simulate API call
-        setTimeout(() => {
+    const handleSaveBio = async () => {
+        if (!user || user.rawRole !== 'PSYCHOLOGIST') return
+
+        try {
+            setIsSaving(true)
+
+            const { error } = await supabase
+                .from('psychologist_profiles')
+                .update({ bio })
+                .eq('userId', user.id)
+
+            if (error) throw error
+
+            setOriginalBio(bio)
+            toast.success('Bio salva com sucesso!', { description: 'Suas informações foram atualizadas.' })
+        } catch (error) {
+            console.error('Error saving bio:', error)
+            toast.error('Erro ao salvar bio')
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    const handleSaveProfile = async () => {
+        if (!user) return
+
+        try {
+            setIsLoading(true)
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    full_name: user.name,
+                    phone: user.phone
+                })
+                .eq('user_id', user.id)
+
+            if (error) throw error
+
+            toast.success('Perfil atualizado!', { description: 'Seus dados foram salvos com sucesso.' })
+        } catch (error) {
+            console.error('Error saving profile:', error)
+            toast.error('Erro ao salvar perfil')
+        } finally {
             setIsLoading(false)
-        }, 1000)
+        }
     }
 
     const [passwords, setPasswords] = useState({
@@ -176,16 +300,16 @@ export default function ProfilePage() {
                             />
                             <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
                                 <Avatar className="h-24 w-24 border-4 border-slate-50 shadow-sm group-hover:opacity-90 transition-opacity">
-                                    <AvatarImage src={user.image} />
-                                    <AvatarFallback className="text-xl">AS</AvatarFallback>
+                                    <AvatarImage src={user?.image || undefined} />
+                                    <AvatarFallback className="text-xl">{user?.name ? user.name.substring(0, 2).toUpperCase() : 'US'}</AvatarFallback>
                                 </Avatar>
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Camera className="h-8 w-8 text-white" />
                                 </div>
                             </div>
                             <div className="space-y-1">
-                                <h3 className="font-medium text-lg">{user.name}</h3>
-                                <p className="text-sm text-muted-foreground">{user.role}</p>
+                                <h3 className="font-medium text-lg">{user?.name || "Carregando..."}</h3>
+                                <p className="text-sm text-muted-foreground">{user?.role || ""}</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -215,16 +339,15 @@ export default function ProfilePage() {
                         </CardContent>
                         <CardFooter className="flex justify-end border-t p-6">
                             <Button
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                                onClick={() => {
-                                    toast.success('Bio salva com sucesso!', {
-                                        description: 'Suas informações foram atualizadas.',
-                                        duration: 3000,
-                                    })
-                                }}
+                                disabled={isSaving || !user || user.rawRole !== 'PSYCHOLOGIST'}
+                                onClick={handleSaveBio}
                             >
-                                <Save className="mr-2 h-4 w-4" />
-                                Salvar Bio
+                                {isSaving ? "Salvando..." : (
+                                    <>
+                                        <Save className="mr-2 h-4 w-4" />
+                                        Salvar Bio
+                                    </>
+                                )}
                             </Button>
                         </CardFooter>
                     </Card>
@@ -245,9 +368,10 @@ export default function ProfilePage() {
                                         <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                         <Input
                                             id="name"
-                                            value={user.name}
-                                            onChange={(e) => setUser({ ...user, name: e.target.value })}
+                                            value={user?.name || ''}
+                                            onChange={(e) => setUser(prev => prev ? { ...prev, name: e.target.value } : null)}
                                             className="pl-9"
+                                            disabled={isLoading}
                                         />
                                     </div>
                                 </div>
@@ -257,8 +381,8 @@ export default function ProfilePage() {
                                         <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                         <Input
                                             id="phone"
-                                            value={user.phone}
-                                            onChange={(e) => setUser({ ...user, phone: e.target.value })}
+                                            value={user?.phone || ''}
+                                            onChange={(e) => setUser(prev => prev ? { ...prev, phone: e.target.value } : null)}
                                             className="pl-9"
                                         />
                                     </div>
@@ -271,7 +395,7 @@ export default function ProfilePage() {
                                     <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="email"
-                                        value={user.email}
+                                        value={user?.email || ''}
                                         disabled
                                         className="pl-9 bg-slate-50 text-muted-foreground"
                                     />
@@ -282,7 +406,7 @@ export default function ProfilePage() {
                             </div>
                         </CardContent>
                         <CardFooter className="flex justify-end border-t p-6">
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleSave} disabled={isLoading}>
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleSaveProfile} disabled={isLoading}>
                                 {isLoading ? (
                                     <>Salvando...</>
                                 ) : (
