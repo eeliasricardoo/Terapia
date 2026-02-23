@@ -41,6 +41,9 @@ model Appointment {
   patient      User                @relation("PatientAppointments", fields: [patientId], references: [id])
   psychologist PsychologistProfile @relation(fields: [psychologistId], references: [id])
 
+  @@index([patientId])
+  @@index([psychologistId])
+  @@index([scheduledAt])
   @@map("appointments")
 }
 
@@ -60,6 +63,7 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
   @@map("accounts")
 }
 
@@ -70,6 +74,7 @@ model Session {
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("sessions")
 }
 
