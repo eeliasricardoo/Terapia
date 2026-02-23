@@ -21,11 +21,14 @@ export function PreJoinLobby() {
     const [isCamOn, setIsCamOn] = useState(true)
 
     // Start preview when component mounts
+    const hasStartedCamera = useRef(false)
     useEffect(() => {
-        if (!daily) return
+        if (!daily || hasStartedCamera.current) return
+        hasStartedCamera.current = true
         console.log("Starting Local Preview...")
         daily.startCamera({ audioSource: true, videoSource: true }).catch(err => {
             console.error("Failed to start camera preview", err)
+            hasStartedCamera.current = false
         })
 
         // Cleanup strictly on unmount not needed as next step is join

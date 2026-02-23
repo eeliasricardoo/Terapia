@@ -3,8 +3,9 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { useDaily, DailyProvider, DailyAudio, DailyVideo, useParticipantIds, useLocalParticipant, useMeetingState } from "@daily-co/daily-react"
+import { useDaily, DailyProvider, DailyAudio, DailyVideo, useParticipantIds, useLocalParticipant, useMeetingState, useAppMessage } from "@daily-co/daily-react"
 import DailyIframe, { DailyCall } from "@daily-co/daily-js"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -20,9 +21,16 @@ import {
 import { VideoTile } from "@/components/video/VideoTile"
 import { PreJoinLobby } from "@/components/video/PreJoinLobby"
 
+interface AppointmentInfo {
+    scheduledAt: string;
+    durationMinutes: number;
+    isPsychologist: boolean;
+}
+
 export default function VideoRoomPage({ params }: { params: { id: string } }) {
     const [roomUrl, setRoomUrl] = useState<string | null>(null)
     const [token, setToken] = useState<string | null>(null)
+    const [appointmentInfo, setAppointmentInfo] = useState<AppointmentInfo | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
 
@@ -36,11 +44,25 @@ export default function VideoRoomPage({ params }: { params: { id: string } }) {
                     body: JSON.stringify({ appointmentId: params.id })
                 })
 
-                if (!res.ok) throw new Error("Falha ao obter token da sala")
+                if (!res.ok) {
+                    const errorText = await res.text()
+                    try {
+                        const errorJson = JSON.parse(errorText)
+                        throw new Error(errorJson.error || "Falha ao obter token da sala")
+                    } catch (e) {
+                        // Not json
+                        throw new Error(errorText || "Falha ao obter token da sala")
+                    }
+                }
 
                 const data = await res.json()
                 setRoomUrl(data.url)
                 setToken(data.token)
+                setAppointmentInfo({
+                    scheduledAt: data.scheduledAt,
+                    durationMinutes: data.durationMinutes,
+                    isPsychologist: data.isPsychologist
+                })
             } catch (err: any) {
                 setError(err.message)
             } finally {
@@ -100,23 +122,23 @@ export default function VideoRoomPage({ params }: { params: { id: string } }) {
 
     return (
         <DailyProvider callObject={callObject}>
-            <RoomManager appointmentId={params.id} />
+            <RoomManager appointmentId={params.id} appointmentInfo={appointmentInfo!} />
         </DailyProvider>
     )
 }
 
-function RoomManager({ appointmentId }: { appointmentId: string }) {
+function RoomManager({ appointmentId, appointmentInfo }: { appointmentId: string, appointmentInfo: AppointmentInfo }) {
     const meetingState = useMeetingState()
 
     // Only show Active Room if fully joined
     if (meetingState === "joined-meeting") {
-        return <ActiveRoomInterface appointmentId={appointmentId} />
+        return <ActiveRoomInterface appointmentId={appointmentId} appointmentInfo={appointmentInfo} />
     }
 
     return <PreJoinLobby />
 }
 
-function ActiveRoomInterface({ appointmentId }: { appointmentId: string }) {
+function ActiveRoomInterface({ appointmentId, appointmentInfo }: { appointmentId: string, appointmentInfo: AppointmentInfo }) {
     const daily = useDaily()
     const router = useRouter()
     const localParticipant = useLocalParticipant()
@@ -124,18 +146,58 @@ function ActiveRoomInterface({ appointmentId }: { appointmentId: string }) {
 
     const [isMicOn, setIsMicOn] = useState(true)
     const [isCamOn, setIsCamOn] = useState(true)
-    const [elapsedTime, setElapsedTime] = useState(0)
+    const [remainingSeconds, setRemainingSeconds] = useState(0)
 
+    // Chat functionality
+    const [messages, setMessages] = useState<{ sender: string, text: string, time: string }[]>([])
+    const [newMessage, setNewMessage] = useState("")
+
+    const handleAppMessage = useCallback((e: any) => {
+        if (e && e.data && e.data.message) {
+            const senderName = e.fromId && daily ? daily.participants()[e.fromId]?.user_name || 'Participante' : 'Participante';
+            setMessages((prev) => [...prev, {
+                sender: senderName,
+                text: e.data.message,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }])
+        }
+    }, [daily])
+
+    const sendAppMessage = useAppMessage({
+        onAppMessage: handleAppMessage,
+    })
+
+    const handleSendMessage = () => {
+        if (!newMessage.trim()) return
+        sendAppMessage({ message: newMessage })
+        setMessages((prev) => [...prev, {
+            sender: 'Você',
+            text: newMessage,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }])
+        setNewMessage("")
+    }
 
     // Timer logic
     useEffect(() => {
-        // Only start timer when joined
+        if (!appointmentInfo) return
+
+        const startTime = new Date(appointmentInfo.scheduledAt).getTime()
+        const endTime = startTime + (appointmentInfo.durationMinutes * 60000)
+
         const timer = setInterval(() => {
-            setElapsedTime(prev => prev + 1)
+            const now = new Date().getTime()
+            const diff = Math.floor((endTime - now) / 1000)
+
+            if (diff > 0) {
+                setRemainingSeconds(diff)
+            } else {
+                setRemainingSeconds(0)
+            }
         }, 1000)
 
         return () => clearInterval(timer)
-    }, [])
+    }, [appointmentInfo])
 
     const toggleMic = useCallback(() => {
         if (!daily) return
@@ -162,6 +224,8 @@ function ActiveRoomInterface({ appointmentId }: { appointmentId: string }) {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
     }
 
+    const isFiveMinutesWarning = remainingSeconds > 0 && remainingSeconds <= 300 // 5 minutes
+
     return (
         <div className="flex flex-col h-screen bg-slate-100 overflow-hidden">
             {/* Header */}
@@ -175,9 +239,10 @@ function ActiveRoomInterface({ appointmentId }: { appointmentId: string }) {
                         Em Atendimento
                     </Badge>
                     <Separator orientation="vertical" className="h-6" />
-                    <div className="flex items-center gap-2 text-slate-500 font-mono text-sm bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                    <div className={cn("flex items-center gap-2 font-mono text-sm px-2 py-1 rounded-md border", isFiveMinutesWarning ? "bg-red-50 text-red-600 border-red-200 animate-pulse" : "bg-slate-50 text-slate-500 border-slate-100")}>
                         <Clock className="h-4 w-4" />
-                        {formatTime(elapsedTime)}
+                        {formatTime(remainingSeconds)}
+                        {isFiveMinutesWarning && <span className="ml-1 font-bold">5 min finais!</span>}
                     </div>
                 </div>
 
@@ -261,17 +326,21 @@ function ActiveRoomInterface({ appointmentId }: { appointmentId: string }) {
 
                 {/* Right: Tools/Records Area (35%) */}
                 <div className="flex-1 bg-white border-l border-slate-200 flex flex-col min-w-[350px] max-w-[450px]">
-                    <Tabs defaultValue="record" className="flex-1 flex flex-col">
+                    <Tabs defaultValue={appointmentInfo?.isPsychologist ? "record" : "chat"} className="flex-1 flex flex-col">
                         <div className="px-4 pt-4 pb-2 border-b border-slate-100 bg-slate-50/50">
-                            <TabsList className="grid w-full grid-cols-3">
-                                <TabsTrigger value="record" className="text-xs">
-                                    <FileText className="h-3.5 w-3.5 mr-2" />
-                                    Prontuário
-                                </TabsTrigger>
-                                <TabsTrigger value="notes" className="text-xs">
-                                    <Smile className="h-3.5 w-3.5 mr-2" />
-                                    Evolução
-                                </TabsTrigger>
+                            <TabsList className={cn("grid w-full", appointmentInfo?.isPsychologist ? "grid-cols-3" : "grid-cols-1")}>
+                                {appointmentInfo?.isPsychologist && (
+                                    <>
+                                        <TabsTrigger value="record" className="text-xs">
+                                            <FileText className="h-3.5 w-3.5 mr-2" />
+                                            Prontuário
+                                        </TabsTrigger>
+                                        <TabsTrigger value="notes" className="text-xs">
+                                            <Smile className="h-3.5 w-3.5 mr-2" />
+                                            Evolução
+                                        </TabsTrigger>
+                                    </>
+                                )}
                                 <TabsTrigger value="chat" className="text-xs">
                                     <MessageSquare className="h-3.5 w-3.5 mr-2" />
                                     Chat
@@ -280,48 +349,80 @@ function ActiveRoomInterface({ appointmentId }: { appointmentId: string }) {
                         </div>
 
                         <ScrollArea className="flex-1 bg-slate-50/30">
-                            <TabsContent value="record" className="p-4 m-0 space-y-4">
-                                <Card>
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm font-medium">Histórico Recente</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="text-xs text-slate-500">
-                                        <p>15 Fev - Sessão Regular (Ansiedade Social)</p>
-                                        <Separator className="my-2" />
-                                        <p>10 Fev - Primeira Consulta</p>
-                                    </CardContent>
-                                </Card>
-                                <Card>
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm font-medium">Dados do Paciente</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="text-xs space-y-2">
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <span className="font-semibold">Nome:</span>
-                                            <span>Ana Silva</span>
-                                            <span className="font-semibold">Idade:</span>
-                                            <span>32 anos</span>
-                                            <span className="font-semibold">Queixa:</span>
-                                            <span>Ansiedade, Insônia</span>
+                            {appointmentInfo?.isPsychologist && (
+                                <>
+                                    <TabsContent value="record" className="p-4 m-0 space-y-4">
+                                        <Card>
+                                            <CardHeader className="pb-2">
+                                                <CardTitle className="text-sm font-medium">Histórico Recente</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="text-xs text-slate-500">
+                                                <p>15 Fev - Sessão Regular (Ansiedade Social)</p>
+                                                <Separator className="my-2" />
+                                                <p>10 Fev - Primeira Consulta</p>
+                                            </CardContent>
+                                        </Card>
+                                        <Card>
+                                            <CardHeader className="pb-2">
+                                                <CardTitle className="text-sm font-medium">Dados do Paciente</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="text-xs space-y-2">
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <span className="font-semibold">Nome:</span>
+                                                    <span>Ana Silva</span>
+                                                    <span className="font-semibold">Idade:</span>
+                                                    <span>32 anos</span>
+                                                    <span className="font-semibold">Queixa:</span>
+                                                    <span>Ansiedade, Insônia</span>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </TabsContent>
+
+                                    <TabsContent value="notes" className="p-4 m-0 flex flex-col h-full">
+                                        <textarea
+                                            className="w-full flex-1 p-3 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none bg-white shadow-sm"
+                                            placeholder="Faça suas anotações da sessão aqui..."
+                                        ></textarea>
+                                        <div className="mt-4 flex justify-end">
+                                            <Button size="sm">Salvar Evolução</Button>
                                         </div>
-                                    </CardContent>
-                                </Card>
-                            </TabsContent>
+                                    </TabsContent>
+                                </>
+                            )}
 
-                            <TabsContent value="notes" className="p-4 m-0">
-                                <textarea
-                                    className="w-full h-[300px] p-3 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none bg-white shadow-sm"
-                                    placeholder="Faça suas anotações da sessão aqui..."
-                                ></textarea>
-                                <div className="mt-4 flex justify-end">
-                                    <Button size="sm">Salvar Evolução</Button>
+                            <TabsContent value="chat" className="p-4 m-0 flex flex-col h-[calc(100vh-140px)]">
+                                <div className="flex-1 overflow-y-auto space-y-4 mb-4 pb-4">
+                                    {messages.length === 0 ? (
+                                        <div className="flex flex-col h-full items-center justify-center text-slate-400 grayscale opacity-70">
+                                            <MessageSquare className="h-10 w-10 mb-2" />
+                                            <p className="text-sm">Nenhuma mensagem no chat.</p>
+                                        </div>
+                                    ) : (
+                                        messages.map((msg, i) => (
+                                            <div key={i} className={cn("text-sm p-3 rounded-lg max-w-[85%]", msg.sender === 'Você' ? "bg-blue-100 text-blue-900 self-end ml-auto" : "bg-slate-100 text-slate-900 self-start mr-auto")}>
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <span className="font-semibold text-xs opacity-75">{msg.sender}</span>
+                                                    <span className="text-[10px] opacity-50 ml-2">{msg.time}</span>
+                                                </div>
+                                                <p>{msg.text}</p>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
-                            </TabsContent>
-
-                            <TabsContent value="chat" className="p-4 m-0 flex flex-col h-full items-center justify-center text-slate-400">
-                                <MessageSquare className="h-10 w-10 mb-2 opacity-50" />
-                                <p className="text-sm">Chat da sessão</p>
-                                <p className="text-xs">(Em desenvolvimento)</p>
+                                <div className="mt-auto flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Digite uma mensagem..."
+                                        className="flex-1 text-sm bg-slate-50 border border-slate-200 rounded-full px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                                        value={newMessage}
+                                        onChange={(e) => setNewMessage(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                                    />
+                                    <Button onClick={handleSendMessage} size="icon" className="rounded-full shrink-0">
+                                        <MessageSquare className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </TabsContent>
                         </ScrollArea>
                     </Tabs>

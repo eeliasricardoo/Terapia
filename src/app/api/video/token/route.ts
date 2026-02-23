@@ -44,6 +44,24 @@ export async function POST(req: Request) {
             return new NextResponse("Forbidden", { status: 403 })
         }
 
+        // Check appointment time window (15 mins before scheduledAt)
+        const now = new Date()
+        const scheduledAt = new Date(appointment.scheduledAt)
+
+        // Allowed 15 minutes before the appointment
+        const startTime = new Date(scheduledAt.getTime() - 15 * 60 * 1000)
+
+        // Allowed up to the end of the appointment + 20 min buffer
+        const endTime = new Date(scheduledAt.getTime() + (appointment.durationMinutes + 20) * 60 * 1000)
+
+        // Only enforce time check for patients, psychologists can prepare earlier if needed (optional, but let's enforce both for now or just follow spec)
+        if (now < startTime || now > endTime) {
+            return new NextResponse(
+                JSON.stringify({ error: "Sessão indisponível no momento. Você pode entrar 15 minutos antes do horário agendado." }),
+                { status: 403, headers: { "Content-Type": "application/json" } }
+            )
+        }
+
         let roomUrl = appointment.meetingUrl
         let roomName = ""
 
@@ -89,7 +107,13 @@ export async function POST(req: Request) {
             const durationInSeconds = ((appointment.durationMinutes || 50) + durationBuffer) * 60;
 
             const token = await createDailyToken(roomName, userName, isOwner, durationInSeconds)
-            return NextResponse.json({ token, url: roomUrl })
+            return NextResponse.json({
+                token,
+                url: roomUrl,
+                scheduledAt: appointment.scheduledAt,
+                durationMinutes: appointment.durationMinutes,
+                isPsychologist
+            })
         } catch (error) {
             console.error("Error creating Daily token:", error)
             return new NextResponse("Failed to create meeting token", { status: 500 })
