@@ -22,6 +22,26 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "ID do agendamento ausente" }, { status: 400 })
         }
 
+        // DEVELOPMENT BYPASS: Allow testing without a real appointment
+        if (appointmentId === "test") {
+            try {
+                const uniqueSuffix = Math.random().toString(36).substring(2, 7)
+                const roomData = await createDailyRoom(`terapia-test-${uniqueSuffix}`)
+                const token = await createDailyToken(roomData.name, "Testador (Dev)", true, 3600) // 1 hour token
+
+                return NextResponse.json({
+                    token,
+                    url: roomData.url,
+                    scheduledAt: new Date().toISOString(),
+                    durationMinutes: 60,
+                    isPsychologist: true
+                })
+            } catch (error) {
+                console.error("Error creating test room:", error)
+                return NextResponse.json({ error: "Falha ao criar sala de teste" }, { status: 500 })
+            }
+        }
+
         // 1. Fetch appointment details including strict relations
         const appointment = await prisma.appointment.findUnique({
             where: { id: appointmentId },

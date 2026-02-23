@@ -79,17 +79,23 @@ export default function VideoRoomPage({ params }: { params: { id: string } }) {
     useEffect(() => {
         if (!roomUrl || !token) return
 
-        const co = DailyIframe.createCallObject({
-            url: roomUrl,
-            token: token,
-            audioSource: true,
-            videoSource: true,
-        })
+        let co = (DailyIframe as any).getCallInstance();
+
+        if (!co) {
+            co = DailyIframe.createCallObject({
+                url: roomUrl,
+                token: token,
+                audioSource: true,
+                videoSource: true,
+            })
+        }
 
         setCallObject(co)
 
         return () => {
-            co.destroy()
+            if (co) {
+                co.destroy().catch((e: any) => console.error("Error destroying daily", e))
+            }
         }
     }, [roomUrl, token])
 
