@@ -12,14 +12,14 @@ export async function POST(req: Request) {
         } = await supabase.auth.getUser()
 
         if (!user) {
-            return new NextResponse("Unauthorized", { status: 401 })
+            return NextResponse.json({ error: "Usuário não autenticado" }, { status: 401 })
         }
 
         const body = await req.json()
         const { appointmentId } = body
 
         if (!appointmentId) {
-            return new NextResponse("Missing appointmentId", { status: 400 })
+            return NextResponse.json({ error: "ID do agendamento ausente" }, { status: 400 })
         }
 
         // 1. Fetch appointment details including strict relations
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
         })
 
         if (!appointment) {
-            return new NextResponse("Appointment not found", { status: 404 })
+            return NextResponse.json({ error: "Agendamento não encontrado" }, { status: 404 })
         }
 
         // 2. verify user permissions
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
         const isPsychologist = appointment.psychologist.userId === user.id
 
         if (!isPatient && !isPsychologist) {
-            return new NextResponse("Forbidden", { status: 403 })
+            return NextResponse.json({ error: "Acesso negado - Você não faz parte deste agendamento" }, { status: 403 })
         }
 
         // Check appointment time window (15 mins before scheduledAt)
@@ -56,9 +56,9 @@ export async function POST(req: Request) {
 
         // Only enforce time check for patients, psychologists can prepare earlier if needed (optional, but let's enforce both for now or just follow spec)
         if (now < startTime || now > endTime) {
-            return new NextResponse(
-                JSON.stringify({ error: "Sessão indisponível no momento. Você pode entrar 15 minutos antes do horário agendado." }),
-                { status: 403, headers: { "Content-Type": "application/json" } }
+            return NextResponse.json(
+                { error: "Sessão indisponível no momento. Você pode entrar 15 minutos antes do horário agendado." },
+                { status: 403 }
             )
         }
 
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
                 })
             } catch (error) {
                 console.error("Error creating Daily room:", error)
-                return new NextResponse("Failed to create meeting room", { status: 500 })
+                return NextResponse.json({ error: "Falha ao criar sala de reunião" }, { status: 500 })
             }
         }
 
@@ -116,11 +116,11 @@ export async function POST(req: Request) {
             })
         } catch (error) {
             console.error("Error creating Daily token:", error)
-            return new NextResponse("Failed to create meeting token", { status: 500 })
+            return NextResponse.json({ error: "Falha ao criar token da sala" }, { status: 500 })
         }
 
     } catch (error) {
         console.error("[VIDEO_TOKEN_ERROR]", error)
-        return new NextResponse("Internal Server Error", { status: 500 })
+        return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 })
     }
 }

@@ -33,6 +33,7 @@ export default function VideoRoomPage({ params }: { params: { id: string } }) {
     const [appointmentInfo, setAppointmentInfo] = useState<AppointmentInfo | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
+    const [callObject, setCallObject] = useState<DailyCall | null>(null)
 
     // Fetch Token
     useEffect(() => {
@@ -46,13 +47,16 @@ export default function VideoRoomPage({ params }: { params: { id: string } }) {
 
                 if (!res.ok) {
                     const errorText = await res.text()
+                    let errorMessage = errorText || "Falha ao obter token da sala"
                     try {
                         const errorJson = JSON.parse(errorText)
-                        throw new Error(errorJson.error || "Falha ao obter token da sala")
+                        if (errorJson.error) {
+                            errorMessage = errorJson.error
+                        }
                     } catch (e) {
-                        // Not json
-                        throw new Error(errorText || "Falha ao obter token da sala")
+                        // Ignore parse error, use original text
                     }
+                    throw new Error(errorMessage)
                 }
 
                 const data = await res.json()
@@ -71,6 +75,23 @@ export default function VideoRoomPage({ params }: { params: { id: string } }) {
         }
         init()
     }, [params.id])
+
+    useEffect(() => {
+        if (!roomUrl || !token) return
+
+        const co = DailyIframe.createCallObject({
+            url: roomUrl,
+            token: token,
+            audioSource: true,
+            videoSource: true,
+        })
+
+        setCallObject(co)
+
+        return () => {
+            co.destroy()
+        }
+    }, [roomUrl, token])
 
     if (error) {
         return (
@@ -98,25 +119,6 @@ export default function VideoRoomPage({ params }: { params: { id: string } }) {
             </div>
         )
     }
-
-    const [callObject, setCallObject] = useState<DailyCall | null>(null)
-
-    useEffect(() => {
-        if (!roomUrl || !token) return
-
-        const co = DailyIframe.createCallObject({
-            url: roomUrl,
-            token: token,
-            audioSource: true,
-            videoSource: true,
-        })
-
-        setCallObject(co)
-
-        return () => {
-            co.destroy()
-        }
-    }, [roomUrl, token])
 
     if (!callObject) return null // Or keep loading state visible
 
@@ -348,10 +350,10 @@ function ActiveRoomInterface({ appointmentId, appointmentInfo }: { appointmentId
                             </TabsList>
                         </div>
 
-                        <ScrollArea className="flex-1 bg-slate-50/30">
+                        <div className="flex-1 flex flex-col bg-slate-50/30 overflow-hidden relative">
                             {appointmentInfo?.isPsychologist && (
                                 <>
-                                    <TabsContent value="record" className="p-4 m-0 space-y-4">
+                                    <TabsContent value="record" className="p-4 m-0 flex-1 overflow-y-auto space-y-4 data-[state=active]:flex data-[state=active]:flex-col">
                                         <Card>
                                             <CardHeader className="pb-2">
                                                 <CardTitle className="text-sm font-medium">Histórico Recente</CardTitle>
@@ -379,20 +381,20 @@ function ActiveRoomInterface({ appointmentId, appointmentInfo }: { appointmentId
                                         </Card>
                                     </TabsContent>
 
-                                    <TabsContent value="notes" className="p-4 m-0 flex flex-col h-full">
+                                    <TabsContent value="notes" className="p-4 m-0 flex-1 data-[state=active]:flex data-[state=active]:flex-col">
                                         <textarea
                                             className="w-full flex-1 p-3 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none bg-white shadow-sm"
                                             placeholder="Faça suas anotações da sessão aqui..."
                                         ></textarea>
-                                        <div className="mt-4 flex justify-end">
+                                        <div className="mt-4 flex justify-end shrink-0">
                                             <Button size="sm">Salvar Evolução</Button>
                                         </div>
                                     </TabsContent>
                                 </>
                             )}
 
-                            <TabsContent value="chat" className="p-4 m-0 flex flex-col h-[calc(100vh-140px)]">
-                                <div className="flex-1 overflow-y-auto space-y-4 mb-4 pb-4">
+                            <TabsContent value="chat" className="m-0 flex-1 data-[state=active]:flex data-[state=active]:flex-col overflow-hidden">
+                                <div className="flex-1 p-4 overflow-y-auto space-y-4">
                                     {messages.length === 0 ? (
                                         <div className="flex flex-col h-full items-center justify-center text-slate-400 grayscale opacity-70">
                                             <MessageSquare className="h-10 w-10 mb-2" />
@@ -410,7 +412,7 @@ function ActiveRoomInterface({ appointmentId, appointmentInfo }: { appointmentId
                                         ))
                                     )}
                                 </div>
-                                <div className="mt-auto flex gap-2">
+                                <div className="p-4 bg-white border-t border-slate-100 flex gap-2 shrink-0">
                                     <input
                                         type="text"
                                         placeholder="Digite uma mensagem..."
@@ -424,7 +426,7 @@ function ActiveRoomInterface({ appointmentId, appointmentInfo }: { appointmentId
                                     </Button>
                                 </div>
                             </TabsContent>
-                        </ScrollArea>
+                        </div>
                     </Tabs>
                 </div>
             </div>

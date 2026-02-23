@@ -52,7 +52,7 @@ async function createTestAppointment() {
             data: {
                 patientId: patientId,
                 psychologistId: psychProfile.id,
-                scheduledAt: new Date(new Date().getTime() + 60 * 60 * 1000), // 1 hour from now
+                scheduledAt: new Date(new Date().getTime() - 5 * 60 * 1000), // 5 minutes ago so it's fully active
                 durationMinutes: 50,
                 status: 'SCHEDULED',
                 price: 150.00,
