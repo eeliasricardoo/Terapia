@@ -3,6 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
+import { checkRateLimit } from '@/lib/security'
+import { headers } from 'next/headers'
 
 export async function uploadProfileImage(formData: FormData) {
     const supabase = await createClient()
@@ -13,14 +15,23 @@ export async function uploadProfileImage(formData: FormData) {
         return { error: 'Usuário não autenticado' }
     }
 
+    // Rate limiting
+    const ip = headers().get('x-forwarded-for') || 'unknown_ip'
+    const rateLimit = await checkRateLimit(`upload_${ip}`)
+    if (!rateLimit.success) {
+        return { error: 'Muitos uploads enviados. Tente novamente mais tarde.' }
+    }
+
     // 2. Get file from form data
     const file = formData.get('file') as File
     if (!file) {
         return { error: 'Nenhum arquivo enviado' }
     }
 
-    if (!file.type.startsWith('image/')) {
-        return { error: 'O arquivo deve ser uma imagem' }
+    // Security: Strict MIME type checking
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+        return { error: 'Tipo de arquivo inválido. Use JPG, PNG ou WEBP.' }
     }
 
     if (file.size > 5 * 1024 * 1024) {

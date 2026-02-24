@@ -74,3 +74,42 @@ export async function checkRateLimit(identifier: string) {
         return { success: true, limit: 20, remaining: 20, reset: 0 };
     }
 }
+
+// ==========================================
+// 3. Criptografia em Repouso (Para Dados de Saúde / LGPD)
+// ==========================================
+import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'default_secret_key_32_chars_long!'; // Deve ter 32 caracteres (256 bits) para aes-256-cbc. Em prod, sempre injetar do .env
+const IV_LENGTH = 16;
+
+/**
+ * Criptografa strings sensíveis (Prontuários, Laudos Médicos) antes de inserir no banco
+ */
+export function encryptData(text: string): string {
+    if (!text) return text;
+    const iv = randomBytes(IV_LENGTH);
+    const cipher = createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32)), iv);
+    let encrypted = cipher.update(text);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+/**
+ * Descriptografa as strings sensíveis vindas do banco de dados na hora de mostrar pro profissional.
+ */
+export function decryptData(text: string): string {
+    if (!text || !text.includes(':')) return text; // Retorna normal se não estiver criptografado
+    try {
+        const textParts = text.split(':');
+        const iv = Buffer.from(textParts.shift() as string, 'hex');
+        const encryptedText = Buffer.from(textParts.join(':'), 'hex');
+        const decipher = createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32)), iv);
+        let decrypted = decipher.update(encryptedText);
+        decrypted = Buffer.concat([decrypted, decipher.final()]);
+        return decrypted.toString();
+    } catch (error) {
+        console.error("Falha ao descriptografar dado sensível", error);
+        return '🔒 [Dados Criptografados - Chave Inválida]';
+    }
+}

@@ -5,7 +5,8 @@ import { registrationSchema } from '@/lib/validations/registration'
 import { loginSchema } from '@/lib/validations/auth'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { sanitizeText } from '@/lib/security'
+import { sanitizeText, checkRateLimit } from '@/lib/security'
+import { headers } from 'next/headers'
 
 export type ActionResult = {
     success: boolean
@@ -17,6 +18,13 @@ export async function registerPatientSupabase(
     formData: FormData
 ): Promise<ActionResult> {
     try {
+        // Rate limiting by IP
+        const ip = headers().get('x-forwarded-for') || 'unknown_ip'
+        const rateLimit = await checkRateLimit(`register_${ip}`)
+        if (!rateLimit.success) {
+            return { success: false, error: 'Muitas tentativas de cadastro. Tente novamente mais tarde.' }
+        }
+
         // Extract data from FormData
         const rawData = {
             name: formData.get('name') as string,
@@ -110,6 +118,13 @@ export async function loginSupabase(
     formData: FormData
 ): Promise<ActionResult> {
     try {
+        // Rate limiting by IP to prevent credential stuffing attacks
+        const ip = headers().get('x-forwarded-for') || 'unknown_ip'
+        const rateLimit = await checkRateLimit(`login_${ip}`)
+        if (!rateLimit.success) {
+            return { success: false, error: 'Muitas tentativas de login. Tente novamente mais tarde.' }
+        }
+
         const rawData = {
             email: formData.get('email') as string,
             password: formData.get('password') as string,
