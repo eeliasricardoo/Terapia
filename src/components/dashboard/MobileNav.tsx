@@ -32,12 +32,12 @@ export function MobileNav() {
 
     return (
         <div className="lg:hidden flex items-center justify-between p-4 border-b bg-white sticky top-0 z-50">
-            <div className="flex items-center gap-2 font-semibold text-lg">
+            <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-lg hover:opacity-80 transition-opacity">
                 <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
                     T
                 </div>
                 Terapia
-            </div>
+            </Link>
             <Sheet>
                 <SheetTrigger asChild>
                     <Button variant="ghost" size="icon">
