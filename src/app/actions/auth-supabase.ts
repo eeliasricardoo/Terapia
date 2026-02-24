@@ -5,6 +5,7 @@ import { registrationSchema } from '@/lib/validations/registration'
 import { loginSchema } from '@/lib/validations/auth'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { sanitizeText } from '@/lib/security'
 
 export type ActionResult = {
     success: boolean
@@ -49,6 +50,9 @@ export async function registerPatientSupabase(
         const data = validation.data
         const supabase = await createClient()
 
+        // Anti-XSS nas informações que serão visíveis em perfis/telas
+        const safeName = sanitizeText(data.name) || 'Anônimo'
+
         // Sign up with Supabase Auth
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: data.email,
@@ -56,7 +60,7 @@ export async function registerPatientSupabase(
             options: {
                 data: {
                     role: 'PATIENT',
-                    full_name: data.name,
+                    full_name: safeName,
                     phone: data.phone,
                     birth_date: data.birthDate,
                     document: data.document,
@@ -79,7 +83,7 @@ export async function registerPatientSupabase(
                 .from('profiles')
                 .insert({
                     user_id: authData.user.id,
-                    full_name: data.name,
+                    full_name: safeName,
                     avatar_url: null,
                 })
 

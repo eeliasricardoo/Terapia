@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { sanitizeText, sanitizeHtml } from '@/lib/security'
 
 export type PsychologistOnboardingData = {
     fullName: string
@@ -33,12 +34,22 @@ export async function savePsychologistProfile(data: PsychologistOnboardingData) 
         return { success: false, error: 'Usuário não autenticado' }
     }
 
+    // SANITIZAÇÃO (XSS Prevention)
+    const sanitizedName = sanitizeText(data.fullName) || 'Anônimo'
+    const sanitizedCrp = sanitizeText(data.crp)
+    const sanitizedBio = sanitizeHtml(data.bio)
+    const sanitizedVideoUrl = sanitizeText(data.videoUrl)
+
+    // Arrays de strings
+    const sanitizedSpecialties = data.specialties.map(s => sanitizeText(s)).filter(Boolean)
+    const sanitizedApproaches = data.approaches.map(s => sanitizeText(s)).filter(Boolean)
+
     try {
         // 2. Update Profile (Base role and name)
         const { error: profileError } = await supabase
             .from('profiles')
             .update({
-                full_name: data.fullName,
+                full_name: sanitizedName,
                 role: 'PSYCHOLOGIST',
                 updated_at: new Date().toISOString(),
             })
@@ -51,17 +62,17 @@ export async function savePsychologistProfile(data: PsychologistOnboardingData) 
 
         // 3. Create or Update Psychologist Profile
         // Note: Approaches are merged into specialties for now as strict schema doesn't have approaches column yet.
-        const allSpecialties = Array.from(new Set([...data.specialties, ...data.approaches]))
+        const allSpecialties = Array.from(new Set([...sanitizedSpecialties, ...sanitizedApproaches]))
 
         const { error: psychError } = await supabase
             .from('psychologist_profiles')
             .upsert({
                 userId: user.id,
-                crp: data.crp,
-                bio: data.bio,
+                crp: sanitizedCrp,
+                bio: sanitizedBio,
                 specialties: allSpecialties,
                 price_per_session: data.price,
-                video_presentation_url: data.videoUrl,
+                video_presentation_url: sanitizedVideoUrl,
                 is_verified: true, // Auto-verify for dev/MVP purposes? Or false? Let's say false usually but for demo true.
                 // Actually `getPsychologists` filters by `is_verified: true`. So if I want to see it, I must set true.
                 // Let's set true for now.

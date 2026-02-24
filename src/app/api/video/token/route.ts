@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma"
 import { createDailyRoom, createDailyToken } from "@/lib/daily"
 import { NextResponse } from "next/server"
 
+import { checkRateLimit } from "@/lib/security"
+
 export async function POST(req: Request) {
     try {
         const supabase = await createClient()
@@ -13,6 +15,12 @@ export async function POST(req: Request) {
 
         if (!user) {
             return NextResponse.json({ error: "Usuário não autenticado" }, { status: 401 })
+        }
+
+        // Apply Rate Limiting per User ID
+        const rateLimit = await checkRateLimit(user.id)
+        if (!rateLimit.success) {
+            return NextResponse.json({ error: "Muitas requisições. Tente novamente mais tarde." }, { status: 429 })
         }
 
         const body = await req.json()
