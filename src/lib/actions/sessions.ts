@@ -110,10 +110,36 @@ export async function createSession(data: {
     psychologistId: string
     scheduledAt: string
     durationMinutes: number
-    price?: number
+    // We remove the price parameter from client-side control to prevent price manipulation attacks
 }) {
     const supabase = await createClient()
 
+    // 1. Verify Authentication (Defense in Depth)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { success: false, error: 'Usuário não autenticado' }
+    }
+
+    // 2. Prevent User Spoofing
+    if (user.id !== data.patientId && user.id !== data.psychologistId) {
+        return { success: false, error: 'Acesso negado. Você não pode agendar para terceiros.' }
+    }
+
+    // 3. Security: Fetch price securely from the backend to prevent tampering
+    const { data: psychData, error: psychError } = await supabase
+        .from('psychologist_profiles')
+        .select('price_per_session')
+        .eq('userId', data.psychologistId)
+        .single()
+
+    if (psychError || !psychData) {
+        logger.error('Error fetching psychologist price:', psychError)
+        return { success: false, error: 'Psicólogo não encontrado ou erro ao obter o preço.' }
+    }
+
+    const securePrice = psychData.price_per_session || 0
+
+    // 4. Create the appointment
     const { data: newSession, error } = await supabase
         .from('appointments')
         .insert({
@@ -121,7 +147,7 @@ export async function createSession(data: {
             psychologist_id: data.psychologistId,
             scheduled_at: data.scheduledAt,
             duration_minutes: data.durationMinutes,
-            price: data.price,
+            price: securePrice, // PREVINE QUE O PACIENTE MUDE O PREÇO PARA 0 NO NAVEGADOR!
             status: 'scheduled'
         })
         .select()
@@ -141,6 +167,31 @@ export async function createSession(data: {
 export async function cancelSession(sessionId: string) {
     const supabase = await createClient()
 
+    // 1. Verify Authentication (Defense in Depth)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { success: false, error: 'Usuário não autenticado' }
+    }
+
+    // 2. Security: Verify Ownership Before Canceling
+    // We check if the current user is either the patient or the psychologist for this specific appointment
+    const { data: appointment, error: fetchError } = await supabase
+        .from('appointments')
+        .select('patient_id, psychologist_id')
+        .eq('id', sessionId)
+        .single()
+
+    if (fetchError || !appointment) {
+        return { success: false, error: 'Sessão não encontrada' }
+    }
+
+    if (user.id !== appointment.patient_id && user.id !== appointment.psychologist_id) {
+        // Log this attempt as it could be an attack
+        logger.warn(`UNAUTHORIZED CANCEL ATTEMPT: User ${user.id} tried to cancel session ${sessionId}`)
+        return { success: false, error: 'Acesso negado. Você não tem permissão para cancelar esta sessão.' }
+    }
+
+    // 3. Execute cancellation
     const { error } = await supabase
         .from('appointments')
         .update({ status: 'cancelled' })
