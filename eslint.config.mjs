@@ -26,10 +26,6 @@ const eslintConfig = [
       // Desabilitar console.log em produção
       "no-console": ["warn", { allow: ["warn", "error"] }],
       // Outras regras podem ser adicionadas aqui
-      "@typescript-eslint/no-unused-vars": ["warn", {
-        argsIgnorePattern: "^_",
-        varsIgnorePattern: "^_"
-      }],
     },
   },
 ];
