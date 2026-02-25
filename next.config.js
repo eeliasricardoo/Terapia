@@ -36,6 +36,9 @@ const nextConfig = {
             },
         ];
     },
+    experimental: {
+        serverComponentsExternalPackages: ['isomorphic-dompurify'],
+    }
 };
 
 module.exports = nextConfig;

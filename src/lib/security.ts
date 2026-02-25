@@ -1,4 +1,4 @@
-import DOMPurify from 'isomorphic-dompurify';
+import sanitizeHtmlModule from 'sanitize-html';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 
@@ -12,9 +12,9 @@ import { Redis } from '@upstash/redis';
  */
 export function sanitizeText(input: string | undefined | null): string {
     if (!input) return '';
-    return DOMPurify.sanitize(input, {
-        ALLOWED_TAGS: [], // Apenas texto puro, sem HTML no banco se não for intencional
-        ALLOWED_ATTR: [],
+    return sanitizeHtmlModule(input, {
+        allowedTags: [], // Apenas texto puro, sem HTML no banco se não for intencional
+        allowedAttributes: {},
     }).trim();
 }
 
@@ -24,9 +24,11 @@ export function sanitizeText(input: string | undefined | null): string {
  */
 export function sanitizeHtml(input: string | undefined | null): string {
     if (!input) return '';
-    return DOMPurify.sanitize(input, {
-        ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'li', 'ol'],
-        ALLOWED_ATTR: ['href', 'target', 'rel'],
+    return sanitizeHtmlModule(input, {
+        allowedTags: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'li', 'ol'],
+        allowedAttributes: {
+            'a': ['href', 'target', 'rel']
+        },
     }).trim();
 }
 
