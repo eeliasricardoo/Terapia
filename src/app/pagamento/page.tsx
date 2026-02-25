@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -11,31 +11,96 @@ import { Footer } from "@/components/layout/Footer"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Lock, CreditCard, ShieldCheck, Ticket, Check, ChevronRight } from "lucide-react"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/client"
+import { getPsychologistById } from "@/lib/actions/psychologists"
+import { createSession } from "@/lib/actions/sessions"
+import { useRouter } from "next/navigation"
 
 function PaymentContent() {
     const searchParams = useSearchParams()
-    const doctorId = searchParams.get("doctor")
-    const date = searchParams.get("date")
-    const time = searchParams.get("time")
+    const router = useRouter()
 
-    // State for Success View
+    // URL Params
+    const doctorId = searchParams.get("doctor")
+    const date = searchParams.get("date") // Format typically YYYY-MM-DD
+    const time = searchParams.get("time") // Format HH:MM
+
+    // Fetch States
+    const [userId, setUserId] = useState<string | null>(null)
+    const [doctorName, setDoctorName] = useState("Carregando...")
+    const [price, setPrice] = useState("R$ --,--")
+    const [priceRaw, setPriceRaw] = useState(0)
+    const [isFetchingInfo, setIsFetchingInfo] = useState(true)
+    const [isProcessing, setIsProcessing] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
 
-    // Mock data based on query params (in a real app, fetch details)
-    const doctorName = "Dra. Sofía Pérez"
-    const price = "R$ 150,00"
-
+    // Form inputs
     const [cardNumber, setCardNumber] = useState("")
     const [cardName, setCardName] = useState("")
     const [expiry, setExpiry] = useState("")
     const [cvv, setCvv] = useState("")
 
-    const handlePayment = () => {
-        // Simulate processing delay
-        setTimeout(() => {
+    useEffect(() => {
+        const loadCheckoutInfo = async () => {
+            setIsFetchingInfo(true)
+
+            // 1. Get current user
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) setUserId(user.id)
+
+            // 2. Get psychologist info
+            if (doctorId) {
+                const psych = await getPsychologistById(doctorId)
+                if (psych) {
+                    setDoctorName(psych.profile?.full_name ? `Dr(a). ${psych.profile.full_name}` : "Psicólogo(a)")
+                    if (psych.price_per_session) {
+                        setPriceRaw(Number(psych.price_per_session))
+                        setPrice(`R$ ${Number(psych.price_per_session).toFixed(2).replace('.', ',')}`)
+                    } else {
+                        setPrice("Gratuito")
+                    }
+                }
+            }
+            setIsFetchingInfo(false)
+        }
+
+        loadCheckoutInfo()
+    }, [doctorId])
+
+    const handlePayment = async () => {
+        if (!userId || !doctorId || !date || !time) {
+            alert("Informações de agendamento incompletas. Por favor, volte ao perfil do psicólogo.")
+            return
+        }
+
+        setIsProcessing(true)
+
+        try {
+            // Setup exactly ISO date for database
+            const scheduledAt = new Date(`${date}T${time}:00`).toISOString()
+
+            // Call Database Server Action
+            const result = await createSession({
+                patientId: userId,
+                psychologistId: doctorId,
+                scheduledAt: scheduledAt,
+                durationMinutes: 50 // Default duration
+            })
+
+            if (!result.success) {
+                throw new Error(result.error || "Falha ao processar agendamento")
+            }
+
+            // Show success animation
             setIsSuccess(true)
             window.scrollTo(0, 0)
-        }, 500)
+        } catch (error: any) {
+            console.error("Payment error:", error)
+            alert(error.message || "Erro no processamento do pagamento.")
+        } finally {
+            setIsProcessing(false)
+        }
     }
 
     return (
@@ -220,10 +285,11 @@ function PaymentContent() {
                                                 </div>
 
                                                 <Button
-                                                    className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg mt-4 shadow-md transition-all hover:shadow-lg"
+                                                    className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg mt-4 shadow-md transition-all hover:shadow-lg disabled:opacity-50"
                                                     onClick={handlePayment}
+                                                    disabled={isProcessing || isFetchingInfo}
                                                 >
-                                                    Pagar Agora {price}
+                                                    {isProcessing ? "Processando..." : `Pagar Agora ${price}`}
                                                 </Button>
 
                                                 <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5 mt-4">
@@ -239,8 +305,12 @@ function PaymentContent() {
                                                 <p className="text-sm text-muted-foreground px-8">
                                                     Escaneie o QR Code acima com o app do seu banco para realizar o pagamento instantâneo.
                                                 </p>
-                                                <Button className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg mt-4 shadow-md transition-all hover:shadow-lg">
-                                                    Copiar Código Pix
+                                                <Button
+                                                    className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg mt-4 shadow-md transition-all hover:shadow-lg disabled:opacity-50"
+                                                    onClick={handlePayment}
+                                                    disabled={isProcessing || isFetchingInfo}
+                                                >
+                                                    {isProcessing ? "Processando..." : "Copiar Código Pix e Finalizar"}
                                                 </Button>
                                             </TabsContent>
 
@@ -262,10 +332,11 @@ function PaymentContent() {
                                                 </div>
 
                                                 <Button
-                                                    className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg shadow-md transition-all hover:shadow-lg"
+                                                    className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg shadow-md transition-all hover:shadow-lg disabled:opacity-50"
                                                     onClick={handlePayment}
+                                                    disabled={isProcessing || isFetchingInfo}
                                                 >
-                                                    Confirmar e Usar Saldo
+                                                    {isProcessing ? "Processando..." : "Confirmar e Usar Saldo"}
                                                 </Button>
                                             </TabsContent>
                                         </Tabs>
