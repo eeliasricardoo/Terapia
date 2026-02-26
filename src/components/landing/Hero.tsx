@@ -104,26 +104,10 @@ export function Hero() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
-                            className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 pt-6 text-sm text-slate-500 font-medium"
+                            className="flex items-center justify-center lg:justify-start gap-6 pt-4 text-sm text-slate-500 font-medium"
                         >
-                            <div className="flex -space-x-3">
-                                <div className="w-10 h-10 rounded-full border-2 border-slate-50 overflow-hidden bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">MJ</div>
-                                <div className="w-10 h-10 rounded-full border-2 border-slate-50 overflow-hidden bg-rose-100 flex items-center justify-center text-xs font-bold text-rose-600">AP</div>
-                                <div className="w-10 h-10 rounded-full border-2 border-slate-50 overflow-hidden bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-600">CL</div>
-                                <div className="w-10 h-10 rounded-full border-2 border-slate-50 flex items-center justify-center bg-slate-100 text-slate-600 text-xs font-bold shadow-sm">
-                                    +5k
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-center sm:items-start space-y-1">
-                                <div className="flex text-yellow-500">
-                                    <Star className="h-4 w-4 fill-current" />
-                                    <Star className="h-4 w-4 fill-current" />
-                                    <Star className="h-4 w-4 fill-current" />
-                                    <Star className="h-4 w-4 fill-current" />
-                                    <Star className="h-4 w-4 fill-current" />
-                                </div>
-                                <span className="text-xs">Vidas transformadas todos os dias</span>
-                            </div>
+                            <div className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-500" /> Profissionais Verificados</div>
+                            <div className="flex items-center gap-1.5"><Heart className="h-4 w-4 text-rose-400" /> Ação Voluntária</div>
                         </motion.div>
                     </div>
 
