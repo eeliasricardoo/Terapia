@@ -3,34 +3,56 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Search, ArrowRight, Users, Star, Clock } from "lucide-react"
+import { motion, Variants } from "framer-motion"
+
+const fadeIn: Variants = {
+    initial: { opacity: 0, y: 30 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+}
+
+const staggerContainer: Variants = {
+    initial: {},
+    animate: {
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+}
 
 export function SearchHighlight() {
     return (
-        <section className="w-full py-16 md:py-24 bg-gradient-to-b from-white via-slate-50 to-white relative overflow-hidden">
+        <section className="w-full py-20 md:py-32 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
             {/* Background decorative elements */}
-            <div className="absolute inset-0 bg-grid-slate-200/50 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] pointer-events-none" />
+            <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[length:32px_32px] pointer-events-none" />
+            <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[100px] mix-blend-multiply pointer-events-none" />
 
-            <div className="container px-4 md:px-6 relative z-10">
-                <div className="grid lg:grid-cols-2 gap-8 items-center">
+            <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
+                <motion.div
+                    variants={staggerContainer}
+                    initial="initial"
+                    whileInView="animate"
+                    viewport={{ once: true, margin: "-100px" }}
+                    className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center"
+                >
                     {/* Left side - Main CTA */}
-                    <div className="space-y-6">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-                            <Search className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-medium text-primary">Encontre seu terapeuta ideal</span>
-                        </div>
+                    <div className="space-y-8">
+                        <motion.div variants={fadeIn} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 shadow-sm">
+                            <Search className="h-4 w-4 text-blue-600" />
+                            <span className="text-sm font-semibold text-blue-700">Encontre seu terapeuta ideal</span>
+                        </motion.div>
 
-                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
+                        <motion.h2 variants={fadeIn} className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900">
                             Buscar Psicólogo
-                            <span className="block text-primary mt-2">Nunca foi tão fácil</span>
-                        </h2>
+                            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mt-2">Nunca foi tão fácil</span>
+                        </motion.h2>
 
-                        <p className="text-lg text-muted-foreground max-w-xl">
+                        <motion.p variants={fadeIn} className="text-lg md:text-xl text-slate-600 max-w-xl leading-relaxed">
                             Explore nossa rede de profissionais qualificados. Filtre por especialidade,
                             disponibilidade e abordagem terapêutica para encontrar o match perfeito.
-                        </p>
+                        </motion.p>
 
-                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                            <Button asChild size="lg" className="group">
+                        <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 pt-4">
+                            <Button asChild size="lg" className="group h-14 px-8 text-lg bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20">
                                 <Link href="/busca" className="flex items-center gap-2">
                                     <Search className="h-5 w-5" />
                                     Buscar Agora
@@ -38,54 +60,56 @@ export function SearchHighlight() {
                                 </Link>
                             </Button>
 
-                            <Button asChild variant="outline" size="lg">
+                            <Button asChild variant="outline" size="lg" className="h-14 px-8 text-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300">
                                 <Link href="/cadastro">
                                     Criar Conta Grátis
                                 </Link>
                             </Button>
-                        </div>
+                        </motion.div>
                     </div>
 
                     {/* Right side - Stats/Features */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
-                        <div className="bg-card border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-center gap-3 mb-3">
-                                <div className="p-2 rounded-lg bg-primary/10">
-                                    <Users className="h-6 w-6 text-primary" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 relative">
+                        {/* Decorative glow behind cards */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-blue-100 to-transparent blur-3xl -z-10 opacity-50 rounded-full" />
+                        <motion.div variants={fadeIn} className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-8 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="p-3 rounded-xl bg-blue-100/50 text-blue-600">
+                                    <Users className="h-7 w-7" />
                                 </div>
-                                <h3 className="font-semibold text-2xl">500+</h3>
+                                <h3 className="font-extrabold text-3xl text-slate-900">500+</h3>
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                                Psicólogos certificados prontos para atender
+                            <p className="text-slate-600 font-medium">
+                                Psicólogos certificados prontos para atender você agora.
                             </p>
-                        </div>
+                        </motion.div>
 
-                        <div className="bg-card border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-center gap-3 mb-3">
-                                <div className="p-2 rounded-lg bg-primary/10">
-                                    <Star className="h-6 w-6 text-primary" />
+                        <motion.div variants={fadeIn} className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-8 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="p-3 rounded-xl bg-amber-100/50 text-amber-600">
+                                    <Star className="h-7 w-7" />
                                 </div>
-                                <h3 className="font-semibold text-2xl">4.9/5</h3>
+                                <h3 className="font-extrabold text-3xl text-slate-900">4.9/5</h3>
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                                Avaliação média dos nossos profissionais
+                            <p className="text-slate-600 font-medium">
+                                Avaliação média de excelência dos nossos profissionais.
                             </p>
-                        </div>
+                        </motion.div>
 
-                        <div className="bg-card border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow sm:col-span-2">
-                            <div className="flex items-center gap-3 mb-3">
-                                <div className="p-2 rounded-lg bg-primary/10">
-                                    <Clock className="h-6 w-6 text-primary" />
+                        <motion.div variants={fadeIn} className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-8 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 sm:col-span-2">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
+                                <div className="p-3 rounded-xl bg-emerald-100/50 text-emerald-600 shrink-0">
+                                    <Clock className="h-7 w-7" />
                                 </div>
-                                <h3 className="font-semibold text-xl">Atendimento Flexível</h3>
+                                <h3 className="font-bold text-2xl text-slate-900">Atendimento 100% Flexível</h3>
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                                Encontre horários que se encaixam na sua rotina.
-                                Sessões presenciais ou online disponíveis 24/7.
+                            <p className="text-slate-600 font-medium text-lg">
+                                Encontre horários que se encaixam na sua rotina corrida.
+                                Sessões online disponíveis 24/7 com máxima segurança.
                             </p>
-                        </div>
+                        </motion.div>
                     </div>
-                </div>
+                </motion.div>
             </div>
         </section>
     )
