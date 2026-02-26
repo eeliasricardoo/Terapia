@@ -26,6 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { toast } from "sonner"
+import { saveAvailability } from "@/lib/actions/availability"
 
 const sessionDurations = [
   { value: "30", label: "30 min" },
@@ -113,6 +115,7 @@ export function AvailabilityForm() {
     { id: "2", day: "jue", startTime: "2:00 PM", endTime: "5:00 PM" },
   ])
   const [specificDateSchedules, setSpecificDateSchedules] = useState<SpecificDateSchedule[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -399,8 +402,35 @@ export function AvailabilityForm() {
     setOpenDialog(true)
   }
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // TODO: Integrate with Supabase to save availability data
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true)
+
+    try {
+      const result = await saveAvailability(
+        form.getValues("sessionDuration"),
+        recurringSchedules,
+        specificDateSchedules.map(s => ({ ...s, date: s.date.toISOString() })),
+        unavailableDays,
+        unavailableDates.map(d => d.toISOString())
+      )
+
+      if (result.success) {
+        toast.success("Disponibilidade salva!", {
+          description: "Seus horários foram atualizados com sucesso.",
+        })
+        router.push('/cadastro/profissional/pagamento')
+      } else {
+        toast.error("Erro ao salvar", {
+          description: result.error || "Ocorreu um erro inesperado.",
+        })
+      }
+    } catch (error) {
+      toast.error("Erro no servidor", {
+        description: "Tente novamente mais tarde.",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -629,9 +659,9 @@ export function AvailabilityForm() {
           <Button
             type="submit"
             className="font-bold h-[44px]"
-            disabled={!form.formState.isValid}
+            disabled={!form.formState.isValid || isSubmitting}
           >
-            Salvar Alterações
+            {isSubmitting ? "Salvando..." : "Salvar Alterações"}
           </Button>
         </div>
       </form>
@@ -741,9 +771,8 @@ export function AvailabilityForm() {
           Voltar
         </Button>
         <Button
-          type="button"
-          onClick={() => router.push('/cadastro/profissional/pagamento')}
-          disabled={recurringSchedules.length === 0 && specificDateSchedules.length === 0}
+          type="submit"
+          disabled={recurringSchedules.length === 0 && specificDateSchedules.length === 0 || isSubmitting}
           className="font-bold"
           style={{
             backgroundColor: 'hsl(340 72% 61%)',
