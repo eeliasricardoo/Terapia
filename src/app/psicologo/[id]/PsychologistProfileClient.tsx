@@ -122,6 +122,12 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
         const breakMinutes = 10
         let generatedSlots: string[] = []
 
+        // Encontrar agendamentos para esse dia no fuso horário do psicólogo
+        const apptsOnThisDay = (availability.appointments || []).filter(appt => {
+            const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
+            return format(zonedAppt, 'yyyy-MM-dd') === dateStr
+        })
+
         slotsDef.forEach(slot => {
             let current = new Date(`1970-01-01T${slot.start}:00`)
             const end = new Date(`1970-01-01T${slot.end}:00`)
@@ -129,7 +135,23 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
             while (current < end) {
                 const hour = current.getHours().toString().padStart(2, '0')
                 const min = current.getMinutes().toString().padStart(2, '0')
-                generatedSlots.push(`${hour}:${min}`)
+
+                const slotStartMin = current.getHours() * 60 + current.getMinutes()
+                const slotEndMin = slotStartMin + durationMinutes
+
+                // Verificar conflitos
+                const hasConflict = apptsOnThisDay.some(appt => {
+                    const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
+                    const apptStartMin = zonedAppt.getHours() * 60 + zonedAppt.getMinutes()
+                    const apptEndMin = apptStartMin + appt.duration_minutes
+
+                    // Condição de sobreposição (exclusivo nas bordas)
+                    return (slotStartMin < apptEndMin) && (slotEndMin > apptStartMin)
+                })
+
+                if (!hasConflict) {
+                    generatedSlots.push(`${hour}:${min}`)
+                }
 
                 current = addMinutes(current, durationMinutes + breakMinutes)
                 // Do not add slots that would end after the end bound

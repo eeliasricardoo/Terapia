@@ -191,6 +191,7 @@ export type PsychologistAvailability = {
     timezone: string
     weeklySchedule: WeeklyScheduleData | null
     overrides: Record<string, { type: 'blocked' | 'custom', slots: TimeSlot[] }>
+    appointments: { scheduled_at: string, duration_minutes: number }[]
 }
 
 export async function getPsychologistAvailability(psychologistId: string): Promise<PsychologistAvailability | null> {
@@ -226,9 +227,23 @@ export async function getPsychologistAvailability(psychologistId: string): Promi
         })
     }
 
+    // 3. Os agendamentos futuros para evitar conflitos
+    const { data: appointmentList, error: apptError } = await supabase
+        .from('appointments')
+        .select('scheduled_at, duration_minutes')
+        .eq('psychologist_id', psychologistId)
+        .gte('scheduled_at', new Date().toISOString())
+        .neq('status', 'cancelled')
+
+    const appointmentsMap = appointmentList ? appointmentList.map(a => ({
+        scheduled_at: a.scheduled_at,
+        duration_minutes: a.duration_minutes
+    })) : []
+
     return {
         timezone: profile.timezone || 'America/Sao_Paulo',
         weeklySchedule: (profile.weekly_schedule as unknown as WeeklyScheduleData) || null,
-        overrides: overridesMap
+        overrides: overridesMap,
+        appointments: appointmentsMap
     }
 }

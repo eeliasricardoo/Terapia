@@ -15,6 +15,7 @@ import { createClient } from "@/lib/supabase/client"
 import { getPsychologistById } from "@/lib/actions/psychologists"
 import { createSession } from "@/lib/actions/sessions"
 import { useRouter } from "next/navigation"
+import { fromZonedTime } from "date-fns-tz"
 
 function PaymentContent() {
     const searchParams = useSearchParams()
@@ -33,6 +34,7 @@ function PaymentContent() {
     const [isFetchingInfo, setIsFetchingInfo] = useState(true)
     const [isProcessing, setIsProcessing] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
+    const [psychTimezone, setPsychTimezone] = useState("America/Sao_Paulo")
 
     // Form inputs
     const [cardNumber, setCardNumber] = useState("")
@@ -60,6 +62,9 @@ function PaymentContent() {
                     } else {
                         setPrice("Gratuito")
                     }
+                    if (psych.timezone) {
+                        setPsychTimezone(psych.timezone)
+                    }
                 }
             }
             setIsFetchingInfo(false)
@@ -77,8 +82,10 @@ function PaymentContent() {
         setIsProcessing(true)
 
         try {
-            // Setup exactly ISO date for database
-            const scheduledAt = new Date(`${date}T${time}:00`).toISOString()
+            // Setup exactly ISO date for database, considering the psychologist timezone
+            const localDateTimeString = `${date}T${time}:00`
+            const utcDate = fromZonedTime(localDateTimeString, psychTimezone)
+            const scheduledAt = utcDate.toISOString()
 
             // Call Database Server Action
             const result = await createSession({
@@ -145,8 +152,12 @@ function PaymentContent() {
                                     <div>
                                         <p className="text-xs text-slate-500 uppercase font-semibold tracking-wider mb-1">Data e Hora</p>
                                         <p className="font-medium text-slate-900">
-                                            {date ? `${date}` : "15 de Outubro, 2024"}<br />
-                                            <span className="text-slate-600">às {time || "09:00"}</span>
+                                            {date ? (() => {
+                                                const [year, month, day] = date.split('-')
+                                                const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+                                                return `${day} de ${d.toLocaleString('pt-BR', { month: 'long' }).replace(/^\w/, c => c.toUpperCase())}, ${year}`
+                                            })() : "15 de Outubro, 2024"}<br />
+                                            <span className="text-slate-600">às {time || "09:00"} {psychTimezone && <span className="text-xs">({psychTimezone.split('/')[1]?.replace('_', ' ')})</span>}</span>
                                         </p>
                                     </div>
                                     <div>
@@ -198,12 +209,12 @@ function PaymentContent() {
                                                 <span className="font-medium text-slate-900">{doctorName}</span>
                                             </div>
                                             <div className="flex justify-between py-2 border-b border-slate-100">
-                                                <span className="text-slate-500">Data:</span>
-                                                <span className="font-medium text-slate-900">{date || "15 de Outubro, 2024"}</span>
+                                                <span className="text-slate-500">Data e Hora:</span>
+                                                <span className="font-medium text-slate-900">{date || "15 de Outubro, 2024"} às {time || "09:00"}</span>
                                             </div>
                                             <div className="flex justify-between py-2 border-b border-slate-100">
-                                                <span className="text-slate-500">Hora:</span>
-                                                <span className="font-medium text-slate-900">{time || "09:00"}</span>
+                                                <span className="text-slate-500">Fuso Horário:</span>
+                                                <span className="font-medium text-slate-900">{psychTimezone.split('/')[1]?.replace('_', ' ')}</span>
                                             </div>
                                             <div className="flex justify-between py-2 border-b border-slate-100">
                                                 <span className="text-slate-500">Duração:</span>
