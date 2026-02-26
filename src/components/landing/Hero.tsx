@@ -53,11 +53,11 @@ export function Hero() {
                             transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
                             className="flex flex-col sm:flex-row gap-4 w-full justify-center lg:justify-start pt-4"
                         >
-                            <Button asChild size="lg" className="h-14 px-8 text-lg shadow-xl shadow-blue-600/20 hover:shadow-blue-600/30 transition-all hover:-translate-y-1 bg-blue-600 hover:bg-blue-700">
+                            <Button asChild size="lg" className="h-14 px-8 text-lg shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all hover:-translate-y-1 bg-gradient-to-r from-blue-500 flex-1 sm:flex-none to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0">
                                 <Link href="/busca">Encontrar Psicólogo</Link>
                             </Button>
                             <RoleSelectionDialog mode="register">
-                                <Button variant="outline" size="lg" className="h-14 px-8 text-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all hover:-translate-y-1 bg-white/50 backdrop-blur-sm">
+                                <Button variant="outline" size="lg" className="h-14 px-8 text-lg border-2 border-indigo-100 flex-1 sm:flex-none text-indigo-900 hover:bg-indigo-50 hover:border-indigo-200 transition-all hover:-translate-y-1 bg-white/70 backdrop-blur-sm shadow-sm hover:shadow-md">
                                     Sou Psicólogo
                                 </Button>
                             </RoleSelectionDialog>
