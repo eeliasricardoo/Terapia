@@ -82,7 +82,7 @@ export function Hero() {
                         className="relative mx-auto w-full max-w-lg lg:max-w-none mt-8 lg:mt-0"
                     >
                         {/* Decorative glass container */}
-                        <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/10 border border-white/40 bg-white/40 backdrop-blur-sm p-4">
+                        <div className="relative rounded-3xl shadow-2xl shadow-blue-900/10 border border-white/40 bg-white/40 backdrop-blur-sm p-4">
                             <div className="relative rounded-2xl overflow-hidden aspect-[4/3] w-full bg-slate-100">
                                 <Image
                                     src="/hero-illustration.png"
