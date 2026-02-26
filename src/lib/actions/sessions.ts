@@ -139,7 +139,42 @@ export async function createSession(data: {
 
     const securePrice = psychData.price_per_session || 0
 
-    // 4. Create the appointment
+    // 4. Backend validation: Prevent double booking (Race condition protection)
+    const newSessionStart = new Date(data.scheduledAt)
+    const newSessionEnd = new Date(newSessionStart.getTime() + data.durationMinutes * 60 * 1000)
+
+    // Consider appointments within a +/- 24h window for timezone safety
+    const windowStart = new Date(newSessionStart.getTime() - 24 * 60 * 60 * 1000).toISOString()
+    const windowEnd = new Date(newSessionStart.getTime() + 24 * 60 * 60 * 1000).toISOString()
+
+    const { data: existingAppts, error: fetchApptsError } = await supabase
+        .from('appointments')
+        .select('scheduled_at, duration_minutes')
+        .eq('psychologist_id', data.psychologistId)
+        .gte('scheduled_at', windowStart)
+        .lte('scheduled_at', windowEnd)
+        .neq('status', 'cancelled')
+
+    if (fetchApptsError) {
+        logger.error('Error checking for double bookings:', fetchApptsError)
+        return { success: false, error: 'Erro ao verificar disponibilidade de horários.' }
+    }
+
+    if (existingAppts) {
+        const hasConflict = existingAppts.some(appt => {
+            const apptStart = new Date(appt.scheduled_at)
+            const apptEnd = new Date(apptStart.getTime() + appt.duration_minutes * 60 * 1000)
+
+            // Check for overlap: (StartA < EndB) and (EndA > StartB)
+            return (newSessionStart < apptEnd) && (newSessionEnd > apptStart)
+        })
+
+        if (hasConflict) {
+            return { success: false, error: 'Este horário já foi reservado ou entra em conflito com outra sessão.' }
+        }
+    }
+
+    // 5. Create the appointment
     const { data: newSession, error } = await supabase
         .from('appointments')
         .insert({
