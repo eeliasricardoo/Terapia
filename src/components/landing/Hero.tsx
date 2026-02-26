@@ -10,9 +10,33 @@ import { Heart, Star, ShieldCheck } from "lucide-react"
 export function Hero() {
     return (
         <section className="w-full pt-20 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 bg-slate-50 overflow-hidden relative">
-            {/* Background effects */}
-            <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[800px] h-[800px] opacity-30 bg-gradient-to-tr from-blue-200 to-purple-300 blur-3xl rounded-full mix-blend-multiply pointer-events-none" />
-            <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[600px] h-[600px] opacity-30 bg-gradient-to-tr from-sky-200 to-indigo-200 blur-3xl rounded-full mix-blend-multiply pointer-events-none" />
+            {/* Animated Background effects */}
+            <motion.div
+                animate={{
+                    scale: [1, 1.1, 1],
+                    x: [0, 50, 0],
+                    y: [0, -50, 0]
+                }}
+                transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[800px] h-[800px] opacity-30 bg-gradient-to-tr from-blue-300 to-purple-300 blur-[120px] rounded-full mix-blend-multiply pointer-events-none"
+            />
+            <motion.div
+                animate={{
+                    scale: [1, 1.2, 1],
+                    x: [0, -30, 0],
+                    y: [0, 40, 0]
+                }}
+                transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+                className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[600px] h-[600px] opacity-30 bg-gradient-to-tr from-sky-300 to-emerald-200 blur-[120px] rounded-full mix-blend-multiply pointer-events-none"
+            />
+            <motion.div
+                animate={{
+                    scale: [1, 1.5, 1],
+                    opacity: [0.1, 0.2, 0.1]
+                }}
+                transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-indigo-300 blur-[100px] rounded-full mix-blend-multiply pointer-events-none"
+            />
 
             <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
@@ -53,11 +77,11 @@ export function Hero() {
                             transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
                             className="flex flex-col sm:flex-row gap-4 w-full justify-center lg:justify-start pt-4"
                         >
-                            <Button asChild size="lg" className="h-14 px-8 text-lg shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all hover:-translate-y-1 bg-gradient-to-r from-blue-500 flex-1 sm:flex-none to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0">
+                            <Button asChild size="lg" className="h-14 px-8 text-lg shadow-xl shadow-blue-600/20 hover:shadow-blue-600/30 transition-all hover:-translate-y-1 bg-blue-600 hover:bg-blue-700">
                                 <Link href="/busca">Encontrar Psicólogo</Link>
                             </Button>
                             <RoleSelectionDialog mode="register">
-                                <Button variant="outline" size="lg" className="h-14 px-8 text-lg border-2 border-indigo-100 flex-1 sm:flex-none text-indigo-900 hover:bg-indigo-50 hover:border-indigo-200 transition-all hover:-translate-y-1 bg-white/70 backdrop-blur-sm shadow-sm hover:shadow-md">
+                                <Button variant="outline" size="lg" className="h-14 px-8 text-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all hover:-translate-y-1 bg-white/50 backdrop-blur-sm">
                                     Sou Psicólogo
                                 </Button>
                             </RoleSelectionDialog>
@@ -81,9 +105,13 @@ export function Hero() {
                         transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
                         className="relative mx-auto w-full max-w-lg lg:max-w-none mt-8 lg:mt-0"
                     >
-                        {/* Decorative glass container */}
-                        <div className="relative rounded-3xl shadow-2xl shadow-blue-900/10 border border-white/40 bg-white/40 backdrop-blur-sm p-4">
-                            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] w-full bg-slate-100">
+                        {/* Decorative glass container with breathing animation */}
+                        <motion.div
+                            animate={{ y: [0, -10, 0] }}
+                            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                            className="relative rounded-3xl shadow-[0_20px_50px_-12px_rgba(30,58,138,0.2)] border border-white/60 bg-white/40 backdrop-blur-md p-4"
+                        >
+                            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] w-full bg-slate-100/50">
                                 <Image
                                     src="/hero-illustration.png"
                                     alt="Ilustração Terapia Saúde Mental"
@@ -95,8 +123,8 @@ export function Hero() {
 
                             {/* Floating glassmorphism badge 1 */}
                             <motion.div
-                                animate={{ y: [-5, 5, -5] }}
-                                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                                animate={{ y: [-8, 8, -8], rotate: [-2, 2, -2] }}
+                                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
                                 className="absolute -left-6 top-12 bg-white/80 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500 delay-700"
                             >
                                 <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
@@ -110,8 +138,8 @@ export function Hero() {
 
                             {/* Floating glassmorphism badge 2 */}
                             <motion.div
-                                animate={{ y: [5, -5, 5] }}
-                                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
+                                animate={{ y: [8, -8, 8], rotate: [2, -2, 2] }}
+                                transition={{ repeat: Infinity, duration: 6, ease: "easeInOut", delay: 1 }}
                                 className="absolute -right-6 bottom-16 bg-white/80 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500 delay-1000"
                             >
                                 <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-500">
@@ -122,7 +150,7 @@ export function Hero() {
                                     <p className="font-bold text-slate-900 text-sm">Acolhimento Social</p>
                                 </div>
                             </motion.div>
-                        </div>
+                        </motion.div>
                     </motion.div>
                 </div>
             </div>
