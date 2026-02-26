@@ -128,6 +128,11 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
             return format(zonedAppt, 'yyyy-MM-dd') === dateStr
         })
 
+        // Obter o tempo atual no fuso do psicólogo para bloquear horários passados de hoje
+        const nowZoned = toZonedTime(new Date(), timezone)
+        const isToday = format(nowZoned, 'yyyy-MM-dd') === dateStr
+        const nowMinutes = nowZoned.getHours() * 60 + nowZoned.getMinutes()
+
         slotsDef.forEach(slot => {
             let current = new Date(`1970-01-01T${slot.start}:00`)
             const end = new Date(`1970-01-01T${slot.end}:00`)
@@ -149,7 +154,11 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
                     return (slotStartMin < apptEndMin) && (slotEndMin > apptStartMin)
                 })
 
-                if (!hasConflict) {
+                // Verificar se o horário já passou (apenas se for o dia de hoje)
+                // Usamos uma folga de antecedência (ex: 30 mins) ou deixamos exato. Vamos bloquear exato.
+                const isPast = isToday && (slotStartMin <= nowMinutes + 30) // 30 mins de antecedência mínima
+
+                if (!hasConflict && !isPast) {
                     generatedSlots.push(`${hour}:${min}`)
                 }
 
