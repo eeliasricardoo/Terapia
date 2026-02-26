@@ -6,9 +6,9 @@ import { Search, ArrowRight, Users, Star, Clock } from "lucide-react"
 
 export function SearchHighlight() {
     return (
-        <section className="w-full py-16 md:py-24 bg-gradient-to-br from-primary/10 via-primary/5 to-background relative overflow-hidden">
+        <section className="w-full py-16 md:py-24 bg-gradient-to-b from-white via-slate-50 to-white relative overflow-hidden">
             {/* Background decorative elements */}
-            <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] pointer-events-none" />
+            <div className="absolute inset-0 bg-grid-slate-200/50 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] pointer-events-none" />
 
             <div className="container px-4 md:px-6 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-8 items-center">
