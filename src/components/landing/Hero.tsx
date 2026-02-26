@@ -1,50 +1,128 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { RoleSelectionDialog } from "@/components/auth/RoleSelectionDialog"
 import { motion } from "framer-motion"
+import { Heart, Star, ShieldCheck } from "lucide-react"
 
 export function Hero() {
-
     return (
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-background overflow-hidden relative">
-            <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-50/50 via-white to-white opacity-70"></div>
-            <div className="container px-4 md:px-6 relative z-10">
-                <div className="flex flex-col items-center space-y-8 text-center">
-                    <div className="space-y-4 max-w-3xl">
-                        <motion.h1
+        <section className="w-full pt-20 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 bg-slate-50 overflow-hidden relative">
+            {/* Background effects */}
+            <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[800px] h-[800px] opacity-30 bg-gradient-to-tr from-blue-200 to-purple-300 blur-3xl rounded-full mix-blend-multiply pointer-events-none" />
+            <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[600px] h-[600px] opacity-30 bg-gradient-to-tr from-sky-200 to-indigo-200 blur-3xl rounded-full mix-blend-multiply pointer-events-none" />
+
+            <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
+                <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+                    {/* Text content */}
+                    <div className="space-y-8 max-w-2xl mx-auto lg:mx-0 text-center lg:text-left">
+                        <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 pb-2"
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100/50 border border-blue-200 text-blue-800 text-sm font-medium mb-2"
                         >
-                            Saúde Mental para Todos
-                        </motion.h1>
-                        <motion.p
+                            <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
+                            Plataforma de Terapia Solidária
+                        </motion.div>
+
+                        <div className="space-y-4">
+                            <motion.h1
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+                                className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl/tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-900"
+                            >
+                                Acesso e impacto: Terapia para todos.
+                            </motion.h1>
+                            <motion.p
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+                                className="text-slate-600 md:text-xl font-light leading-relaxed max-w-[600px] mx-auto lg:mx-0"
+                            >
+                                Conectamos pacientes a profissionais incríveis. Psicólogos ganham visibilidade e pontos no ranking da plataforma ao oferecerem combos e vagas de valor social.
+                            </motion.p>
+                        </div>
+
+                        <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-                            className="mx-auto max-w-[700px] text-slate-600 md:text-xl font-light leading-relaxed"
+                            transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+                            className="flex flex-col sm:flex-row gap-4 w-full justify-center lg:justify-start pt-4"
                         >
-                            A plataforma completa para pacientes, psicólogos e empresas.
-                            Encontre o profissional ideal ou gerencie sua carreira com tecnologia de ponta.
-                        </motion.p>
-                    </div>
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-                        className="flex flex-col sm:flex-row gap-4 w-full justify-center"
-                    >
-                        <Button asChild size="lg" className="h-12 px-8 text-lg shadow-lg shadow-blue-900/20 hover:shadow-blue-900/30 transition-all hover:-translate-y-1">
-                            <Link href="/busca">Encontrar Psicólogo</Link>
-                        </Button>
-                        <RoleSelectionDialog mode="register">
-                            <Button variant="outline" size="lg" className="h-12 px-8 text-lg border-slate-200 hover:bg-slate-50 transition-all hover:-translate-y-1">
-                                Criar Conta
+                            <Button asChild size="lg" className="h-14 px-8 text-lg shadow-xl shadow-blue-600/20 hover:shadow-blue-600/30 transition-all hover:-translate-y-1 bg-blue-600 hover:bg-blue-700">
+                                <Link href="/busca">Encontrar Psicólogo</Link>
                             </Button>
-                        </RoleSelectionDialog>
+                            <RoleSelectionDialog mode="register">
+                                <Button variant="outline" size="lg" className="h-14 px-8 text-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all hover:-translate-y-1 bg-white/50 backdrop-blur-sm">
+                                    Sou Psicólogo
+                                </Button>
+                            </RoleSelectionDialog>
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
+                            className="flex items-center justify-center lg:justify-start gap-6 pt-4 text-sm text-slate-500 font-medium"
+                        >
+                            <div className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-500" /> Profissionais Verificados</div>
+                            <div className="flex items-center gap-1.5"><Heart className="h-4 w-4 text-rose-400" /> Ação Voluntária</div>
+                        </motion.div>
+                    </div>
+
+                    {/* Image / Illustration content */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
+                        animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                        transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+                        className="relative mx-auto w-full max-w-lg lg:max-w-none mt-8 lg:mt-0"
+                    >
+                        {/* Decorative glass container */}
+                        <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/10 border border-white/40 bg-white/40 backdrop-blur-sm p-4">
+                            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] w-full bg-slate-100">
+                                <Image
+                                    src="/hero-illustration.png"
+                                    alt="Ilustração Terapia Saúde Mental"
+                                    fill
+                                    className="object-cover hover:scale-105 transition-transform duration-700 ease-out"
+                                    priority
+                                />
+                            </div>
+
+                            {/* Floating glassmorphism badge 1 */}
+                            <motion.div
+                                animate={{ y: [-5, 5, -5] }}
+                                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                                className="absolute -left-6 top-12 bg-white/80 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500 delay-700"
+                            >
+                                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                    <Star className="h-5 w-5 fill-blue-600" />
+                                </div>
+                                <div className="hidden sm:block">
+                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Top Terapeutas</p>
+                                    <p className="font-bold text-slate-900 text-sm">Sistema de Ranking</p>
+                                </div>
+                            </motion.div>
+
+                            {/* Floating glassmorphism badge 2 */}
+                            <motion.div
+                                animate={{ y: [5, -5, 5] }}
+                                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
+                                className="absolute -right-6 bottom-16 bg-white/80 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500 delay-1000"
+                            >
+                                <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-500">
+                                    <Heart className="h-5 w-5 fill-rose-500" />
+                                </div>
+                                <div className="hidden sm:block">
+                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Voluntariado</p>
+                                    <p className="font-bold text-slate-900 text-sm">Acolhimento Social</p>
+                                </div>
+                            </motion.div>
+                        </div>
                     </motion.div>
                 </div>
             </div>
