@@ -25,13 +25,8 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { getTimeZoneLabel } from "@/lib/date-utils"
 import type { PsychologistAvailability } from "@/lib/actions/availability"
-import { format, isBefore, startOfDay, addMinutes, parseISO } from "date-fns"
+import { format, isBefore, startOfDay, addMinutes } from "date-fns"
 import { toZonedTime } from "date-fns-tz"
-
-const TIME_SLOTS = [
-    "09:00", "10:00", "11:00",
-    "14:00", "15:00", "16:00"
-]
 
 const MONTHS = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
