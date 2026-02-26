@@ -1,4 +1,5 @@
 import { getPsychologistById } from "@/lib/actions/psychologists"
+import { getPsychologistAvailability } from "@/lib/actions/availability"
 import { notFound } from "next/navigation"
 import { PsychologistProfileClient } from "./PsychologistProfileClient"
 
@@ -18,5 +19,7 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
     }
 
     // Pass data to client component for interactivity
-    return <PsychologistProfileClient psychologist={psychologist} />
+    const availability = await getPsychologistAvailability(psychologist.id)
+
+    return <PsychologistProfileClient psychologist={psychologist} availability={availability} />
 }

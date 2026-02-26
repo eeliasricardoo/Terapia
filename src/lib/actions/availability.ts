@@ -165,3 +165,70 @@ export async function saveAvailability(
         return { success: false, error: 'Erro interno no servidor' }
     }
 }
+
+export type TimeSlot = {
+    start: string
+    end: string
+}
+
+export type DaySchedule = {
+    enabled: boolean
+    slots: TimeSlot[]
+}
+
+export type WeeklyScheduleData = {
+    sessionDuration: string
+    monday: DaySchedule
+    tuesday: DaySchedule
+    wednesday: DaySchedule
+    thursday: DaySchedule
+    friday: DaySchedule
+    saturday: DaySchedule
+    sunday: DaySchedule
+}
+
+export type PsychologistAvailability = {
+    timezone: string
+    weeklySchedule: WeeklyScheduleData | null
+    overrides: Record<string, { type: 'blocked' | 'custom', slots: TimeSlot[] }>
+}
+
+export async function getPsychologistAvailability(psychologistId: string): Promise<PsychologistAvailability | null> {
+    const supabase = await createClient()
+
+    // 1. O perfil do psicólogo que contém o weekly_schedule e timezone
+    const { data: profile, error: profileError } = await supabase
+        .from('psychologist_profiles')
+        .select('weekly_schedule, timezone')
+        .eq('id', psychologistId)
+        .single()
+
+    if (profileError || !profile) {
+        console.error('Error fetching psychologist availability:', profileError)
+        return null
+    }
+
+    // 2. Os overrides para datas específicas
+    const { data: overridesList, error: overridesError } = await supabase
+        .from('schedule_overrides')
+        .select('date, type, slots')
+        .eq('psychologist_id', psychologistId)
+        .gte('date', new Date().toISOString().split('T')[0]) // Somente overrides do presente/futuro
+
+    const overridesMap: Record<string, { type: 'blocked' | 'custom', slots: TimeSlot[] }> = {}
+
+    if (overridesList && !overridesError) {
+        overridesList.forEach(o => {
+            overridesMap[o.date] = {
+                type: o.type as 'blocked' | 'custom',
+                slots: (o.slots as unknown as TimeSlot[]) || []
+            }
+        })
+    }
+
+    return {
+        timezone: profile.timezone || 'America/Sao_Paulo',
+        weeklySchedule: (profile.weekly_schedule as unknown as WeeklyScheduleData) || null,
+        overrides: overridesMap
+    }
+}
