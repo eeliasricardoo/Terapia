@@ -209,12 +209,14 @@ export async function getPsychologistAvailability(psychologistId: string): Promi
         return null
     }
 
-    // 2. Os overrides para datas específicas
+    // Pegamos overrides de alguns dias atrás até o futuro para evitar perder datas por questões de fuso horário do servidor (UTC x Local)
+    const recentPastDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
     const { data: overridesList, error: overridesError } = await supabase
         .from('schedule_overrides')
         .select('date, type, slots')
         .eq('psychologist_id', psychologistId)
-        .gte('date', new Date().toISOString().split('T')[0]) // Somente overrides do presente/futuro
+        .gte('date', recentPastDate)
 
     const overridesMap: Record<string, { type: 'blocked' | 'custom', slots: TimeSlot[] }> = {}
 
