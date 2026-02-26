@@ -38,6 +38,14 @@ export function Hero() {
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-indigo-300 blur-[100px] rounded-full mix-blend-multiply pointer-events-none"
             />
 
+            {/* Subtle Dotted Texture Overlay */}
+            <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:24px_24px] opacity-50 [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_10%,transparent_100%)] pointer-events-none" />
+
+            {/* Small floating particles */}
+            <motion.div animate={{ y: [0, -20, 0], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} className="absolute top-32 left-32 w-4 h-4 rounded-full bg-blue-400 blur-sm" />
+            <motion.div animate={{ y: [0, 30, 0], opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute bottom-40 right-1/3 w-6 h-6 rounded-full bg-purple-400 blur-sm" />
+            <motion.div animate={{ y: [0, -15, 0], opacity: [0.4, 0.8, 0.4] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute top-48 right-16 w-3 h-3 rounded-full bg-emerald-400 blur-sm" />
+
             <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
                     {/* Text content */}
@@ -52,12 +60,14 @@ export function Hero() {
                             Plataforma de Terapia Solidária
                         </motion.div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 relative">
+                            {/* Decorative spark icon behind title */}
+                            <Star className="absolute -top-6 -left-6 h-12 w-12 text-yellow-300/40 fill-yellow-300/40 -z-10 rotate-12 blur-[2px]" />
                             <motion.h1
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-                                className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl/tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-900"
+                                className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl/tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-900 drop-shadow-sm"
                             >
                                 Acesso e impacto: Terapia para todos.
                             </motion.h1>
@@ -75,13 +85,16 @@ export function Hero() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
-                            className="flex flex-col sm:flex-row gap-4 w-full justify-center lg:justify-start pt-4"
+                            className="flex flex-col sm:flex-row gap-4 w-full justify-center lg:justify-start pt-4 items-center"
                         >
-                            <Button asChild size="lg" className="h-14 px-8 text-lg shadow-xl shadow-blue-600/20 hover:shadow-blue-600/30 transition-all hover:-translate-y-1 bg-blue-600 hover:bg-blue-700">
-                                <Link href="/busca">Encontrar Psicólogo</Link>
-                            </Button>
+                            <div className="relative group">
+                                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg blur opacity-40 group-hover:opacity-60 transition duration-500 hover:duration-200"></div>
+                                <Button asChild size="lg" className="relative h-14 px-8 text-lg shadow-xl transition-all hover:-translate-y-1 bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
+                                    <Link href="/busca">Encontrar Psicólogo</Link>
+                                </Button>
+                            </div>
                             <RoleSelectionDialog mode="register">
-                                <Button variant="outline" size="lg" className="h-14 px-8 text-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all hover:-translate-y-1 bg-white/50 backdrop-blur-sm">
+                                <Button variant="outline" size="lg" className="h-14 px-8 text-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all hover:-translate-y-1 bg-white/50 backdrop-blur-sm w-full sm:w-auto">
                                     Sou Psicólogo
                                 </Button>
                             </RoleSelectionDialog>
@@ -91,10 +104,26 @@ export function Hero() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
-                            className="flex items-center justify-center lg:justify-start gap-6 pt-4 text-sm text-slate-500 font-medium"
+                            className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 pt-6 text-sm text-slate-500 font-medium"
                         >
-                            <div className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-500" /> Profissionais Verificados</div>
-                            <div className="flex items-center gap-1.5"><Heart className="h-4 w-4 text-rose-400" /> Ação Voluntária</div>
+                            <div className="flex -space-x-3">
+                                <div className="w-10 h-10 rounded-full border-2 border-slate-50 overflow-hidden bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-600">MJ</div>
+                                <div className="w-10 h-10 rounded-full border-2 border-slate-50 overflow-hidden bg-rose-100 flex items-center justify-center text-xs font-bold text-rose-600">AP</div>
+                                <div className="w-10 h-10 rounded-full border-2 border-slate-50 overflow-hidden bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-600">CL</div>
+                                <div className="w-10 h-10 rounded-full border-2 border-slate-50 flex items-center justify-center bg-slate-100 text-slate-600 text-xs font-bold shadow-sm">
+                                    +5k
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-center sm:items-start space-y-1">
+                                <div className="flex text-yellow-500">
+                                    <Star className="h-4 w-4 fill-current" />
+                                    <Star className="h-4 w-4 fill-current" />
+                                    <Star className="h-4 w-4 fill-current" />
+                                    <Star className="h-4 w-4 fill-current" />
+                                    <Star className="h-4 w-4 fill-current" />
+                                </div>
+                                <span className="text-xs">Vidas transformadas todos os dias</span>
+                            </div>
                         </motion.div>
                     </div>
 
