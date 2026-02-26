@@ -81,6 +81,7 @@ export function ScheduleManager() {
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
     const [isLoading, setIsLoading] = useState(false)
     const [timezone, setTimezone] = useState("America/Sao_Paulo")
+    const [sessionDuration, setSessionDuration] = useState<string>("50")
 
     // Weekly Routine (The "Base" Layer)
     const [weeklySchedule, setWeeklySchedule] = useState<WeeklySchedule>({
@@ -115,6 +116,10 @@ export function ScheduleManager() {
                 .single()
 
             if (profile?.weekly_schedule) {
+                const ws = profile.weekly_schedule as any;
+                if (ws.sessionDuration) {
+                    setSessionDuration(ws.sessionDuration);
+                }
                 setWeeklySchedule(profile.weekly_schedule as unknown as WeeklySchedule)
             }
             if (profile?.timezone) {
@@ -331,7 +336,7 @@ export function ScheduleManager() {
             await supabase
                 .from('psychologist_profiles')
                 .update({
-                    weekly_schedule: weeklySchedule as unknown as { [key: string]: any },
+                    weekly_schedule: { ...weeklySchedule, sessionDuration } as unknown as { [key: string]: any },
                     timezone: timezone
                 })
                 .eq('id', profile.id)

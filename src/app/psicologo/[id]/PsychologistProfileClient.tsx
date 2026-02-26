@@ -24,11 +24,9 @@ import type { PsychologistWithProfile } from "@/lib/supabase/types"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { getTimeZoneLabel } from "@/lib/date-utils"
-
-const TIME_SLOTS = [
-    "09:00", "10:00", "11:00",
-    "14:00", "15:00", "16:00"
-]
+import type { PsychologistAvailability } from "@/lib/actions/availability"
+import { format, isBefore, startOfDay, addMinutes } from "date-fns"
+import { toZonedTime } from "date-fns-tz"
 
 const MONTHS = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -37,11 +35,12 @@ const MONTHS = [
 
 interface Props {
     psychologist: PsychologistWithProfile
+    availability: PsychologistAvailability | null
 }
 
-export function PsychologistProfileClient({ psychologist }: Props) {
+export function PsychologistProfileClient({ psychologist, availability }: Props) {
     const [selectedDay, setSelectedDay] = useState(15)
-    const [currentDate, setCurrentDate] = useState(new Date(2024, 9))
+    const [currentDate, setCurrentDate] = useState(new Date())
     const [selectedTime, setSelectedTime] = useState<string | null>(null)
     const [selectedPlan, setSelectedPlan] = useState<'single' | 'monthly'>('monthly')
 
@@ -74,6 +73,109 @@ export function PsychologistProfileClient({ psychologist }: Props) {
     const monthlyTotal = monthlyPricePerSession * 4
 
     const displayPrice = selectedPlan === 'single' ? price : monthlyPricePerSession
+
+    // Availability specific logic
+    const timezone = availability?.timezone || "America/Sao_Paulo"
+    const today = toZonedTime(new Date(), timezone)
+
+    const isDayAvailable = (date: Date) => {
+        if (!availability) return false
+
+        // Check if date is in the past
+        if (isBefore(date, startOfDay(today))) {
+            return false
+        }
+
+        const dateStr = format(date, 'yyyy-MM-dd')
+
+        // Check overrides
+        if (availability.overrides[dateStr]) {
+            return availability.overrides[dateStr].type === 'custom' && availability.overrides[dateStr].slots.length > 0
+        }
+
+        // Check weekly schedule
+        if (!availability.weeklySchedule) return false
+
+        const dayOfWeekIndex = date.getDay()
+        const daysMap = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const
+        const dayKey = daysMap[dayOfWeekIndex]
+
+        return availability.weeklySchedule[dayKey]?.enabled && availability.weeklySchedule[dayKey].slots.length > 0
+    }
+
+    const getAvailableSlotsForDay = (date: Date) => {
+        if (!availability || !isDayAvailable(date)) return []
+
+        const dateStr = format(date, 'yyyy-MM-dd')
+        let slotsDef: { start: string, end: string }[] = []
+
+        if (availability.overrides[dateStr] && availability.overrides[dateStr].type === 'custom') {
+            slotsDef = availability.overrides[dateStr].slots
+        } else if (availability.weeklySchedule) {
+            const dayOfWeekIndex = date.getDay()
+            const daysMap = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const
+            const dayKey = daysMap[dayOfWeekIndex]
+            slotsDef = availability.weeklySchedule[dayKey]?.slots || []
+        }
+
+        const durationMinutes = availability.weeklySchedule?.sessionDuration ? parseInt(availability.weeklySchedule.sessionDuration) : 50
+        const breakMinutes = 10
+        let generatedSlots: string[] = []
+
+        // Encontrar agendamentos para esse dia no fuso horário do psicólogo
+        const apptsOnThisDay = (availability.appointments || []).filter(appt => {
+            const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
+            return format(zonedAppt, 'yyyy-MM-dd') === dateStr
+        })
+
+        // Obter o tempo atual no fuso do psicólogo para bloquear horários passados de hoje
+        const nowZoned = toZonedTime(new Date(), timezone)
+        const isToday = format(nowZoned, 'yyyy-MM-dd') === dateStr
+        const nowMinutes = nowZoned.getHours() * 60 + nowZoned.getMinutes()
+
+        slotsDef.forEach(slot => {
+            let current = new Date(`1970-01-01T${slot.start}:00`)
+            const end = new Date(`1970-01-01T${slot.end}:00`)
+
+            while (current < end) {
+                const hour = current.getHours().toString().padStart(2, '0')
+                const min = current.getMinutes().toString().padStart(2, '0')
+
+                const slotStartMin = current.getHours() * 60 + current.getMinutes()
+                const slotEndMin = slotStartMin + durationMinutes
+
+                // Verificar conflitos
+                const hasConflict = apptsOnThisDay.some(appt => {
+                    const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
+                    const apptStartMin = zonedAppt.getHours() * 60 + zonedAppt.getMinutes()
+                    const apptEndMin = apptStartMin + appt.duration_minutes
+
+                    // Condição de sobreposição (exclusivo nas bordas)
+                    return (slotStartMin < apptEndMin) && (slotEndMin > apptStartMin)
+                })
+
+                // Verificar se o horário já passou (apenas se for o dia de hoje)
+                // Usamos uma folga de antecedência (ex: 30 mins) ou deixamos exato. Vamos bloquear exato.
+                const isPast = isToday && (slotStartMin <= nowMinutes + 30) // 30 mins de antecedência mínima
+
+                if (!hasConflict && !isPast) {
+                    generatedSlots.push(`${hour}:${min}`)
+                }
+
+                current = addMinutes(current, durationMinutes + breakMinutes)
+                // Do not add slots that would end after the end bound
+                if (addMinutes(current, durationMinutes) > end) {
+                    break;
+                }
+            }
+        })
+
+        return generatedSlots
+    }
+
+    const availableSlotsForSelectedDay = selectedDay
+        ? getAvailableSlotsForDay(new Date(currentYear, currentDate.getMonth(), selectedDay))
+        : []
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50">
@@ -308,7 +410,7 @@ export function PsychologistProfileClient({ psychologist }: Props) {
                                         Selecione um horário
                                     </h3>
                                     <p className="text-xs text-slate-500 mb-4 ml-4">
-                                        Fuso horário: {getTimeZoneLabel(psychologist.timezone || "America/Sao_Paulo")}
+                                        Fuso horário: {getTimeZoneLabel(timezone)}
                                     </p>
 
                                     <div className="mb-6 bg-slate-50 rounded-xl p-4 border border-slate-100">
@@ -330,9 +432,7 @@ export function PsychologistProfileClient({ psychologist }: Props) {
                                         <div className="grid grid-cols-7 gap-1 text-center">
                                             {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
                                                 const date = new Date(currentYear, currentDate.getMonth(), day)
-                                                const dayOfWeek = date.getDay()
-                                                // Availability Logic: Mon(1), Wed(3), Thu(4)
-                                                const isAvailable = [1, 3, 4].includes(dayOfWeek)
+                                                const isAvailable = isDayAvailable(date)
 
                                                 return (
                                                     <button
@@ -364,7 +464,7 @@ export function PsychologistProfileClient({ psychologist }: Props) {
                                         <h4 className="text-sm font-semibold text-slate-900">Horários disponíveis</h4>
                                         {selectedDay ? (
                                             <div className="grid grid-cols-3 gap-2">
-                                                {TIME_SLOTS.map((time) => (
+                                                {availableSlotsForSelectedDay.length > 0 ? availableSlotsForSelectedDay.map((time) => (
                                                     <Button
                                                         key={time}
                                                         variant="outline"
@@ -377,7 +477,9 @@ export function PsychologistProfileClient({ psychologist }: Props) {
                                                     >
                                                         {time}
                                                     </Button>
-                                                ))}
+                                                )) : (
+                                                    <div className="col-span-3 text-sm text-slate-500 py-2">Nenhum horário disponível para este dia.</div>
+                                                )}
                                             </div>
                                         ) : (
                                             <p className="text-sm text-muted-foreground text-center py-4 italic">Selecione um dia disponível acima</p>
