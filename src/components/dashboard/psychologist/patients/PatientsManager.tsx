@@ -45,76 +45,19 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import type { PatientData } from "@/lib/actions/patients"
 
-// --- Types ---
-type PatientStatus = 'active' | 'inactive' | 'archived'
-
-interface Patient {
-    id: string
-    name: string
-    email: string
-    phone: string
-    image?: string
-    status: PatientStatus
-    lastSession?: string
-    nextSession?: string
-    totalSessions: number
-}
-
-// --- Mock Data ---
-const MOCK_PATIENTS: Patient[] = [
-    {
-        id: "1",
-        name: "Ana Silva",
-        email: "ana.silva@email.com",
-        phone: "(11) 99999-1111",
-        status: "active",
-        lastSession: "15 Fev, 2026",
-        nextSession: "22 Fev, 2026 - 14:00",
-        totalSessions: 12
-    },
-    {
-        id: "2",
-        name: "Carlos Oliveira",
-        email: "carlos.oli@email.com",
-        phone: "(11) 98888-2222",
-        status: "active",
-        lastSession: "10 Fev, 2026",
-        nextSession: "17 Fev, 2026 - 09:00",
-        totalSessions: 4
-    },
-    {
-        id: "3",
-        name: "Mariana Costa",
-        email: "mari.costa@email.com",
-        phone: "(21) 97777-3333",
-        status: "inactive",
-        lastSession: "20 Jan, 2026",
-        totalSessions: 8
-    },
-    {
-        id: "4",
-        name: "Pedro Santos",
-        email: "pedro.s@email.com",
-        phone: "(31) 96666-4444",
-        status: "active",
-        lastSession: "12 Fev, 2026",
-        nextSession: "19 Fev, 2026 - 16:00",
-        totalSessions: 2
-    }
-]
-
-export function PatientsManager() {
+export function PatientsManager({ initialPatients }: { initialPatients: PatientData[] }) {
     const [searchTerm, setSearchTerm] = useState("")
-    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
+    const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null)
     const [isSheetOpen, setIsSheetOpen] = useState(false)
 
-    const filteredPatients = MOCK_PATIENTS.filter(p =>
+    const filteredPatients = initialPatients.filter(p =>
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.email.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    const handlePatientClick = (patient: Patient) => {
+    const handlePatientClick = (patient: PatientData) => {
         setSelectedPatient(patient)
         setIsSheetOpen(true)
     }
@@ -127,10 +70,6 @@ export function PatientsManager() {
                     <h2 className="text-2xl font-bold tracking-tight text-slate-900">Pacientes</h2>
                     <p className="text-slate-500">Gerencie seus pacientes e acesse os prontuários.</p>
                 </div>
-                <Button className="bg-slate-900 text-white hover:bg-slate-800 gap-2 shadow-sm">
-                    <Plus className="h-4 w-4" />
-                    Novo Paciente
-                </Button>
             </div>
 
             {/* Filters & Search */}
@@ -492,18 +431,18 @@ export function PatientsManager() {
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">CPF</label>
-                                                    <Input defaultValue="123.456.789-00" className="bg-slate-50 border-slate-200" readOnly />
+                                                    <Input defaultValue={selectedPatient.document || ""} className="bg-slate-50 border-slate-200" readOnly />
                                                 </div>
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-6">
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Data de Nascimento</label>
-                                                    <Input defaultValue="12/05/1990" className="bg-slate-50 border-slate-200" readOnly />
+                                                    <Input defaultValue={selectedPatient.birthDate || ""} className="bg-slate-50 border-slate-200" readOnly />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Gênero</label>
-                                                    <Input defaultValue="Feminino" className="bg-slate-50 border-slate-200" readOnly />
+                                                    <Input defaultValue={selectedPatient.gender || ""} className="bg-slate-50 border-slate-200" readOnly />
                                                 </div>
                                             </div>
 
@@ -519,17 +458,17 @@ export function PatientsManager() {
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Profissão</label>
-                                                    <Input defaultValue="Designer Gráfico" className="bg-slate-50 border-slate-200" readOnly />
+                                                    <Input defaultValue={selectedPatient.profession || ""} className="bg-slate-50 border-slate-200" readOnly />
                                                 </div>
                                             </div>
 
                                             <div className="space-y-2">
                                                 <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Endereço</label>
-                                                <Input defaultValue="Rua das Flores, 123 - Apto 45" className="bg-slate-50 border-slate-200" readOnly />
+                                                <Input defaultValue={selectedPatient.address?.line || ""} className="bg-slate-50 border-slate-200" readOnly />
                                                 <div className="grid grid-cols-3 gap-6 mt-2">
-                                                    <Input defaultValue="São Paulo" className="bg-slate-50 border-slate-200" readOnly />
-                                                    <Input defaultValue="SP" className="bg-slate-50 border-slate-200" readOnly />
-                                                    <Input defaultValue="01234-567" className="bg-slate-50 border-slate-200" readOnly />
+                                                    <Input defaultValue={selectedPatient.address?.city || ""} className="bg-slate-50 border-slate-200" readOnly />
+                                                    <Input defaultValue={selectedPatient.address?.state || ""} className="bg-slate-50 border-slate-200" readOnly />
+                                                    <Input defaultValue={selectedPatient.address?.zip || ""} className="bg-slate-50 border-slate-200" readOnly />
                                                 </div>
                                             </div>
                                         </div>

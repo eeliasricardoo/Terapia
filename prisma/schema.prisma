@@ -56,9 +56,20 @@ model Profile {
   birth_date DateTime? @db.Date
   document   String?
   phone      String?
+  gender     String?
+  profession String?
+  addressLine String? @map("address_line")
+  city       String?
+  state      String?
+  zipCode    String?  @map("zip_code")
   role       UserRole  @default(PATIENT)
   user_id    String    @unique
   users      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  anamnesis            Anamnesis[]
+  evolutions           Evolution[]
+  psychologistLinks    PatientPsychologistLink[] @relation("PatientLinks")
+  patientLinks         PatientPsychologistLink[] @relation("PsychologistLinks")
 
   @@map("profiles")
 }
@@ -112,4 +123,51 @@ enum UserRole {
   PSYCHOLOGIST
   COMPANY
   ADMIN
+}
+
+model PatientPsychologistLink {
+  id              String   @id @default(uuid())
+  patientId       String   @map("patient_id")
+  psychologistId  String   @map("psychologist_id")
+  status          String   @default("active") // active, inactive, archived
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  patient         Profile  @relation("PatientLinks", fields: [patientId], references: [id], onDelete: Cascade)
+  psychologist    Profile  @relation("PsychologistLinks", fields: [psychologistId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, psychologistId])
+  @@map("patient_psychologist_links")
+}
+
+model Anamnesis {
+  id                   String   @id @default(uuid())
+  patientId            String   @unique @map("patient_id")
+  psychologistId       String   @map("psychologist_id")
+  mainComplaint        String?  @map("main_complaint")
+  familyHistory        String?  @map("family_history")
+  medication           String?
+  diagnosticHypothesis String?  @map("diagnostic_hypothesis")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  patient              Profile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("anamnesis")
+}
+
+model Evolution {
+  id              String   @id @default(uuid())
+  patientId       String   @map("patient_id")
+  psychologistId  String   @map("psychologist_id")
+  mood            String?  // Bem, Neutro, Mal, Crise
+  publicSummary   String?  @map("public_summary")
+  privateNotes    String?  @map("private_notes")
+  date            DateTime @default(now())
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  patient         Profile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("evolutions")
 }
