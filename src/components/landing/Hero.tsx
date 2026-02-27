@@ -49,7 +49,7 @@ export function Hero() {
                             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100/50 border border-blue-200 text-blue-800 text-sm font-medium mb-2"
                         >
                             <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
-                            Plataforma de Terapia Solidária
+                            Terapia Acessível & Solidária
                         </motion.div>
 
                         <div className="space-y-4">
@@ -59,7 +59,7 @@ export function Hero() {
                                 transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
                                 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl/tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-900"
                             >
-                                Acesso e impacto: Terapia para todos.
+                                Encontre seu equilíbrio.<br /> Transforme vidas.
                             </motion.h1>
                             <motion.p
                                 initial={{ opacity: 0, y: 20 }}
@@ -67,7 +67,7 @@ export function Hero() {
                                 transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
                                 className="text-slate-600 md:text-xl font-light leading-relaxed max-w-[600px] mx-auto lg:mx-0"
                             >
-                                Conectamos pacientes a profissionais incríveis. Psicólogos ganham visibilidade e pontos no ranking da plataforma ao oferecerem combos e vagas de valor social.
+                                Um espaço seguro para cuidar de si com terapeutas acolhedores. <span className="font-medium text-slate-800">Para profissionais:</span> faça parte de uma rede solidária, ofereça valor social e ganhe destaque.
                             </motion.p>
                         </div>
 
@@ -78,11 +78,11 @@ export function Hero() {
                             className="flex flex-col sm:flex-row gap-4 w-full justify-center lg:justify-start pt-4"
                         >
                             <Button asChild size="lg" className="h-14 px-8 text-lg shadow-xl shadow-blue-600/20 hover:shadow-blue-600/30 transition-all hover:-translate-y-1 bg-blue-600 hover:bg-blue-700">
-                                <Link href="/busca">Encontrar Psicólogo</Link>
+                                <Link href="/busca">Quero fazer terapia</Link>
                             </Button>
                             <RoleSelectionDialog mode="register">
                                 <Button variant="outline" size="lg" className="h-14 px-8 text-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all hover:-translate-y-1 bg-white/50 backdrop-blur-sm">
-                                    Sou Psicólogo
+                                    Sou Psicólogo(a)
                                 </Button>
                             </RoleSelectionDialog>
                         </motion.div>
@@ -132,7 +132,7 @@ export function Hero() {
                                 </div>
                                 <div className="hidden sm:block">
                                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Top Terapeutas</p>
-                                    <p className="font-bold text-slate-900 text-sm">Sistema de Ranking</p>
+                                    <p className="font-bold text-slate-900 text-sm">Cuidado com Excelência</p>
                                 </div>
                             </motion.div>
 
@@ -146,8 +146,8 @@ export function Hero() {
                                     <Heart className="h-5 w-5 fill-rose-500" />
                                 </div>
                                 <div className="hidden sm:block">
-                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Voluntariado</p>
-                                    <p className="font-bold text-slate-900 text-sm">Acolhimento Social</p>
+                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Atendimento Social</p>
+                                    <p className="font-bold text-slate-900 text-sm">Terapia ao seu alcance</p>
                                 </div>
                             </motion.div>
                         </motion.div>

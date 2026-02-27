@@ -38,31 +38,30 @@ export function SearchHighlight() {
                     <div className="space-y-8">
                         <motion.div variants={fadeIn} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 shadow-sm">
                             <Search className="h-4 w-4 text-blue-600" />
-                            <span className="text-sm font-semibold text-blue-700">Encontre seu terapeuta ideal</span>
+                            <span className="text-sm font-semibold text-blue-700">Encontre a sua melhor versão</span>
                         </motion.div>
 
                         <motion.h2 variants={fadeIn} className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900">
-                            Buscar Psicólogo
-                            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mt-2">Nunca foi tão fácil</span>
+                            O profissional certo
+                            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mt-2">para o seu momento</span>
                         </motion.h2>
 
                         <motion.p variants={fadeIn} className="text-lg md:text-xl text-slate-600 max-w-xl leading-relaxed">
-                            Explore nossa rede de profissionais qualificados. Filtre por especialidade,
-                            disponibilidade e abordagem terapêutica para encontrar o match perfeito.
+                            Sabemos que o primeiro passo é o mais importante. Nossa plataforma ajuda você a encontrar um psicólogo de forma leve, respeitando seu tempo e sua realidade.
                         </motion.p>
 
                         <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 pt-4">
                             <Button asChild size="lg" className="group h-14 px-8 text-lg bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20">
                                 <Link href="/busca" className="flex items-center gap-2">
                                     <Search className="h-5 w-5" />
-                                    Buscar Agora
+                                    Quero conhecer
                                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                                 </Link>
                             </Button>
 
                             <Button asChild variant="outline" size="lg" className="h-14 px-8 text-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300">
                                 <Link href="/cadastro">
-                                    Criar Conta Grátis
+                                    Começar Gratuitamente
                                 </Link>
                             </Button>
                         </motion.div>
@@ -80,7 +79,7 @@ export function SearchHighlight() {
                                 <h3 className="font-extrabold text-3xl text-slate-900">500+</h3>
                             </div>
                             <p className="text-slate-600 font-medium">
-                                Psicólogos certificados prontos para atender você agora.
+                                Especialistas acolhedores e prontos para ouvir você sem julgamentos.
                             </p>
                         </motion.div>
 
@@ -92,7 +91,7 @@ export function SearchHighlight() {
                                 <h3 className="font-extrabold text-3xl text-slate-900">4.9/5</h3>
                             </div>
                             <p className="text-slate-600 font-medium">
-                                Avaliação média de excelência dos nossos profissionais.
+                                Vidas transformadas diariamente através do cuidado verdadeiro e atento.
                             </p>
                         </motion.div>
 
@@ -101,11 +100,10 @@ export function SearchHighlight() {
                                 <div className="p-3 rounded-xl bg-emerald-100/50 text-emerald-600 shrink-0">
                                     <Clock className="h-7 w-7" />
                                 </div>
-                                <h3 className="font-bold text-2xl text-slate-900">Atendimento 100% Flexível</h3>
+                                <h3 className="font-bold text-2xl text-slate-900">Terapia que se adapta a você</h3>
                             </div>
                             <p className="text-slate-600 font-medium text-lg">
-                                Encontre horários que se encaixam na sua rotina corrida.
-                                Sessões online disponíveis 24/7 com máxima segurança.
+                                Sessões online onde e quando quiser, no seu ritmo e no seu espaço. Cuidado 24/7 com máxima privacidade.
                             </p>
                         </motion.div>
                     </div>
