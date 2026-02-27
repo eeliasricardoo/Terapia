@@ -15,7 +15,7 @@ export function CTA() {
         <section className="w-full py-20 md:py-32 relative overflow-hidden">
             {/* Background Image / Pattern */}
             <div className="absolute inset-0 bg-slate-900" />
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-10 mix-blend-luminosity" />
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-15 mix-blend-luminosity" />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent" />
 
             {/* Glow effects */}
