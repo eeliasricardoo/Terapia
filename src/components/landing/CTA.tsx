@@ -19,7 +19,7 @@ export function CTA() {
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent" />
 
             {/* Glow effects */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/30 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-orange-600/20 rounded-full blur-[120px] pointer-events-none" />
 
             <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-4xl">
                 <motion.div
@@ -29,8 +29,8 @@ export function CTA() {
                     variants={fadeIn}
                     className="flex flex-col items-center justify-center space-y-8 text-center bg-white/10 backdrop-blur-2xl border border-white/20 p-10 md:p-16 rounded-3xl shadow-2xl"
                 >
-                    <div className="h-16 w-16 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-2 mx-auto">
-                        <Heart className="h-8 w-8 text-blue-300" />
+                    <div className="h-16 w-16 rounded-2xl bg-orange-500/20 flex items-center justify-center mb-2 mx-auto">
+                        <Heart className="h-8 w-8 text-orange-400" />
                     </div>
 
                     <div className="space-y-4">
@@ -43,7 +43,7 @@ export function CTA() {
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full sm:w-auto">
-                        <Button asChild size="lg" className="h-14 px-8 text-lg bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)] transition-all group">
+                        <Button asChild size="lg" className="h-14 px-8 text-lg bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-[0_0_40px_-10px_rgba(249,115,22,0.5)] transition-all group border-0">
                             <Link href="/busca" className="flex items-center gap-2">
                                 Encontrar Meu Psicólogo
                                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -52,7 +52,7 @@ export function CTA() {
                     </div>
 
                     <p className="text-slate-400 text-sm mt-6 font-medium">
-                        É um profissional de psicologia? <Link href="/cadastro?role=psychologist" className="text-blue-400 hover:text-blue-300 underline underline-offset-4 decoration-blue-400/30 transition-colors">Junte-se ao nosso movimento solidário</Link>.
+                        É um profissional de psicologia? <Link href="/cadastro?role=psychologist" className="text-orange-400 hover:text-orange-300 underline underline-offset-4 decoration-orange-400/30 transition-colors">Junte-se ao nosso movimento solidário</Link>.
                     </p>
                 </motion.div>
             </div>
