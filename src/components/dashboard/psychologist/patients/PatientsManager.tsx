@@ -46,6 +46,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import type { PatientData } from "@/lib/actions/patients"
+import { AnamnesisTab } from "./AnamnesisTab"
 
 export function PatientsManager({ initialPatients }: { initialPatients: PatientData[] }) {
     const [searchTerm, setSearchTerm] = useState("")
@@ -320,50 +321,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                                                 </TabsContent>
 
                                                 <TabsContent value="anamnesis" className="space-y-6 mt-0">
-                                                    <Card className="border-slate-200 shadow-sm">
-                                                        <CardHeader className="bg-slate-50 border-b border-slate-100 pb-4">
-                                                            <CardTitle className="text-base flex items-center gap-2">
-                                                                <Stethoscope className="h-4 w-4 text-blue-600" />
-                                                                Anamnese & Histórico
-                                                            </CardTitle>
-                                                            <CardDescription>Informações coletadas na primeira sessão.</CardDescription>
-                                                        </CardHeader>
-                                                        <CardContent className="p-6 space-y-6">
-                                                            <div className="space-y-2">
-                                                                <label className="text-sm font-medium text-slate-700">Queixa Principal</label>
-                                                                <Textarea
-                                                                    className="bg-slate-50 border-slate-200 focus:bg-white min-h-[80px] resize-none"
-                                                                    defaultValue="Ansiedade excessiva relacionada ao trabalho e dificuldade de dormir."
-                                                                />
-                                                            </div>
-                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                                <div className="space-y-2">
-                                                                    <label className="text-sm font-medium text-slate-700">Histórico Familiar</label>
-                                                                    <Textarea
-                                                                        className="bg-slate-50 border-slate-200 focus:bg-white min-h-[100px] resize-none"
-                                                                        defaultValue="Mãe com histórico de depressão. Pai falecido (infarto)."
-                                                                    />
-                                                                </div>
-                                                                <div className="space-y-2">
-                                                                    <label className="text-sm font-medium text-slate-700">Medicamentos em Uso</label>
-                                                                    <Textarea
-                                                                        className="bg-slate-50 border-slate-200 focus:bg-white min-h-[100px] resize-none"
-                                                                        defaultValue="Sertralina 50mg (manhã)."
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                            <div className="space-y-2">
-                                                                <label className="text-sm font-medium text-slate-700">Hipótese Diagnóstica</label>
-                                                                <Input
-                                                                    className="bg-slate-50 border-slate-200 focus:bg-white"
-                                                                    defaultValue="TAG (Transtorno de Ansiedade Generalizada) - F41.1"
-                                                                />
-                                                            </div>
-                                                            <div className="flex justify-end">
-                                                                <Button variant="outline" className="text-slate-600">Atualizar Anamnese</Button>
-                                                            </div>
-                                                        </CardContent>
-                                                    </Card>
+                                                    <AnamnesisTab patientId={selectedPatient.id} />
                                                 </TabsContent>
 
                                                 <TabsContent value="files" className="space-y-6 mt-0">

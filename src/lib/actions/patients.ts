@@ -169,3 +169,107 @@ export async function getPsychologistPatients(): Promise<PatientData[]> {
         return []
     }
 }
+
+export type AnamnesisData = {
+    id?: string
+    mainComplaint?: string
+    familyHistory?: string
+    medication?: string
+    diagnosticHypothesis?: string
+}
+
+export async function getAnamnesis(patientProfileId: string): Promise<AnamnesisData | null> {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) {
+            throw new Error('Não autenticado')
+        }
+
+        // Verify psychologist has this patient
+        const psychologistProfile = await prisma.psychologistProfile.findUnique({
+            where: { userId: user.id }
+        })
+
+        if (!psychologistProfile) {
+            throw new Error('Perfil de psicólogo não encontrado')
+        }
+
+        const anamnesis = await prisma.anamnesis.findFirst({
+            where: {
+                patientId: patientProfileId,
+                psychologistId: psychologistProfile.id
+            }
+        })
+
+        if (!anamnesis) {
+            return null
+        }
+
+        return {
+            id: anamnesis.id,
+            mainComplaint: anamnesis.mainComplaint || '',
+            familyHistory: anamnesis.familyHistory || '',
+            medication: anamnesis.medication || '',
+            diagnosticHypothesis: anamnesis.diagnosticHypothesis || ''
+        }
+    } catch (error) {
+        logger.error('Error fetching anamnesis:', error)
+        return null
+    }
+}
+
+export async function updateAnamnesis(patientProfileId: string, data: AnamnesisData) {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) {
+            return { success: false, error: 'Não autenticado' }
+        }
+
+        const psychologistProfile = await prisma.psychologistProfile.findUnique({
+            where: { userId: user.id }
+        })
+
+        if (!psychologistProfile) {
+            return { success: false, error: 'Perfil de psicólogo não encontrado' }
+        }
+
+        const existingAnamnesis = await prisma.anamnesis.findFirst({
+            where: {
+                patientId: patientProfileId,
+                psychologistId: psychologistProfile.id
+            }
+        })
+
+        if (existingAnamnesis) {
+            const updated = await prisma.anamnesis.update({
+                where: { id: existingAnamnesis.id },
+                data: {
+                    mainComplaint: data.mainComplaint,
+                    familyHistory: data.familyHistory,
+                    medication: data.medication,
+                    diagnosticHypothesis: data.diagnosticHypothesis,
+                }
+            })
+            return { success: true, data: updated }
+        } else {
+            const created = await prisma.anamnesis.create({
+                data: {
+                    patientId: patientProfileId,
+                    psychologistId: psychologistProfile.id,
+                    mainComplaint: data.mainComplaint,
+                    familyHistory: data.familyHistory,
+                    medication: data.medication,
+                    diagnosticHypothesis: data.diagnosticHypothesis,
+                }
+            })
+            return { success: true, data: created }
+        }
+    } catch (error) {
+        logger.error('Error updating anamnesis:', error)
+        return { success: false, error: 'Erro ao salvar a anamnese' }
+    }
+}
