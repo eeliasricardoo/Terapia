@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
+import type { Profile } from "@/lib/supabase/types"
 
 const PATIENT_MENU = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
@@ -40,14 +41,25 @@ const PSYCHOLOGIST_MENU = [
 
 interface DashboardSidebarProps {
     className?: string
+    initialProfile?: Profile | null
 }
 
-export function DashboardSidebar({ className }: DashboardSidebarProps) {
+export function DashboardSidebar({ className, initialProfile }: DashboardSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
     const supabase = createClient()
-    const [user, setUser] = useState<{ name: string; email: string; role: string; rawRole: string; avatar_url?: string } | null>(null)
-    const [loading, setLoading] = useState(true)
+
+    // Set initial state from server-fetched profile to avoid CSR loading flash
+    const [user, setUser] = useState<{ name: string; email: string; role: string; rawRole: string; avatar_url?: string } | null>(
+        initialProfile ? {
+            name: initialProfile.full_name || 'Usuário',
+            email: '', // Not strictly needed for UI, but keeping for compatibility
+            role: initialProfile.role === 'PSYCHOLOGIST' ? 'Psicólogo' : 'Paciente',
+            rawRole: initialProfile.role,
+            avatar_url: initialProfile.avatar_url || undefined
+        } : null
+    )
+    const [loading, setLoading] = useState(!initialProfile)
 
     useEffect(() => {
         let channel: any;
@@ -55,7 +67,7 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
         async function loadUser() {
             try {
                 const { data: { user: authUser } } = await supabase.auth.getUser()
-                if (authUser) {
+                if (authUser && !initialProfile) {
                     const { data: profile } = await supabase
                         .from('profiles')
                         .select('full_name, role, avatar_url')
@@ -65,13 +77,15 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
                     const metaRole = authUser.user_metadata?.role as string | undefined
                     const finalRole = profile?.role || (metaRole === 'PSYCHOLOGIST' ? 'PSYCHOLOGIST' : 'PATIENT')
 
-                    setUser({
-                        name: profile?.full_name || authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Usuário',
-                        email: authUser.email || '',
-                        role: finalRole === 'PSYCHOLOGIST' ? 'Psicólogo' : 'Paciente',
-                        rawRole: finalRole,
-                        avatar_url: profile?.avatar_url
-                    })
+                    if (!initialProfile) {
+                        setUser({
+                            name: profile?.full_name || authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Usuário',
+                            email: authUser.email || '',
+                            role: finalRole === 'PSYCHOLOGIST' ? 'Psicólogo' : 'Paciente',
+                            rawRole: finalRole,
+                            avatar_url: profile?.avatar_url
+                        })
+                    }
 
                     // Realtime subscription
                     channel = supabase

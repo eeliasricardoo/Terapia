@@ -2,11 +2,12 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { Profile } from '@/lib/supabase/types'
+import { cache } from 'react'
 
 /**
  * Get the current logged-in user's profile
  */
-export async function getCurrentUserProfile(): Promise<Profile | null> {
+export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => {
     const supabase = await createClient()
 
     // Get current user from auth
@@ -33,7 +34,7 @@ export async function getCurrentUserProfile(): Promise<Profile | null> {
     }
 
     return data as Profile
-}
+})
 
 /**
  * Update current user's profile
