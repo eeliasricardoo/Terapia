@@ -353,58 +353,65 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
                         <div className="sticky top-24 space-y-6">
                             <Card className="border-none shadow-xl shadow-blue-900/5 bg-white overflow-hidden ring-1 ring-slate-100">
                                 {/* Plan Selection Header */}
-                                <div className="grid grid-cols-2 text-center border-b font-medium text-sm">
+                                <div className="grid grid-cols-2 p-1.5 bg-slate-100/80 rounded-2xl mb-6 mx-6 mt-6">
                                     <button
                                         onClick={() => setSelectedPlan('monthly')}
                                         className={cn(
-                                            "py-4 px-2 transition-colors relative",
+                                            "py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300 relative",
                                             selectedPlan === 'monthly'
-                                                ? "bg-blue-700 text-white font-bold"
-                                                : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+                                                ? "bg-white text-indigo-700 shadow-sm ring-1 ring-slate-200/50"
+                                                : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                                         )}
                                     >
                                         Pacote Mensal
-                                        {selectedPlan === 'monthly' && (
-                                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 border-x-8 border-x-transparent border-t-8 border-t-blue-700"></div>
-                                        )}
                                     </button>
                                     <button
                                         onClick={() => setSelectedPlan('single')}
                                         className={cn(
-                                            "py-4 px-2 transition-colors relative",
+                                            "py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300 relative",
                                             selectedPlan === 'single'
-                                                ? "bg-blue-600 text-white font-bold"
-                                                : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+                                                ? "bg-white text-blue-600 shadow-sm ring-1 ring-slate-200/50"
+                                                : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                                         )}
                                     >
                                         Sessão Avulsa
-                                        {selectedPlan === 'single' && (
-                                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 border-x-8 border-x-transparent border-t-8 border-t-blue-600"></div>
-                                        )}
                                     </button>
                                 </div>
 
-                                <div className={cn("p-6 pb-2 text-white text-center transition-colors duration-300", selectedPlan === 'single' ? "bg-blue-600" : "bg-blue-700")}>
-                                    <p className="text-sm font-medium opacity-90">
-                                        {selectedPlan === 'single' ? 'Valor da Sessão (50 min)' : 'Valor por Sessão (Plano Mensal)'}
-                                    </p>
-                                    <div className="flex items-baseline justify-center gap-2 mt-1">
-                                        <p className="text-3xl font-bold">
-                                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(displayPrice)}
+                                <div className={cn(
+                                    "mx-6 p-6 md:p-8 rounded-3xl text-white text-center transition-all duration-500 relative overflow-hidden",
+                                    selectedPlan === 'single'
+                                        ? "bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/20 shadow-xl"
+                                        : "bg-gradient-to-br from-indigo-600 to-blue-700 shadow-indigo-600/20 shadow-xl"
+                                )}>
+                                    {/* Decorative blurred blobs inside the price card */}
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+                                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+
+                                    <div className="relative z-10">
+                                        <p className="text-sm font-medium text-blue-50 mb-1 opacity-90">
+                                            {selectedPlan === 'single' ? 'Valor da Sessão (50 min)' : 'Sessão no Plano Mensal'}
                                         </p>
+                                        <div className="flex items-end justify-center gap-3 mt-1">
+                                            <p className="text-4xl md:text-5xl font-extrabold tracking-tight leading-none">
+                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(displayPrice)}
+                                            </p>
+                                            {selectedPlan === 'monthly' && (
+                                                <span className="text-sm md:text-base font-medium text-indigo-200 line-through decoration-indigo-300/50 mb-1">
+                                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price)}
+                                                </span>
+                                            )}
+                                        </div>
                                         {selectedPlan === 'monthly' && (
-                                            <span className="text-sm opacity-75 line-through decoration-white/50">
-                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price)}
-                                            </span>
+                                            <div className="mt-5 bg-white/20 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 text-xs font-bold inline-flex items-center gap-1.5 shadow-sm">
+                                                <Award className="w-4 h-4 text-amber-300" />
+                                                Economize 20% no total de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyTotal)}
+                                            </div>
                                         )}
                                     </div>
-                                    {selectedPlan === 'monthly' && (
-                                        <div className="mt-2 bg-white/20 rounded-full px-3 py-1 text-xs font-semibold inline-block">
-                                            Economize 20% no total de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyTotal)}
-                                        </div>
-                                    )}
                                 </div>
-                                <CardContent className="p-6">
+
+                                <CardContent className="p-6 md:p-8">
                                     <h3 className="font-bold text-slate-900 mb-1 flex items-center gap-2">
                                         <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
                                         Selecione um horário
