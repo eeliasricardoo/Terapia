@@ -169,7 +169,7 @@ function SearchContent({ psychologists, loading }: { psychologists: any[], loadi
                             <p className="text-slate-500 font-medium">Buscando os melhores profissionais...</p>
                         </motion.div>
                     ) : psychologists.length === 0 ? (
-                        <motion.div variants={itemVars} className="text-center py-20 bg-white rounded-3xl border border-slate-200/60 shadow-sm">
+                        <div className="text-center py-20 bg-white rounded-3xl border border-slate-200/60 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Search className="h-10 w-10 text-blue-400" />
                             </div>
@@ -180,7 +180,7 @@ function SearchContent({ psychologists, loading }: { psychologists: any[], loadi
                             <Button className="mt-6 rounded-full px-8" variant="outline">
                                 Limpar filtros
                             </Button>
-                        </motion.div>
+                        </div>
                     ) : (
                         <motion.div
                             variants={containerVars}
