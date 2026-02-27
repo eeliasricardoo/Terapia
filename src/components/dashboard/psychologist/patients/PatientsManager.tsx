@@ -49,6 +49,7 @@ import type { PatientData } from "@/lib/actions/patients"
 import { AnamnesisTab } from "./AnamnesisTab"
 import { EvolutionsTab } from "./EvolutionsTab"
 import { SessionHistoryTab } from "./SessionHistoryTab"
+import Link from "next/link"
 
 export function PatientsManager({ initialPatients }: { initialPatients: PatientData[] }) {
     const [searchTerm, setSearchTerm] = useState("")
@@ -184,9 +185,19 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                                                 </div>
                                             </div>
                                         </div>
-                                        <Badge variant="secondary" className="bg-white border border-slate-200 text-slate-700 shadow-sm font-medium">
-                                            {selectedPatient.totalSessions} Sessões
-                                        </Badge>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <Badge variant="secondary" className="bg-white border border-slate-200 text-slate-700 shadow-sm font-medium">
+                                                {selectedPatient.totalSessions} Sessões
+                                            </Badge>
+                                            <Link
+                                                href={`/dashboard/pacientes/${selectedPatient.id}`}
+                                                className="text-xs text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1 font-medium"
+                                                onClick={() => setIsSheetOpen(false)}
+                                            >
+                                                <ChevronRight className="h-3 w-3" />
+                                                Ver perfil completo
+                                            </Link>
+                                        </div>
                                     </div>
 
                                     <TabsList className="w-full justify-start h-11 bg-transparent p-0 border-b border-transparent gap-6">
