@@ -19,10 +19,12 @@ model User {
   updatedAt           DateTime             @updatedAt
   profiles            Profile?
   psychologistProfile PsychologistProfile?
-  patientAppointments      Appointment[] @relation("PatientAppointments")
+  patientAppointments Appointment[]        @relation("PatientAppointments")
+  diaryEntries        DiaryEntry[]
   
   @@map("users")
 }
+
 
 model Appointment {
   id              String            @id @default(uuid())
@@ -170,4 +172,20 @@ model Evolution {
   patient         Profile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@map("evolutions")
+}
+
+model DiaryEntry {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  mood      Int      // 1-5 scale
+  emotions  String[] @default([])
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("diary_entries")
 }
