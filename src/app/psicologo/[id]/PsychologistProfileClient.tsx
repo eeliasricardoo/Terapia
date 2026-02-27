@@ -353,13 +353,13 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
                         <div className="sticky top-24 space-y-6">
                             <Card className="border-none shadow-xl shadow-blue-900/5 bg-white overflow-hidden ring-1 ring-slate-100">
                                 {/* Plan Selection Header */}
-                                <div className="grid grid-cols-2 p-1.5 bg-slate-100/80 rounded-2xl mb-6 mx-6 mt-6">
+                                <div className="grid grid-cols-2 p-1.5 bg-slate-100/80 rounded-full mb-6 mx-6 mt-6">
                                     <button
                                         onClick={() => setSelectedPlan('monthly')}
                                         className={cn(
-                                            "py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300 relative",
+                                            "py-3 px-2 rounded-full text-sm font-bold transition-all duration-300 relative",
                                             selectedPlan === 'monthly'
-                                                ? "bg-white text-indigo-700 shadow-sm ring-1 ring-slate-200/50"
+                                                ? "bg-white text-indigo-700 shadow-sm ring-2 ring-indigo-600"
                                                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                                         )}
                                     >
@@ -368,9 +368,9 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
                                     <button
                                         onClick={() => setSelectedPlan('single')}
                                         className={cn(
-                                            "py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300 relative",
+                                            "py-3 px-2 rounded-full text-sm font-bold transition-all duration-300 relative",
                                             selectedPlan === 'single'
-                                                ? "bg-white text-blue-600 shadow-sm ring-1 ring-slate-200/50"
+                                                ? "bg-white text-blue-600 shadow-sm ring-2 ring-blue-600"
                                                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                                         )}
                                     >
