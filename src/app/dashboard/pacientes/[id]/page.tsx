@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import { getPsychologistPatients } from "@/lib/actions/patients"
 import { PatientProfilePage } from "@/components/dashboard/psychologist/patients/PatientProfilePage"
 
+
 interface Props {
     params: Promise<{ id: string }>
 }
