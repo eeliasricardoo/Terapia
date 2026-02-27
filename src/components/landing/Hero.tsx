@@ -9,7 +9,7 @@ import { CoreHeartIcon, CoreStarIcon, CoreShieldIcon } from "@/components/ui/exc
 
 export function Hero() {
     return (
-        <section className="w-full pt-20 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 bg-slate-50 overflow-hidden relative">
+        <section className="w-full pt-20 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 bg-[#FFFAF3] overflow-hidden relative">
             {/* Animated Background effects */}
             <motion.div
                 animate={{

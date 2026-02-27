@@ -22,10 +22,10 @@ const staggerContainer: Variants = {
 
 export function SearchHighlight() {
     return (
-        <section className="w-full py-20 md:py-32 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
+        <section className="w-full py-20 md:py-32 bg-gradient-to-b from-[#FFFAF3] to-white relative overflow-hidden">
             {/* Background decorative elements */}
             <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[length:32px_32px] pointer-events-none" />
-            <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[100px] mix-blend-multiply pointer-events-none" />
+            <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-orange-100/40 rounded-full blur-[100px] mix-blend-multiply pointer-events-none" />
 
             <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
                 <motion.div

@@ -19,8 +19,8 @@ const staggerContainer: Variants = {
 
 export function Features() {
     return (
-        <section className="w-full py-20 md:py-32 bg-slate-50 relative overflow-hidden">
-            <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-blue-100/40 rounded-full blur-[100px] mix-blend-multiply pointer-events-none" />
+        <section className="w-full py-20 md:py-32 bg-gradient-to-b from-white to-[#FFFAF3] relative overflow-hidden">
+            <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-orange-100/40 rounded-full blur-[100px] mix-blend-multiply pointer-events-none" />
 
             <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
                 <motion.div
