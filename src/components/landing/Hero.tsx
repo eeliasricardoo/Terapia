@@ -113,7 +113,7 @@ export function Hero() {
                         >
                             <div className="relative rounded-2xl overflow-hidden aspect-[4/3] w-full bg-slate-100/50">
                                 <Image
-                                    src="/hero-illustration.png"
+                                    src="/hero-empathy.png"
                                     alt="Ilustração Terapia Saúde Mental"
                                     fill
                                     className="object-cover hover:scale-105 transition-transform duration-700 ease-out"
