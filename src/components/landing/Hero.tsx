@@ -18,7 +18,7 @@ export function Hero() {
                     y: [0, -50, 0]
                 }}
                 transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[800px] h-[800px] opacity-30 bg-gradient-to-tr from-blue-300 to-purple-300 blur-[120px] rounded-full mix-blend-multiply pointer-events-none"
+                className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[800px] h-[800px] opacity-30 bg-gradient-to-tr from-amber-200 to-rose-200 blur-[120px] rounded-full mix-blend-multiply pointer-events-none"
             />
             <motion.div
                 animate={{
@@ -27,7 +27,7 @@ export function Hero() {
                     y: [0, 40, 0]
                 }}
                 transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[600px] h-[600px] opacity-30 bg-gradient-to-tr from-sky-300 to-emerald-200 blur-[120px] rounded-full mix-blend-multiply pointer-events-none"
+                className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[600px] h-[600px] opacity-30 bg-gradient-to-tr from-emerald-100 to-teal-100 blur-[120px] rounded-full mix-blend-multiply pointer-events-none"
             />
             <motion.div
                 animate={{
@@ -35,7 +35,7 @@ export function Hero() {
                     opacity: [0.1, 0.2, 0.1]
                 }}
                 transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-indigo-300 blur-[100px] rounded-full mix-blend-multiply pointer-events-none"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-orange-200 blur-[100px] rounded-full mix-blend-multiply pointer-events-none"
             />
 
             <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
@@ -46,9 +46,9 @@ export function Hero() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100/50 border border-blue-200 text-blue-800 text-sm font-medium mb-2"
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-800 text-sm font-medium mb-2"
                         >
-                            <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
+                            <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
                             Terapia Acessível & Solidária
                         </motion.div>
 
@@ -57,7 +57,7 @@ export function Hero() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-                                className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl/tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-900"
+                                className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl/tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-stone-800 to-orange-900"
                             >
                                 Encontre seu equilíbrio.<br /> Transforme vidas.
                             </motion.h1>
@@ -77,7 +77,7 @@ export function Hero() {
                             transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
                             className="flex flex-col sm:flex-row gap-4 w-full justify-center lg:justify-start pt-4"
                         >
-                            <Button asChild size="lg" className="h-14 px-8 text-lg shadow-xl shadow-blue-600/20 hover:shadow-blue-600/30 transition-all hover:-translate-y-1 bg-blue-600 hover:bg-blue-700">
+                            <Button asChild size="lg" className="h-14 px-8 text-lg shadow-xl shadow-orange-600/20 hover:shadow-orange-600/30 transition-all hover:-translate-y-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 border-0">
                                 <Link href="/busca">Quero fazer terapia</Link>
                             </Button>
                             <RoleSelectionDialog mode="register">
@@ -109,9 +109,9 @@ export function Hero() {
                         <motion.div
                             animate={{ y: [0, -10, 0] }}
                             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                            className="relative rounded-3xl shadow-[0_20px_50px_-12px_rgba(30,58,138,0.2)] border border-white/60 bg-white/40 backdrop-blur-md p-4"
+                            className="relative rounded-3xl shadow-[0_20px_50px_-12px_rgba(245,158,11,0.15)] border border-white/60 bg-white/40 backdrop-blur-md p-4"
                         >
-                            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] w-full bg-slate-100/50">
+                            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] w-full bg-stone-100/50">
                                 <Image
                                     src="/hero-empathy.png"
                                     alt="Ilustração Terapia Saúde Mental"
@@ -127,8 +127,8 @@ export function Hero() {
                                 transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
                                 className="absolute -left-6 top-12 bg-white/80 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500 delay-700"
                             >
-                                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                                    <Star className="h-5 w-5 fill-blue-600" />
+                                <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                                    <Star className="h-5 w-5 fill-amber-500 text-amber-500" />
                                 </div>
                                 <div className="hidden sm:block">
                                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Top Terapeutas</p>
