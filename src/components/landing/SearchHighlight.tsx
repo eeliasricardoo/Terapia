@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Search, ArrowRight, Users, Star, Clock } from "lucide-react"
+import { Search, ArrowRight } from "lucide-react"
 import { motion, Variants } from "framer-motion"
+import { CoreUsersIcon, CoreStarIcon, CoreClockIcon } from "@/components/ui/exclusive-icons"
 
 const fadeIn: Variants = {
     initial: { opacity: 0, y: 30 },
@@ -74,7 +75,7 @@ export function SearchHighlight() {
                         <motion.div variants={fadeIn} className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-8 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="p-3 rounded-xl bg-blue-100/50 text-blue-600">
-                                    <Users className="h-7 w-7" />
+                                    <CoreUsersIcon className="h-7 w-7" />
                                 </div>
                                 <h3 className="font-extrabold text-3xl text-slate-900">500+</h3>
                             </div>
@@ -86,7 +87,7 @@ export function SearchHighlight() {
                         <motion.div variants={fadeIn} className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-8 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="p-3 rounded-xl bg-amber-100/50 text-amber-600">
-                                    <Star className="h-7 w-7" />
+                                    <CoreStarIcon className="h-7 w-7" />
                                 </div>
                                 <h3 className="font-extrabold text-3xl text-slate-900">4.9/5</h3>
                             </div>
@@ -98,7 +99,7 @@ export function SearchHighlight() {
                         <motion.div variants={fadeIn} className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-8 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 sm:col-span-2">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
                                 <div className="p-3 rounded-xl bg-emerald-100/50 text-emerald-600 shrink-0">
-                                    <Clock className="h-7 w-7" />
+                                    <CoreClockIcon className="h-7 w-7" />
                                 </div>
                                 <h3 className="font-bold text-2xl text-slate-900">Terapia que se adapta a você</h3>
                             </div>

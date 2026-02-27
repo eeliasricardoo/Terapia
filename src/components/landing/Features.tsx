@@ -1,6 +1,6 @@
 "use client"
 
-import { Brain, Video, Shield, HeartHandshake, Sparkles, LockKeyhole } from "lucide-react"
+import { CoreHeartIcon, CoreVideoIcon, CoreShieldIcon } from "@/components/ui/exclusive-icons"
 import { motion, Variants } from "framer-motion"
 
 const fadeIn: Variants = {
@@ -32,7 +32,7 @@ export function Features() {
                 >
                     <motion.div variants={fadeIn} className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
                         <div className="h-16 w-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-indigo-100 transition-all duration-300">
-                            <HeartHandshake className="h-8 w-8 text-indigo-600" />
+                            <CoreHeartIcon className="h-8 w-8 text-indigo-600" />
                         </div>
                         <h3 className="text-2xl font-bold text-slate-900 mb-3">Conexão Genuína</h3>
                         <p className="text-slate-600 text-lg leading-relaxed">
@@ -42,7 +42,7 @@ export function Features() {
 
                     <motion.div variants={fadeIn} className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
                         <div className="h-16 w-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-blue-100 transition-all duration-300">
-                            <Sparkles className="h-8 w-8 text-blue-600" />
+                            <CoreVideoIcon className="h-8 w-8 text-blue-600" />
                         </div>
                         <h3 className="text-2xl font-bold text-slate-900 mb-3">Sessões Humanizadas</h3>
                         <p className="text-slate-600 text-lg leading-relaxed">
@@ -52,7 +52,7 @@ export function Features() {
 
                     <motion.div variants={fadeIn} className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
                         <div className="h-16 w-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-emerald-100 transition-all duration-300">
-                            <LockKeyhole className="h-8 w-8 text-emerald-600" />
+                            <CoreShieldIcon className="h-8 w-8 text-emerald-600" />
                         </div>
                         <h3 className="text-2xl font-bold text-slate-900 mb-3">Seu Espaço Seguro</h3>
                         <p className="text-slate-600 text-lg leading-relaxed">

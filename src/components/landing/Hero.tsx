@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { RoleSelectionDialog } from "@/components/auth/RoleSelectionDialog"
 import { motion } from "framer-motion"
-import { Heart, Star, ShieldCheck } from "lucide-react"
+import { CoreHeartIcon, CoreStarIcon, CoreShieldIcon } from "@/components/ui/exclusive-icons"
 
 export function Hero() {
     return (
@@ -93,8 +93,8 @@ export function Hero() {
                             transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
                             className="flex items-center justify-center lg:justify-start gap-6 pt-4 text-sm text-slate-500 font-medium"
                         >
-                            <div className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald-500" /> Profissionais Verificados</div>
-                            <div className="flex items-center gap-1.5"><Heart className="h-4 w-4 text-rose-400" /> Ação Voluntária</div>
+                            <div className="flex items-center gap-1.5"><CoreShieldIcon className="h-4 w-4 text-emerald-500" /> Profissionais Verificados</div>
+                            <div className="flex items-center gap-1.5"><CoreHeartIcon className="h-4 w-4 text-rose-400" /> Ação Voluntária</div>
                         </motion.div>
                     </div>
 
@@ -128,7 +128,7 @@ export function Hero() {
                                 className="absolute -left-6 top-12 bg-white/80 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500 delay-700"
                             >
                                 <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
-                                    <Star className="h-5 w-5 fill-amber-500 text-amber-500" />
+                                    <CoreStarIcon className="h-5 w-5 text-amber-500" />
                                 </div>
                                 <div className="hidden sm:block">
                                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Top Terapeutas</p>
@@ -143,7 +143,7 @@ export function Hero() {
                                 className="absolute -right-6 bottom-16 bg-white/80 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500 delay-1000"
                             >
                                 <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-500">
-                                    <Heart className="h-5 w-5 fill-rose-500" />
+                                    <CoreHeartIcon className="h-5 w-5 text-rose-500" />
                                 </div>
                                 <div className="hidden sm:block">
                                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Atendimento Social</p>
