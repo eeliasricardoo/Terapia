@@ -353,13 +353,13 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
                         <div className="sticky top-24 space-y-6">
                             <Card className="border-none shadow-xl shadow-blue-900/5 bg-white overflow-hidden ring-1 ring-slate-100">
                                 {/* Plan Selection Header */}
-                                <div className="grid grid-cols-2 p-1.5 bg-slate-100/80 rounded-full mb-6 mx-6 mt-6">
+                                <div className="grid grid-cols-2 p-1 bg-slate-100/80 rounded-full mb-4 mx-6 mt-6">
                                     <button
                                         onClick={() => setSelectedPlan('monthly')}
                                         className={cn(
-                                            "py-3 px-2 rounded-full text-sm font-bold transition-all duration-300 relative",
+                                            "py-2.5 px-2 rounded-full text-sm font-bold transition-all duration-300 relative",
                                             selectedPlan === 'monthly'
-                                                ? "bg-white text-indigo-700 shadow-sm ring-2 ring-indigo-600"
+                                                ? "bg-white text-indigo-700 shadow-sm ring-1 ring-slate-200/50"
                                                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                                         )}
                                     >
@@ -368,9 +368,9 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
                                     <button
                                         onClick={() => setSelectedPlan('single')}
                                         className={cn(
-                                            "py-3 px-2 rounded-full text-sm font-bold transition-all duration-300 relative",
+                                            "py-2.5 px-2 rounded-full text-sm font-bold transition-all duration-300 relative",
                                             selectedPlan === 'single'
-                                                ? "bg-white text-blue-600 shadow-sm ring-2 ring-blue-600"
+                                                ? "bg-white text-blue-600 shadow-sm ring-1 ring-slate-200/50"
                                                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                                         )}
                                     >
@@ -379,9 +379,9 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
                                 </div>
 
                                 <div className={cn(
-                                    "mx-6 p-6 md:p-8 rounded-3xl text-white text-center transition-all duration-500 relative overflow-hidden",
+                                    "mx-6 p-5 md:p-6 rounded-3xl text-white text-center transition-all duration-500 relative overflow-hidden",
                                     selectedPlan === 'single'
-                                        ? "bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-500/20 shadow-xl"
+                                        ? "bg-gradient-to-br from-slate-800 to-slate-900 shadow-slate-900/20 shadow-xl"
                                         : "bg-gradient-to-br from-indigo-600 to-blue-700 shadow-indigo-600/20 shadow-xl"
                                 )}>
                                     {/* Decorative blurred blobs inside the price card */}
