@@ -31,7 +31,10 @@ export default function ProfilePage() {
     } | null>(null)
 
     const [bio, setBio] = useState("")
-    const [originalBio, setOriginalBio] = useState("")
+    const [crp, setCrp] = useState("")
+    const [price, setPrice] = useState<number | "">("")
+    const [specialties, setSpecialties] = useState("")
+    const [videoUrl, setVideoUrl] = useState("")
 
     // Fetch User Data
     useEffect(() => {
@@ -64,17 +67,20 @@ export default function ProfilePage() {
                     image: profile?.avatar_url || "/avatars/01.png"
                 })
 
-                // If Psychologist, fetch bio
+                // If Psychologist, fetch professional profile
                 if (isPsychologist) {
                     const { data: psychProfile } = await supabase
                         .from('psychologist_profiles')
-                        .select('bio')
+                        .select('bio, crp, price_per_session, specialties, video_presentation_url')
                         .eq('userId', authUser.id)
                         .single()
 
-                    if (psychProfile?.bio) {
-                        setBio(psychProfile.bio)
-                        setOriginalBio(psychProfile.bio)
+                    if (psychProfile) {
+                        setBio(psychProfile.bio || "")
+                        setCrp(psychProfile.crp || "")
+                        setPrice(psychProfile.price_per_session || "")
+                        setSpecialties(psychProfile.specialties?.join(", ") || "")
+                        setVideoUrl(psychProfile.video_presentation_url || "")
                     }
                 }
             } catch (error) {
@@ -146,24 +152,31 @@ export default function ProfilePage() {
         fileInputRef.current?.click()
     }
 
-    const handleSaveBio = async () => {
+    const handleSaveProfessionalProfile = async () => {
         if (!user || user.rawRole !== 'PSYCHOLOGIST') return
 
         try {
             setIsSaving(true)
 
+            const specialtiesArray = specialties.split(',').map(s => s.trim()).filter(s => s !== '')
+
             const { error } = await supabase
                 .from('psychologist_profiles')
-                .update({ bio })
+                .update({
+                    bio,
+                    crp,
+                    price_per_session: price === "" ? null : Number(price),
+                    specialties: specialtiesArray.length > 0 ? specialtiesArray : null,
+                    video_presentation_url: videoUrl || null
+                })
                 .eq('userId', user.id)
 
             if (error) throw error
 
-            setOriginalBio(bio)
-            toast.success('Bio salva com sucesso!', { description: 'Suas informações foram atualizadas.' })
+            toast.success('Perfil profissional salvo!', { description: 'Suas informações foram atualizadas na plataforma.' })
         } catch (error) {
-            console.error('Error saving bio:', error)
-            toast.error('Erro ao salvar bio')
+            console.error('Error saving professional profile:', error)
+            toast.error('Erro ao salvar perfil profissional')
         } finally {
             setIsSaving(false)
         }
@@ -314,43 +327,84 @@ export default function ProfilePage() {
                         </CardContent>
                     </Card>
 
-                    {/* Bio Card */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Sobre Você</CardTitle>
-                            <CardDescription>
-                                Compartilhe um pouco sobre você para seus terapeutas.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                <Label htmlFor="bio">Bio</Label>
-                                <textarea
-                                    id="bio"
-                                    value={bio}
-                                    onChange={(e) => setBio(e.target.value)}
-                                    className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    placeholder="Conte um pouco sobre sua jornada, hobbies ou o que busca na terapia..."
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    {bio.length} caracteres
-                                </p>
-                            </div>
-                        </CardContent>
-                        <CardFooter className="flex justify-end border-t p-6">
-                            <Button
-                                disabled={isSaving || !user || user.rawRole !== 'PSYCHOLOGIST'}
-                                onClick={handleSaveBio}
-                            >
-                                {isSaving ? "Salvando..." : (
-                                    <>
-                                        <Save className="mr-2 h-4 w-4" />
-                                        Salvar Bio
-                                    </>
-                                )}
-                            </Button>
-                        </CardFooter>
-                    </Card>
+                    {/* Professional Profile Card (Only for Psychologist) */}
+                    {user?.rawRole === 'PSYCHOLOGIST' && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Perfil Profissional</CardTitle>
+                                <CardDescription>
+                                    Configure como você aparecerá para os pacientes na busca.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="crp">CRP</Label>
+                                        <Input
+                                            id="crp"
+                                            value={crp}
+                                            onChange={(e) => setCrp(e.target.value)}
+                                            placeholder="Ex: 00/00000"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="price">Valor da Sessão (R$)</Label>
+                                        <Input
+                                            id="price"
+                                            type="number"
+                                            value={price}
+                                            onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                                            placeholder="Ex: 150"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="specialties">Especialidades (separadas por vírgula)</Label>
+                                    <Input
+                                        id="specialties"
+                                        value={specialties}
+                                        onChange={(e) => setSpecialties(e.target.value)}
+                                        placeholder="Ex: Psicologia Clínica, TCC, ansiedade"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="videoUrl">URL do Vídeo de Apresentação</Label>
+                                    <Input
+                                        id="videoUrl"
+                                        value={videoUrl}
+                                        onChange={(e) => setVideoUrl(e.target.value)}
+                                        placeholder="Link do YouTube ou Vimeo"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="bio">Biografia</Label>
+                                    <textarea
+                                        id="bio"
+                                        value={bio}
+                                        onChange={(e) => setBio(e.target.value)}
+                                        className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        placeholder="Conte um pouco sobre sua abordagem, experiência e como você pode ajudar o paciente..."
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        {bio.length} caracteres
+                                    </p>
+                                </div>
+                            </CardContent>
+                            <CardFooter className="flex justify-end border-t p-6">
+                                <Button
+                                    disabled={isSaving}
+                                    onClick={handleSaveProfessionalProfile}
+                                >
+                                    {isSaving ? "Salvando..." : (
+                                        <>
+                                            <Save className="mr-2 h-4 w-4" />
+                                            Salvar Perfil Profissional
+                                        </>
+                                    )}
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    )}
 
                     {/* Personal Info Form */}
                     <Card>
