@@ -1,3 +1,5 @@
+"use client"
+
 import { Brain, Video, Shield, HeartHandshake, Sparkles, LockKeyhole } from "lucide-react"
 import { motion, Variants } from "framer-motion"
 
