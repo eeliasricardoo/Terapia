@@ -43,9 +43,9 @@ export function Hero() {
                     {/* Text content */}
                     <div className="space-y-8 max-w-2xl mx-auto lg:mx-0 text-center lg:text-left">
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
+                            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-800 text-sm font-medium mb-2"
                         >
                             <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
@@ -54,17 +54,17 @@ export function Hero() {
 
                         <div className="space-y-4">
                             <motion.h1
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+                                transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                                 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl/tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-stone-800 to-orange-900"
                             >
                                 Encontre seu equilíbrio.<br /> Transforme vidas.
                             </motion.h1>
                             <motion.p
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+                                transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                                 className="text-slate-600 md:text-xl font-light leading-relaxed max-w-[600px] mx-auto lg:mx-0"
                             >
                                 Um espaço seguro para cuidar de si com terapeutas acolhedores. <span className="font-medium text-slate-800">Para profissionais:</span> faça parte de uma rede solidária, ofereça valor social e ganhe destaque.
@@ -72,9 +72,9 @@ export function Hero() {
                         </div>
 
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+                            transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                             className="flex flex-col sm:flex-row gap-4 w-full justify-center lg:justify-start pt-4"
                         >
                             <Button asChild size="lg" className="h-14 px-8 text-lg shadow-xl shadow-orange-600/20 hover:shadow-orange-600/30 transition-all hover:-translate-y-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 border-0">
@@ -88,9 +88,9 @@ export function Hero() {
                         </motion.div>
 
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
+                            transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
                             className="flex items-center justify-center lg:justify-start gap-6 pt-4 text-sm text-slate-500 font-medium"
                         >
                             <div className="flex items-center gap-1.5"><CoreShieldIcon className="h-4 w-4 text-emerald-500" /> Profissionais Verificados</div>
@@ -100,9 +100,9 @@ export function Hero() {
 
                     {/* Image / Illustration content */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
-                        animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                        transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+                        initial={{ opacity: 0, scale: 0.9, filter: 'blur(12px)', y: 20 }}
+                        animate={{ opacity: 1, scale: 1, filter: 'blur(0px)', y: 0 }}
+                        transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                         className="relative mx-auto w-full max-w-lg lg:max-w-none mt-8 lg:mt-0"
                     >
                         {/* Decorative glass container with breathing animation */}
