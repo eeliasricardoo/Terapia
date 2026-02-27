@@ -220,6 +220,141 @@ export async function getAnamnesis(patientProfileId: string): Promise<AnamnesisD
     }
 }
 
+// ─── Evolutions ─────────────────────────────────────────────────────────────
+
+export type EvolutionData = {
+    id: string
+    date: string
+    mood?: string
+    publicSummary?: string
+    privateNotes?: string
+}
+
+export async function getEvolutions(patientProfileId: string): Promise<EvolutionData[]> {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return []
+
+        const psychologistProfile = await prisma.psychologistProfile.findUnique({ where: { userId: user.id } })
+        if (!psychologistProfile) return []
+
+        const evolutions = await prisma.evolution.findMany({
+            where: { patientId: patientProfileId, psychologistId: psychologistProfile.id },
+            orderBy: { date: 'desc' },
+            take: 10
+        })
+
+        return evolutions.map(e => ({
+            id: e.id,
+            date: new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(e.date)),
+            mood: e.mood || undefined,
+            publicSummary: e.publicSummary || undefined,
+            privateNotes: e.privateNotes || undefined,
+        }))
+    } catch (error) {
+        logger.error('Error fetching evolutions:', error)
+        return []
+    }
+}
+
+export async function saveEvolution(patientProfileId: string, data: {
+    mood?: string
+    publicSummary?: string
+    privateNotes?: string
+}) {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return { success: false, error: 'Não autenticado' }
+
+        const psychologistProfile = await prisma.psychologistProfile.findUnique({ where: { userId: user.id } })
+        if (!psychologistProfile) return { success: false, error: 'Psicólogo não encontrado' }
+
+        const evolution = await prisma.evolution.create({
+            data: {
+                patientId: patientProfileId,
+                psychologistId: psychologistProfile.id,
+                mood: data.mood,
+                publicSummary: data.publicSummary,
+                privateNotes: data.privateNotes,
+                date: new Date(),
+            }
+        })
+        return { success: true, data: evolution }
+    } catch (error) {
+        logger.error('Error saving evolution:', error)
+        return { success: false, error: 'Erro ao salvar o registro' }
+    }
+}
+
+// ─── Session History ─────────────────────────────────────────────────────────
+
+export type SessionHistoryItem = {
+    id: string
+    scheduledAt: string
+    endTime: string
+    status: string
+    price: string
+    psychologistName: string
+}
+
+export async function getPatientSessionHistory(patientProfileId: string): Promise<SessionHistoryItem[]> {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return []
+
+        const psychologistProfile = await prisma.psychologistProfile.findUnique({ where: { userId: user.id } })
+        if (!psychologistProfile) return []
+
+        // Find the user id for this profile
+        const profile = await prisma.profile.findUnique({
+            where: { id: patientProfileId },
+            include: { users: true }
+        })
+        if (!profile) return []
+
+        const appointments = await prisma.appointment.findMany({
+            where: {
+                patientId: profile.user_id,
+                psychologistId: psychologistProfile.id,
+            },
+            orderBy: { scheduledAt: 'desc' },
+            take: 20,
+            include: {
+                psychologist: {
+                    include: { user: true }
+                }
+            }
+        })
+
+        const formatDate = (d: Date) =>
+            new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }).format(d)
+
+        const formatTime = (d: Date) =>
+            new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(d)
+
+        return appointments.map(appt => {
+            const start = new Date(appt.scheduledAt)
+            const end = new Date(start.getTime() + appt.durationMinutes * 60 * 1000)
+            return {
+                id: appt.id,
+                scheduledAt: `${formatDate(start)}`,
+                endTime: `${formatTime(start)} - ${formatTime(end)}`,
+                status: appt.status,
+                price: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(appt.price)),
+                psychologistName: appt.psychologist.user.name || 'Psicólogo',
+            }
+        })
+    } catch (error) {
+        logger.error('Error fetching session history:', error)
+        return []
+    }
+}
+
+// ─── Anamnesis ───────────────────────────────────────────────────────────────
+
 export async function updateAnamnesis(patientProfileId: string, data: AnamnesisData) {
     try {
         const supabase = await createClient()
