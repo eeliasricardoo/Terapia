@@ -41,7 +41,7 @@ const getCachedPsychologists = unstable_cache(
             return []
         }
     },
-    ['psychologists-search-list-v3'],
+    ['psychologists-search-list-v4'],
     { revalidate: 60, tags: ['psychologists'] }
 )
 

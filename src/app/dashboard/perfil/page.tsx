@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Camera, Mail, User, Phone, Lock, Save, Shield } from "lucide-react"
 import { toast } from "sonner"
+import { uploadProfileImage } from "./actions"
 
 export default function ProfilePage() {
     const [isLoading, setIsLoading] = useState(false)
@@ -96,49 +97,24 @@ export default function ProfilePage() {
         const file = e.target.files?.[0]
         if (!file || !user) return
 
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            toast.error('Arquivo inválido', { description: 'Por favor, selecione uma imagem.' })
-            return
-        }
-
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('Arquivo muito grande', { description: 'A imagem deve ter no máximo 5MB.' })
-            return
-        }
-
         try {
             setIsLoading(true)
 
-            // Upload to Supabase Storage
-            const fileExt = file.name.split('.').pop()
-            const fileName = `${user.id}-${Math.random()}.${fileExt}`
-            const filePath = `avatars/${fileName}`
+            const formData = new FormData()
+            formData.append('file', file)
 
-            const { error: uploadError } = await supabase.storage
-                .from('avatars')
-                .upload(filePath, file)
+            const result = await uploadProfileImage(formData)
 
-            if (uploadError) throw uploadError
-
-            // Get Public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(filePath)
-
-            // Update Profile
-            const { error: updateError } = await supabase
-                .from('profiles')
-                .update({ avatar_url: publicUrl })
-                .eq('user_id', user.id)
-
-            if (updateError) throw updateError
+            if (result.error) {
+                toast.error('Erro ao atualizar foto', { description: result.error })
+                return
+            }
 
             // Update Local State
-            setUser(prev => prev ? { ...prev, image: publicUrl } : null)
-
-            toast.success('Foto atualizada!', { description: 'Sua foto de perfil foi alterada com sucesso.' })
+            if (result.publicUrl) {
+                setUser(prev => prev ? { ...prev, image: result.publicUrl } : null)
+                toast.success('Foto atualizada!', { description: 'Sua foto de perfil foi alterada com sucesso.' })
+            }
 
         } catch (error) {
             console.error('Error uploading image:', error)
@@ -150,6 +126,11 @@ export default function ProfilePage() {
 
     const handleAvatarClick = () => {
         fileInputRef.current?.click()
+    }
+
+    const getInitials = (name: string) => {
+        if (!name) return "US"
+        return name.split(' ').filter(n => n).map(n => n[0]).join('').toUpperCase().slice(0, 2)
     }
 
     const handleSaveProfessionalProfile = async () => {
@@ -314,7 +295,7 @@ export default function ProfilePage() {
                             <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
                                 <Avatar className="h-24 w-24 border-4 border-slate-50 shadow-sm group-hover:opacity-90 transition-opacity">
                                     <AvatarImage src={user?.image || undefined} />
-                                    <AvatarFallback className="text-xl">{user?.name ? user.name.substring(0, 2).toUpperCase() : 'US'}</AvatarFallback>
+                                    <AvatarFallback className="text-xl">{user?.name ? getInitials(user.name) : 'US'}</AvatarFallback>
                                 </Avatar>
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Camera className="h-8 w-8 text-white" />

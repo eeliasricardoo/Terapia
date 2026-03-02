@@ -24,7 +24,7 @@ interface NavbarProps {
 }
 
 export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: NavbarProps) {
-    const { isAuthenticated, role } = useAuth();
+    const { isAuthenticated, role, fullName, avatarUrl } = useAuth();
     const [loginOpen, setLoginOpen] = useState(false);
     const [registerOpen, setRegisterOpen] = useState(false);
 
@@ -115,9 +115,9 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                                         <Avatar className="h-8 w-8">
-                                            <AvatarImage src="/avatars/01.png" alt="@user" />
+                                            <AvatarImage src={avatarUrl || "/avatars/01.png"} alt="@user" />
                                             <AvatarFallback>
-                                                <User className="h-4 w-4" />
+                                                {fullName ? fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : <User className="h-4 w-4" />}
                                             </AvatarFallback>
                                         </Avatar>
                                     </Button>
@@ -125,9 +125,9 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                                 <DropdownMenuContent className="w-56" align="end" forceMount>
                                     <DropdownMenuLabel className="font-normal">
                                         <div className="flex flex-col space-y-1">
-                                            <p className="text-sm font-medium leading-none">Usuário</p>
+                                            <p className="text-sm font-medium leading-none">{fullName || 'Usuário'}</p>
                                             <p className="text-xs leading-none text-muted-foreground">
-                                                usuario@exemplo.com
+                                                {role === 'PSYCHOLOGIST' ? 'Psicólogo' : 'Paciente'}
                                             </p>
                                         </div>
                                     </DropdownMenuLabel>

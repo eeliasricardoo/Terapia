@@ -106,6 +106,13 @@ export async function uploadProfileImage(formData: FormData) {
             }
         }
 
+        // 5. Synchronize Auth User Metadata (important for Header/Sidebar components using useAuth)
+        await adminSupabase.auth.admin.updateUserById(
+            user.id,
+            { user_metadata: { ...user.user_metadata, avatar_url: publicUrl } }
+        )
+
+        revalidatePath('/dashboard')
         revalidatePath('/dashboard/perfil')
         return { success: true, publicUrl }
 
