@@ -36,6 +36,7 @@ const PSYCHOLOGIST_MENU = [
     { href: "/dashboard", label: "Visão Geral", icon: LayoutGrid },
     { href: "/dashboard/agenda", label: "Minha Agenda", icon: Calendar },
     { href: "/dashboard/pacientes", label: "Meus Pacientes", icon: Users },
+    { href: "/dashboard/mensagens", label: "Mensagens", icon: MessageSquare },
     { href: "/dashboard/configuracoes", label: "Serviços & Tarifas", icon: DollarSign },
     { href: "/dashboard/financeiro", label: "Financeiro", icon: BarChart3 },
     { href: "/dashboard/perfil", label: "Meu Perfil", icon: User },

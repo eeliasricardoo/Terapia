@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input"
 import {
     ChevronLeft, Mail, Phone, User, Stethoscope,
-    Activity, Calendar, Clock, FileText
+    Activity, Calendar, Clock, FileText, MessageSquare
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import type { PatientData } from "@/lib/actions/patients"
 import { AnamnesisTab } from "./AnamnesisTab"
 import { EvolutionsTab } from "./EvolutionsTab"
@@ -67,6 +68,20 @@ export function PatientProfilePage({ patient }: Props) {
                                     <Badge variant="outline" className={status.className}>
                                         {status.label}
                                     </Badge>
+                                    <Button
+                                        size="sm"
+                                        className="bg-blue-600 hover:bg-blue-700 text-white gap-2 ml-auto sm:ml-0"
+                                        onClick={async () => {
+                                            const { startOrGetConversation } = await import("@/lib/actions/messages")
+                                            const convId = await startOrGetConversation(patient.id)
+                                            if (convId) {
+                                                window.location.href = `/dashboard/mensagens?id=${convId}`
+                                            }
+                                        }}
+                                    >
+                                        <MessageSquare className="h-4 w-4" />
+                                        Enviar Mensagem
+                                    </Button>
                                 </div>
                                 <div className="flex flex-wrap gap-4 mt-2 text-sm text-slate-500">
                                     <span className="flex items-center gap-1.5">

@@ -22,13 +22,47 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
     }
 
     // Get user profile
-    const { data, error } = await supabase
+    let { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
         .single()
 
-    if (error) {
+    // If profile is missing (e.g. after a DB reset), try to recreate it from Auth metadata
+    if (error && error.code === 'PGRST116') {
+        console.log('Profile missing for user', user.id, 'recreating...')
+        const meta = user.user_metadata
+        const role = meta?.role || 'PATIENT'
+        const fullName = meta?.full_name || user.email?.split('@')[0] || 'Usuário'
+
+        // Create in Prisma first (required for FK constraints)
+        try {
+            const { prisma } = await import('@/lib/prisma')
+            await prisma.user.upsert({
+                where: { id: user.id },
+                update: { email: user.email!, name: fullName },
+                create: { id: user.id, email: user.email!, name: fullName, role: role as any }
+            })
+
+            // Create in Supabase profiles table
+            const { data: newProfile, error: insertError } = await supabase
+                .from('profiles')
+                .insert({
+                    user_id: user.id,
+                    full_name: fullName,
+                    role: role,
+                    avatar_url: null,
+                })
+                .select()
+                .single()
+
+            if (!insertError) {
+                data = newProfile
+            }
+        } catch (err) {
+            console.error('Error auto-syncing profile:', err)
+        }
+    } else if (error) {
         console.error('Error fetching user profile:', error)
         return null
     }
