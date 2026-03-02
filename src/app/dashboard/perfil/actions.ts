@@ -121,3 +121,64 @@ export async function uploadProfileImage(formData: FormData) {
         return { error: `Erro inesperado: ${error.message || error}` }
     }
 }
+
+export async function updateUserProfile(data: { name: string, phone: string }) {
+    const supabase = await createClient()
+
+    // 1. Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+        return { error: 'Usuário não autenticado' }
+    }
+
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        return { error: 'Configuração de servidor incompleta: Service Role Key ausente' }
+    }
+
+    try {
+        const adminSupabase = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY,
+            {
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false
+                }
+            }
+        )
+
+        // 1. Update public profiles table
+        const { error: updateError } = await adminSupabase
+            .from('profiles')
+            .update({
+                full_name: data.name,
+                phone: data.phone,
+                updated_at: new Date().toISOString()
+            })
+            .eq('user_id', user.id)
+
+        if (updateError) {
+            console.error('Update Error:', updateError)
+            return { error: `Erro ao atualizar perfil: ${updateError.message}` }
+        }
+
+        // 2. Synchronize Auth User Metadata (important for Header/Sidebar components using useAuth)
+        const { error: metaError } = await adminSupabase.auth.admin.updateUserById(
+            user.id,
+            { user_metadata: { ...user.user_metadata, full_name: data.name } }
+        )
+
+        if (metaError) {
+            console.error('Metadata Update Error:', metaError)
+            // Continues since profiles table was updated but it's good to log
+        }
+
+        revalidatePath('/dashboard')
+        revalidatePath('/dashboard/perfil')
+        return { success: true }
+
+    } catch (error: any) {
+        console.error('Unexpected Error:', error)
+        return { error: `Erro inesperado: ${error.message || error}` }
+    }
+}

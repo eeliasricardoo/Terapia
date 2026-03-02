@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Camera, Mail, User, Phone, Lock, Save, Shield } from "lucide-react"
 import { toast } from "sonner"
-import { uploadProfileImage } from "./actions"
+import { uploadProfileImage, updateUserProfile } from "./actions"
 
 export default function ProfilePage() {
     const [isLoading, setIsLoading] = useState(false)
@@ -169,15 +169,15 @@ export default function ProfilePage() {
         try {
             setIsLoading(true)
 
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    full_name: user.name,
-                    phone: user.phone
-                })
-                .eq('user_id', user.id)
+            const result = await updateUserProfile({
+                name: user.name,
+                phone: user.phone
+            })
 
-            if (error) throw error
+            if (result.error) {
+                toast.error('Erro ao salvar perfil', { description: result.error })
+                return
+            }
 
             toast.success('Perfil atualizado!', { description: 'Seus dados foram salvos com sucesso.' })
         } catch (error) {
