@@ -1,37 +1,19 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { Footer } from "@/components/layout/Footer"
-import {
-    CheckCircle2,
-    Briefcase,
-    Users,
-    Star,
-    ChevronLeft,
-    ChevronRight,
-    ArrowRight,
-    GraduationCap,
-    Languages,
-    Award,
-    BookOpen
-} from "lucide-react"
-import { Separator } from "@/components/ui/separator"
-import type { PsychologistWithProfile } from "@/lib/supabase/types"
+import { ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { getTimeZoneLabel } from "@/lib/date-utils"
+import type { PsychologistWithProfile } from "@/lib/supabase/types"
 import type { PsychologistAvailability } from "@/lib/actions/availability"
-import { format, isBefore, startOfDay, addMinutes } from "date-fns"
-import { toZonedTime } from "date-fns-tz"
 
-const MONTHS = [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-]
+import { usePsychologistProfile } from "./_hooks/use-psychologist-profile"
+import { ProfileHeader } from "./_components/profile-header"
+import { AboutSection } from "./_components/about-section"
+import { PresentationVideo } from "./_components/presentation-video"
+import { ReviewsSection } from "./_components/reviews-section"
+import { BookingWidget } from "./_components/booking-widget"
 
 interface Props {
     psychologist: PsychologistWithProfile
@@ -39,168 +21,28 @@ interface Props {
 }
 
 export function PsychologistProfileClient({ psychologist, availability }: Props) {
-    const [selectedDay, setSelectedDay] = useState(15)
-    const [currentDate, setCurrentDate] = useState(new Date())
-    const [selectedTime, setSelectedTime] = useState<string | null>(null)
-    const [selectedPlan, setSelectedPlan] = useState<'single' | 'monthly'>('monthly')
+    const {
+        selectedDay, setSelectedDay,
+        currentDate,
+        selectedTime, setSelectedTime,
+        selectedPlan, setSelectedPlan,
+        pricing,
+        calendar,
+        timezone
+    } = usePsychologistProfile(psychologist, availability)
 
-    const handlePrevMonth = () => {
-        setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1))
-        setSelectedDay(1)
-    }
-
-    const handleNextMonth = () => {
-        setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1))
-        setSelectedDay(1)
-    }
-
-    const getDaysInMonth = (date: Date) => {
-        return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
-    }
-
-    const currentMonthName = MONTHS[currentDate.getMonth()]
-    const currentYear = currentDate.getFullYear()
-    const daysInMonth = getDaysInMonth(currentDate)
-
-    const getEmbedUrl = (url: string | null) => {
-        if (!url) return null;
-        try {
-            if (url.includes('youtube.com/watch')) {
-                const urlObj = new URL(url);
-                const videoId = urlObj.searchParams.get('v');
-                return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
-            }
-            if (url.includes('youtu.be/')) {
-                const videoId = url.split('youtu.be/')[1].split('?')[0];
-                return `https://www.youtube.com/embed/${videoId}`;
-            }
-            if (url.includes('vimeo.com/')) {
-                const videoId = url.split('vimeo.com/')[1].split('?')[0];
-                return `https://player.vimeo.com/video/${videoId}`;
-            }
-        } catch (e) { /* ignore */ }
-        return url;
-    }
-
-    // Extract data from psychologist object
-    const profile = psychologist.profile
-    const displayName = profile?.full_name || 'Psicólogo'
+    const displayName = psychologist.profile?.full_name || 'Psicólogo'
     const firstSpecialty = psychologist.specialties?.[0] || 'Psicologia Clínica'
-    const price = psychologist.price_per_session ? Number(psychologist.price_per_session) : 150
 
-    // Pricing Logic
-    const monthlyPricePerSession = price * 0.8 // 20% discount
-    const monthlyTotal = monthlyPricePerSession * 4
-
-    const displayPrice = selectedPlan === 'single' ? price : monthlyPricePerSession
-
-    // Availability specific logic
-    const timezone = availability?.timezone || "America/Sao_Paulo"
-    const today = toZonedTime(new Date(), timezone)
-
-    const isDayAvailable = (date: Date) => {
-        if (!availability) return false
-
-        // Check if date is in the past
-        if (isBefore(date, startOfDay(today))) {
-            return false
+    const handleBooking = () => {
+        if (selectedTime) {
+            window.location.href = `/pagamento?doctor=${psychologist.userId}&date=${calendar.currentYear}-${currentDate.getMonth() + 1}-${selectedDay}&time=${selectedTime}&plan=${selectedPlan}`
         }
-
-        const dateStr = format(date, 'yyyy-MM-dd')
-
-        // Check overrides
-        if (availability.overrides[dateStr]) {
-            return availability.overrides[dateStr].type === 'custom' && availability.overrides[dateStr].slots.length > 0
-        }
-
-        // Check weekly schedule
-        if (!availability.weeklySchedule) return false
-
-        const dayOfWeekIndex = date.getDay()
-        const daysMap = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const
-        const dayKey = daysMap[dayOfWeekIndex]
-
-        return availability.weeklySchedule[dayKey]?.enabled && availability.weeklySchedule[dayKey].slots.length > 0
     }
-
-    const getAvailableSlotsForDay = (date: Date) => {
-        if (!availability || !isDayAvailable(date)) return []
-
-        const dateStr = format(date, 'yyyy-MM-dd')
-        let slotsDef: { start: string, end: string }[] = []
-
-        if (availability.overrides[dateStr] && availability.overrides[dateStr].type === 'custom') {
-            slotsDef = availability.overrides[dateStr].slots
-        } else if (availability.weeklySchedule) {
-            const dayOfWeekIndex = date.getDay()
-            const daysMap = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const
-            const dayKey = daysMap[dayOfWeekIndex]
-            slotsDef = availability.weeklySchedule[dayKey]?.slots || []
-        }
-
-        const durationMinutes = availability.weeklySchedule?.sessionDuration ? parseInt(availability.weeklySchedule.sessionDuration) : 50
-        const breakMinutes = 10
-        let generatedSlots: string[] = []
-
-        // Encontrar agendamentos para esse dia no fuso horário do psicólogo
-        const apptsOnThisDay = (availability.appointments || []).filter(appt => {
-            const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
-            return format(zonedAppt, 'yyyy-MM-dd') === dateStr
-        })
-
-        // Obter o tempo atual no fuso do psicólogo para bloquear horários passados de hoje
-        const nowZoned = toZonedTime(new Date(), timezone)
-        const isToday = format(nowZoned, 'yyyy-MM-dd') === dateStr
-        const nowMinutes = nowZoned.getHours() * 60 + nowZoned.getMinutes()
-
-        slotsDef.forEach(slot => {
-            let current = new Date(`1970-01-01T${slot.start}:00`)
-            const end = new Date(`1970-01-01T${slot.end}:00`)
-
-            while (current < end) {
-                const hour = current.getHours().toString().padStart(2, '0')
-                const min = current.getMinutes().toString().padStart(2, '0')
-
-                const slotStartMin = current.getHours() * 60 + current.getMinutes()
-                const slotEndMin = slotStartMin + durationMinutes
-
-                // Verificar conflitos
-                const hasConflict = apptsOnThisDay.some(appt => {
-                    const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
-                    const apptStartMin = zonedAppt.getHours() * 60 + zonedAppt.getMinutes()
-                    const apptEndMin = apptStartMin + appt.duration_minutes
-
-                    // Condição de sobreposição (exclusivo nas bordas)
-                    return (slotStartMin < apptEndMin) && (slotEndMin > apptStartMin)
-                })
-
-                // Verificar se o horário já passou (apenas se for o dia de hoje)
-                // Usamos uma folga de antecedência (ex: 30 mins) ou deixamos exato. Vamos bloquear exato.
-                const isPast = isToday && (slotStartMin <= nowMinutes + 30) // 30 mins de antecedência mínima
-
-                if (!hasConflict && !isPast) {
-                    generatedSlots.push(`${hour}:${min}`)
-                }
-
-                current = addMinutes(current, durationMinutes + breakMinutes)
-                // Do not add slots that would end after the end bound
-                if (addMinutes(current, durationMinutes) > end) {
-                    break;
-                }
-            }
-        })
-
-        return generatedSlots
-    }
-
-    const availableSlotsForSelectedDay = selectedDay
-        ? getAvailableSlotsForDay(new Date(currentYear, currentDate.getMonth(), selectedDay))
-        : []
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50">
             <main className="flex-1 py-8 px-4 md:px-8 max-w-7xl mx-auto w-full pb-32 lg:pb-8">
-                {/* Breadcrumb integrado ao conteúdo */}
                 <div className="mb-6">
                     <div className="flex items-center text-sm text-slate-500 gap-2">
                         <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
@@ -218,332 +60,43 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Main Content Column */}
                     <div className="flex-1 space-y-8">
-                        {/* Profile Header Block */}
-                        <div className="bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm flex flex-col md:flex-row gap-6 items-start">
-                            <div className="relative flex-shrink-0 mx-auto md:mx-0">
-                                <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-white shadow-lg ring-1 ring-slate-100">
-                                    <AvatarImage src={profile?.avatar_url || undefined} className="object-cover" />
-                                    <AvatarFallback className="text-4xl bg-blue-50 text-blue-600 font-medium">
-                                        {displayName.charAt(0)}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div className="absolute bottom-2 right-2 bg-green-500 border-4 border-white rounded-full p-1.5" title="Verificado">
-                                </div>
-                            </div>
+                        <ProfileHeader
+                            psychologist={psychologist}
+                            displayName={displayName}
+                            firstSpecialty={firstSpecialty}
+                        />
 
-                            <div className="flex-1 text-center md:text-left space-y-3">
-                                <div>
-                                    <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1 justify-center md:justify-start">
-                                        <h1 className="text-3xl font-bold text-slate-900 leading-tight">{displayName}</h1>
-                                        {psychologist.is_verified && (
-                                            <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 gap-1 w-fit mx-auto md:mx-0">
-                                                <CheckCircle2 className="h-3 w-3" />
-                                                Profissional Verificado
-                                            </Badge>
-                                        )}
-                                    </div>
-                                    <p className="text-lg text-slate-600 font-medium">{firstSpecialty}</p>
-                                    <p className="text-sm text-slate-400 font-mono mt-1">CRP: {psychologist.crp || 'Não informado'}</p>
-                                </div>
+                        <AboutSection psychologist={psychologist} />
 
-                                <div className="flex flex-wrap gap-4 justify-center md:justify-start pt-2">
-                                    <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
-                                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                                        <span className="font-bold text-slate-900">5.0</span>
-                                        <span className="text-slate-400">(42 avaliações)</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
-                                        <Briefcase className="h-4 w-4 text-blue-500" />
-                                        <span className="font-semibold text-slate-900">10+</span>
-                                        <span>anos experiência</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
-                                        <Users className="h-4 w-4 text-blue-500" />
-                                        <span className="font-bold text-slate-900">500+</span>
-                                        <span>sessões</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <PresentationVideo videoUrl={psychologist.video_presentation_url} />
 
-                        {/* Bio Section */}
-                        <section className="bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-4">
-                            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                                Sobre mim
-                            </h2>
-                            <p className="text-slate-600 leading-relaxed text-lg whitespace-pre-wrap">
-                                {psychologist.bio || 'Psicólogo(a) dedicado(a) ao bem-estar emocional e mental dos pacientes. Utilizo abordagens baseadas em evidências para ajudar pessoas a superarem desafios e alcançarem seus objetivos terapêuticos.'}
-                            </p>
-                        </section>
-
-                        {/* Education and Experience Section */}
-                        <section className="bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
-                            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                                Formação e Qualificações
-                            </h2>
-
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-1 bg-slate-50 p-2 rounded-lg">
-                                            <GraduationCap className="h-5 w-5 text-slate-600" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-slate-900">Formação Acadêmica</h3>
-                                            <ul className="mt-2 space-y-3">
-                                                <li className="text-sm">
-                                                    <p className="font-medium text-slate-900">Graduação em Psicologia</p>
-                                                    <p className="text-slate-500">Universidade Federal (2010 - 2015)</p>
-                                                </li>
-                                                <li className="text-sm">
-                                                    <p className="font-medium text-slate-900">Especialização em TCC</p>
-                                                    <p className="text-slate-500">Instituto de Psicologia (2016 - 2018)</p>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-1 bg-slate-50 p-2 rounded-lg">
-                                            <Languages className="h-5 w-5 text-slate-600" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-slate-900">Idiomas</h3>
-                                            <div className="mt-2 flex flex-wrap gap-2">
-                                                <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-normal">Português (Nativo)</Badge>
-                                                <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-normal">Inglês (Avançado)</Badge>
-                                                <Badge variant="secondary" className="bg-slate-100 text-slate-700 font-normal">Espanhol (Intermediário)</Badge>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-3 pt-4">
-                                        <div className="mt-1 bg-slate-50 p-2 rounded-lg">
-                                            <Award className="h-5 w-5 text-slate-600" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-slate-900">Certificações</h3>
-                                            <ul className="mt-2 space-y-1">
-                                                <li className="text-sm text-slate-600">Certificado em Prática Clínica Supervisionada</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* Specialties Section */}
-                        <section className="bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
-                            <h2 className="text-xl font-bold text-slate-900">Especialidades e Abordagens</h2>
-                            <div className="flex flex-wrap gap-2">
-                                {psychologist.specialties?.map((spec) => (
-                                    <Badge key={spec} variant="outline" className="text-base px-4 py-1.5 border-slate-200 text-slate-600 bg-slate-50 font-normal">
-                                        {spec}
-                                    </Badge>
-                                )) || (
-                                        <p className="text-sm text-muted-foreground">Nenhuma especialidade cadastrada</p>
-                                    )}
-                            </div>
-                        </section>
-
-                        {/* Video Section (if URL exists) */}
-                        {psychologist.video_presentation_url && (
-                            <section className="bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
-                                <h2 className="text-xl font-bold text-slate-900">Apresentação</h2>
-                                <div className="aspect-video bg-slate-100 rounded-xl overflow-hidden shadow-inner border border-slate-200">
-                                    <iframe
-                                        src={getEmbedUrl(psychologist.video_presentation_url) || ''}
-                                        className="w-full h-full"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen
-                                    ></iframe>
-                                </div>
-                            </section>
-                        )}
-
-                        {/* Reviews Section */}
-                        <section className="bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
-                            <h2 className="text-xl font-bold text-slate-900">Opiniões de pacientes</h2>
-                            <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                                <Star className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-                                <p className="text-slate-500">Este profissional ainda não recebeu avaliações escritas.</p>
-                            </div>
-                        </section>
+                        <ReviewsSection />
                     </div>
 
                     {/* Right Sidebar - Sticky Booking Widget */}
                     <div id="booking-widget" className="w-full lg:w-[400px] flex-shrink-0">
                         <div className="sticky top-24 space-y-6">
-                            <Card className="border-none shadow-xl shadow-blue-900/5 bg-white overflow-hidden ring-1 ring-slate-100 flex flex-col max-h-[calc(100vh-6.5rem)]">
-                                <div className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full pb-4">
-                                    {/* Plan Selection Header */}
-                                    <div className="grid grid-cols-2 p-1.5 bg-slate-100/80 rounded-2xl mb-6 mx-6 mt-6">
-                                        <button
-                                            onClick={() => setSelectedPlan('monthly')}
-                                            className={cn(
-                                                "py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300 relative",
-                                                selectedPlan === 'monthly'
-                                                    ? "bg-white text-indigo-700 shadow-sm ring-1 ring-slate-200/50"
-                                                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
-                                            )}
-                                        >
-                                            Pacote Mensal
-                                        </button>
-                                        <button
-                                            onClick={() => setSelectedPlan('single')}
-                                            className={cn(
-                                                "py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300 relative",
-                                                selectedPlan === 'single'
-                                                    ? "bg-white text-blue-600 shadow-sm ring-1 ring-slate-200/50"
-                                                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
-                                            )}
-                                        >
-                                            Sessão Avulsa
-                                        </button>
-                                    </div>
-
-                                    <div className={cn(
-                                        "mx-6 p-6 md:p-8 rounded-3xl text-white text-center transition-all duration-500 relative overflow-hidden",
-                                        selectedPlan === 'single'
-                                            ? "bg-gradient-to-br from-slate-800 to-slate-900 shadow-slate-900/20 shadow-xl"
-                                            : "bg-gradient-to-br from-indigo-600 to-blue-700 shadow-indigo-600/20 shadow-xl"
-                                    )}>
-                                        {/* Decorative blurred blobs inside the price card */}
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-                                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
-
-                                        <div className="relative z-10">
-                                            <p className="text-sm font-medium text-blue-50 mb-1 opacity-90 whitespace-nowrap">
-                                                {selectedPlan === 'single' ? 'Valor da Sessão (50 min)' : 'Sessão no Plano Mensal'}
-                                            </p>
-                                            <div className="flex items-end justify-center gap-2 mt-1">
-                                                <p className="text-4xl md:text-[2.75rem] font-extrabold tracking-tight leading-none whitespace-nowrap">
-                                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(displayPrice)}
-                                                </p>
-                                                {selectedPlan === 'monthly' && (
-                                                    <span className="text-sm md:text-base font-medium text-indigo-200 line-through decoration-indigo-300/50 mb-1 whitespace-nowrap">
-                                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price)}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            {selectedPlan === 'monthly' && (
-                                                <div className="mt-5 bg-white/20 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 text-xs font-bold inline-flex items-center gap-1.5 shadow-sm">
-                                                    <Award className="w-4 h-4 text-amber-300" />
-                                                    Economize 20% no total de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyTotal)}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <CardContent className="p-6 md:p-8">
-                                        <h3 className="font-bold text-slate-900 mb-1 flex items-center gap-2">
-                                            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                                            Selecione um horário
-                                        </h3>
-                                        <p className="text-xs text-slate-500 mb-4 ml-4">
-                                            Fuso horário: {getTimeZoneLabel(timezone)}
-                                        </p>
-
-                                        <div className="mb-6 bg-slate-50 rounded-xl p-4 border border-slate-100">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white hover:shadow-sm" onClick={handlePrevMonth}>
-                                                    <ChevronLeft className="h-4 w-4" />
-                                                </Button>
-                                                <span className="font-semibold text-slate-900 text-sm">{currentMonthName} {currentYear}</span>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white hover:shadow-sm" onClick={handleNextMonth}>
-                                                    <ChevronRight className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-
-                                            <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                                                {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
-                                                    <span key={i} className="text-[10px] font-bold text-slate-400 py-1">{d}</span>
-                                                ))}
-                                            </div>
-                                            <div className="grid grid-cols-7 gap-1 text-center">
-                                                {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
-                                                    const date = new Date(currentYear, currentDate.getMonth(), day)
-                                                    const isAvailable = isDayAvailable(date)
-
-                                                    return (
-                                                        <button
-                                                            key={day}
-                                                            disabled={!isAvailable && day !== selectedDay}
-                                                            onClick={() => {
-                                                                if (isAvailable) {
-                                                                    setSelectedDay(day)
-                                                                    setSelectedTime(null) // Reset time when day changes
-                                                                }
-                                                            }}
-                                                            className={`h-9 w-9 rounded-full flex items-center justify-center text-sm transition-all duration-200
-                                                                ${day === selectedDay
-                                                                    ? 'bg-blue-600 text-white font-bold shadow-md scale-100 z-10'
-                                                                    : isAvailable
-                                                                        ? 'bg-blue-50 text-blue-600 font-semibold hover:bg-blue-100 hover:scale-110 cursor-pointer'
-                                                                        : 'text-slate-300 cursor-not-allowed'
-                                                                }
-                                                            `}
-                                                        >
-                                                            {day}
-                                                        </button>
-                                                    )
-                                                })}
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <h4 className="text-sm font-semibold text-slate-900">Horários disponíveis</h4>
-                                            {selectedDay ? (
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    {availableSlotsForSelectedDay.length > 0 ? availableSlotsForSelectedDay.map((time) => (
-                                                        <Button
-                                                            key={time}
-                                                            variant="outline"
-                                                            className={`h-10 text-sm font-medium border-slate-200 transition-all
-                                                                ${selectedTime === time
-                                                                    ? "bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-100"
-                                                                    : "text-slate-600 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50"}
-                                                            `}
-                                                            onClick={() => setSelectedTime(time)}
-                                                        >
-                                                            {time}
-                                                        </Button>
-                                                    )) : (
-                                                        <div className="col-span-3 text-sm text-slate-500 py-2">Nenhum horário disponível para este dia.</div>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                <p className="text-sm text-muted-foreground text-center py-4 italic">Selecione um dia disponível acima</p>
-                                            )}
-                                        </div>
-
-                                        <Separator className="my-6" />
-
-                                        <Button
-                                            className={cn(
-                                                "w-full h-14 text-lg font-bold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed",
-                                                selectedPlan === 'monthly'
-                                                    ? "bg-blue-700 hover:bg-blue-800 shadow-blue-700/20"
-                                                    : "bg-blue-600 hover:bg-blue-700 shadow-blue-600/20"
-                                            )}
-                                            disabled={!selectedTime}
-                                            onClick={() => window.location.href = `/pagamento?doctor=${psychologist.userId}&date=${currentYear}-${currentDate.getMonth() + 1}-${selectedDay}&time=${selectedTime}&plan=${selectedPlan}`}
-                                        >
-                                            {selectedTime
-                                                ? (selectedPlan === 'monthly' ? 'Contratar Pacote Mensal' : 'Confirmar Agendamento')
-                                                : 'Escolha um horário'}
-                                            {selectedTime && <ArrowRight className="h-5 w-5 ml-2" />}
-                                        </Button>
-
-                                        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                                            <CheckCircle2 className="h-3 w-3 text-green-500" />
-                                            <span>Pagamento seguro e sigilo garantido</span>
-                                        </div>
-                                    </CardContent>
-                                </div>
-                            </Card>
+                            <BookingWidget
+                                selectedPlan={selectedPlan}
+                                setSelectedPlan={setSelectedPlan}
+                                displayPrice={pricing.displayPrice}
+                                price={pricing.price}
+                                monthlyTotal={pricing.monthlyTotal}
+                                timezone={timezone}
+                                currentMonthName={calendar.currentMonthName}
+                                currentYear={calendar.currentYear}
+                                handlePrevMonth={calendar.handlePrevMonth}
+                                handleNextMonth={calendar.handleNextMonth}
+                                daysInMonth={calendar.daysInMonth}
+                                selectedDay={selectedDay}
+                                setSelectedDay={setSelectedDay}
+                                setSelectedTime={setSelectedTime}
+                                isDayAvailable={calendar.isDayAvailable}
+                                availableSlotsForSelectedDay={calendar.availableSlotsForSelectedDay}
+                                selectedTime={selectedTime}
+                                onSubmit={handleBooking}
+                                currentMonth={currentDate.getMonth()}
+                            />
                         </div>
                     </div>
                 </div>
@@ -558,11 +111,11 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
                         </p>
                         <div className="flex items-baseline gap-2">
                             <span className="text-xl font-bold text-slate-900">
-                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(displayPrice)}
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pricing.displayPrice)}
                             </span>
                             {selectedPlan === 'monthly' && (
                                 <span className="text-xs text-slate-400 line-through">
-                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price)}
+                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pricing.price)}
                                 </span>
                             )}
                         </div>
@@ -576,7 +129,7 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
                         )}
                         onClick={() => {
                             if (selectedTime) {
-                                window.location.href = `/pagamento?doctor=${psychologist.userId}&date=${currentYear}-${currentDate.getMonth() + 1}-${selectedDay}&time=${selectedTime}&plan=${selectedPlan}`
+                                handleBooking()
                             } else {
                                 document.getElementById('booking-widget')?.scrollIntoView({ behavior: 'smooth' })
                             }
