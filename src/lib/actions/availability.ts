@@ -49,14 +49,13 @@ export async function saveAvailability(
         }
 
         // Convert the "lun", "mar"... format to the ones used by ScheduleManager
+        // Convert supported abbreviations to DB format
         const dayMap: Record<string, string> = {
-            lun: 'monday',
-            mar: 'tuesday',
-            mie: 'wednesday',
-            jue: 'thursday',
-            vie: 'friday',
-            sab: 'saturday',
-            dom: 'sunday'
+            // Spanish (legacy)
+            lun: 'monday', mar: 'tuesday', mie: 'wednesday', jue: 'thursday', vie: 'friday', sab: 'saturday', dom: 'sunday',
+            // Portuguese (new)
+            seg: 'monday', ter: 'tuesday', qua: 'wednesday', qui: 'thursday', sex: 'friday',
+            // sab and dom are the same in both
         }
 
         const parseTimeTo24h = (time12: string) => {

@@ -1,5 +1,7 @@
 "use client"
 
+import { ptBR } from "date-fns/locale"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
@@ -12,7 +14,6 @@ import { cn } from "@/lib/utils"
 import { Form } from "@/components/ui/form"
 import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
-import { es } from "date-fns/locale"
 import {
   Dialog,
   DialogContent,
@@ -36,21 +37,21 @@ const sessionDurations = [
 ]
 
 const daysOfWeek = [
-  { value: "lun", label: "LUN" },
-  { value: "mar", label: "MAR" },
-  { value: "mie", label: "MIE" },
-  { value: "jue", label: "JUE" },
-  { value: "vie", label: "VIE" },
+  { value: "seg", label: "SEG" },
+  { value: "ter", label: "TER" },
+  { value: "qua", label: "QUA" },
+  { value: "qui", label: "QUI" },
+  { value: "sex", label: "SEX" },
   { value: "sab", label: "SAB" },
   { value: "dom", label: "DOM" },
 ]
 
 const recurrenceOptions = [
-  { value: "none", label: "No se repite" },
+  { value: "none", label: "Não se repete" },
   { value: "daily", label: "Diariamente" },
-  { value: "weekdays", label: "Días laborables (Lunes a Viernes)" },
+  { value: "weekdays", label: "Dias úteis (Segunda a Sexta)" },
   { value: "weekly", label: "Semanalmente" },
-  { value: "monthly", label: "Mensualmente" },
+  { value: "monthly", label: "Mensalmente" },
   { value: "custom", label: "Personalizado..." },
 ]
 
@@ -216,9 +217,9 @@ export function AvailabilityForm() {
       let daysToApply: string[] = [selectedDay]
 
       if (recurrence === "weekdays") {
-        daysToApply = ["lun", "mar", "mie", "jue", "vie"]
+        daysToApply = ["seg", "ter", "qua", "qui", "sex"]
       } else if (recurrence === "daily") {
-        daysToApply = ["lun", "mar", "mie", "jue", "vie", "sab", "dom"]
+        daysToApply = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
       } else if (recurrence === "weekly") {
         daysToApply = [selectedDay]
       }
@@ -251,9 +252,9 @@ export function AvailabilityForm() {
       let daysToApply: string[] = [selectedDay]
 
       if (recurrence === "weekdays") {
-        daysToApply = ["lun", "mar", "mie", "jue", "vie"]
+        daysToApply = ["seg", "ter", "qua", "qui", "sex"]
       } else if (recurrence === "daily") {
-        daysToApply = ["lun", "mar", "mie", "jue", "vie", "sab", "dom"]
+        daysToApply = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
       } else if (recurrence === "weekly") {
         daysToApply = [selectedDay]
       }
@@ -541,7 +542,7 @@ export function AvailabilityForm() {
                       onSelect={(date: Date | undefined) => {
                         if (date) handleDateClick(date)
                       }}
-                      locale={es}
+                      locale={ptBR}
                       className="rounded-md w-full"
                       modifiers={{
                         scheduled: specificDateSchedules.map((s) => s.date),
@@ -569,11 +570,11 @@ export function AvailabilityForm() {
                 {recurringSchedules.map((schedule) => {
                   const dayLabel = daysOfWeek.find((d) => d.value === schedule.day)?.label || schedule.day
                   const dayName = {
-                    lun: "Segunda",
-                    mar: "Terça",
-                    mie: "Quarta",
-                    jue: "Quinta",
-                    vie: "Sexta",
+                    seg: "Segunda-feira",
+                    ter: "Terça-feira",
+                    qua: "Quarta-feira",
+                    qui: "Quinta-feira",
+                    sex: "Sexta-feira",
                     sab: "Sábado",
                     dom: "Domingo",
                   }[schedule.day] || schedule.day
@@ -672,7 +673,7 @@ export function AvailabilityForm() {
           <DialogHeader>
             <DialogTitle>
               {isSpecificDate && selectedDate
-                ? `Configurar Horários - ${format(selectedDate, "d 'de' MMMM", { locale: es })}`
+                ? `Configurar Horários - ${format(selectedDate, "d 'de' MMMM", { locale: ptBR })}`
                 : selectedDay
                   ? `Configurar Horários - ${daysOfWeek.find((d) => d.value === selectedDay)?.label}`
                   : "Configurar Horários"}
@@ -779,7 +780,7 @@ export function AvailabilityForm() {
             color: 'white'
           }}
         >
-          Siguiente
+          Próximo
         </Button>
       </div>
 

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { getCurrentUserProfile } from "./profile"
 import { revalidatePath } from "next/cache"
+import { encryptData, decryptData } from "@/lib/security"
 import { Conversation, Message, ConversationParticipant, User, Profile as PrismaProfile } from "@prisma/client"
 
 export type MessageData = {
@@ -61,7 +62,7 @@ export async function getConversations() {
             id: conv.id,
             name: otherParticipant?.user.profiles?.fullName || otherParticipant?.user.name || 'Usuário',
             avatar: otherParticipant?.user.profiles?.avatarUrl,
-            lastMessage: lastMsg?.content,
+            lastMessage: decryptData(lastMsg?.content || ""),
             lastMessageAt: lastMsg?.createdAt,
             unreadCount: 0, // TODO: Implement unread count logic
             otherParticipantId: otherParticipant?.userId
@@ -89,7 +90,7 @@ export async function getMessages(conversationId: string) {
 
     return messages.map((m: any) => ({
         id: m.id,
-        content: m.content,
+        content: decryptData(m.content),
         senderId: m.senderId,
         senderName: m.sender.profiles?.fullName || m.sender.name || 'Usuário',
         senderAvatar: m.sender.profiles?.avatarUrl,
@@ -106,7 +107,7 @@ export async function sendMessage(conversationId: string, content: string) {
             data: {
                 conversationId,
                 senderId: profile.user_id,
-                content
+                content: encryptData(content)
             }
         })
 

@@ -3,10 +3,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
+import { encryptData, decryptData } from '@/lib/security'
 
 // Type representing a patient from the DB merged with required UI fields
 export type PatientData = {
     id: string
+    userId: string
     name: string
     email: string
     phone: string
@@ -141,7 +143,8 @@ export async function getPsychologistPatients(): Promise<PatientData[]> {
             }
 
             patientDataList.push({
-                id: profile.id, // Using profile ID to match Prisma's relation type easily
+                id: profile.id, // Profile ID for clinical relations (Anamnesis, etc.)
+                userId: user.id, // User ID for account-level relations (Messages, Appointments)
                 name: profile.fullName || user.name || 'Paciente',
                 email: user.email,
                 phone: profile.phone || '',
@@ -209,10 +212,10 @@ export async function getAnamnesis(patientProfileId: string): Promise<AnamnesisD
 
         return {
             id: anamnesis.id,
-            mainComplaint: anamnesis.mainComplaint || '',
-            familyHistory: anamnesis.familyHistory || '',
-            medication: anamnesis.medication || '',
-            diagnosticHypothesis: anamnesis.diagnosticHypothesis || ''
+            mainComplaint: decryptData(anamnesis.mainComplaint || ""),
+            familyHistory: decryptData(anamnesis.familyHistory || ""),
+            medication: decryptData(anamnesis.medication || ""),
+            diagnosticHypothesis: decryptData(anamnesis.diagnosticHypothesis || "")
         }
     } catch (error) {
         logger.error('Error fetching anamnesis:', error)
@@ -249,8 +252,8 @@ export async function getEvolutions(patientProfileId: string): Promise<Evolution
             id: e.id,
             date: new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(e.date)),
             mood: e.mood || undefined,
-            publicSummary: e.publicSummary || undefined,
-            privateNotes: e.privateNotes || undefined,
+            publicSummary: decryptData(e.publicSummary || ""),
+            privateNotes: decryptData(e.privateNotes || ""),
         }))
     } catch (error) {
         logger.error('Error fetching evolutions:', error)
@@ -276,8 +279,8 @@ export async function saveEvolution(patientProfileId: string, data: {
                 patientId: patientProfileId,
                 psychologistId: psychologistProfile.id,
                 mood: data.mood,
-                publicSummary: data.publicSummary,
-                privateNotes: data.privateNotes,
+                publicSummary: encryptData(data.publicSummary || ""),
+                privateNotes: encryptData(data.privateNotes || ""),
                 date: new Date(),
             }
         })
@@ -383,10 +386,10 @@ export async function updateAnamnesis(patientProfileId: string, data: AnamnesisD
             const updated = await prisma.anamnesis.update({
                 where: { id: existingAnamnesis.id },
                 data: {
-                    mainComplaint: data.mainComplaint,
-                    familyHistory: data.familyHistory,
-                    medication: data.medication,
-                    diagnosticHypothesis: data.diagnosticHypothesis,
+                    mainComplaint: encryptData(data.mainComplaint || ""),
+                    familyHistory: encryptData(data.familyHistory || ""),
+                    medication: encryptData(data.medication || ""),
+                    diagnosticHypothesis: encryptData(data.diagnosticHypothesis || ""),
                 }
             })
             return { success: true, data: updated }
@@ -395,10 +398,10 @@ export async function updateAnamnesis(patientProfileId: string, data: AnamnesisD
                 data: {
                     patientId: patientProfileId,
                     psychologistId: psychologistProfile.id,
-                    mainComplaint: data.mainComplaint,
-                    familyHistory: data.familyHistory,
-                    medication: data.medication,
-                    diagnosticHypothesis: data.diagnosticHypothesis,
+                    mainComplaint: encryptData(data.mainComplaint || ""),
+                    familyHistory: encryptData(data.familyHistory || ""),
+                    medication: encryptData(data.medication || ""),
+                    diagnosticHypothesis: encryptData(data.diagnosticHypothesis || ""),
                 }
             })
             return { success: true, data: created }

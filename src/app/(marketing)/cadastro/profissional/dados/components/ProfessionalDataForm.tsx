@@ -65,7 +65,7 @@ export function ProfessionalDataForm() {
     function onSubmit(values: z.infer<typeof formSchema>) {
         // TODO: Integrate with Supabase to save professional data
         // Navigate to next step
-        router.push('/cadastro/profissional/disponibilidad')
+        router.push('/cadastro/profissional/disponibilidade')
     }
 
     return (

@@ -28,7 +28,6 @@ export function getTimeZoneLabel(timeZone: string = DEFAULT_TIMEZONE): string {
     try {
         const date = new Date();
         // Obtém o nome curto ou offset, ex: "Brasilia Standard Time" ou "GMT-3"
-        // Opcionalmente podemos pegar apenas o offset
         return new Intl.DateTimeFormat('pt-BR', {
             timeZone,
             timeZoneName: 'longOffset'

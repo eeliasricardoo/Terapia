@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { prisma } from "@/lib/prisma"
 import { logger } from "@/lib/utils/logger"
+import { encryptData, decryptData } from "@/lib/security"
 
 
 export type DiaryEntryData = {
@@ -33,7 +34,7 @@ export async function getDiaryEntries(): Promise<DiaryEntryData[]> {
                 id: e.id,
                 mood: e.mood,
                 emotions: e.emotions,
-                content: e.content,
+                content: decryptData(e.content),
                 createdAt: e.createdAt.toISOString(),
                 dateLabel: new Intl.DateTimeFormat('pt-BR', {
                     day: '2-digit', month: 'long', year: 'numeric'
@@ -74,7 +75,7 @@ export async function saveDiaryEntry(data: {
                 userId: user.id,
                 mood: data.mood,
                 emotions: data.emotions,
-                content: data.content,
+                content: encryptData(data.content),
             }
         })
 
