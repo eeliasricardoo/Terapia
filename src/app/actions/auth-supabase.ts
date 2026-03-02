@@ -87,6 +87,27 @@ export async function registerPatientSupabase(
 
         // Create profile in database if needed
         if (authData.user) {
+            // Sincronizar com a tabela de usuários do Prisma para evitar erros de FK em outras tabelas (Ex: Diario)
+            try {
+                const { prisma } = await import('@/lib/prisma')
+                await prisma.user.upsert({
+                    where: { id: authData.user.id },
+                    update: {
+                        email: data.email,
+                        name: safeName,
+                    },
+                    create: {
+                        id: authData.user.id,
+                        email: data.email,
+                        name: safeName,
+                        role: 'PATIENT',
+                    }
+                })
+            } catch (err) {
+                console.error('Error syncing user to Prisma during registration:', err)
+                // Não falhamos o registro se o Prisma falhar, mas logamos
+            }
+
             const { error: profileError } = await supabase
                 .from('profiles')
                 .insert({

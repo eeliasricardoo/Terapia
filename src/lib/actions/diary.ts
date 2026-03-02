@@ -57,6 +57,18 @@ export async function saveDiaryEntry(data: {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return { success: false, error: 'Não autenticado' }
 
+        // Garante que o usuário existe no Prisma antes de criar a entrada (Ex: pacientes antigos sem registro na tabela users)
+        await prisma.user.upsert({
+            where: { id: user.id },
+            update: { email: user.email || '' },
+            create: {
+                id: user.id,
+                email: user.email || '',
+                name: (user.user_metadata?.full_name as string) || 'Paciente',
+                role: (user.user_metadata?.role as any) || 'PATIENT',
+            }
+        })
+
         const entry = await prisma.diaryEntry.create({
             data: {
                 userId: user.id,

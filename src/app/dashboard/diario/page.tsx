@@ -7,8 +7,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import {
     Calendar, Clock, Heart, Zap, Cloud, Smile, Frown, Meh,
-    Loader2, Trash2, BookOpen, TrendingUp, Sparkles
+    Loader2, Trash2, BookOpen, TrendingUp, Sparkles, Activity, Plus
 } from "lucide-react"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { toast } from "sonner"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -80,7 +81,7 @@ export default function DiarioPage() {
                 setSelectedEmotions([])
                 setContent("")
             } else {
-                toast.error("Erro ao salvar. Tente novamente.")
+                toast.error(result.error || "Erro ao salvar. Tente novamente.")
             }
         })
     }
@@ -114,207 +115,239 @@ export default function DiarioPage() {
     })()
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-200">
-                            <BookOpen className="h-5 w-5 text-white" />
+                    <div className="flex items-center gap-3 mb-1">
+                        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-100 ring-4 ring-white">
+                            <BookOpen className="h-6 w-6 text-white" />
                         </div>
-                        Diário Emocional
-                    </h1>
-                    <p className="text-slate-500 mt-1.5 ml-[52px]">
-                        Registre seus sentimentos e acompanhe sua jornada emocional.
+                        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+                            Diário Emocional
+                        </h1>
+                    </div>
+                    <p className="text-slate-500 ml-1.5 flex items-center gap-2">
+                        <Activity className="h-4 w-4 text-blue-500" />
+                        Uma ferramenta para autoconhecimento e acompanhamento da sua jornada.
                     </p>
                 </div>
-            </div>
 
-            {/* Stats bar */}
-            {entries.length > 0 && (
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 text-center">
-                        <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-1">Entradas</p>
-                        <p className="text-2xl font-bold text-slate-900">{entries.length}</p>
-                    </div>
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 text-center">
-                        <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-1">Humor Médio</p>
-                        <p className="text-2xl font-bold text-slate-900">{avgMood} <span className="text-lg">/ 5</span></p>
-                    </div>
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 text-center">
-                        <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-1">Emoção Frequente</p>
-                        <p className="text-lg font-bold text-slate-900">{commonEmotion}</p>
-                    </div>
-                </div>
-            )}
-
-            {/* New Entry Card */}
-            <Card className="border border-slate-200 shadow-sm overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-violet-50 to-purple-50 border-b border-slate-100 pb-4">
-                    <div className="flex items-center justify-between">
-                        <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                            <Sparkles className="h-4 w-4 text-violet-500" />
-                            Nova Entrada
-                        </CardTitle>
-                        <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5" />
-                            {format(today, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                        </span>
-                    </div>
-                </CardHeader>
-                <CardContent className="space-y-6 p-6">
-                    {/* Mood Selection */}
-                    <div>
-                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-                            Como você está se sentindo hoje?
-                        </h3>
-                        <div className="grid grid-cols-5 gap-3">
-                            {MOODS.map((mood) => (
-                                <button
-                                    key={mood.value}
-                                    onClick={() => setSelectedMood(mood.value)}
-                                    className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${selectedMood === mood.value
-                                            ? `${mood.activeClass} scale-105`
-                                            : "border-slate-200 hover:border-slate-300 hover:bg-slate-50 bg-white"
-                                        }`}
-                                >
-                                    <span className="text-3xl mb-2">{mood.emoji}</span>
-                                    <span className="text-[11px] font-medium text-center leading-tight">{mood.label}</span>
-                                </button>
-                            ))}
+                {entries.length > 0 && (
+                    <div className="flex items-center gap-3">
+                        <div className="px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                                <Smile className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider leading-none">Humor Médio</p>
+                                <p className="text-lg font-bold text-slate-900">{avgMood}</p>
+                            </div>
                         </div>
-                    </div>
-
-                    {/* Emotions */}
-                    <div>
-                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-                            Que emoções você sentiu? <span className="font-normal">(opcional)</span>
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                            {EMOTIONS.map((emotion) => {
-                                const Icon = emotion.icon
-                                const isSelected = selectedEmotions.includes(emotion.label)
-                                return (
-                                    <button
-                                        key={emotion.label}
-                                        onClick={() => toggleEmotion(emotion.label)}
-                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all text-sm font-medium ${isSelected
-                                                ? `${emotion.activeClass} shadow-sm`
-                                                : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 text-slate-600"
-                                            }`}
-                                    >
-                                        <Icon className="h-3.5 w-3.5" />
-                                        {emotion.label}
-                                    </button>
-                                )
-                            })}
+                        <div className="px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                                <Heart className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider leading-none">Predominante</p>
+                                <p className="text-lg font-bold text-slate-900 truncate max-w-[80px]">{commonEmotion}</p>
+                            </div>
                         </div>
-                    </div>
-
-                    {/* Text */}
-                    <div>
-                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-                            Escreva sobre seu dia
-                        </h3>
-                        <Textarea
-                            placeholder="Como foi seu dia? O que aconteceu? Como você se sentiu? Este espaço é seu..."
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            className="min-h-[140px] resize-none text-sm leading-relaxed"
-                        />
-                        <p className="text-xs text-slate-400 mt-2 text-right">{content.length} caracteres</p>
-                    </div>
-
-                    <div className="flex justify-end pt-1">
-                        <Button
-                            onClick={handleSave}
-                            disabled={isPending}
-                            className="bg-violet-600 hover:bg-violet-700 text-white px-8 gap-2 shadow-sm shadow-violet-200"
-                        >
-                            {isPending ? (
-                                <><Loader2 className="h-4 w-4 animate-spin" /> Salvando...</>
-                            ) : (
-                                <><BookOpen className="h-4 w-4" /> Salvar Entrada</>
-                            )}
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Entries History */}
-            <div className="space-y-4">
-                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-slate-400" />
-                    Histórico
-                </h2>
-
-                {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-12 gap-3 text-slate-400">
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        <p className="text-sm">Carregando entradas...</p>
-                    </div>
-                ) : entries.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 gap-4 text-slate-400">
-                        <div className="h-14 w-14 rounded-full bg-slate-100 flex items-center justify-center">
-                            <BookOpen className="h-7 w-7" />
-                        </div>
-                        <div className="text-center">
-                            <p className="font-medium text-slate-600">Nenhuma entrada ainda</p>
-                            <p className="text-sm mt-1">Use o formulário acima para criar sua primeira entrada.</p>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        {entries.map((entry) => {
-                            const moodInfo = MOODS.find(m => m.value === entry.mood)
-                            const cardColor = MOOD_COLORS[entry.mood] || "bg-white border-slate-100"
-                            return (
-                                <Card
-                                    key={entry.id}
-                                    className={`border shadow-sm hover:shadow-md transition-all ${cardColor}`}
-                                >
-                                    <CardContent className="p-5">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="flex items-start gap-4 flex-1 min-w-0">
-                                                <span className="text-3xl flex-shrink-0 mt-0.5">{moodInfo?.emoji || "😐"}</span>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                                                        <p className="font-semibold text-slate-900 text-sm">{entry.dateLabel}</p>
-                                                        <span className="text-slate-300">•</span>
-                                                        <p className="text-xs text-slate-500 capitalize">{entry.dayOfWeek}</p>
-                                                        <Badge variant="outline" className="text-[10px] h-5 px-2 capitalize">
-                                                            {getMoodLabel(entry.mood)}
-                                                        </Badge>
-                                                    </div>
-                                                    {entry.emotions.length > 0 && (
-                                                        <div className="flex flex-wrap gap-1.5 mb-3">
-                                                            {entry.emotions.map((em) => (
-                                                                <Badge key={em} variant="secondary" className="text-[11px] h-5 px-2 bg-white/70">
-                                                                    {em}
-                                                                </Badge>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                    <p className="text-sm text-slate-700 leading-relaxed">{entry.content}</p>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={() => handleDelete(entry.id)}
-                                                disabled={deletingId === entry.id}
-                                                className="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all"
-                                            >
-                                                {deletingId === entry.id
-                                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                                    : <Trash2 className="h-3.5 w-3.5" />
-                                                }
-                                            </button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            )
-                        })}
                     </div>
                 )}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* Left Column: Form */}
+                <div className="lg:col-span-7 space-y-6">
+                    <Card className="border-none shadow-xl shadow-slate-200/50 overflow-hidden ring-1 ring-slate-200">
+                        <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <Sparkles className="h-5 w-5 text-blue-500" />
+                                    Como você está agora?
+                                </CardTitle>
+                                <Badge variant="secondary" className="bg-white border-slate-200 text-slate-500 font-medium">
+                                    <Calendar className="h-3 w-3 mr-1.5" />
+                                    {format(today, "dd 'de' MMM", { locale: ptBR })}
+                                </Badge>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-6 space-y-8">
+                            {/* Mood Selection */}
+                            <div className="space-y-4">
+                                <label className="text-sm font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                                    1. Escolha seu humor
+                                </label>
+                                <div className="grid grid-cols-5 gap-3">
+                                    {MOODS.map((mood) => (
+                                        <button
+                                            key={mood.value}
+                                            onClick={() => setSelectedMood(mood.value)}
+                                            className={`group relative flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all duration-300 ${selectedMood === mood.value
+                                                ? `border-blue-500 bg-blue-50/50 scale-105 shadow-md shadow-blue-100`
+                                                : "border-slate-100 hover:border-slate-200 bg-white hover:bg-slate-50"
+                                                }`}
+                                        >
+                                            <span className="text-3xl mb-1 group-hover:scale-110 transition-transform">{mood.emoji}</span>
+                                            <span className={`text-[10px] font-bold text-center leading-tight transition-colors ${selectedMood === mood.value ? 'text-blue-700' : 'text-slate-500'}`}>
+                                                {mood.label}
+                                            </span>
+                                            {selectedMood === mood.value && (
+                                                <div className="absolute top-1 right-1 h-3 w-3 rounded-full bg-blue-500 border-2 border-white animate-in zoom-in" />
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Emotions */}
+                            <div className="space-y-4">
+                                <label className="text-sm font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                                    2. O que você sentiu? <span className="text-slate-400 font-normal lowercase">(opcional)</span>
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                    {EMOTIONS.map((emotion) => {
+                                        const Icon = emotion.icon
+                                        const isSelected = selectedEmotions.includes(emotion.label)
+                                        return (
+                                            <button
+                                                key={emotion.label}
+                                                onClick={() => toggleEmotion(emotion.label)}
+                                                className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all text-sm font-semibold ${isSelected
+                                                    ? `bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-200`
+                                                    : "border-slate-200 bg-white hover:border-slate-300 text-slate-600"
+                                                    }`}
+                                            >
+                                                <Icon className={`h-4 w-4 ${isSelected ? 'text-blue-400' : 'text-slate-400'}`} />
+                                                {emotion.label}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Textarea */}
+                            <div className="space-y-4">
+                                <label className="text-sm font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                                    3. Descreva seu momento
+                                </label>
+                                <div className="relative group">
+                                    <Textarea
+                                        placeholder="Sinta-se à vontade para escrever o que vier à mente..."
+                                        value={content}
+                                        onChange={(e) => setContent(e.target.value)}
+                                        className="min-h-[180px] rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-base leading-relaxed p-4"
+                                    />
+                                    <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                                        <p className="text-[10px] font-bold text-slate-400 bg-white/80 px-2 py-1 rounded-md border border-slate-100 shadow-sm">
+                                            {content.length} caracteres
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end pt-4">
+                                <Button
+                                    onClick={handleSave}
+                                    disabled={isPending}
+                                    className="h-12 bg-blue-600 hover:bg-blue-700 text-white px-10 rounded-xl font-bold gap-2 shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5"
+                                >
+                                    {isPending ? (
+                                        <><Loader2 className="h-5 w-5 animate-spin" /> Salvando...</>
+                                    ) : (
+                                        <><Plus className="h-5 w-5" /> Salvar Entrada</>
+                                    )}
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Right Column: History */}
+                <div className="lg:col-span-5 flex flex-col h-full gap-6">
+                    <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 px-1">
+                        <Clock className="h-5 w-5 text-blue-500" />
+                        Suas reflexões
+                    </h3>
+
+                    <ScrollArea className="h-[700px] pr-4 -mr-4">
+                        {isLoading ? (
+                            <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
+                                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                                <p className="text-sm font-medium">Carregando sua jornada...</p>
+                            </div>
+                        ) : entries.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50 gap-4 text-slate-400 px-6 text-center">
+                                <div className="h-20 w-20 rounded-full bg-white border border-slate-100 flex items-center justify-center shadow-sm">
+                                    <BookOpen className="h-10 w-10 text-slate-200" />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-slate-600 mb-1">Inicie seu diário</p>
+                                    <p className="text-sm leading-relaxed">As reflexões diárias ajudam você e seu terapeuta a acompanharem seu progresso emocional.</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {entries.map((entry) => {
+                                    const moodInfo = MOODS.find(m => m.value === entry.mood)
+                                    return (
+                                        <Card
+                                            key={entry.id}
+                                            className="group border-none shadow-md shadow-slate-200/40 bg-white hover:bg-slate-50 transition-all ring-1 ring-slate-100"
+                                        >
+                                            <CardContent className="p-5">
+                                                <div className="flex items-start gap-4">
+                                                    <div className="flex flex-col items-center gap-1 mt-1">
+                                                        <span className="text-3xl filter saturate-[0.8] group-hover:saturate-100 transition-all">{moodInfo?.emoji || "😐"}</span>
+                                                    </div>
+
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-tighter mb-0.5">
+                                                                    {entry.dayOfWeek}
+                                                                </span>
+                                                                <span className="text-sm font-bold text-slate-900">
+                                                                    {entry.dateLabel}
+                                                                </span>
+                                                            </div>
+
+                                                            <button
+                                                                onClick={() => handleDelete(entry.id)}
+                                                                disabled={deletingId === entry.id}
+                                                                className="h-8 w-8 rounded-lg bg-slate-50 text-slate-300 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 transition-all"
+                                                            >
+                                                                {deletingId === entry.id
+                                                                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                                                                    : <Trash2 className="h-4 w-4" />
+                                                                }
+                                                            </button>
+                                                        </div>
+
+                                                        {entry.emotions.length > 0 && (
+                                                            <div className="flex flex-wrap gap-1.5 mb-3">
+                                                                {entry.emotions.map((em) => (
+                                                                    <Badge key={em} variant="secondary" className="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0 h-5 border-none">
+                                                                        {em}
+                                                                    </Badge>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        <p className="text-sm text-slate-600 leading-relaxed line-clamp-3">
+                                                            {entry.content}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </ScrollArea>
+                </div>
             </div>
         </div>
     )
