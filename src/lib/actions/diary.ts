@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { prisma } from "@/lib/prisma"
 import { logger } from "@/lib/utils/logger"
 import { encryptData, decryptData } from "@/lib/security"
+import { startOfDay, endOfDay } from "date-fns"
 
 
 export type DiaryEntryData = {
@@ -100,5 +101,66 @@ export async function deleteDiaryEntry(id: string) {
     } catch (error) {
         logger.error('Error deleting diary entry:', error)
         return { success: false, error: 'Erro ao deletar entrada' }
+    }
+}
+
+export async function getTodayMood() {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return null
+
+        const start = startOfDay(new Date())
+        const end = endOfDay(new Date())
+
+        const entry = await prisma.diaryEntry.findFirst({
+            where: {
+                userId: user.id,
+                createdAt: { gte: start, lte: end }
+            }
+        })
+
+        return entry
+    } catch (error) {
+        return null
+    }
+}
+
+export async function saveQuickMood(mood: number) {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return { success: false, error: 'Não autenticado' }
+
+        const start = startOfDay(new Date())
+        const end = endOfDay(new Date())
+
+        const existing = await prisma.diaryEntry.findFirst({
+            where: {
+                userId: user.id,
+                createdAt: { gte: start, lte: end }
+            }
+        })
+
+        if (existing) {
+            await prisma.diaryEntry.update({
+                where: { id: existing.id },
+                data: { mood }
+            })
+        } else {
+            await prisma.diaryEntry.create({
+                data: {
+                    userId: user.id,
+                    mood,
+                    content: encryptData('Sentimento registrado via Dashboard'),
+                    emotions: []
+                }
+            })
+        }
+
+        return { success: true }
+    } catch (error) {
+        logger.error('Error saving quick mood:', error)
+        return { success: false, error: 'Erro ao salvar humor' }
     }
 }

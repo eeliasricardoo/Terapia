@@ -1,10 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import Link from "next/link"
 import { toast } from "sonner"
+import { saveQuickMood, getTodayMood } from "@/lib/actions/diary"
+import { Loader2 } from "lucide-react"
 
 const MOODS = [
     { emoji: '😢', label: 'Muito triste', value: 1 },
@@ -16,15 +18,48 @@ const MOODS = [
 
 export function MoodTracker() {
     const [selectedMood, setSelectedMood] = useState<number | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [isSaving, setIsSaving] = useState(false)
 
-    const handleMoodSelect = (value: number, emoji: string) => {
+    useEffect(() => {
+        async function loadMood() {
+            const todayEntry = await getTodayMood()
+            if (todayEntry) {
+                setSelectedMood(todayEntry.mood)
+            }
+            setIsLoading(false)
+        }
+        loadMood()
+    }, [])
+
+    const handleMoodSelect = async (value: number, emoji: string) => {
+        const previousMood = selectedMood
         setSelectedMood(value)
-        const moodLabel = MOODS.find(m => m.value === value)?.label || ''
+        setIsSaving(true)
 
-        toast.success('Humor registrado!', {
-            description: `Você está se sentindo: ${moodLabel} ${emoji}`,
-            duration: 3000,
-        })
+        const result = await saveQuickMood(value)
+
+        if (result.success) {
+            const moodLabel = MOODS.find(m => m.value === value)?.label || ''
+            toast.success('Humor registrado!', {
+                description: `Você está se sentindo: ${moodLabel} ${emoji}`,
+                duration: 3000,
+            })
+        } else {
+            setSelectedMood(previousMood)
+            toast.error('Erro ao salvar', {
+                description: 'Não foi possível registrar seu humor no momento.'
+            })
+        }
+        setIsSaving(false)
+    }
+
+    if (isLoading) {
+        return (
+            <Card className="border-none shadow-md bg-white min-h-[200px] flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+            </Card>
+        )
     }
 
     return (
@@ -34,15 +69,21 @@ export function MoodTracker() {
                 <CardDescription>Registre seu humor diário</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-5 gap-2 relative">
+                    {isSaving && (
+                        <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center rounded-xl">
+                            <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                        </div>
+                    )}
                     {MOODS.map((mood) => (
                         <button
                             key={mood.value}
                             onClick={() => handleMoodSelect(mood.value, mood.emoji)}
+                            disabled={isSaving}
                             className={`aspect-square rounded-xl flex flex-col items-center justify-center text-2xl transition-all ${selectedMood === mood.value
-                                    ? 'bg-blue-100 border-2 border-blue-500 scale-110 shadow-md'
-                                    : 'hover:bg-slate-100 border-2 border-transparent hover:scale-105'
-                                }`}
+                                ? 'bg-blue-100 border-2 border-blue-500 scale-110 shadow-md'
+                                : 'hover:bg-slate-100 border-2 border-transparent hover:scale-105'
+                                } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                             title={mood.label}
                         >
                             <span className="text-3xl">{mood.emoji}</span>
