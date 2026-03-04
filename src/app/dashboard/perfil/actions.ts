@@ -122,7 +122,18 @@ export async function uploadProfileImage(formData: FormData) {
     }
 }
 
-export async function updateUserProfile(data: { name: string, phone: string }) {
+export async function updateUserProfile(data: {
+    name: string,
+    phone: string,
+    birth_date?: string | null,
+    document?: string | null,
+    gender?: string | null,
+    profession?: string | null,
+    address_line?: string | null,
+    city?: string | null,
+    state?: string | null,
+    zip_code?: string | null
+}) {
     const supabase = await createClient()
 
     // 1. Get authenticated user
@@ -153,6 +164,14 @@ export async function updateUserProfile(data: { name: string, phone: string }) {
             .update({
                 full_name: data.name,
                 phone: data.phone,
+                birth_date: data.birth_date,
+                document: data.document,
+                gender: data.gender,
+                profession: data.profession,
+                address_line: data.address_line,
+                city: data.city,
+                state: data.state,
+                zip_code: data.zip_code,
                 updated_at: new Date().toISOString()
             })
             .eq('user_id', user.id)
@@ -170,7 +189,6 @@ export async function updateUserProfile(data: { name: string, phone: string }) {
 
         if (metaError) {
             console.error('Metadata Update Error:', metaError)
-            // Continues since profiles table was updated but it's good to log
         }
 
         revalidatePath('/dashboard')

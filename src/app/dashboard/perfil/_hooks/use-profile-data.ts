@@ -12,6 +12,15 @@ export type UserProfile = {
     role: string
     image: string | undefined
     rawRole: string
+    // New fields
+    birth_date?: string | null
+    document?: string | null
+    gender?: string | null
+    profession?: string | null
+    address_line?: string | null
+    city?: string | null
+    state?: string | null
+    zip_code?: string | null
 }
 
 export function useProfileData() {
@@ -54,7 +63,15 @@ export function useProfileData() {
                     phone: profile?.phone || '',
                     role: isPsychologist ? "Psicólogo" : "Paciente",
                     rawRole: isPsychologist ? 'PSYCHOLOGIST' : 'PATIENT',
-                    image: profile?.avatar_url || "/avatars/01.png"
+                    image: profile?.avatar_url || "/avatars/01.png",
+                    birth_date: profile?.birth_date,
+                    document: profile?.document,
+                    gender: profile?.gender,
+                    profession: profile?.profession,
+                    address_line: profile?.address_line,
+                    city: profile?.city,
+                    state: profile?.state,
+                    zip_code: profile?.zip_code,
                 })
 
                 // If Psychologist, fetch professional profile

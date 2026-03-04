@@ -5,6 +5,7 @@ import { useProfileData } from "./_hooks/use-profile-data"
 import { ProfileAvatarCard } from "./_components/profile-avatar-card"
 import { ProfessionalProfileCard } from "./_components/professional-profile-card"
 import { PersonalInfoCard } from "./_components/personal-info-card"
+import { AddressInfoCard } from "./_components/address-info-card"
 import { SubscriptionPlansCard } from "./_components/subscription-plans-card"
 import { SecuritySettingsCard } from "./_components/security-settings-card"
 
@@ -54,6 +55,14 @@ export default function ProfilePage() {
 
                     {/* Personal Info Form */}
                     <PersonalInfoCard
+                        user={user}
+                        setUser={setUser}
+                        isLoading={isLoading}
+                        setIsLoading={setIsLoading}
+                    />
+
+                    {/* Address Info Form */}
+                    <AddressInfoCard
                         user={user}
                         setUser={setUser}
                         isLoading={isLoading}

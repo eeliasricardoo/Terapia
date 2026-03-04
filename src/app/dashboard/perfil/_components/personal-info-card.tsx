@@ -1,10 +1,11 @@
 "use client"
 
-import { User, Phone, Mail, Save } from "lucide-react"
+import { User, Phone, Mail, Save, Calendar, FileText, Briefcase, UserCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { updateUserProfile } from "../actions"
 import { UserProfile } from "../_hooks/use-profile-data"
@@ -25,7 +26,15 @@ export function PersonalInfoCard({ user, setUser, isLoading, setIsLoading }: Per
 
             const result = await updateUserProfile({
                 name: user.name,
-                phone: user.phone
+                phone: user.phone,
+                birth_date: user.birth_date,
+                document: user.document,
+                gender: user.gender,
+                profession: user.profession,
+                address_line: user.address_line,
+                city: user.city,
+                state: user.state,
+                zip_code: user.zip_code
             })
 
             if (result.error) {
@@ -47,11 +56,11 @@ export function PersonalInfoCard({ user, setUser, isLoading, setIsLoading }: Per
             <CardHeader>
                 <CardTitle>Dados Pessoais</CardTitle>
                 <CardDescription>
-                    Atualize seus detalhes de contato.
+                    Atualize seus detalhes básicos e de contato.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <Label htmlFor="name">Nome Completo</Label>
                         <div className="relative">
@@ -65,6 +74,71 @@ export function PersonalInfoCard({ user, setUser, isLoading, setIsLoading }: Per
                             />
                         </div>
                     </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="document">CPF / Documento</Label>
+                        <div className="relative">
+                            <FileText className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                id="document"
+                                value={user?.document || ''}
+                                onChange={(e) => setUser(prev => prev ? { ...prev, document: e.target.value } : null)}
+                                className="pl-9"
+                                disabled={isLoading}
+                                placeholder="000.000.000-00"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="birth_date">Data de Nascimento</Label>
+                        <div className="relative">
+                            <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                id="birth_date"
+                                type="date"
+                                value={user?.birth_date ? user.birth_date.substring(0, 10) : ''}
+                                onChange={(e) => setUser(prev => prev ? { ...prev, birth_date: e.target.value } : null)}
+                                className="pl-9"
+                                disabled={isLoading}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="gender">Gênero</Label>
+                        <Select
+                            value={user?.gender || undefined}
+                            onValueChange={(value) => setUser(prev => prev ? { ...prev, gender: value } : null)}
+                            disabled={isLoading}
+                        >
+                            <SelectTrigger id="gender">
+                                <SelectValue placeholder="Selecione seu gênero" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Masculino">Masculino</SelectItem>
+                                <SelectItem value="Feminino">Feminino</SelectItem>
+                                <SelectItem value="Não-binário">Não-binário</SelectItem>
+                                <SelectItem value="Prefiro não dizer">Prefiro não dizer</SelectItem>
+                                <SelectItem value="Outro">Outro</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="profession">Profissão</Label>
+                        <div className="relative">
+                            <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                id="profession"
+                                value={user?.profession || ''}
+                                onChange={(e) => setUser(prev => prev ? { ...prev, profession: e.target.value } : null)}
+                                className="pl-9"
+                                disabled={isLoading}
+                            />
+                        </div>
+                    </div>
+
                     <div className="space-y-2">
                         <Label htmlFor="phone">Telefone</Label>
                         <div className="relative">
