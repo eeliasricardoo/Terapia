@@ -58,6 +58,7 @@ model Profile {
   avatarUrl  String?   @map("avatar_url")
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
+  onboardingData Json? @map("onboarding_data")
   birth_date DateTime? @db.Date
   document   String?
   phone      String?
@@ -91,8 +92,20 @@ model PsychologistProfile {
   createdAt            DateTime @default(now()) @map("created_at")
   updatedAt            DateTime @updatedAt @map("updated_at")
   
-  weeklySchedule       Json?    @map("weekly_schedule")
-  timezone             String   @default("America/Sao_Paulo")
+  weeklySchedule     Json?    @map("weekly_schedule")
+  timezone           String   @default("America/Sao_Paulo")
+
+  university         String?
+  academicLevel      String?
+  title              String?
+  crpExpiration      DateTime?
+  yearsOfExperience  Int?
+  
+  bank               String?
+  accountNumber      String?
+  accountType        String?
+  taxIdType          String?
+  taxIdNumber        String?
   
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   appointments         Appointment[]

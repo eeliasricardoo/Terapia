@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { savePaymentConfig } from '@/lib/actions/professional-onboarding'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -65,15 +67,24 @@ export function PaymentConfigForm() {
     setIsSubmitting(true)
 
     try {
-      // TODO: Implement API call to save payment configuration
+      const result = await savePaymentConfig({
+        bank: formData.bank,
+        accountNumber: formData.accountNumber,
+        accountType: formData.accountType,
+        taxIdType: formData.taxIdType,
+        taxIdNumber: formData.taxIdNumber,
+      })
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      if (!result.success) {
+        toast.error(result.error)
+        return
+      }
 
-      // Redirect to success page
+      toast.success('Configurações de pagamento salvas!')
       router.push('/cadastro/profissional/sucesso')
     } catch (error) {
       console.error('Error saving payment config:', error)
+      toast.error('Erro inesperado ao salvar configurações.')
     } finally {
       setIsSubmitting(false)
     }

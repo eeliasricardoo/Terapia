@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
+import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
@@ -30,6 +31,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import { saveProfessionalData } from '@/lib/actions/professional-onboarding'
+import { toast } from 'sonner'
 
 const formSchema = z.object({
   university: z.string().min(2, 'A universidade é obrigatória'),
@@ -45,6 +48,7 @@ const formSchema = z.object({
 
 export function ProfessionalDataForm() {
   const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
@@ -58,10 +62,31 @@ export function ProfessionalDataForm() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // TODO: Integrate with Supabase to save professional data
-    // Navigate to next step
-    router.push('/cadastro/profissional/disponibilidade')
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true)
+    try {
+      const result = await saveProfessionalData({
+        university: values.university,
+        academicLevel: values.academicLevel,
+        title: values.title,
+        registrationNumber: values.registrationNumber,
+        expirationDate: values.expirationDate,
+        specializations: values.specializations,
+        yearsOfExperience: values.yearsOfExperience,
+      })
+
+      if (!result.success) {
+        toast.error(result.error)
+        return
+      }
+
+      toast.success('Dados profissionais salvos com sucesso!')
+      router.push('/cadastro/profissional/disponibilidade')
+    } catch (error) {
+      toast.error('Ocorreu um erro ao salvar os dados.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -282,13 +307,13 @@ export function ProfessionalDataForm() {
             <Button
               type="submit"
               className="font-bold h-[44px]"
-              disabled={!form.formState.isValid}
+              disabled={!form.formState.isValid || isSubmitting}
               style={{
                 backgroundColor: 'hsl(340 72% 61%)',
                 color: 'white',
               }}
             >
-              Próximo
+              {isSubmitting ? 'Salvando...' : 'Próximo'}
             </Button>
           </div>
         </form>

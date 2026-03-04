@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import { savePatientPreferences } from '@/lib/actions/professional-onboarding'
+import { toast } from 'sonner'
 
 const focusAreas = [
   'Ansiedade',
@@ -72,13 +74,28 @@ export function OnboardingWizard() {
 
   const router = useRouter()
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (step < 4) {
       setStep(step + 1)
     } else {
-      // Dados do onboarding: selectedAreas, preferences, availability, history
-      // TODO: Salvar no perfil do usuário via API
-      router.push('/busca')
+      try {
+        const result = await savePatientPreferences({
+          selectedAreas,
+          preferences,
+          availability,
+          history,
+        })
+
+        if (!result.success) {
+          toast.error(result.error)
+          return
+        }
+
+        toast.success('Preferências salvas com sucesso!')
+        router.push('/busca')
+      } catch (error) {
+        toast.error('Ocorreu um erro ao salvar as preferências.')
+      }
     }
   }
 
