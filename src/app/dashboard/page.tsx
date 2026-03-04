@@ -10,7 +10,7 @@ import { NextSessionHero } from "./_components/next-session-hero"
 import { QuickActions } from "./_components/quick-actions"
 import { RecentHistory } from "./_components/recent-history"
 
-import { getPsychologistDashboardData } from "@/lib/actions/dashboard"
+import { getPsychologistDashboardData, getPatientDashboardData } from "@/lib/actions/dashboard"
 
 export default async function DashboardPage() {
     let userProfile = await getCurrentUserProfile()
@@ -47,17 +47,23 @@ export default async function DashboardPage() {
     }
 
     const userName = userProfile?.full_name?.split(' ')[0] || 'Usuário'
+    const patientData = await getPatientDashboardData()
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 animate-in fade-in duration-500">
             <PatientDashboardHeader userName={userName} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <FindPsychologistCTA />
-                <NextSessionHero />
-                <MoodTracker />
-                <QuickActions />
-                <RecentHistory />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="col-span-1 md:col-span-2 lg:col-span-2 space-y-8">
+                    <FindPsychologistCTA />
+                    <NextSessionHero session={patientData.nextSession} />
+                    <MoodTracker />
+                </div>
+
+                <div className="col-span-1 space-y-8">
+                    <QuickActions />
+                    <RecentHistory history={patientData.recentSessions} />
+                </div>
             </div>
         </div>
     )

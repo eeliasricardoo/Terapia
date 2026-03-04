@@ -12,44 +12,68 @@ const HISTORY = [
     { id: 3, doctor: "Dr. Carlos Pereira", date: "24 de Setembro de 2025" },
 ]
 
-export function RecentHistory() {
+interface Props {
+    history: {
+        id: string
+        psychologistName: string
+        date: string
+        status: string
+    }[]
+}
+
+export function RecentHistory({ history }: Props) {
     return (
         <Card className="col-span-1 md:col-span-2 lg:col-span-3 border-none shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between px-6 py-5 border-b border-slate-50">
                 <div>
-                    <CardTitle className="text-lg">Histórico Recente</CardTitle>
+                    <CardTitle className="text-lg font-semibold text-slate-900">Histórico Recente</CardTitle>
                     <CardDescription>Suas últimas atividades na plataforma</CardDescription>
                 </div>
-                <Button variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm font-medium">
-                    Ver Tudo
-                </Button>
+                <Link href="/dashboard/sessoes">
+                    <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs font-semibold">
+                        Ver Tudo
+                    </Button>
+                </Link>
             </CardHeader>
             <CardContent className="p-0">
-                <div className="divide-y">
-                    {HISTORY.map((session) => (
-                        <div key={session.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                <div className="divide-y divide-slate-50">
+                    {history.map((session) => (
+                        <div key={session.id} className="px-6 py-4 flex items-center justify-between hover:bg-slate-50/80 transition-colors">
                             <div className="flex items-center gap-4 min-w-0 flex-1">
-                                <div className="h-10 w-10 shrink-0 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                                <div className="h-10 w-10 shrink-0 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200">
                                     <CalendarIcon className="h-5 w-5" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="font-medium text-slate-900 truncate">Sessão com {session.doctor}</p>
-                                    <p className="text-sm text-muted-foreground truncate">{session.date}</p>
+                                    <p className="font-semibold text-slate-900 text-sm truncate">Sessão com {session.psychologistName}</p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <p className="text-xs text-slate-500 truncate">{session.date}</p>
+                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium uppercase tracking-tight ${session.status === 'completed' ? 'bg-green-50 text-green-600' : 'bg-slate-100 text-slate-600'
+                                            }`}>
+                                            {session.status === 'completed' ? 'Concluída' : session.status}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <SessionSummaryDialog session={session}>
-                                <Button variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-sm font-medium">
-                                    Ver Resumo
+                                <Button variant="ghost" size="sm" className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 text-xs font-medium h-8 w-8 rounded-full p-0">
+                                    &rarr;
                                 </Button>
                             </SessionSummaryDialog>
                         </div>
                     ))}
+                    {history.length === 0 && (
+                        <div className="p-12 text-center text-slate-500 bg-white">
+                            <p className="text-sm">Nenhuma sessão recente encontrada.</p>
+                        </div>
+                    )}
                 </div>
-                <div className="p-4 border-t text-center">
-                    <Button variant="link" className="text-blue-600" asChild>
-                        <Link href="/dashboard/sessoes">Ver todo o histórico</Link>
-                    </Button>
-                </div>
+                {history.length > 0 && (
+                    <div className="p-3 border-t border-slate-50 text-center">
+                        <Button variant="ghost" size="sm" className="w-full text-slate-500 hover:text-slate-900 text-xs font-medium" asChild>
+                            <Link href="/dashboard/sessoes">Exibir histórico completo</Link>
+                        </Button>
+                    </div>
+                )}
             </CardContent>
         </Card>
     )

@@ -15,8 +15,8 @@ import { Calendar, Clock, User, FileText, CheckCircle2 } from "lucide-react"
 
 interface SessionSummaryDialogProps {
     session: {
-        id: number
-        doctor: string
+        id: string | number
+        psychologistName: string
         date: string
     }
     children: React.ReactNode
@@ -41,7 +41,7 @@ export function SessionSummaryDialog({ session, children }: SessionSummaryDialog
                                 <User className="h-6 w-6 text-blue-600" />
                             </div>
                             <div>
-                                <p className="font-semibold text-lg">{session.doctor}</p>
+                                <p className="font-semibold text-lg">{session.psychologistName}</p>
                                 <p className="text-sm text-muted-foreground">Psicólogo Clínico</p>
                             </div>
                         </div>

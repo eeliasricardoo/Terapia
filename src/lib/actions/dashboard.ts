@@ -31,6 +31,26 @@ export type PsychologistDashboardData = {
     }[]
 }
 
+export type PatientDashboardData = {
+    nextSession: {
+        id: string
+        type: string
+        scheduledAt: string
+        durationMinutes: number
+        psychologist: {
+            name: string
+            specialty: string
+            image?: string
+        }
+    } | null
+    recentSessions: {
+        id: string
+        psychologistName: string
+        date: string
+        status: string
+    }[]
+}
+
 export async function getPsychologistDashboardData(): Promise<PsychologistDashboardData> {
     try {
         const supabase = await createClient()
@@ -124,7 +144,7 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
                 activePatients: activeLinks.length,
                 totalPatients: totalLinks,
                 monthlyRevenue,
-                revenueChange: 0 // Placeholder for now
+                revenueChange: 0
             },
             upcomingSessions: sessionsToday.map(s => ({
                 id: s.id,
@@ -144,5 +164,70 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
     } catch (error) {
         logger.error('Error fetching psychologist dashboard data:', error)
         throw error
+    }
+}
+
+export async function getPatientDashboardData(): Promise<PatientDashboardData> {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) throw new Error('Não autenticado')
+
+        // 1. Next Session
+        const now = new Date().toISOString()
+        const { data: nextSessionData } = await supabase
+            .from('appointments')
+            .select(`
+                *,
+                psychologist:profiles!appointments_psychologist_id_fkey(*)
+            `)
+            .eq('patient_id', user.id)
+            .gte('scheduled_at', now)
+            .eq('status', 'scheduled')
+            .order('scheduled_at', { ascending: true })
+            .limit(1)
+            .single()
+
+        let nextSession = null
+        if (nextSessionData) {
+            nextSession = {
+                id: nextSessionData.id,
+                type: 'Terapia Individual',
+                scheduledAt: nextSessionData.scheduled_at,
+                durationMinutes: nextSessionData.duration_minutes,
+                psychologist: {
+                    name: (nextSessionData.psychologist as any).full_name || 'Psicólogo',
+                    specialty: 'Psicólogo Clínico',
+                    image: (nextSessionData.psychologist as any).avatar_url
+                }
+            }
+        }
+
+        // 2. Recent Sessions
+        const { data: recentData } = await supabase
+            .from('appointments')
+            .select(`
+                *,
+                psychologist:profiles!appointments_psychologist_id_fkey(*)
+            `)
+            .eq('patient_id', user.id)
+            .lte('scheduled_at', now)
+            .order('scheduled_at', { ascending: false })
+            .limit(5)
+
+        const recentSessions = (recentData || []).map(s => ({
+            id: s.id,
+            psychologistName: (s.psychologist as any).full_name || 'Psicólogo',
+            date: new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(s.scheduled_at)),
+            status: s.status.toLowerCase()
+        }))
+
+        return {
+            nextSession,
+            recentSessions
+        }
+    } catch (error) {
+        logger.error('Error fetching patient dashboard data:', error)
+        return { nextSession: null, recentSessions: [] }
     }
 }
