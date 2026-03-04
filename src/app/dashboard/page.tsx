@@ -1,4 +1,5 @@
 import { PsychologistDashboard } from "@/components/dashboard/psychologist/PsychologistDashboard"
+import { AdminDashboard } from "@/components/dashboard/admin/AdminDashboard"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -48,10 +49,14 @@ export default async function DashboardPage() {
         return <PsychologistDashboard userProfile={userProfile} dashboardData={dashboardData} />
     }
 
-    if (userProfile.role === 'ADMIN' || userProfile.role === 'COMPANY') {
+    if (userProfile.role === 'ADMIN') {
+        return <AdminDashboard userProfile={userProfile} />
+    }
+
+    if (userProfile.role === 'COMPANY') {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
-                <h1 className="text-2xl font-bold">Painel {userProfile.role === 'ADMIN' ? 'Administrativo' : 'da Empresa'}</h1>
+                <h1 className="text-2xl font-bold">Painel da Empresa</h1>
                 <p className="text-slate-500">Este painel está em desenvolvimento.</p>
                 <Link href="/dashboard/perfil">
                     <Button>Ir para meu Perfil</Button>
