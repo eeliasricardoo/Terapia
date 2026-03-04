@@ -17,7 +17,7 @@ import { toast } from "sonner"
 interface RescheduleDialogProps {
     children: React.ReactNode
     session: {
-        id: number
+        id: string | number
         doctor: string
         role: string
         image: string

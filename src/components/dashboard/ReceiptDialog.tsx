@@ -14,7 +14,7 @@ import { Download, Printer, CheckCircle2 } from "lucide-react"
 interface ReceiptDialogProps {
     children: React.ReactNode
     session: {
-        id: number
+        id: string | number
         doctor: string
         role: string
         date: string
