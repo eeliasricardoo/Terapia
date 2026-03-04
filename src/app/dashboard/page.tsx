@@ -12,6 +12,8 @@ import { FindPsychologistCTA } from "./_components/find-psychologist-cta"
 import { NextSessionHero } from "./_components/next-session-hero"
 import { QuickActions } from "./_components/quick-actions"
 import { RecentHistory } from "./_components/recent-history"
+import { PaymentStatusToast } from "./_components/payment-status-toast"
+import { Suspense } from "react"
 
 import { getPsychologistDashboardData, getPatientDashboardData } from "@/lib/actions/dashboard"
 
@@ -70,6 +72,7 @@ export default async function DashboardPage() {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
+            <Suspense><PaymentStatusToast /></Suspense>
             <PatientDashboardHeader userName={userName} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

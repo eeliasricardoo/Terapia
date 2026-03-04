@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { getPsychologistById } from "@/lib/actions/psychologists"
-import { createSession } from "@/lib/actions/sessions"
+import { createStripeCheckoutSession } from "@/lib/actions/stripe"
 import { fromZonedTime } from "date-fns-tz"
 
 export function useCheckout() {
@@ -26,7 +26,7 @@ export function useCheckout() {
     const [isSuccess, setIsSuccess] = useState(false)
     const [psychTimezone, setPsychTimezone] = useState("America/Sao_Paulo")
 
-    // Form inputs
+    // Form inputs (Mock for UI, even if using Stripe Checkout)
     const [cardNumber, setCardNumber] = useState("")
     const [cardName, setCardName] = useState("")
     const [expiry, setExpiry] = useState("")
@@ -71,22 +71,24 @@ export function useCheckout() {
             const utcDate = fromZonedTime(localDateTimeString, psychTimezone)
             const scheduledAt = utcDate.toISOString()
 
-            const result = await createSession({
-                patientId: userId,
+            // 🚀 STRIPE FLOW
+            const result = await createStripeCheckoutSession({
                 psychologistId: doctorId,
                 scheduledAt: scheduledAt,
                 durationMinutes: 50
             })
 
-            if (!result.success) {
-                throw new Error(result.error || "Falha ao processar agendamento")
+            if (result.error) {
+                throw new Error(result.error)
             }
 
-            setIsSuccess(true)
-            window.scrollTo(0, 0)
+            if (result.url) {
+                // Redirect user to Stripe Checkout
+                window.location.href = result.url
+            }
         } catch (error: any) {
-            console.error("Payment error:", error)
-            alert(error.message || "Erro no processamento do pagamento.")
+            console.error("Stripe error:", error)
+            alert(error.message || "Erro ao iniciar o pagamento.")
         } finally {
             setIsProcessing(false)
         }
