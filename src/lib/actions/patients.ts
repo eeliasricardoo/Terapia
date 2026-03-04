@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
-import { encryptData, decryptData } from '@/lib/security'
+import { encryptData, decryptData, isValidUUID } from '@/lib/security'
 
 // Type representing a patient from the DB merged with required UI fields
 export type PatientData = {
@@ -194,6 +194,8 @@ export type AnamnesisData = {
 
 export async function getAnamnesis(patientProfileId: string): Promise<AnamnesisData | null> {
   try {
+    if (!isValidUUID(patientProfileId)) return null
+
     const supabase = await createClient()
     const {
       data: { user },
@@ -248,6 +250,8 @@ export type EvolutionData = {
 
 export async function getEvolutions(patientProfileId: string): Promise<EvolutionData[]> {
   try {
+    if (!isValidUUID(patientProfileId)) return []
+
     const supabase = await createClient()
     const {
       data: { user },
@@ -293,6 +297,10 @@ export async function saveEvolution(
   }
 ) {
   try {
+    if (!isValidUUID(patientProfileId)) {
+      return { success: false, error: 'ID inválido' }
+    }
+
     const supabase = await createClient()
     const {
       data: { user },
@@ -336,6 +344,8 @@ export async function getPatientSessionHistory(
   patientProfileId: string
 ): Promise<SessionHistoryItem[]> {
   try {
+    if (!isValidUUID(patientProfileId)) return []
+
     const supabase = await createClient()
     const {
       data: { user },
@@ -398,6 +408,10 @@ export async function getPatientSessionHistory(
 
 export async function updateAnamnesis(patientProfileId: string, data: AnamnesisData) {
   try {
+    if (!isValidUUID(patientProfileId)) {
+      return { success: false, error: 'ID inválido' }
+    }
+
     const supabase = await createClient()
     const {
       data: { user },

@@ -83,7 +83,13 @@ export async function checkRateLimit(identifier: string) {
 // ==========================================
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto'
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'default_secret_key_32_chars_long!' // Deve ter 32 caracteres (256 bits) para aes-256-cbc. Em prod, sempre injetar do .env
+/**
+ * Obtem a chave de criptografia de forma segura.
+ * Lê de process.env a cada chamada para compatibilidade com testes e serverless.
+ */
+function getEncryptionKey(): string | undefined {
+  return process.env.ENCRYPTION_KEY
+}
 const IV_LENGTH = 16
 
 /**
@@ -91,10 +97,17 @@ const IV_LENGTH = 16
  */
 export function encryptData(text: string): string {
   if (!text) return text
+  const key = getEncryptionKey()
+  if (!key) {
+    throw new Error(
+      'ENCRYPTION_KEY não configurada. Não é possível criptografar dados sensíveis de saúde. ' +
+      'Defina ENCRYPTION_KEY no .env com exatamente 32 caracteres.'
+    )
+  }
   const iv = randomBytes(IV_LENGTH)
   const cipher = createCipheriv(
     'aes-256-cbc',
-    Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32)),
+    Buffer.from(key.padEnd(32).slice(0, 32)),
     iv
   )
   let encrypted = cipher.update(text)
@@ -107,13 +120,17 @@ export function encryptData(text: string): string {
  */
 export function decryptData(text: string): string {
   if (!text || !text.includes(':')) return text // Retorna normal se não estiver criptografado
+  const key = getEncryptionKey()
+  if (!key) {
+    return '🔒 [Dados Criptografados - Chave Não Configurada]'
+  }
   try {
     const textParts = text.split(':')
     const iv = Buffer.from(textParts.shift() as string, 'hex')
     const encryptedText = Buffer.from(textParts.join(':'), 'hex')
     const decipher = createDecipheriv(
       'aes-256-cbc',
-      Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32)),
+      Buffer.from(key.padEnd(32).slice(0, 32)),
       iv
     )
     let decrypted = decipher.update(encryptedText)
@@ -123,4 +140,29 @@ export function decryptData(text: string): string {
     console.error('Falha ao descriptografar dado sensível', error)
     return '🔒 [Dados Criptografados - Chave Inválida]'
   }
+}
+
+// ==========================================
+// 4. Validação de IDs (Prevenção de Injection)
+// ==========================================
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * Valida se uma string é um UUID v4 válido.
+ * Use antes de queries que recebem IDs de parâmetros de URL ou inputs do cliente.
+ */
+export function isValidUUID(id: string): boolean {
+  return UUID_REGEX.test(id)
+}
+
+/**
+ * Valida e retorna o UUID, ou lança erro se inválido.
+ * Útil para Server Actions que recebem IDs diretamente do cliente.
+ */
+export function assertValidUUID(id: string, label = 'ID'): string {
+  if (!id || !isValidUUID(id)) {
+    throw new Error(`${label} inválido: formato UUID esperado.`)
+  }
+  return id
 }

@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserProfile } from './profile'
 import { revalidatePath } from 'next/cache'
-import { encryptData, decryptData } from '@/lib/security'
+import { encryptData, decryptData, isValidUUID } from '@/lib/security'
 import {
   Conversation,
   Message,
@@ -83,6 +83,8 @@ export async function getConversations() {
 }
 
 export async function getMessages(conversationId: string) {
+  if (!isValidUUID(conversationId)) return []
+
   const profile = await getCurrentUserProfile()
   if (!profile) return []
 
@@ -107,6 +109,8 @@ export async function getMessages(conversationId: string) {
 }
 
 export async function sendMessage(conversationId: string, content: string) {
+  if (!isValidUUID(conversationId)) return { success: false, error: 'ID inválido' }
+
   const profile = await getCurrentUserProfile()
   if (!profile) return { success: false, error: 'Não autorizado' }
 
@@ -133,6 +137,8 @@ export async function sendMessage(conversationId: string, content: string) {
 }
 
 export async function startOrGetConversation(otherUserId: string) {
+  if (!isValidUUID(otherUserId)) return null
+
   const profile = await getCurrentUserProfile()
   if (!profile) return null
 

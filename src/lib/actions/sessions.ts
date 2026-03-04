@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import type { Database } from '@/lib/supabase/types'
 import { logger } from '@/lib/utils/logger'
+import { isValidUUID } from '@/lib/security'
 
 type Appointment = Database['public']['Tables']['appointments']['Row']
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -208,6 +209,10 @@ export async function createSession(data: {
  * Cancel a session
  */
 export async function cancelSession(sessionId: string) {
+  if (!isValidUUID(sessionId)) {
+    return { success: false, error: 'ID de sessão inválido' }
+  }
+
   const supabase = await createClient()
 
   // 1. Verify Authentication (Defense in Depth)

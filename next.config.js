@@ -32,6 +32,21 @@ const nextConfig = {
                         // Block other unused privacy-sensitive features
                         value: "geolocation=(), browsing-topics=()",
                     },
+                    {
+                        key: "Content-Security-Policy",
+                        value: [
+                            "default-src 'self'",
+                            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
+                            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                            "font-src 'self' https://fonts.gstatic.com",
+                            "img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com",
+                            "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.daily.co wss://*.daily.co https://*.upstash.io",
+                            "frame-src 'self' https://js.stripe.com https://*.daily.co",
+                            "object-src 'none'",
+                            "base-uri 'self'",
+                            "form-action 'self'",
+                        ].join("; "),
+                    },
                 ],
             },
         ];

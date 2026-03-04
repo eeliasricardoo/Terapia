@@ -4,6 +4,7 @@ import { stripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
+import { isValidUUID } from '@/lib/security'
 
 export async function createStripeCheckoutSession(data: {
   psychologistId: string
@@ -11,6 +12,10 @@ export async function createStripeCheckoutSession(data: {
   durationMinutes: number
 }) {
   try {
+    if (!isValidUUID(data.psychologistId)) {
+      return { error: 'ID de psicólogo inválido' }
+    }
+
     const supabase = await createClient()
     const {
       data: { user },

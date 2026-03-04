@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
-import { encryptData, decryptData } from '@/lib/security'
+import { encryptData, decryptData, isValidUUID } from '@/lib/security'
 import { startOfDay, endOfDay } from 'date-fns'
 
 export type DiaryEntryData = {
@@ -90,6 +90,10 @@ export async function saveDiaryEntry(data: { mood: number; emotions: string[]; c
 
 export async function deleteDiaryEntry(id: string) {
   try {
+    if (!isValidUUID(id)) {
+      return { success: false, error: 'ID inválido' }
+    }
+
     const supabase = await createClient()
     const {
       data: { user },
