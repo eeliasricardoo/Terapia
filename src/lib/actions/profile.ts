@@ -67,6 +67,24 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
         return null
     }
 
+    // Ensure User role and Profile role are in sync
+    try {
+        const { prisma } = await import('@/lib/prisma')
+        const userInDb = await prisma.user.findUnique({
+            where: { id: user.id }
+        })
+
+        if (userInDb && userInDb.role !== (data as Profile).role) {
+            console.log('Syncing user role with profile role...')
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { role: (data as Profile).role as any }
+            })
+        }
+    } catch (err) {
+        console.error('Error syncing user role:', err)
+    }
+
     return data as Profile
 })
 

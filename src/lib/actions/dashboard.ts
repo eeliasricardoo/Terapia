@@ -64,7 +64,23 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
             where: { userId: user.id }
         })
 
-        if (!psychProfile) throw new Error('Perfil profissional não encontrado')
+        if (!psychProfile) {
+            // Se o perfil do psicólogo não existir (ex: após reset de DB mas mantendo sessão),
+            // retornamos um estado vazio em vez de estourar erro
+            return {
+                stats: {
+                    sessionsToday: 0,
+                    activePatients: 0,
+                    totalPatients: 0,
+                    monthlyRevenue: 0,
+                    revenueChange: 0,
+                    averageRating: 0
+                },
+                isVerified: false,
+                upcomingSessions: [],
+                recentPatients: []
+            }
+        }
 
         const now = new Date()
         const todayStart = startOfDay(now)
