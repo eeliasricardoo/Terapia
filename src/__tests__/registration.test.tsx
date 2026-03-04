@@ -35,18 +35,20 @@ describe('Registration Page', () => {
         expect(screen.queryByLabelText(/Nome Completo/i)).not.toBeInTheDocument()
     })
 
-    // Comentando este teste pois requer simulação complexa de validação de CPF e trigger do react-hook-form
-    /*
     it('navigates to Step 2 after valid document', async () => {
         render(<RegistrationPage />)
 
-        // Fill valid document
+        // Fill valid document (dummy valid CPF)
         const cpfInput = screen.getByLabelText(/CPF/i)
-        fireEvent.change(cpfInput, { target: { value: '123.456.789-00' } }) // CPF inválido, precisaria de um válido para o validador passar
-        
-        fireEvent.click(screen.getByRole('button', { name: /Continuar/i }))
-        
-        // ...
+        fireEvent.change(cpfInput, { target: { value: '529.982.247-25' } })
+
+        const continueButton = screen.getByRole('button', { name: /Continuar/i });
+        fireEvent.click(continueButton)
+
+        await waitFor(() => {
+            expect(screen.getByText(/Dados Pessoais/i)).toBeInTheDocument()
+        })
+
+        expect(screen.getByLabelText(/Nome Completo/i)).toBeInTheDocument()
     })
-    */
 })

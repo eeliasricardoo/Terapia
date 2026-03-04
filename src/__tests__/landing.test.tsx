@@ -6,21 +6,20 @@ describe('Landing Page', () => {
     it('renders the main value proposition', async () => {
         const ResolvedHome = await Home()
         render(ResolvedHome)
-        // Adjust these strings to match the final copy in the Masterplan
-        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Saúde Mental/i)
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Encontre seu equilíbrio/i)
     })
 
-    it('renders the "Find a Psychologist" CTA', async () => {
+    it('renders the "Quero fazer terapia" CTA', async () => {
         const ResolvedHome = await Home()
         render(ResolvedHome)
-        const button = screen.getByRole('link', { name: /Encontrar Psicólogo/i })
+        const link = screen.getByRole('link', { name: /Quero fazer terapia/i })
+        expect(link).toBeInTheDocument()
+    })
+
+    it('renders the "Sou Psicólogo(a)" button', async () => {
+        const ResolvedHome = await Home()
+        render(ResolvedHome)
+        const button = screen.getByRole('button', { name: /Sou Psicólogo\(a\)/i })
         expect(button).toBeInTheDocument()
-    })
-
-    it('renders the "Criar Conta" buttons', async () => {
-        const ResolvedHome = await Home()
-        render(ResolvedHome)
-        const buttons = screen.getAllByRole('button', { name: /Criar Conta/i })
-        expect(buttons.length).toBeGreaterThan(0)
     })
 })

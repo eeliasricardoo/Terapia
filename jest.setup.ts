@@ -16,3 +16,14 @@ global.ResizeObserver = class ResizeObserver {
     unobserve() { }
     disconnect() { }
 }
+
+global.IntersectionObserver = class IntersectionObserver {
+    constructor() { }
+    disconnect() { }
+    observe() { }
+    unobserve() { }
+    root = null;
+    rootMargin = "";
+    thresholds = [];
+    takeRecords() { return [] }
+}
