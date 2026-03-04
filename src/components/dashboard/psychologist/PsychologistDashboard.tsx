@@ -29,6 +29,9 @@ import { Profile } from "@/lib/supabase/types"
 
 import { PsychologistDashboardData } from "@/lib/actions/dashboard"
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
+
 interface Props {
     userProfile: Profile
     dashboardData: PsychologistDashboardData
@@ -40,7 +43,16 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
     const { stats, upcomingSessions, recentPatients } = dashboardData
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-500 pb-12">
+            {!dashboardData.isVerified && (
+                <Alert variant="destructive" className="bg-amber-50 border-amber-200 text-amber-900 shadow-sm animate-in slide-in-from-top-4 duration-500">
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <AlertTitle className="font-bold text-amber-800">Perfil em análise</AlertTitle>
+                    <AlertDescription className="text-amber-700">
+                        Seu perfil profissional ainda não foi verificado. Você conseguirá utilizar a plataforma normalmente, mas não aparecerá nos resultados de busca pública até que sua conta seja validada por nossa equipe.
+                    </AlertDescription>
+                </Alert>
+            )}
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-8">
                 <div>
