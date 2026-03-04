@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { X, Plus, Check } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from 'react'
+import { X, Plus, Check } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   Command,
   CommandEmpty,
@@ -10,13 +10,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
+} from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
 
 interface SpecializationTagsProps {
   value?: string[]
@@ -24,25 +20,25 @@ interface SpecializationTagsProps {
 }
 
 const defaultSpecializations = [
-  "Terapia Cognitivo-Comportamental",
-  "Ansiedad",
-  "Depresión",
-  "Terapia de Pareja",
-  "Terapia Familiar",
-  "Psicología Infantil",
-  "Neuropsicología",
-  "Psicología Clínica",
+  'Terapia Cognitivo-Comportamental',
+  'Ansiedad',
+  'Depresión',
+  'Terapia de Pareja',
+  'Terapia Familiar',
+  'Psicología Infantil',
+  'Neuropsicología',
+  'Psicología Clínica',
 ]
 
 export function SpecializationTags({ value = [], onChange }: SpecializationTagsProps) {
   const [open, setOpen] = useState(false)
-  const [inputValue, setInputValue] = useState("")
+  const [inputValue, setInputValue] = useState('')
 
   const handleAddCustom = () => {
     if (inputValue.trim() && !value.includes(inputValue.trim())) {
       const newTags = [...value, inputValue.trim()]
       onChange?.(newTags)
-      setInputValue("")
+      setInputValue('')
       setOpen(false)
     }
   }
@@ -51,7 +47,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
     if (!value.includes(specialization)) {
       const newTags = [...value, specialization]
       onChange?.(newTags)
-      setInputValue("")
+      setInputValue('')
       // Não fecha o popover para permitir múltiplas seleções
     }
   }
@@ -61,9 +57,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
     onChange?.(newTags)
   }
 
-  const availableSpecializations = defaultSpecializations.filter(
-    (spec) => !value.includes(spec)
-  )
+  const availableSpecializations = defaultSpecializations.filter((spec) => !value.includes(spec))
 
   return (
     <div className="space-y-2">
@@ -95,7 +89,11 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
               Agregar especialización
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[300px] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <PopoverContent
+            className="w-[300px] p-0"
+            align="start"
+            onOpenAutoFocus={(e) => e.preventDefault()}
+          >
             <Command shouldFilter={false}>
               <CommandInput
                 placeholder="Buscar o agregar especialización..."
@@ -123,9 +121,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
                 </CommandEmpty>
                 <CommandGroup>
                   {availableSpecializations
-                    .filter((spec) =>
-                      spec.toLowerCase().includes(inputValue.toLowerCase())
-                    )
+                    .filter((spec) => spec.toLowerCase().includes(inputValue.toLowerCase()))
                     .map((spec) => (
                       <div
                         key={spec}
@@ -144,8 +140,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
                     ))}
                   {inputValue.trim() &&
                     !defaultSpecializations.some(
-                      (spec) =>
-                        spec.toLowerCase() === inputValue.toLowerCase()
+                      (spec) => spec.toLowerCase() === inputValue.toLowerCase()
                     ) &&
                     !value.includes(inputValue.trim()) && (
                       <div

@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle2, Clock, Rocket, Mail } from 'lucide-react';
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { CheckCircle2, Clock, Rocket, Mail } from 'lucide-react'
 
 const NEXT_STEPS = [
   {
@@ -27,10 +27,10 @@ const NEXT_STEPS = [
     status: 'Pendente',
     variant: 'pending' as const,
   },
-];
+]
 
 export default function SuccessPage() {
-  const router = useRouter();
+  const router = useRouter()
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
@@ -60,12 +60,9 @@ export default function SuccessPage() {
             <h2 className="text-lg font-semibold">Próximos Passos</h2>
             <div className="space-y-3">
               {NEXT_STEPS.map((step) => {
-                const Icon = step.icon;
+                const Icon = step.icon
                 return (
-                  <div
-                    key={step.id}
-                    className="flex items-center gap-4 rounded-lg border p-4"
-                  >
+                  <div key={step.id} className="flex items-center gap-4 rounded-lg border p-4">
                     <div
                       className={`rounded-full p-2 ${
                         step.variant === 'completed'
@@ -82,7 +79,7 @@ export default function SuccessPage() {
                       <p className="text-sm text-muted-foreground">{step.status}</p>
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           </div>
@@ -90,9 +87,7 @@ export default function SuccessPage() {
           {/* Additional Info */}
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">
-                Tempo estimado de análise
-              </p>
+              <p className="text-sm font-medium text-muted-foreground">Tempo estimado de análise</p>
               <p className="text-base">7-10 dias úteis</p>
             </div>
             <div className="space-y-2">
@@ -135,6 +130,5 @@ export default function SuccessPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
-

@@ -2,7 +2,7 @@
  * Remove caracteres não numéricos do CRP
  */
 export function cleanCRP(crp: string): string {
-  return crp.replace(/\D/g, "")
+  return crp.replace(/\D/g, '')
 }
 
 /**
@@ -11,7 +11,7 @@ export function cleanCRP(crp: string): string {
  */
 export function maskCRP(value: string): string {
   const cleaned = cleanCRP(value)
-  
+
   if (cleaned.length <= 2) {
     return cleaned
   } else {
@@ -40,4 +40,3 @@ export function isValidCRP(crp: string): boolean {
   const crpRegex = /^\d{2}\/\d{5}$/
   return crpRegex.test(maskCRP(crp))
 }
-

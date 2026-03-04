@@ -1,5 +1,5 @@
-import { AvailabilityForm } from "./components/AvailabilityForm"
-import { Stepper } from "@/components/ui/stepper"
+import { AvailabilityForm } from './components/AvailabilityForm'
+import { Stepper } from '@/components/ui/stepper'
 
 const STEPS = [
   { id: 'dados', title: 'Dados Profissionais', description: 'Informações básicas' },

@@ -1,11 +1,10 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from 'react'
+import { cn } from '@/lib/utils'
 
-
-import PhoneInput2 from "react-phone-input-2"
-import "react-phone-input-2/lib/style.css"
+import PhoneInput2 from 'react-phone-input-2'
+import 'react-phone-input-2/lib/style.css'
 
 interface PhoneInputProps {
   value?: string
@@ -19,14 +18,14 @@ interface PhoneInputProps {
 export function PhoneInput({
   value,
   onChange,
-  defaultCountry = "BR",
+  defaultCountry = 'BR',
   className,
   placeholder,
   disabled,
   ...props
 }: PhoneInputProps) {
   return (
-    <div className={cn("relative w-full", className)}>
+    <div className={cn('relative w-full', className)}>
       <PhoneInput2
         country={defaultCountry.toLowerCase()}
         value={value}

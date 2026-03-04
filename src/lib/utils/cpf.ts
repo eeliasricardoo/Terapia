@@ -2,7 +2,7 @@
  * Remove caracteres não numéricos do CPF
  */
 export function cleanCPF(cpf: string): string {
-  return cpf.replace(/\D/g, "")
+  return cpf.replace(/\D/g, '')
 }
 
 /**
@@ -10,7 +10,7 @@ export function cleanCPF(cpf: string): string {
  */
 export function maskCPF(value: string): string {
   const cleaned = cleanCPF(value)
-  
+
   if (cleaned.length <= 3) {
     return cleaned
   } else if (cleaned.length <= 6) {
@@ -85,4 +85,3 @@ export function isValidCPF(cpf: string): boolean {
 
   return true
 }
-

@@ -1,159 +1,178 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { RoleSelectionDialog } from "@/components/auth/RoleSelectionDialog"
-import { motion } from "framer-motion"
-import { CoreHeartIcon, CoreStarIcon, CoreShieldIcon } from "@/components/ui/exclusive-icons"
+import Link from 'next/link'
+import Image from 'next/image'
+import { Button } from '@/components/ui/button'
+import { RoleSelectionDialog } from '@/components/auth/RoleSelectionDialog'
+import { motion } from 'framer-motion'
+import { CoreHeartIcon, CoreStarIcon, CoreShieldIcon } from '@/components/ui/exclusive-icons'
 
 export function Hero() {
-    return (
-        <section className="w-full pt-20 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 bg-[#FFFAF3] overflow-hidden relative">
-            {/* Animated Background effects */}
+  return (
+    <section className="w-full pt-20 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 bg-[#FFFAF3] overflow-hidden relative">
+      {/* Animated Background effects */}
+      <motion.div
+        animate={{
+          scale: [1, 1.1, 1],
+          x: [0, 50, 0],
+          y: [0, -50, 0],
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[800px] h-[800px] opacity-30 bg-gradient-to-tr from-amber-200 to-rose-200 blur-[120px] rounded-full mix-blend-multiply pointer-events-none"
+      />
+      <motion.div
+        animate={{
+          scale: [1, 1.2, 1],
+          x: [0, -30, 0],
+          y: [0, 40, 0],
+        }}
+        transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+        className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[600px] h-[600px] opacity-30 bg-gradient-to-tr from-emerald-100 to-teal-100 blur-[120px] rounded-full mix-blend-multiply pointer-events-none"
+      />
+      <motion.div
+        animate={{
+          scale: [1, 1.5, 1],
+          opacity: [0.1, 0.2, 0.1],
+        }}
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-orange-200 blur-[100px] rounded-full mix-blend-multiply pointer-events-none"
+      />
+
+      <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+          {/* Text content */}
+          <div className="space-y-8 max-w-2xl mx-auto lg:mx-0 text-center lg:text-left">
             <motion.div
-                animate={{
-                    scale: [1, 1.1, 1],
-                    x: [0, 50, 0],
-                    y: [0, -50, 0]
-                }}
-                transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[800px] h-[800px] opacity-30 bg-gradient-to-tr from-amber-200 to-rose-200 blur-[120px] rounded-full mix-blend-multiply pointer-events-none"
-            />
-            <motion.div
-                animate={{
-                    scale: [1, 1.2, 1],
-                    x: [0, -30, 0],
-                    y: [0, 40, 0]
-                }}
-                transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-[600px] h-[600px] opacity-30 bg-gradient-to-tr from-emerald-100 to-teal-100 blur-[120px] rounded-full mix-blend-multiply pointer-events-none"
-            />
-            <motion.div
-                animate={{
-                    scale: [1, 1.5, 1],
-                    opacity: [0.1, 0.2, 0.1]
-                }}
-                transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-orange-200 blur-[100px] rounded-full mix-blend-multiply pointer-events-none"
-            />
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-800 text-sm font-medium mb-2"
+            >
+              <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+              Terapia Acessível & Solidária
+            </motion.div>
 
-            <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
-                <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-                    {/* Text content */}
-                    <div className="space-y-8 max-w-2xl mx-auto lg:mx-0 text-center lg:text-left">
-                        <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-800 text-sm font-medium mb-2"
-                        >
-                            <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-                            Terapia Acessível & Solidária
-                        </motion.div>
-
-                        <div className="space-y-4">
-                            <motion.h1
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                                className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl/tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-stone-800 to-orange-900"
-                            >
-                                Encontre seu equilíbrio.<br /> Transforme vidas.
-                            </motion.h1>
-                            <motion.p
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                                className="text-slate-600 md:text-xl font-light leading-relaxed max-w-[600px] mx-auto lg:mx-0"
-                            >
-                                Um espaço seguro para cuidar de si com terapeutas acolhedores. <span className="font-medium text-slate-800">Para profissionais:</span> faça parte de uma rede solidária, ofereça valor social e ganhe destaque.
-                            </motion.p>
-                        </div>
-
-                        <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                            className="flex flex-col sm:flex-row gap-4 w-full justify-center lg:justify-start pt-4"
-                        >
-                            <Button asChild size="lg" className="h-14 px-8 text-lg shadow-xl shadow-orange-600/20 hover:shadow-orange-600/30 transition-all hover:-translate-y-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 border-0">
-                                <Link href="/busca">Quero fazer terapia</Link>
-                            </Button>
-                            <RoleSelectionDialog mode="register">
-                                <Button variant="outline" size="lg" className="h-14 px-8 text-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all hover:-translate-y-1 bg-white/50 backdrop-blur-sm">
-                                    Sou Psicólogo(a)
-                                </Button>
-                            </RoleSelectionDialog>
-                        </motion.div>
-
-                        <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                            className="flex items-center justify-center lg:justify-start gap-6 pt-4 text-sm text-slate-500 font-medium"
-                        >
-                            <div className="flex items-center gap-1.5"><CoreShieldIcon className="h-4 w-4 text-emerald-500" /> Profissionais Verificados</div>
-                            <div className="flex items-center gap-1.5"><CoreHeartIcon className="h-4 w-4 text-rose-400" /> Ação Voluntária</div>
-                        </motion.div>
-                    </div>
-
-                    {/* Image / Illustration content */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9, filter: 'blur(12px)', y: 20 }}
-                        animate={{ opacity: 1, scale: 1, filter: 'blur(0px)', y: 0 }}
-                        transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                        className="relative mx-auto w-full max-w-lg lg:max-w-none mt-8 lg:mt-0"
-                    >
-                        {/* Decorative glass container with breathing animation */}
-                        <motion.div
-                            animate={{ y: [0, -10, 0] }}
-                            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                            className="relative rounded-3xl shadow-[0_20px_50px_-12px_rgba(245,158,11,0.15)] border border-white/60 bg-white/40 backdrop-blur-md p-4"
-                        >
-                            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] w-full bg-stone-100/50">
-                                <Image
-                                    src="/hero-empathy.png"
-                                    alt="Ilustração Terapia Saúde Mental"
-                                    fill
-                                    className="object-cover hover:scale-105 transition-transform duration-700 ease-out"
-                                    priority
-                                />
-                            </div>
-
-                            {/* Floating glassmorphism badge 1 */}
-                            <motion.div
-                                animate={{ y: [-8, 8, -8], rotate: [-2, 2, -2] }}
-                                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-                                className="absolute -left-6 top-12 bg-white/80 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500 delay-700"
-                            >
-                                <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
-                                    <CoreStarIcon className="h-5 w-5 text-amber-500" />
-                                </div>
-                                <div className="hidden sm:block">
-                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Top Terapeutas</p>
-                                    <p className="font-bold text-slate-900 text-sm">Cuidado com Excelência</p>
-                                </div>
-                            </motion.div>
-
-                            {/* Floating glassmorphism badge 2 */}
-                            <motion.div
-                                animate={{ y: [8, -8, 8], rotate: [2, -2, 2] }}
-                                transition={{ repeat: Infinity, duration: 6, ease: "easeInOut", delay: 1 }}
-                                className="absolute -right-6 bottom-16 bg-white/80 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500 delay-1000"
-                            >
-                                <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-500">
-                                    <CoreHeartIcon className="h-5 w-5 text-rose-500" />
-                                </div>
-                                <div className="hidden sm:block">
-                                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Atendimento Social</p>
-                                    <p className="font-bold text-slate-900 text-sm">Terapia ao seu alcance</p>
-                                </div>
-                            </motion.div>
-                        </motion.div>
-                    </motion.div>
-                </div>
+            <div className="space-y-4">
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl/tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-stone-800 to-orange-900"
+              >
+                Encontre seu equilíbrio.
+                <br /> Transforme vidas.
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="text-slate-600 md:text-xl font-light leading-relaxed max-w-[600px] mx-auto lg:mx-0"
+              >
+                Um espaço seguro para cuidar de si com terapeutas acolhedores.{' '}
+                <span className="font-medium text-slate-800">Para profissionais:</span> faça parte
+                de uma rede solidária, ofereça valor social e ganhe destaque.
+              </motion.p>
             </div>
-        </section>
-    )
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col sm:flex-row gap-4 w-full justify-center lg:justify-start pt-4"
+            >
+              <Button
+                asChild
+                size="lg"
+                className="h-14 px-8 text-lg shadow-xl shadow-orange-600/20 hover:shadow-orange-600/30 transition-all hover:-translate-y-1 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 border-0"
+              >
+                <Link href="/busca">Quero fazer terapia</Link>
+              </Button>
+              <RoleSelectionDialog mode="register">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="h-14 px-8 text-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all hover:-translate-y-1 bg-white/50 backdrop-blur-sm"
+                >
+                  Sou Psicólogo(a)
+                </Button>
+              </RoleSelectionDialog>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="flex items-center justify-center lg:justify-start gap-6 pt-4 text-sm text-slate-500 font-medium"
+            >
+              <div className="flex items-center gap-1.5">
+                <CoreShieldIcon className="h-4 w-4 text-emerald-500" /> Profissionais Verificados
+              </div>
+              <div className="flex items-center gap-1.5">
+                <CoreHeartIcon className="h-4 w-4 text-rose-400" /> Ação Voluntária
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Image / Illustration content */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, filter: 'blur(12px)', y: 20 }}
+            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)', y: 0 }}
+            transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="relative mx-auto w-full max-w-lg lg:max-w-none mt-8 lg:mt-0"
+          >
+            {/* Decorative glass container with breathing animation */}
+            <motion.div
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+              className="relative rounded-3xl shadow-[0_20px_50px_-12px_rgba(245,158,11,0.15)] border border-white/60 bg-white/40 backdrop-blur-md p-4"
+            >
+              <div className="relative rounded-2xl overflow-hidden aspect-[4/3] w-full bg-stone-100/50">
+                <Image
+                  src="/hero-empathy.png"
+                  alt="Ilustração Terapia Saúde Mental"
+                  fill
+                  className="object-cover hover:scale-105 transition-transform duration-700 ease-out"
+                  priority
+                />
+              </div>
+
+              {/* Floating glassmorphism badge 1 */}
+              <motion.div
+                animate={{ y: [-8, 8, -8], rotate: [-2, 2, -2] }}
+                transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut' }}
+                className="absolute -left-6 top-12 bg-white/80 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500 delay-700"
+              >
+                <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                  <CoreStarIcon className="h-5 w-5 text-amber-500" />
+                </div>
+                <div className="hidden sm:block">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Top Terapeutas
+                  </p>
+                  <p className="font-bold text-slate-900 text-sm">Cuidado com Excelência</p>
+                </div>
+              </motion.div>
+
+              {/* Floating glassmorphism badge 2 */}
+              <motion.div
+                animate={{ y: [8, -8, 8], rotate: [2, -2, 2] }}
+                transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut', delay: 1 }}
+                className="absolute -right-6 bottom-16 bg-white/80 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl p-4 flex items-center gap-4 animate-in fade-in zoom-in duration-500 delay-1000"
+              >
+                <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-500">
+                  <CoreHeartIcon className="h-5 w-5 text-rose-500" />
+                </div>
+                <div className="hidden sm:block">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Atendimento Social
+                  </p>
+                  <p className="font-bold text-slate-900 text-sm">Terapia ao seu alcance</p>
+                </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  )
 }

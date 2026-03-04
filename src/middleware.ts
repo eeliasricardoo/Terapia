@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
@@ -27,22 +27,27 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
   const { pathname } = request.nextUrl
 
   // Protect dashboard and admin routes
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
     if (!session) {
       const url = request.nextUrl.clone()
-      url.pathname = "/login/paciente"
+      url.pathname = '/login/paciente'
       return NextResponse.redirect(url)
     }
   }
 
   // Redirect authenticated users away from home, login, and register pages
-  if ((pathname === "/" || pathname.startsWith("/login") || pathname.startsWith("/cadastro")) && session) {
+  if (
+    (pathname === '/' || pathname.startsWith('/login') || pathname.startsWith('/cadastro')) &&
+    session
+  ) {
     const url = request.nextUrl.clone()
-    url.pathname = "/dashboard"
+    url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
 
@@ -59,6 +64,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public folder
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

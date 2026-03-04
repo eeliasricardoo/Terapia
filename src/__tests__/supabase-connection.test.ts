@@ -38,4 +38,3 @@ describe('Supabase Connection', () => {
     expect(supabase).toBeDefined()
   })
 })
-

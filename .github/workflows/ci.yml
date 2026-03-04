@@ -12,9 +12,7 @@ env:
   DATABASE_URL: postgresql://test:test@localhost:5432/test
   DIRECT_URL: postgresql://test:test@localhost:5432/test
   STRIPE_SECRET_KEY: sk_test_fake_key_for_ci
-  NEXTAUTH_SECRET: test-secret-for-ci-only
-  NEXTAUTH_URL: http://localhost:3000
-  NODE_ENV: test
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
 
 jobs:
   lint:
@@ -28,6 +26,8 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
+      - name: Generate Prisma Client
+        run: npx prisma generate
       - name: Run ESLint
         run: npm run lint
       - name: Check Prettier formatting
@@ -77,6 +77,8 @@ jobs:
     name: 🏗️ Build
     runs-on: ubuntu-latest
     needs: [unit-tests]
+    env:
+      NODE_ENV: production
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -102,6 +104,8 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
+      - name: Generate Prisma Client
+        run: npx prisma generate
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests

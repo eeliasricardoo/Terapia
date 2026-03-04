@@ -1,19 +1,19 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lock } from 'lucide-react';
+} from '@/components/ui/select'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Lock } from 'lucide-react'
 
 const BANKS = [
   'Bancolombia',
@@ -31,22 +31,22 @@ const BANKS = [
   'Banco Falabella',
   'Banco Pichincha',
   'Banco Cooperativo Coopcentral',
-];
+]
 
 const ACCOUNT_TYPES = [
   { value: 'savings', label: 'Ahorros' },
   { value: 'checking', label: 'Corriente' },
-];
+]
 
 const ID_TYPES = [
   { value: 'nit', label: 'NIT' },
   { value: 'cc', label: 'Cédula de Ciudadanía' },
   { value: 'ce', label: 'Cédula de Extranjería' },
-];
+]
 
 export function PaymentConfigForm() {
-  const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [formData, setFormData] = useState({
     bank: '',
@@ -54,41 +54,41 @@ export function PaymentConfigForm() {
     accountType: '',
     taxIdType: '',
     taxIdNumber: '',
-  });
+  })
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+    e.preventDefault()
+    setIsSubmitting(true)
 
     try {
       // TODO: Implement API call to save payment configuration
 
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
       // Redirect to success page
-      router.push('/cadastro/profissional/sucesso');
+      router.push('/cadastro/profissional/sucesso')
     } catch (error) {
-      console.error('Error saving payment config:', error);
+      console.error('Error saving payment config:', error)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleCancel = () => {
-    router.back();
-  };
+    router.back()
+  }
 
   const isFormValid =
     formData.bank &&
     formData.accountNumber &&
     formData.accountType &&
     formData.taxIdType &&
-    formData.taxIdNumber;
+    formData.taxIdNumber
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 py-8">
@@ -112,7 +112,10 @@ export function PaymentConfigForm() {
               <Label htmlFor="bank">
                 Banco <span className="text-destructive">*</span>
               </Label>
-              <Select value={formData.bank} onValueChange={(value) => handleInputChange('bank', value)}>
+              <Select
+                value={formData.bank}
+                onValueChange={(value) => handleInputChange('bank', value)}
+              >
                 <SelectTrigger id="bank">
                   <SelectValue placeholder="Selecciona tu banco" />
                 </SelectTrigger>
@@ -232,6 +235,5 @@ export function PaymentConfigForm() {
         </div>
       </form>
     </div>
-  );
+  )
 }
-

@@ -1,18 +1,18 @@
-'use client';
+'use client'
 
-import { Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface Step {
-  id: string;
-  title: string;
-  description?: string;
+  id: string
+  title: string
+  description?: string
 }
 
 interface StepperProps {
-  steps: Step[];
-  currentStep: number;
-  className?: string;
+  steps: Step[]
+  currentStep: number
+  className?: string
 }
 
 export function Stepper({ steps, currentStep, className }: StepperProps) {
@@ -21,9 +21,9 @@ export function Stepper({ steps, currentStep, className }: StepperProps) {
       <nav aria-label="Progress">
         <ol className="flex items-center justify-between">
           {steps.map((step, index) => {
-            const stepNumber = index + 1;
-            const isCompleted = stepNumber < currentStep;
-            const isCurrent = stepNumber === currentStep;
+            const stepNumber = index + 1
+            const isCompleted = stepNumber < currentStep
+            const isCurrent = stepNumber === currentStep
 
             return (
               <li
@@ -55,7 +55,9 @@ export function Stepper({ steps, currentStep, className }: StepperProps) {
                       'flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors',
                       isCompleted && 'border-primary bg-primary text-primary-foreground',
                       isCurrent && 'border-primary bg-background text-primary',
-                      !isCompleted && !isCurrent && 'border-muted bg-background text-muted-foreground'
+                      !isCompleted &&
+                        !isCurrent &&
+                        'border-muted bg-background text-muted-foreground'
                     )}
                   >
                     {isCompleted ? (
@@ -84,11 +86,10 @@ export function Stepper({ steps, currentStep, className }: StepperProps) {
                   </div>
                 </div>
               </li>
-            );
+            )
           })}
         </ol>
       </nav>
     </div>
-  );
+  )
 }
-

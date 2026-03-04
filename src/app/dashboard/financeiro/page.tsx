@@ -1,10 +1,9 @@
-
-import { FinancialManager } from "@/components/dashboard/psychologist/financial/FinancialManager"
+import { FinancialManager } from '@/components/dashboard/psychologist/financial/FinancialManager'
 
 export default function FinanceiroPage() {
-    return (
-        <div className="container py-8">
-            <FinancialManager />
-        </div>
-    )
+  return (
+    <div className="container py-8">
+      <FinancialManager />
+    </div>
+  )
 }

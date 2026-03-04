@@ -1,58 +1,53 @@
-"use client"
+'use client'
 
-import { ptBR } from "date-fns/locale"
+import { ptBR } from 'date-fns/locale'
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Pencil, Trash2, Plus } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Form } from "@/components/ui/form"
-import { Calendar } from "@/components/ui/calendar"
-import { format } from "date-fns"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Pencil, Trash2, Plus } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Form } from '@/components/ui/form'
+import { Calendar } from '@/components/ui/calendar'
+import { format } from 'date-fns'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { toast } from "sonner"
-import { saveAvailability } from "@/lib/actions/availability"
+} from '@/components/ui/select'
+import { toast } from 'sonner'
+import { saveAvailability } from '@/lib/actions/availability'
 
 const sessionDurations = [
-  { value: "30", label: "30 min" },
-  { value: "50", label: "50 min" },
-  { value: "60", label: "60 min" },
+  { value: '30', label: '30 min' },
+  { value: '50', label: '50 min' },
+  { value: '60', label: '60 min' },
 ]
 
 const daysOfWeek = [
-  { value: "seg", label: "SEG" },
-  { value: "ter", label: "TER" },
-  { value: "qua", label: "QUA" },
-  { value: "qui", label: "QUI" },
-  { value: "sex", label: "SEX" },
-  { value: "sab", label: "SAB" },
-  { value: "dom", label: "DOM" },
+  { value: 'seg', label: 'SEG' },
+  { value: 'ter', label: 'TER' },
+  { value: 'qua', label: 'QUA' },
+  { value: 'qui', label: 'QUI' },
+  { value: 'sex', label: 'SEX' },
+  { value: 'sab', label: 'SAB' },
+  { value: 'dom', label: 'DOM' },
 ]
 
 const recurrenceOptions = [
-  { value: "none", label: "Não se repete" },
-  { value: "daily", label: "Diariamente" },
-  { value: "weekdays", label: "Dias úteis (Segunda a Sexta)" },
-  { value: "weekly", label: "Semanalmente" },
-  { value: "monthly", label: "Mensalmente" },
-  { value: "custom", label: "Personalizado..." },
+  { value: 'none', label: 'Não se repete' },
+  { value: 'daily', label: 'Diariamente' },
+  { value: 'weekdays', label: 'Dias úteis (Segunda a Sexta)' },
+  { value: 'weekly', label: 'Semanalmente' },
+  { value: 'monthly', label: 'Mensalmente' },
+  { value: 'custom', label: 'Personalizado...' },
 ]
 
 interface RecurringSchedule {
@@ -70,13 +65,17 @@ interface SpecificDateSchedule {
 }
 
 const formSchema = z.object({
-  sessionDuration: z.string().min(1, "Selecione uma duração de sessão"),
-  schedules: z.array(z.object({
-    id: z.string(),
-    day: z.string(),
-    startTime: z.string(),
-    endTime: z.string(),
-  })).min(1, "Adicione pelo menos um horário"),
+  sessionDuration: z.string().min(1, 'Selecione uma duração de sessão'),
+  schedules: z
+    .array(
+      z.object({
+        id: z.string(),
+        day: z.string(),
+        startTime: z.string(),
+        endTime: z.string(),
+      })
+    )
+    .min(1, 'Adicione pelo menos um horário'),
 })
 
 const generateTimeSlots = (sessionDuration: number, interval: number = 10) => {
@@ -88,7 +87,7 @@ const generateTimeSlots = (sessionDuration: number, interval: number = 10) => {
     for (let minute = 0; minute < 60; minute += sessionDuration + interval) {
       if (hour === endHour - 1 && minute + sessionDuration > 60) break
 
-      const timeString = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`
+      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
       slots.push(timeString)
 
       // Se o próximo slot ultrapassaria a hora, para
@@ -110,43 +109,40 @@ export function AvailabilityForm() {
   const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null)
   const [unavailableDays, setUnavailableDays] = useState<string[]>([])
   const [unavailableDates, setUnavailableDates] = useState<Date[]>([])
-  const [recurrence, setRecurrence] = useState("none")
+  const [recurrence, setRecurrence] = useState('none')
   const [recurringSchedules, setRecurringSchedules] = useState<RecurringSchedule[]>([
-    { id: "1", day: "mar", startTime: "9:00 AM", endTime: "12:00 PM" },
-    { id: "2", day: "jue", startTime: "2:00 PM", endTime: "5:00 PM" },
+    { id: '1', day: 'mar', startTime: '9:00 AM', endTime: '12:00 PM' },
+    { id: '2', day: 'jue', startTime: '2:00 PM', endTime: '5:00 PM' },
   ])
   const [specificDateSchedules, setSpecificDateSchedules] = useState<SpecificDateSchedule[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    mode: "onChange",
+    mode: 'onChange',
     defaultValues: {
-      sessionDuration: "50",
+      sessionDuration: '50',
       schedules: recurringSchedules,
     },
   })
 
-  const selectedDuration = form.watch("sessionDuration")
+  const selectedDuration = form.watch('sessionDuration')
   const sessionDurationMinutes = parseInt(selectedDuration) || 50
   const timeSlots = generateTimeSlots(sessionDurationMinutes)
 
   const handleDeleteSchedule = (id: string) => {
     const newSchedules = recurringSchedules.filter((schedule) => schedule.id !== id)
     setRecurringSchedules(newSchedules)
-    form.setValue("schedules", newSchedules, { shouldValidate: true })
+    form.setValue('schedules', newSchedules, { shouldValidate: true })
   }
 
   const handleDurationChange = (duration: string) => {
-    form.setValue("sessionDuration", duration, { shouldValidate: true })
+    form.setValue('sessionDuration', duration, { shouldValidate: true })
   }
-
 
   const handleTimeToggle = (time: string) => {
     setSelectedTimes((prev) =>
-      prev.includes(time)
-        ? prev.filter((t) => t !== time)
-        : [...prev, time].sort()
+      prev.includes(time) ? prev.filter((t) => t !== time) : [...prev, time].sort()
     )
   }
 
@@ -172,7 +168,7 @@ export function AvailabilityForm() {
         )
       } else if (selectedTimes.length > 0) {
         const formatTime = (time: string) => {
-          const [hours, minutes] = time.split(":")
+          const [hours, minutes] = time.split(':')
           const hour = parseInt(hours)
           if (hour === 0) return `12:${minutes} AM`
           if (hour < 12) return `${hour}:${minutes} AM`
@@ -204,7 +200,7 @@ export function AvailabilityForm() {
       setSelectedDate(null)
       setSelectedTimes([])
       setIsNotAvailable(false)
-      setRecurrence("none")
+      setRecurrence('none')
       setIsSpecificDate(false)
       setEditingScheduleId(null)
       return
@@ -216,11 +212,11 @@ export function AvailabilityForm() {
     if (isNotAvailable) {
       let daysToApply: string[] = [selectedDay]
 
-      if (recurrence === "weekdays") {
-        daysToApply = ["seg", "ter", "qua", "qui", "sex"]
-      } else if (recurrence === "daily") {
-        daysToApply = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
-      } else if (recurrence === "weekly") {
+      if (recurrence === 'weekdays') {
+        daysToApply = ['seg', 'ter', 'qua', 'qui', 'sex']
+      } else if (recurrence === 'daily') {
+        daysToApply = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom']
+      } else if (recurrence === 'weekly') {
         daysToApply = [selectedDay]
       }
 
@@ -234,14 +230,12 @@ export function AvailabilityForm() {
         return newDays
       })
 
-      const updatedSchedules = recurringSchedules.filter(
-        (s) => !daysToApply.includes(s.day)
-      )
+      const updatedSchedules = recurringSchedules.filter((s) => !daysToApply.includes(s.day))
       setRecurringSchedules(updatedSchedules)
-      form.setValue("schedules", updatedSchedules, { shouldValidate: true })
+      form.setValue('schedules', updatedSchedules, { shouldValidate: true })
     } else if (selectedTimes.length > 0) {
       const formatTime = (time: string) => {
-        const [hours, minutes] = time.split(":")
+        const [hours, minutes] = time.split(':')
         const hour = parseInt(hours)
         if (hour === 0) return `12:${minutes} AM`
         if (hour < 12) return `${hour}:${minutes} AM`
@@ -251,11 +245,11 @@ export function AvailabilityForm() {
 
       let daysToApply: string[] = [selectedDay]
 
-      if (recurrence === "weekdays") {
-        daysToApply = ["seg", "ter", "qua", "qui", "sex"]
-      } else if (recurrence === "daily") {
-        daysToApply = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
-      } else if (recurrence === "weekly") {
+      if (recurrence === 'weekdays') {
+        daysToApply = ['seg', 'ter', 'qua', 'qui', 'sex']
+      } else if (recurrence === 'daily') {
+        daysToApply = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom']
+      } else if (recurrence === 'weekly') {
         daysToApply = [selectedDay]
       }
 
@@ -268,9 +262,7 @@ export function AvailabilityForm() {
       if (editingScheduleId) {
         updatedSchedules = recurringSchedules.filter((s) => s.id !== editingScheduleId)
       } else {
-        updatedSchedules = recurringSchedules.filter(
-          (s) => !daysToApply.includes(s.day)
-        )
+        updatedSchedules = recurringSchedules.filter((s) => !daysToApply.includes(s.day))
       }
 
       daysToApply.forEach((day) => {
@@ -298,7 +290,7 @@ export function AvailabilityForm() {
       })
 
       setRecurringSchedules(updatedSchedules)
-      form.setValue("schedules", updatedSchedules, { shouldValidate: true })
+      form.setValue('schedules', updatedSchedules, { shouldValidate: true })
 
       setUnavailableDays((prev) => prev.filter((d) => !daysToApply.includes(d)))
     }
@@ -307,7 +299,7 @@ export function AvailabilityForm() {
     setSelectedDay(null)
     setSelectedTimes([])
     setIsNotAvailable(false)
-    setRecurrence("none")
+    setRecurrence('none')
     setEditingScheduleId(null)
   }
 
@@ -322,12 +314,12 @@ export function AvailabilityForm() {
     if (existingSchedule) {
       // Converter horários AM/PM para formato 24h para pré-selecionar
       const parseTime = (timeStr: string) => {
-        const [time, period] = timeStr.split(" ")
-        const [hours, minutes] = time.split(":")
+        const [time, period] = timeStr.split(' ')
+        const [hours, minutes] = time.split(':')
         let hour = parseInt(hours)
-        if (period === "PM" && hour !== 12) hour += 12
-        if (period === "AM" && hour === 12) hour = 0
-        return `${hour.toString().padStart(2, "0")}:${minutes}`
+        if (period === 'PM' && hour !== 12) hour += 12
+        if (period === 'AM' && hour === 12) hour = 0
+        return `${hour.toString().padStart(2, '0')}:${minutes}`
       }
 
       const start = parseTime(existingSchedule.startTime)
@@ -335,14 +327,14 @@ export function AvailabilityForm() {
 
       // Gerar slots entre start e end
       const slots: string[] = []
-      const [startHour, startMin] = start.split(":").map(Number)
-      const [endHour, endMin] = end.split(":").map(Number)
+      const [startHour, startMin] = start.split(':').map(Number)
+      const [endHour, endMin] = end.split(':').map(Number)
 
       for (let h = startHour; h < endHour || (h === endHour && startMin < endMin); h++) {
         for (let m = 0; m < 60; m += sessionDurationMinutes + 10) {
           if (h === startHour && m < startMin) continue
           if (h === endHour && m >= endMin) break
-          slots.push(`${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`)
+          slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`)
         }
       }
 
@@ -352,7 +344,7 @@ export function AvailabilityForm() {
     }
 
     setIsNotAvailable(isUnavailable)
-    setRecurrence("none")
+    setRecurrence('none')
     setOpenDialog(true)
   }
 
@@ -364,32 +356,30 @@ export function AvailabilityForm() {
     const existingSchedule = specificDateSchedules.find(
       (s) => s.date.toDateString() === date.toDateString()
     )
-    const isUnavailable = unavailableDates.some(
-      (d) => d.toDateString() === date.toDateString()
-    )
+    const isUnavailable = unavailableDates.some((d) => d.toDateString() === date.toDateString())
 
     if (existingSchedule) {
       const parseTime = (timeStr: string) => {
-        const [time, period] = timeStr.split(" ")
-        const [hours, minutes] = time.split(":")
+        const [time, period] = timeStr.split(' ')
+        const [hours, minutes] = time.split(':')
         let hour = parseInt(hours)
-        if (period === "PM" && hour !== 12) hour += 12
-        if (period === "AM" && hour === 12) hour = 0
-        return `${hour.toString().padStart(2, "0")}:${minutes}`
+        if (period === 'PM' && hour !== 12) hour += 12
+        if (period === 'AM' && hour === 12) hour = 0
+        return `${hour.toString().padStart(2, '0')}:${minutes}`
       }
 
       const start = parseTime(existingSchedule.startTime)
       const end = parseTime(existingSchedule.endTime)
 
       const slots: string[] = []
-      const [startHour, startMin] = start.split(":").map(Number)
-      const [endHour, endMin] = end.split(":").map(Number)
+      const [startHour, startMin] = start.split(':').map(Number)
+      const [endHour, endMin] = end.split(':').map(Number)
 
       for (let h = startHour; h < endHour || (h === endHour && startMin < endMin); h++) {
         for (let m = 0; m < 60; m += sessionDurationMinutes + 10) {
           if (h === startHour && m < startMin) continue
           if (h === endHour && m >= endMin) break
-          slots.push(`${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`)
+          slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`)
         }
       }
 
@@ -399,7 +389,7 @@ export function AvailabilityForm() {
     }
 
     setIsNotAvailable(isUnavailable)
-    setRecurrence("none")
+    setRecurrence('none')
     setOpenDialog(true)
   }
 
@@ -408,26 +398,26 @@ export function AvailabilityForm() {
 
     try {
       const result = await saveAvailability(
-        form.getValues("sessionDuration"),
+        form.getValues('sessionDuration'),
         recurringSchedules,
-        specificDateSchedules.map(s => ({ ...s, date: s.date.toISOString() })),
+        specificDateSchedules.map((s) => ({ ...s, date: s.date.toISOString() })),
         unavailableDays,
-        unavailableDates.map(d => d.toISOString())
+        unavailableDates.map((d) => d.toISOString())
       )
 
       if (result.success) {
-        toast.success("Disponibilidade salva!", {
-          description: "Seus horários foram atualizados com sucesso.",
+        toast.success('Disponibilidade salva!', {
+          description: 'Seus horários foram atualizados com sucesso.',
         })
         router.push('/cadastro/profissional/pagamento')
       } else {
-        toast.error("Erro ao salvar", {
-          description: result.error || "Ocorreu um erro inesperado.",
+        toast.error('Erro ao salvar', {
+          description: result.error || 'Ocorreu um erro inesperado.',
         })
       }
     } catch (error) {
-      toast.error("Erro no servidor", {
-        description: "Tente novamente mais tarde.",
+      toast.error('Erro no servidor', {
+        description: 'Tente novamente mais tarde.',
       })
     } finally {
       setIsSubmitting(false)
@@ -440,15 +430,15 @@ export function AvailabilityForm() {
         {/* Header */}
         <div className="space-y-4">
           <div>
-            <h1 className="text-3xl font-black tracking-tight">
-              Configurar sua Disponibilidade
-            </h1>
+            <h1 className="text-3xl font-black tracking-tight">Configurar sua Disponibilidade</h1>
             <p className="text-muted-foreground mt-2">
-              Selecione os dias e horários em que você estará disponível para atender seus pacientes. Todos os horários são salvos em GMT-3 (Brasília).
+              Selecione os dias e horários em que você estará disponível para atender seus
+              pacientes. Todos os horários são salvos em GMT-3 (Brasília).
             </p>
             <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg">
               <p className="text-sm text-muted-foreground">
-                💡 <strong>Não se preocupe!</strong> Você poderá alterar sua disponibilidade a qualquer momento pelo painel de controle após o cadastro.
+                💡 <strong>Não se preocupe!</strong> Você poderá alterar sua disponibilidade a
+                qualquer momento pelo painel de controle após o cadastro.
               </p>
             </div>
           </div>
@@ -468,10 +458,10 @@ export function AvailabilityForm() {
                     <Button
                       key={duration.value}
                       type="button"
-                      variant={selectedDuration === duration.value ? "default" : "outline"}
+                      variant={selectedDuration === duration.value ? 'default' : 'outline'}
                       className={cn(
-                        "h-[44px] rounded-full px-6",
-                        selectedDuration === duration.value && "font-bold"
+                        'h-[44px] rounded-full px-6',
+                        selectedDuration === duration.value && 'font-bold'
                       )}
                       onClick={() => handleDurationChange(duration.value)}
                     >
@@ -498,25 +488,24 @@ export function AvailabilityForm() {
                         <div className="text-center text-sm font-medium">{day.label}</div>
                         <div
                           className={cn(
-                            "h-24 rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors",
+                            'h-24 rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors',
                             schedule
-                              ? "bg-primary/10 border-primary"
+                              ? 'bg-primary/10 border-primary'
                               : isUnavailable
-                                ? "bg-destructive/10 border-destructive"
-                                : "bg-muted/30 border-muted hover:border-primary/50"
+                                ? 'bg-destructive/10 border-destructive'
+                                : 'bg-muted/30 border-muted hover:border-primary/50'
                           )}
                           onClick={() => handleDayClick(day.value)}
                         >
                           {schedule ? (
                             <div className="text-center px-2">
                               <div className="text-xs font-medium">
-                                {schedule.startTime.replace(" AM", "").replace(" PM", "")} - {schedule.endTime.replace(" AM", "").replace(" PM", "")}
+                                {schedule.startTime.replace(' AM', '').replace(' PM', '')} -{' '}
+                                {schedule.endTime.replace(' AM', '').replace(' PM', '')}
                               </div>
                             </div>
                           ) : isUnavailable ? (
-                            <div className="text-xs font-medium text-destructive">
-                              Indisponível
-                            </div>
+                            <div className="text-xs font-medium text-destructive">Indisponível</div>
                           ) : (
                             <Plus className="h-5 w-5 text-muted-foreground" />
                           )}
@@ -549,15 +538,15 @@ export function AvailabilityForm() {
                         unavailable: unavailableDates,
                       }}
                       modifiersClassNames={{
-                        scheduled: "bg-primary text-primary-foreground font-medium rounded-full",
-                        unavailable: "bg-destructive text-destructive-foreground font-medium rounded-full",
+                        scheduled: 'bg-primary text-primary-foreground font-medium rounded-full',
+                        unavailable:
+                          'bg-destructive text-destructive-foreground font-medium rounded-full',
                       }}
                     />
                   </div>
                 </div>
               </CardContent>
             </Card>
-
           </div>
 
           {/* Right Column - Recurring Schedules */}
@@ -568,16 +557,18 @@ export function AvailabilityForm() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {recurringSchedules.map((schedule) => {
-                  const dayLabel = daysOfWeek.find((d) => d.value === schedule.day)?.label || schedule.day
-                  const dayName = {
-                    seg: "Segunda-feira",
-                    ter: "Terça-feira",
-                    qua: "Quarta-feira",
-                    qui: "Quinta-feira",
-                    sex: "Sexta-feira",
-                    sab: "Sábado",
-                    dom: "Domingo",
-                  }[schedule.day] || schedule.day
+                  const dayLabel =
+                    daysOfWeek.find((d) => d.value === schedule.day)?.label || schedule.day
+                  const dayName =
+                    {
+                      seg: 'Segunda-feira',
+                      ter: 'Terça-feira',
+                      qua: 'Quarta-feira',
+                      qui: 'Quinta-feira',
+                      sex: 'Sexta-feira',
+                      sab: 'Sábado',
+                      dom: 'Domingo',
+                    }[schedule.day] || schedule.day
 
                   return (
                     <div
@@ -585,9 +576,7 @@ export function AvailabilityForm() {
                       className="flex items-center justify-between p-3 rounded-lg border bg-muted/30"
                     >
                       <div>
-                        <div className="font-medium text-sm">
-                          Toda {dayName}
-                        </div>
+                        <div className="font-medium text-sm">Toda {dayName}</div>
                         <div className="text-xs text-muted-foreground">
                           {schedule.startTime} - {schedule.endTime}
                         </div>
@@ -602,12 +591,12 @@ export function AvailabilityForm() {
                             setEditingScheduleId(schedule.id)
                             // Carregar dados do horário para edição
                             const parseTime = (timeStr: string) => {
-                              const [time, period] = timeStr.split(" ")
-                              const [hours, minutes] = time.split(":")
+                              const [time, period] = timeStr.split(' ')
+                              const [hours, minutes] = time.split(':')
                               let hour = parseInt(hours)
-                              if (period === "PM" && hour !== 12) hour += 12
-                              if (period === "AM" && hour === 12) hour = 0
-                              return `${hour.toString().padStart(2, "0")}:${minutes}`
+                              if (period === 'PM' && hour !== 12) hour += 12
+                              if (period === 'AM' && hour === 12) hour = 0
+                              return `${hour.toString().padStart(2, '0')}:${minutes}`
                             }
 
                             const start = parseTime(schedule.startTime)
@@ -615,14 +604,20 @@ export function AvailabilityForm() {
 
                             // Gerar slots entre start e end
                             const slots: string[] = []
-                            const [startHour, startMin] = start.split(":").map(Number)
-                            const [endHour, endMin] = end.split(":").map(Number)
+                            const [startHour, startMin] = start.split(':').map(Number)
+                            const [endHour, endMin] = end.split(':').map(Number)
 
-                            for (let h = startHour; h < endHour || (h === endHour && startMin < endMin); h++) {
+                            for (
+                              let h = startHour;
+                              h < endHour || (h === endHour && startMin < endMin);
+                              h++
+                            ) {
                               for (let m = 0; m < 60; m += sessionDurationMinutes + 10) {
                                 if (h === startHour && m < startMin) continue
                                 if (h === endHour && m >= endMin) break
-                                slots.push(`${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`)
+                                slots.push(
+                                  `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
+                                )
                               }
                             }
 
@@ -631,7 +626,7 @@ export function AvailabilityForm() {
                             setIsSpecificDate(false)
                             setSelectedTimes(slots)
                             setIsNotAvailable(false)
-                            setRecurrence("none")
+                            setRecurrence('none')
                             setOpenDialog(true)
                           }}
                         >
@@ -662,7 +657,7 @@ export function AvailabilityForm() {
             className="font-bold h-[44px]"
             disabled={!form.formState.isValid || isSubmitting}
           >
-            {isSubmitting ? "Salvando..." : "Salvar Alterações"}
+            {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
           </Button>
         </div>
       </form>
@@ -676,7 +671,7 @@ export function AvailabilityForm() {
                 ? `Configurar Horários - ${format(selectedDate, "d 'de' MMMM", { locale: ptBR })}`
                 : selectedDay
                   ? `Configurar Horários - ${daysOfWeek.find((d) => d.value === selectedDay)?.label}`
-                  : "Configurar Horários"}
+                  : 'Configurar Horários'}
             </DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-6">
@@ -684,12 +679,12 @@ export function AvailabilityForm() {
             <div>
               <Button
                 type="button"
-                variant={isNotAvailable ? "default" : "outline"}
+                variant={isNotAvailable ? 'default' : 'outline'}
                 className={cn(
-                  "w-full h-[44px]",
+                  'w-full h-[44px]',
                   isNotAvailable
-                    ? "bg-primary text-primary-foreground font-medium"
-                    : "border-primary/30 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary"
+                    ? 'bg-primary text-primary-foreground font-medium'
+                    : 'border-primary/30 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary'
                 )}
                 onClick={handleNotAvailableToggle}
               >
@@ -708,17 +703,21 @@ export function AvailabilityForm() {
                     <Button
                       key={time}
                       type="button"
-                      variant={selectedTimes.includes(time) ? "default" : "outline"}
+                      variant={selectedTimes.includes(time) ? 'default' : 'outline'}
                       className={cn(
-                        "h-[44px]",
+                        'h-[44px]',
                         selectedTimes.includes(time)
-                          ? "bg-primary text-primary-foreground font-medium rounded-full"
-                          : "border-primary/30 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary rounded-full"
+                          ? 'bg-primary text-primary-foreground font-medium rounded-full'
+                          : 'border-primary/30 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary rounded-full'
                       )}
-                      style={selectedTimes.includes(time) ? {
-                        backgroundColor: 'hsl(340 72% 61%)',
-                        color: 'white'
-                      } : {}}
+                      style={
+                        selectedTimes.includes(time)
+                          ? {
+                              backgroundColor: 'hsl(340 72% 61%)',
+                              color: 'white',
+                            }
+                          : {}
+                      }
                       onClick={() => handleTimeToggle(time)}
                     >
                       {time}
@@ -739,7 +738,7 @@ export function AvailabilityForm() {
                 setSelectedDate(null)
                 setSelectedTimes([])
                 setIsNotAvailable(false)
-                setRecurrence("none")
+                setRecurrence('none')
                 setIsSpecificDate(false)
                 setEditingScheduleId(null)
               }}
@@ -753,7 +752,7 @@ export function AvailabilityForm() {
               className="font-bold h-[44px] bg-primary text-primary-foreground hover:bg-primary/90"
               style={{
                 backgroundColor: 'hsl(340 72% 61%)',
-                color: 'white'
+                color: 'white',
               }}
             >
               Salvar
@@ -773,18 +772,18 @@ export function AvailabilityForm() {
         </Button>
         <Button
           type="submit"
-          disabled={recurringSchedules.length === 0 && specificDateSchedules.length === 0 || isSubmitting}
+          disabled={
+            (recurringSchedules.length === 0 && specificDateSchedules.length === 0) || isSubmitting
+          }
           className="font-bold"
           style={{
             backgroundColor: 'hsl(340 72% 61%)',
-            color: 'white'
+            color: 'white',
           }}
         >
           Próximo
         </Button>
       </div>
-
     </Form>
   )
 }
-
