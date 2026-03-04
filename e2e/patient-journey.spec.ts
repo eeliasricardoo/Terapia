@@ -35,7 +35,7 @@ test.describe('Jornada do Paciente', () => {
 
         // Aguardar o carregamento da página de busca
         await expect(page).toHaveURL(/\/busca/);
-        await expect(page.getByRole('heading', { name: /Encontre seu Psicólogo/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Encontre seu psicólogo ideal/i })).toBeVisible();
 
         // 4. Se não carregarem mocks da API via RSC (Server Components), pode depender de estado do BD. 
         // Como o Next usa Server Actions, vamos fazer a busca real via UI ou assumir que o mock de rede vai funcionar se houver fetch client-side.
