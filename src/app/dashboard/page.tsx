@@ -10,6 +10,8 @@ import { NextSessionHero } from "./_components/next-session-hero"
 import { QuickActions } from "./_components/quick-actions"
 import { RecentHistory } from "./_components/recent-history"
 
+import { getPsychologistDashboardData } from "@/lib/actions/dashboard"
+
 export default async function DashboardPage() {
     let userProfile = await getCurrentUserProfile()
 
@@ -40,7 +42,8 @@ export default async function DashboardPage() {
     }
 
     if (userProfile.role === 'PSYCHOLOGIST') {
-        return <PsychologistDashboard userProfile={userProfile} />
+        const dashboardData = await getPsychologistDashboardData()
+        return <PsychologistDashboard userProfile={userProfile} dashboardData={dashboardData} />
     }
 
     const userName = userProfile?.full_name?.split(' ')[0] || 'Usuário'

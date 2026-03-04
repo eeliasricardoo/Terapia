@@ -27,52 +27,17 @@ import {
 import Link from "next/link"
 import { Profile } from "@/lib/supabase/types"
 
+import { PsychologistDashboardData } from "@/lib/actions/dashboard"
+
 interface Props {
     userProfile: Profile
+    dashboardData: PsychologistDashboardData
 }
 
-export function PsychologistDashboard({ userProfile }: Props) {
+export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
     const userName = userProfile?.full_name?.split(' ')[0] || 'Doutor(a)'
 
-    // Mock data for psychologist dashboard
-    const UPCOMING_SESSIONS = [
-        {
-            id: 1,
-            patient: "Mariana Silva",
-            time: "14:00",
-            type: "Terapia Individual",
-            status: "confirmed",
-            image: "/avatars/03.png",
-            duration: "50 min",
-            details: "Sessão recorrente - Foco em ansiedade"
-        },
-        {
-            id: 2,
-            patient: "João Santos",
-            time: "15:00",
-            type: "Terapia Individual",
-            status: "pending",
-            image: "/avatars/04.png",
-            duration: "50 min",
-            details: "Primeira consulta"
-        },
-        {
-            id: 3,
-            patient: "Ana Oliveira",
-            time: "16:30",
-            type: "Acompanhamento",
-            status: "confirmed",
-            image: "/avatars/05.png",
-            duration: "30 min",
-            details: "Retorno mensal"
-        },
-    ]
-
-    const RECENT_PATIENTS = [
-        { id: 1, name: "Lucas Mendes", lastSession: "Ontem", status: "active", diagnosis: "Ansiedade Generalizada" },
-        { id: 2, name: "Fernanda Costa", lastSession: "Há 2 dias", status: "active", diagnosis: "Burnout" },
-        { id: 3, name: "Roberto Almeida", lastSession: "Há 1 semana", status: "inactive", diagnosis: "Depressão Leve" },
-    ]
+    const { stats, upcomingSessions, recentPatients } = dashboardData
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
@@ -83,7 +48,7 @@ export function PsychologistDashboard({ userProfile }: Props) {
                         Painel do Profissional
                     </h1>
                     <p className="text-slate-500 mt-2">
-                        Bem-vindo(a), {userName}. Você tem 3 atendimentos hoje.
+                        Bem-vindo(a), {userName}. Você tem {stats.sessionsToday} {stats.sessionsToday === 1 ? 'atendimento' : 'atendimentos'} hoje.
                     </p>
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto">
@@ -115,11 +80,7 @@ export function PsychologistDashboard({ userProfile }: Props) {
                             </div>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <h3 className="text-3xl font-bold text-slate-900 tracking-tight">4</h3>
-                            <div className="flex items-center text-emerald-600 text-xs font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
-                                <ArrowUpRight className="h-3 w-3 mr-0.5" />
-                                +2
-                            </div>
+                            <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{stats.sessionsToday}</h3>
                         </div>
                     </CardContent>
                 </Card>
@@ -142,17 +103,15 @@ export function PsychologistDashboard({ userProfile }: Props) {
                 <Card className="border-none shadow-sm bg-white hover:shadow-md transition-all duration-300">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
-                            <span className="text-sm font-medium text-slate-500">Faturamento (Mês)</span>
+                            <span className="text-sm font-medium text-slate-500">Receita Estimada (Mês)</span>
                             <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center">
                                 <CreditCard className="h-4 w-4 text-emerald-600" />
                             </div>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <h3 className="text-3xl font-bold text-slate-900 tracking-tight">R$ 3.2k</h3>
-                            <div className="flex items-center text-emerald-600 text-xs font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
-                                <ArrowUpRight className="h-3 w-3 mr-0.5" />
-                                +15%
-                            </div>
+                            <h3 className="text-3xl font-bold text-slate-900 tracking-tight">
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(stats.monthlyRevenue)}
+                            </h3>
                         </div>
                     </CardContent>
                 </Card>
@@ -180,7 +139,9 @@ export function PsychologistDashboard({ userProfile }: Props) {
                         <div className="flex items-center justify-between">
                             <div>
                                 <CardTitle className="text-lg font-semibold text-slate-900">Agenda de Hoje</CardTitle>
-                                <CardDescription>Terça-feira, 11 de Fevereiro</CardDescription>
+                                <CardDescription>
+                                    {new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())}
+                                </CardDescription>
                             </div>
                             <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium text-xs" asChild>
                                 <Link href="/dashboard/agenda">VER AGENDA &rarr;</Link>
@@ -189,8 +150,8 @@ export function PsychologistDashboard({ userProfile }: Props) {
                     </CardHeader>
                     <CardContent className="p-0 flex-1">
                         <div className="flex flex-col">
-                            {UPCOMING_SESSIONS.map((session, index) => {
-                                const isNext = index === 0;
+                            {upcomingSessions.map((session, index) => {
+                                const isNext = index === 0 && session.status === 'scheduled';
                                 return (
                                     <div
                                         key={session.id}
@@ -203,7 +164,7 @@ export function PsychologistDashboard({ userProfile }: Props) {
                                         {/* Time Column */}
                                         <div className="w-24 relative flex flex-col items-center justify-center py-6 border-r border-slate-100/50">
                                             <span className={`text-lg font-bold ${isNext ? 'text-blue-600' : 'text-slate-700'}`}>{session.time}</span>
-                                            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-1 bg-slate-100 px-1.5 py-0.5 rounded text-center min-w-[3rem]">{session.duration.replace(' min', '')} MIN</span>
+                                            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-1 bg-slate-100 px-1.5 py-0.5 rounded text-center min-w-[3rem]">{session.duration} MIN</span>
                                         </div>
 
                                         {/* Content */}
@@ -211,27 +172,27 @@ export function PsychologistDashboard({ userProfile }: Props) {
                                             <div className="flex items-center gap-4">
                                                 <Avatar className={`h-12 w-12 border-2 ${isNext ? 'border-blue-200' : 'border-slate-100'}`}>
                                                     <AvatarImage src={session.image} />
-                                                    <AvatarFallback className={`${isNext ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>{session.patient.charAt(0)}</AvatarFallback>
+                                                    <AvatarFallback className={`${isNext ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>{session.patientName.charAt(0)}</AvatarFallback>
                                                 </Avatar>
 
                                                 <div>
                                                     <h4 className={`font-semibold text-base ${isNext ? 'text-blue-900' : 'text-slate-900'}`}>
-                                                        {session.patient}
+                                                        {session.patientName}
                                                     </h4>
                                                     <div className="flex items-center gap-2 mt-1">
                                                         <span className="text-xs text-slate-500">
                                                             {session.type}
                                                         </span>
-                                                        {session.status === 'confirmed' && (
+                                                        {session.status === 'completed' && (
                                                             <div className="flex items-center text-[10px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded font-medium">
                                                                 <CheckCircle2 className="h-3 w-3 mr-1" />
-                                                                Confirmado
+                                                                Concluída
                                                             </div>
                                                         )}
-                                                        {session.status === 'pending' && (
-                                                            <div className="flex items-center text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded font-medium">
+                                                        {session.status === 'scheduled' && (
+                                                            <div className="flex items-center text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-medium">
                                                                 <Clock className="h-3 w-3 mr-1" />
-                                                                Pendente
+                                                                Agendada
                                                             </div>
                                                         )}
                                                     </div>
@@ -257,7 +218,7 @@ export function PsychologistDashboard({ userProfile }: Props) {
                                 )
                             })}
                         </div>
-                        {UPCOMING_SESSIONS.length === 0 && (
+                        {upcomingSessions.length === 0 && (
                             <div className="p-12 text-center bg-slate-50/50">
                                 <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm mb-4">
                                     <CalendarIcon className="h-6 w-6 text-slate-300" />
@@ -293,7 +254,7 @@ export function PsychologistDashboard({ userProfile }: Props) {
                                         <div className="h-6 w-6 rounded bg-pink-50 text-pink-600 flex items-center justify-center mr-3">
                                             <FileText className="h-3.5 w-3.5" />
                                         </div>
-                                        <span className="text-sm font-medium">Meus Prontuários</span>
+                                        <span className="text-sm font-medium">Meus Pacientes</span>
                                     </Link>
                                 </Button>
                             </div>
@@ -309,7 +270,7 @@ export function PsychologistDashboard({ userProfile }: Props) {
                         </CardHeader>
                         <CardContent className="p-0">
                             <div className="divide-y divide-slate-50">
-                                {RECENT_PATIENTS.map(patient => (
+                                {recentPatients.map(patient => (
                                     <div key={patient.id} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors cursor-pointer group">
                                         <div className="flex items-center gap-3">
                                             <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 border border-slate-200 group-hover:border-blue-200 group-hover:bg-blue-50 group-hover:text-blue-600 transition-all">
@@ -324,8 +285,8 @@ export function PsychologistDashboard({ userProfile }: Props) {
                                 ))}
                             </div>
                             <div className="p-3 border-t border-slate-50">
-                                <Button variant="ghost" size="sm" className="w-full text-slate-500 hover:text-slate-900 text-xs font-medium h-8">
-                                    Ver todos
+                                <Button variant="ghost" size="sm" className="w-full text-slate-500 hover:text-slate-900 text-xs font-medium h-8" asChild>
+                                    <Link href="/dashboard/pacientes">Ver todos</Link>
                                 </Button>
                             </div>
                         </CardContent>
