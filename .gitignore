@@ -49,3 +49,10 @@ node_modules/
 /playwright/.auth/
 
 /src/generated/prisma
+
+# Storybook
+storybook-static/
+storybook.log
+
+# VSCode Workspace
+*.code-workspace

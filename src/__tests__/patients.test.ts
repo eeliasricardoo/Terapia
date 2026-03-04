@@ -43,6 +43,7 @@ jest.mock('@/lib/utils/logger', () => ({
 jest.mock('@/lib/security', () => ({
   encryptData: jest.fn((data) => `encrypted-${data}`),
   decryptData: jest.fn((data) => data.replace('encrypted-', '')),
+  isValidUUID: jest.fn(() => true),
 }))
 
 describe('patients actions', () => {

@@ -60,30 +60,30 @@ describe('messages actions', () => {
 
   describe('getConversations', () => {
     it('should return empty array if user is not authenticated', async () => {
-      ; (getCurrentUserProfile as jest.Mock).mockResolvedValue(null)
+      ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(null)
       const result = await getConversations()
       expect(result).toEqual([])
     })
 
     it('should return formatted conversations for authenticated user', async () => {
-      ; (getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
-        ; (prisma.conversationParticipant.findMany as jest.Mock).mockResolvedValue([
-          {
-            conversation: {
-              id: CONV_ID,
-              messages: [{ content: 'Hello', createdAt: new Date() }],
-              participants: [
-                {
-                  userId: OTHER_USER_ID,
-                  user: {
-                    name: 'Dr. Smith',
-                    profiles: { fullName: 'Dr. Smith', avatarUrl: '/avatar.jpg' },
-                  },
+      ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
+      ;(prisma.conversationParticipant.findMany as jest.Mock).mockResolvedValue([
+        {
+          conversation: {
+            id: CONV_ID,
+            messages: [{ content: 'Hello', createdAt: new Date() }],
+            participants: [
+              {
+                userId: OTHER_USER_ID,
+                user: {
+                  name: 'Dr. Smith',
+                  profiles: { fullName: 'Dr. Smith', avatarUrl: '/avatar.jpg' },
                 },
-              ],
-            },
+              },
+            ],
           },
-        ])
+        },
+      ])
 
       const result = await getConversations()
 
@@ -96,7 +96,7 @@ describe('messages actions', () => {
 
   describe('getMessages', () => {
     it('should return empty array if user is not authenticated', async () => {
-      ; (getCurrentUserProfile as jest.Mock).mockResolvedValue(null)
+      ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(null)
       const result = await getMessages(CONV_ID)
       expect(result).toEqual([])
     })
@@ -107,20 +107,20 @@ describe('messages actions', () => {
     })
 
     it('should return formatted messages for a conversation', async () => {
-      ; (getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
+      ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
       const now = new Date()
-        ; (prisma.message.findMany as jest.Mock).mockResolvedValue([
-          {
-            id: MSG_ID,
-            content: 'Hello world',
-            senderId: USER_ID,
-            createdAt: now,
-            sender: {
-              name: 'Test User',
-              profiles: { fullName: 'Test User', avatarUrl: null },
-            },
+      ;(prisma.message.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: MSG_ID,
+          content: 'Hello world',
+          senderId: USER_ID,
+          createdAt: now,
+          sender: {
+            name: 'Test User',
+            profiles: { fullName: 'Test User', avatarUrl: null },
           },
-        ])
+        },
+      ])
 
       const result = await getMessages(CONV_ID)
 
@@ -143,15 +143,15 @@ describe('messages actions', () => {
     })
 
     it('should return error if user is not authenticated', async () => {
-      ; (getCurrentUserProfile as jest.Mock).mockResolvedValue(null)
+      ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(null)
       const result = await sendMessage(CONV_ID, 'Hello')
       expect(result).toEqual({ success: false, error: 'Não autorizado' })
     })
 
     it('should create message and update conversation timestamp', async () => {
-      ; (getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
-        ; (prisma.message.create as jest.Mock).mockResolvedValue({ id: MSG_NEW_ID })
-        ; (prisma.conversation.update as jest.Mock).mockResolvedValue({})
+      ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
+      ;(prisma.message.create as jest.Mock).mockResolvedValue({ id: MSG_NEW_ID })
+      ;(prisma.conversation.update as jest.Mock).mockResolvedValue({})
 
       const result = await sendMessage(CONV_ID, 'Nova mensagem')
 
@@ -169,8 +169,8 @@ describe('messages actions', () => {
     })
 
     it('should return error on database failure', async () => {
-      ; (getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
-        ; (prisma.message.create as jest.Mock).mockRejectedValue(new Error('DB error'))
+      ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
+      ;(prisma.message.create as jest.Mock).mockRejectedValue(new Error('DB error'))
 
       const result = await sendMessage(CONV_ID, 'Fail')
       expect(result).toEqual({ success: false, error: 'Erro ao enviar mensagem' })
@@ -184,16 +184,16 @@ describe('messages actions', () => {
     })
 
     it('should return null if user is not authenticated', async () => {
-      ; (getCurrentUserProfile as jest.Mock).mockResolvedValue(null)
+      ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(null)
       const result = await startOrGetConversation(OTHER_USER_ID)
       expect(result).toBeNull()
     })
 
     it('should return existing conversation id if already exists', async () => {
-      ; (getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
-        ; (prisma.conversationParticipant.findFirst as jest.Mock).mockResolvedValue({
-          conversationId: EXISTING_CONV_ID,
-        })
+      ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
+      ;(prisma.conversationParticipant.findFirst as jest.Mock).mockResolvedValue({
+        conversationId: EXISTING_CONV_ID,
+      })
 
       const result = await startOrGetConversation(OTHER_USER_ID)
 
@@ -202,9 +202,9 @@ describe('messages actions', () => {
     })
 
     it('should create new conversation if none exists', async () => {
-      ; (getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
-        ; (prisma.conversationParticipant.findFirst as jest.Mock).mockResolvedValue(null)
-        ; (prisma.conversation.create as jest.Mock).mockResolvedValue({ id: NEW_CONV_ID })
+      ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
+      ;(prisma.conversationParticipant.findFirst as jest.Mock).mockResolvedValue(null)
+      ;(prisma.conversation.create as jest.Mock).mockResolvedValue({ id: NEW_CONV_ID })
 
       const result = await startOrGetConversation(OTHER_USER_ID)
 

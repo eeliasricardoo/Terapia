@@ -28,6 +28,15 @@ jest.mock('@/lib/utils/logger', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
 }))
 
+jest.mock('@upstash/ratelimit', () => ({ Ratelimit: jest.fn() }))
+jest.mock('@upstash/redis', () => ({ Redis: jest.fn() }))
+
+jest.mock('@/lib/security', () => ({
+  encryptData: jest.fn((data) => `encrypted-${data}`),
+  decryptData: jest.fn((data) => data.replace('encrypted-', '')),
+  isValidUUID: jest.fn(() => true),
+}))
+
 import { createClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'

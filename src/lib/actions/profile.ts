@@ -26,7 +26,6 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
 
   // If profile is missing (e.g. after a DB reset), try to recreate it from Auth metadata
   if (error && error.code === 'PGRST116') {
-    console.log('Profile missing for user', user.id, 'recreating...')
     const meta = user.user_metadata
     const role = meta?.role || 'PATIENT'
     const fullName = meta?.full_name || user.email?.split('@')[0] || 'Usuário'
@@ -71,7 +70,6 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
     })
 
     if (userInDb && userInDb.role !== (data as Profile).role) {
-      console.log('Syncing user role with profile role...')
       await prisma.user.update({
         where: { id: user.id },
         data: { role: (data as Profile).role as any },

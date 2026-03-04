@@ -101,15 +101,11 @@ export function encryptData(text: string): string {
   if (!key) {
     throw new Error(
       'ENCRYPTION_KEY não configurada. Não é possível criptografar dados sensíveis de saúde. ' +
-      'Defina ENCRYPTION_KEY no .env com exatamente 32 caracteres.'
+        'Defina ENCRYPTION_KEY no .env com exatamente 32 caracteres.'
     )
   }
   const iv = randomBytes(IV_LENGTH)
-  const cipher = createCipheriv(
-    'aes-256-cbc',
-    Buffer.from(key.padEnd(32).slice(0, 32)),
-    iv
-  )
+  const cipher = createCipheriv('aes-256-cbc', Buffer.from(key.padEnd(32).slice(0, 32)), iv)
   let encrypted = cipher.update(text)
   encrypted = Buffer.concat([encrypted, cipher.final()])
   return iv.toString('hex') + ':' + encrypted.toString('hex')
@@ -128,11 +124,7 @@ export function decryptData(text: string): string {
     const textParts = text.split(':')
     const iv = Buffer.from(textParts.shift() as string, 'hex')
     const encryptedText = Buffer.from(textParts.join(':'), 'hex')
-    const decipher = createDecipheriv(
-      'aes-256-cbc',
-      Buffer.from(key.padEnd(32).slice(0, 32)),
-      iv
-    )
+    const decipher = createDecipheriv('aes-256-cbc', Buffer.from(key.padEnd(32).slice(0, 32)), iv)
     let decrypted = decipher.update(encryptedText)
     decrypted = Buffer.concat([decrypted, decipher.final()])
     return decrypted.toString()

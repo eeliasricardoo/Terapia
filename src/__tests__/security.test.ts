@@ -66,7 +66,7 @@ describe('security utilities', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
 
       const result = decryptData(invalidData)
-      // Can be either "Chave Inválida" (when key exists but data is bad) 
+      // Can be either "Chave Inválida" (when key exists but data is bad)
       // or "Chave Não Configurada" (when key is missing)
       expect(result).toMatch(/🔒 \[Dados Criptografados/)
       expect(consoleSpy).toHaveBeenCalled()
@@ -106,4 +106,3 @@ describe('security utilities', () => {
     })
   })
 })
-
