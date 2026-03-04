@@ -106,8 +106,8 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                             </div>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <h3 className="text-3xl font-bold text-slate-900 tracking-tight">12</h3>
-                            <span className="text-xs text-slate-400">Total 28</span>
+                            <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{stats.activePatients}</h3>
+                            <span className="text-xs text-slate-400">Total {stats.totalPatients}</span>
                         </div>
                     </CardContent>
                 </Card>
@@ -137,8 +137,12 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                             </div>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <h3 className="text-3xl font-bold text-slate-900 tracking-tight">4.9</h3>
-                            <span className="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full">Excelente</span>
+                            <h3 className="text-3xl font-bold text-slate-900 tracking-tight">
+                                {stats.averageRating.toFixed(1)}
+                            </h3>
+                            <span className="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full">
+                                {stats.averageRating >= 4.5 ? 'Excelente' : stats.averageRating >= 4 ? 'Muito Bom' : 'Bom'}
+                            </span>
                         </div>
                     </CardContent>
                 </Card>

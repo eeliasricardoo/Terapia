@@ -12,6 +12,7 @@ export type PsychologistDashboardData = {
         totalPatients: number
         monthlyRevenue: number
         revenueChange: number // % vs last month
+        averageRating: number
     }
     isVerified: boolean
     upcomingSessions: {
@@ -145,7 +146,8 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
                 activePatients: activeLinks.length,
                 totalPatients: totalLinks,
                 monthlyRevenue,
-                revenueChange: 0
+                revenueChange: 0,
+                averageRating: 5.0
             },
             isVerified: psychProfile.isVerified,
             upcomingSessions: sessionsToday.map(s => ({
