@@ -16,7 +16,8 @@ import {
     DollarSign,
     Settings,
     BarChart3,
-    BookOpen
+    BookOpen,
+    FileText
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
@@ -26,6 +27,7 @@ const PATIENT_MENU = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
     { href: "/busca", label: "Buscar Psicólogos", icon: Search },
     { href: "/dashboard/sessoes", label: "Minhas Sessões", icon: Calendar },
+    { href: "/dashboard/prontuario", label: "Meu Prontuário", icon: FileText },
     { href: "/dashboard/diario", label: "Diário Emocional", icon: BookOpen },
     { href: "/dashboard/mensagens", label: "Mensagens", icon: MessageSquare },
     { href: "/dashboard/perfil", label: "Meu Perfil", icon: User },
