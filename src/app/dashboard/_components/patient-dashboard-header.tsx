@@ -14,9 +14,20 @@ import {
 
 interface PatientDashboardHeaderProps {
   userName: string
+  nextSession: {
+    id: string
+    type: string
+    scheduledAt: string
+    durationMinutes: number
+    psychologist: {
+      name: string
+      specialty: string
+      image?: string
+    }
+  } | null
 }
 
-export function PatientDashboardHeader({ userName }: PatientDashboardHeaderProps) {
+export function PatientDashboardHeader({ userName, nextSession }: PatientDashboardHeaderProps) {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-8">
       <div>
@@ -35,7 +46,23 @@ export function PatientDashboardHeader({ userName }: PatientDashboardHeaderProps
             <DialogHeader>
               <DialogTitle>Sala de Espera Virtual</DialogTitle>
               <DialogDescription>
-                Sua sessão com Dra. Sofía Pérez está agendada para hoje às 14:00.
+                {nextSession ? (
+                  <>
+                    Sua sessão com {nextSession.psychologist.name} está agendada para{' '}
+                    {new Intl.DateTimeFormat('pt-BR', {
+                      day: 'numeric',
+                      month: 'long',
+                    }).format(new Date(nextSession.scheduledAt))}{' '}
+                    às{' '}
+                    {new Intl.DateTimeFormat('pt-BR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }).format(new Date(nextSession.scheduledAt))}
+                    .
+                  </>
+                ) : (
+                  <>Você não tem nenhuma sessão agendada no momento.</>
+                )}
               </DialogDescription>
             </DialogHeader>
             <div className="flex items-center justify-center py-6">
