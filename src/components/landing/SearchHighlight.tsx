@@ -21,7 +21,11 @@ const staggerContainer: Variants = {
   },
 }
 
-export function SearchHighlight() {
+interface SearchHighlightProps {
+  totalPsychologists?: number
+}
+
+export function SearchHighlight({ totalPsychologists = 500 }: SearchHighlightProps) {
   return (
     <section className="w-full py-20 md:py-32 bg-gradient-to-b from-[#FFFAF3] to-white relative overflow-hidden">
       {/* Background decorative elements */}
@@ -102,7 +106,7 @@ export function SearchHighlight() {
                 <div className="p-3 rounded-xl bg-blue-100/50 text-blue-600">
                   <CoreUsersIcon className="h-7 w-7" />
                 </div>
-                <h3 className="font-extrabold text-3xl text-slate-900">500+</h3>
+                <h3 className="font-extrabold text-3xl text-slate-900">{totalPsychologists}+</h3>
               </div>
               <p className="text-slate-600 font-medium">
                 Especialistas acolhedores e prontos para ouvir você sem julgamentos.
