@@ -6,12 +6,6 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { SessionSummaryDialog } from '@/components/dashboard/SessionSummaryDialog'
 
-const HISTORY = [
-  { id: 1, doctor: 'Dr. Carlos Pereira', date: '08 de Outubro de 2025' },
-  { id: 2, doctor: 'Dr. Carlos Pereira', date: '01 de Outubro de 2025' },
-  { id: 3, doctor: 'Dr. Carlos Pereira', date: '24 de Setembro de 2025' },
-]
-
 interface Props {
   history: {
     id: string
