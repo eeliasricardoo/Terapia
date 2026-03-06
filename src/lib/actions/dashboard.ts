@@ -124,6 +124,27 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
     })
     const monthlyRevenue = monthlySessions.reduce((acc, s) => acc + Number(s.price), 0)
 
+    // Calculate Last Month Revenue for Change %
+    const pastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const lastMonthStart = startOfMonth(pastMonthDate)
+    const lastMonthEnd = endOfMonth(pastMonthDate)
+
+    const lastMonthlySessions = await prisma.appointment.findMany({
+      where: {
+        psychologistId: psychProfile.id,
+        scheduledAt: { gte: lastMonthStart, lte: lastMonthEnd },
+        status: 'COMPLETED',
+      },
+    })
+    const lastMonthRevenue = lastMonthlySessions.reduce((acc, s) => acc + Number(s.price), 0)
+
+    let revenueChange = 0
+    if (lastMonthRevenue > 0) {
+      revenueChange = ((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+    } else if (monthlyRevenue > 0) {
+      revenueChange = 100
+    }
+
     // 4. Recent Patients (based on latest appointments)
     const recentAppts = await prisma.appointment.findMany({
       where: { psychologistId: psychProfile.id },
@@ -164,8 +185,8 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
         activePatients: activeLinks.length,
         totalPatients: totalLinks,
         monthlyRevenue,
-        revenueChange: 0,
-        averageRating: 5.0,
+        revenueChange: Math.round(revenueChange),
+        averageRating: 0, // Ratings not yet implemented
       },
       isVerified: psychProfile.isVerified,
       upcomingSessions: sessionsToday.map((s) => ({
@@ -198,60 +219,65 @@ export async function getPatientDashboardData(): Promise<PatientDashboardData> {
     if (!user) throw new Error('Não autenticado')
 
     // 1. Next Session
-    const now = new Date().toISOString()
-    const { data: nextSessionData } = await supabase
-      .from('appointments')
-      .select(
-        `
-                *,
-                psychologist:profiles!appointments_psychologist_id_fkey(*)
-            `
-      )
-      .eq('patient_id', user.id)
-      .gte('scheduled_at', now)
-      .eq('status', 'scheduled')
-      .order('scheduled_at', { ascending: true })
-      .limit(1)
-      .single()
+    const nextSessionAppt = await prisma.appointment.findFirst({
+      where: {
+        patientId: user.id,
+        scheduledAt: { gte: new Date() },
+        status: 'SCHEDULED',
+      },
+      orderBy: { scheduledAt: 'asc' },
+      include: {
+        psychologist: {
+          include: {
+            user: { include: { profiles: true } },
+          },
+        },
+      },
+    })
 
     let nextSession = null
-    if (nextSessionData) {
+    if (nextSessionAppt) {
+      const pProfile = nextSessionAppt.psychologist.user.profiles
       nextSession = {
-        id: nextSessionData.id,
+        id: nextSessionAppt.id,
         type: 'Terapia Individual',
-        scheduledAt: nextSessionData.scheduled_at,
-        durationMinutes: nextSessionData.duration_minutes,
+        scheduledAt: nextSessionAppt.scheduledAt.toISOString(),
+        durationMinutes: nextSessionAppt.durationMinutes,
         psychologist: {
-          name: (nextSessionData.psychologist as any).full_name || 'Psicólogo',
-          specialty: 'Psicólogo Clínico',
-          image: (nextSessionData.psychologist as any).avatar_url,
+          name: pProfile?.fullName || nextSessionAppt.psychologist.user.name || 'Psicólogo',
+          specialty: nextSessionAppt.psychologist.specialties[0] || 'Psicólogo Clínico',
+          image: pProfile?.avatarUrl || undefined,
         },
       }
     }
 
     // 2. Recent Sessions
-    const { data: recentData } = await supabase
-      .from('appointments')
-      .select(
-        `
-                *,
-                psychologist:profiles!appointments_psychologist_id_fkey(*)
-            `
-      )
-      .eq('patient_id', user.id)
-      .lte('scheduled_at', now)
-      .order('scheduled_at', { ascending: false })
-      .limit(5)
+    const recentAppts = await prisma.appointment.findMany({
+      where: {
+        patientId: user.id,
+        scheduledAt: { lte: new Date() },
+      },
+      orderBy: { scheduledAt: 'desc' },
+      take: 5,
+      include: {
+        psychologist: {
+          include: {
+            user: { include: { profiles: true } },
+          },
+        },
+      },
+    })
 
-    const recentSessions = (recentData || []).map((s) => ({
+    const recentSessions = recentAppts.map((s) => ({
       id: s.id,
-      psychologistName: (s.psychologist as any).full_name || 'Psicólogo',
+      psychologistName:
+        s.psychologist.user.profiles?.fullName || s.psychologist.user.name || 'Psicólogo',
       date: new Intl.DateTimeFormat('pt-BR', {
         day: '2-digit',
         month: 'short',
         hour: '2-digit',
         minute: '2-digit',
-      }).format(new Date(s.scheduled_at)),
+      }).format(s.scheduledAt),
       status: s.status.toLowerCase(),
     }))
 
