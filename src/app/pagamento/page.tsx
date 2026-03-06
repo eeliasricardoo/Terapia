@@ -19,7 +19,7 @@ function PaymentContent() {
     isProcessing,
     isSuccess,
     psychTimezone,
-    cardForm,
+
     handlePayment,
   } = useCheckout()
 
@@ -61,7 +61,6 @@ function PaymentContent() {
                 isProcessing={isProcessing}
                 isFetchingInfo={isFetchingInfo}
                 price={price}
-                cardForm={cardForm}
               />
             </div>
           </>

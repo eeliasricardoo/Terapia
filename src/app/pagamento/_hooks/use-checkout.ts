@@ -26,12 +26,6 @@ export function useCheckout() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [psychTimezone, setPsychTimezone] = useState('America/Sao_Paulo')
 
-  // Form inputs (Mock for UI, even if using Stripe Checkout)
-  const [cardNumber, setCardNumber] = useState('')
-  const [cardName, setCardName] = useState('')
-  const [expiry, setExpiry] = useState('')
-  const [cvv, setCvv] = useState('')
-
   useEffect(() => {
     const loadCheckoutInfo = async () => {
       setIsFetchingInfo(true)
@@ -109,16 +103,7 @@ export function useCheckout() {
     isProcessing,
     isSuccess,
     psychTimezone,
-    cardForm: {
-      cardNumber,
-      setCardNumber,
-      cardName,
-      setCardName,
-      expiry,
-      setExpiry,
-      cvv,
-      setCvv,
-    },
+
     handlePayment,
   }
 }

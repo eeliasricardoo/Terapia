@@ -12,16 +12,6 @@ interface PaymentMethodsProps {
   isProcessing: boolean
   isFetchingInfo: boolean
   price: string
-  cardForm: {
-    cardNumber: string
-    setCardNumber: (val: string) => void
-    cardName: string
-    setCardName: (val: string) => void
-    expiry: string
-    setExpiry: (val: string) => void
-    cvv: string
-    setCvv: (val: string) => void
-  }
 }
 
 export function PaymentMethods({
@@ -29,11 +19,7 @@ export function PaymentMethods({
   isProcessing,
   isFetchingInfo,
   price,
-  cardForm,
 }: PaymentMethodsProps) {
-  const { cardNumber, setCardNumber, cardName, setCardName, expiry, setExpiry, cvv, setCvv } =
-    cardForm
-
   return (
     <div>
       <h2 className="text-xl font-semibold mb-6 text-slate-900">Escolha seu método de pagamento</h2>
@@ -63,55 +49,17 @@ export function PaymentMethods({
             </TabsList>
 
             <TabsContent value="card" className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="cardNumber">Número do cartão</Label>
-                <div className="relative">
-                  <CreditCard className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="cardNumber"
-                    placeholder="0000 0000 0000 0000"
-                    className="pl-9 h-11 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                  />
+              <div className="flex flex-col items-center justify-center py-6 text-center space-y-4">
+                <div className="h-16 w-16 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-2">
+                  <Lock className="h-8 w-8" />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cardName">Nome no cartão</Label>
-                <Input
-                  id="cardName"
-                  placeholder="João da Silva"
-                  className="h-11 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                  value={cardName}
-                  onChange={(e) => setCardName(e.target.value)}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="expiry">Validade (MM/AA)</Label>
-                  <Input
-                    id="expiry"
-                    placeholder="MM/AA"
-                    className="h-11 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                    value={expiry}
-                    onChange={(e) => setExpiry(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="cvv">CVV</Label>
-                  <div className="relative">
-                    <Lock className="absolute right-3 top-3 h-4 w-4 text-slate-400" />
-                    <Input
-                      id="cvv"
-                      placeholder="123"
-                      className="h-11 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                      value={cvv}
-                      onChange={(e) => setCvv(e.target.value)}
-                    />
-                  </div>
-                </div>
+                <h3 className="font-medium text-lg text-slate-900">
+                  Pagamento Exclusivo via Stripe
+                </h3>
+                <p className="text-sm text-slate-500 max-w-sm">
+                  Ao clicar em &quot;Pagar Agora&quot;, você será redirecionado com total segurança
+                  para a plataforma do Stripe para inserir os dados do seu cartão.
+                </p>
               </div>
 
               <Button
