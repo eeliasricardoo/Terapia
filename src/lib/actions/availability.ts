@@ -264,3 +264,108 @@ export async function getPsychologistAvailability(
     appointments: appointmentsMap,
   }
 }
+
+import { format, isBefore, startOfDay, addMinutes } from 'date-fns'
+import { toZonedTime } from 'date-fns-tz'
+
+export async function getAvailableTimeSlots(
+  psychologistId: string,
+  dateStr: string // YYYY-MM-DD
+): Promise<string[]> {
+  const availability = await getPsychologistAvailability(psychologistId)
+  if (!availability) return []
+
+  const date = new Date(dateStr)
+  const timezone = availability.timezone || 'America/Sao_Paulo'
+  const today = toZonedTime(new Date(), timezone)
+
+  // 1. Is Day Available
+  if (isBefore(date, startOfDay(today))) return []
+
+  let isAvailable = false
+  if (availability.overrides[dateStr]) {
+    isAvailable =
+      availability.overrides[dateStr].type === 'custom' &&
+      availability.overrides[dateStr].slots.length > 0
+  } else if (availability.weeklySchedule) {
+    const daysMap = [
+      'sunday',
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+    ] as const
+    const dayKey = daysMap[date.getDay()]
+    isAvailable = !!(
+      availability.weeklySchedule[dayKey]?.enabled &&
+      availability.weeklySchedule[dayKey].slots.length > 0
+    )
+  }
+
+  if (!isAvailable) return []
+
+  // 2. Generate Slots
+  let slotsDef: TimeSlot[] = []
+  if (availability.overrides[dateStr] && availability.overrides[dateStr].type === 'custom') {
+    slotsDef = availability.overrides[dateStr].slots
+  } else if (availability.weeklySchedule) {
+    const daysMap = [
+      'sunday',
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+    ] as const
+    const dayKey = daysMap[date.getDay()]
+    slotsDef = availability.weeklySchedule[dayKey]?.slots || []
+  }
+
+  const durationMinutes = availability.weeklySchedule?.sessionDuration
+    ? parseInt(availability.weeklySchedule.sessionDuration)
+    : 50
+  const breakMinutes = 10
+  const generatedSlots: string[] = []
+
+  const apptsOnThisDay = availability.appointments.filter((appt) => {
+    const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
+    return format(zonedAppt, 'yyyy-MM-dd') === dateStr
+  })
+
+  const nowZoned = toZonedTime(new Date(), timezone)
+  const isToday = format(nowZoned, 'yyyy-MM-dd') === dateStr
+  const nowMinutes = nowZoned.getHours() * 60 + nowZoned.getMinutes()
+
+  slotsDef.forEach((slot) => {
+    let current = new Date(`1970-01-01T${slot.start}:00`)
+    const end = new Date(`1970-01-01T${slot.end}:00`)
+
+    while (current < end) {
+      const hour = current.getHours().toString().padStart(2, '0')
+      const min = current.getMinutes().toString().padStart(2, '0')
+      const slotStartMin = current.getHours() * 60 + current.getMinutes()
+      const slotEndMin = slotStartMin + durationMinutes
+
+      const hasConflict = apptsOnThisDay.some((appt) => {
+        const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
+        const apptStartMin = zonedAppt.getHours() * 60 + zonedAppt.getMinutes()
+        const apptEndMin = apptStartMin + appt.duration_minutes
+        return slotStartMin < apptEndMin && slotEndMin > apptStartMin
+      })
+
+      const isPast = isToday && slotStartMin <= nowMinutes + 30
+
+      if (!hasConflict && !isPast) {
+        generatedSlots.push(`${hour}:${min}`)
+      }
+
+      current = addMinutes(current, durationMinutes + breakMinutes)
+      if (addMinutes(current, durationMinutes) > end) break
+    }
+  })
+
+  return generatedSlots
+}

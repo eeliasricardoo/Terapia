@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getAvailableTimeSlots } from '@/lib/actions/availability'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -19,24 +20,9 @@ interface RescheduleDialogProps {
     image: string
     date: string
     time: string
+    psychologistId?: string
   }
 }
-
-// Mock times
-const TIMES = [
-  '10:00',
-  '10:30',
-  '11:00',
-  '11:30',
-  '14:00',
-  '14:30',
-  '15:00',
-  '15:30',
-  '16:00',
-  '16:30',
-  '17:00',
-  '17:30',
-]
 
 export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
   const today = startOfToday()
@@ -44,8 +30,32 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(today)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [startIndex, setStartIndex] = useState(0)
+  const [timeSlots, setTimeSlots] = useState<string[]>([])
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false)
+
   const startDate = startOfWeek(today, { weekStartsOn: 0 }) // Sunday
   const visibleDates = Array.from({ length: 7 }).map((_, i) => addDays(startDate, startIndex + i))
+
+  useEffect(() => {
+    async function fetchSlots() {
+      if (!selectedDate || !session.psychologistId) {
+        setTimeSlots([])
+        return
+      }
+      setIsLoadingSlots(true)
+      try {
+        const dateStr = format(selectedDate, 'yyyy-MM-dd')
+        const slots = await getAvailableTimeSlots(session.psychologistId, dateStr)
+        setTimeSlots(slots)
+      } catch (error) {
+        console.error('Failed to fetch slots:', error)
+        setTimeSlots([])
+      } finally {
+        setIsLoadingSlots(false)
+      }
+    }
+    fetchSlots()
+  }, [selectedDate, session.psychologistId])
 
   const handlePrevDate = () => {
     if (startIndex > 0) {
@@ -176,18 +186,28 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
 
             {/* Time Slots */}
             <div className="flex-1 overflow-y-auto pr-2">
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                {TIMES.map((time) => (
-                  <Button
-                    key={time}
-                    variant={selectedTime === time ? 'default' : 'outline'}
-                    className={`w-full ${selectedTime === time ? 'bg-primary text-primary-foreground' : 'hover:border-primary hover:text-primary'}`}
-                    onClick={() => setSelectedTime(time)}
-                  >
-                    {time}
-                  </Button>
-                ))}
-              </div>
+              {isLoadingSlots ? (
+                <div className="flex justify-center py-8 text-muted-foreground">
+                  <span className="text-sm">Carregando horários...</span>
+                </div>
+              ) : timeSlots.length === 0 ? (
+                <div className="flex justify-center py-8 text-muted-foreground">
+                  <span className="text-sm">Nenhum horário disponível</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {timeSlots.map((time) => (
+                    <Button
+                      key={time}
+                      variant={selectedTime === time ? 'default' : 'outline'}
+                      className={`w-full ${selectedTime === time ? 'bg-primary text-primary-foreground' : 'hover:border-primary hover:text-primary'}`}
+                      onClick={() => setSelectedTime(time)}
+                    >
+                      {time}
+                    </Button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Footer Action */}

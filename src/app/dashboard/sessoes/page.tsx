@@ -135,6 +135,7 @@ export default async function SessionsPage() {
                               image: otherParty?.avatar_url || '/avatars/01.png',
                               date: format(scheduledDate, "dd 'de' MMMM, yyyy", { locale: ptBR }),
                               time: format(scheduledDate, 'HH:mm'),
+                              psychologistId: session.psychologist_id,
                             }}
                           >
                             <Button variant="outline" className="w-full md:w-auto">
