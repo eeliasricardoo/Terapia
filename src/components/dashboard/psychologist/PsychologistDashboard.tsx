@@ -146,21 +146,20 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
         <Card className="border-none shadow-sm bg-white hover:shadow-md transition-all duration-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-medium text-slate-500">Avaliação Média</span>
+              <span className="text-sm font-medium text-slate-500">Variação Receita</span>
               <div className="h-8 w-8 rounded-full bg-amber-50 flex items-center justify-center">
-                <Star className="h-4 w-4 text-amber-600" />
+                <TrendingUp className="h-4 w-4 text-amber-600" />
               </div>
             </div>
             <div className="flex items-baseline gap-2">
               <h3 className="text-3xl font-bold text-slate-900 tracking-tight">
-                {stats.averageRating.toFixed(1)}
+                {stats.revenueChange >= 0 ? '+' : ''}
+                {stats.revenueChange}%
               </h3>
-              <span className="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full">
-                {stats.averageRating >= 4.5
-                  ? 'Excelente'
-                  : stats.averageRating >= 4
-                    ? 'Muito Bom'
-                    : 'Bom'}
+              <span
+                className={`text-xs font-medium px-2 py-0.5 rounded-full ${stats.revenueChange >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50'}`}
+              >
+                {stats.revenueChange >= 0 ? 'vs. mês anterior' : 'vs. mês anterior'}
               </span>
             </div>
           </CardContent>

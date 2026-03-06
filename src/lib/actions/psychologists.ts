@@ -157,7 +157,7 @@ export async function getPsychologistStats(userId: string) {
     })
 
     if (!profile) {
-      return { totalSessions: 0, averageRating: 0, reviewCount: 0 }
+      return { totalSessions: 0 }
     }
 
     const totalSessions = await prisma.appointment.count({
@@ -167,18 +167,9 @@ export async function getPsychologistStats(userId: string) {
       },
     })
 
-    // Rating and reviews are not yet fully implemented in DB, defaulting to 0
-    return {
-      totalSessions,
-      averageRating: 0,
-      reviewCount: 0,
-    }
+    return { totalSessions }
   } catch (error) {
     console.error('Error fetching psychologist stats:', error)
-    return {
-      totalSessions: 0,
-      averageRating: 0,
-      reviewCount: 0,
-    }
+    return { totalSessions: 0 }
   }
 }
