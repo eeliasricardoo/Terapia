@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { PsychologistWithProfile, PsychologistSearchFilters } from '@/lib/supabase/types'
+import { prisma } from '@/lib/prisma'
 
 /**
  * Get all verified psychologists
@@ -149,11 +150,35 @@ export async function searchPsychologists(
  * Get psychologist statistics
  */
 export async function getPsychologistStats(userId: string) {
-  // This would require a sessions table - for now return mock data
-  // TODO: Implement when sessions table is created
-  return {
-    totalSessions: 0,
-    averageRating: 0,
-    reviewCount: 0,
+  try {
+    const profile = await prisma.psychologistProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    })
+
+    if (!profile) {
+      return { totalSessions: 0, averageRating: 0, reviewCount: 0 }
+    }
+
+    const totalSessions = await prisma.appointment.count({
+      where: {
+        psychologistId: profile.id,
+        status: 'COMPLETED',
+      },
+    })
+
+    // Rating and reviews are not yet fully implemented in DB, defaulting to 0
+    return {
+      totalSessions,
+      averageRating: 0,
+      reviewCount: 0,
+    }
+  } catch (error) {
+    console.error('Error fetching psychologist stats:', error)
+    return {
+      totalSessions: 0,
+      averageRating: 0,
+      reviewCount: 0,
+    }
   }
 }
