@@ -7,6 +7,7 @@ import { PlansConfig } from './_components/plans-config'
 import { PlanDialog } from './_components/plan-dialog'
 import { CouponsConfig } from './_components/coupons-config'
 import { CouponDialog } from './_components/coupon-dialog'
+import { Loader2 } from 'lucide-react'
 
 export function ServicesConfig() {
   const {
@@ -14,6 +15,9 @@ export function ServicesConfig() {
     setSessionPrice,
     sessionDuration,
     setSessionDuration,
+    averagePlatformPrice,
+    isLoading,
+    isSaving,
     plans,
     coupons,
     dialogs,
@@ -21,10 +25,18 @@ export function ServicesConfig() {
     handlers,
   } = useServicesConfig()
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 text-slate-400 animate-spin" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-20">
       <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">Serviços & Tarifas</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-slate-900">Serviços &amp; Tarifas</h2>
         <p className="text-slate-500">
           Defina seus preços, crie pacotes promocionais e gerencie cupons de desconto.
         </p>
@@ -47,6 +59,8 @@ export function ServicesConfig() {
             setSessionPrice={setSessionPrice}
             sessionDuration={sessionDuration}
             setSessionDuration={setSessionDuration}
+            averagePlatformPrice={averagePlatformPrice}
+            isSaving={isSaving}
             onSave={handlers.handleSaveGeneral}
           />
         </TabsContent>

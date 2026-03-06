@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
+import { getServicesConfig, saveGeneralConfig } from '@/lib/actions/services-config'
 
 export type Plan = {
   id: string
@@ -23,37 +24,16 @@ export type Coupon = {
   active: boolean
 }
 
-const INITIAL_PLANS: Plan[] = [
-  { id: '1', name: 'Pacote Mensal', sessions: 4, price: 500.0, discount: 10, active: true },
-  { id: '2', name: 'Pacote Trimestral', sessions: 12, price: 1400.0, discount: 15, active: true },
-]
-
-const INITIAL_COUPONS: Coupon[] = [
-  {
-    id: '1',
-    code: 'PRIMEIRA10',
-    type: 'percentage',
-    value: 10,
-    maxUses: 100,
-    used: 45,
-    active: true,
-  },
-  {
-    id: '2',
-    code: 'VOLTA50',
-    type: 'fixed',
-    value: 50,
-    expiresAt: '2026-12-31',
-    used: 2,
-    active: true,
-  },
-]
-
 export function useServicesConfig() {
-  const [sessionPrice, setSessionPrice] = useState('150.00')
+  const [sessionPrice, setSessionPrice] = useState('')
   const [sessionDuration, setSessionDuration] = useState('50')
-  const [plans, setPlans] = useState<Plan[]>(INITIAL_PLANS)
-  const [coupons, setCoupons] = useState<Coupon[]>(INITIAL_COUPONS)
+  const [averagePlatformPrice, setAveragePlatformPrice] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Plans and coupons stay client-side for now (future: persist to DB)
+  const [plans, setPlans] = useState<Plan[]>([])
+  const [coupons, setCoupons] = useState<Coupon[]>([])
 
   const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false)
   const [isCouponDialogOpen, setIsCouponDialogOpen] = useState(false)
@@ -62,12 +42,40 @@ export function useServicesConfig() {
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null)
   const [newCoupon, setNewCoupon] = useState({ code: '', type: 'percentage', value: '', limit: '' })
 
-  const handleSaveGeneral = () => {
-    toast.success('Configurações atualizadas!', {
-      description: 'Valor e duração da sessão salvos com sucesso.',
-    })
+  // ─── Load config from DB ──────────────────────────────────────
+  const loadConfig = useCallback(async () => {
+    setIsLoading(true)
+    const result = await getServicesConfig()
+    if (result.success) {
+      setSessionPrice(result.data.sessionPrice)
+      setSessionDuration(result.data.sessionDuration)
+      setAveragePlatformPrice(result.data.averagePlatformPrice)
+    }
+    setIsLoading(false)
+  }, [])
+
+  useEffect(() => {
+    loadConfig()
+  }, [loadConfig])
+
+  // ─── Save General Config ──────────────────────────────────────
+  const handleSaveGeneral = async () => {
+    setIsSaving(true)
+    const result = await saveGeneralConfig(sessionPrice, sessionDuration)
+    setIsSaving(false)
+
+    if (result.success) {
+      toast.success('Configurações atualizadas!', {
+        description: 'Valor e duração da sessão salvos com sucesso.',
+      })
+    } else {
+      toast.error('Erro ao salvar', {
+        description: result.error,
+      })
+    }
   }
 
+  // ─── Plans Handlers (client-side for now) ─────────────────────
   const handleSavePlan = () => {
     const price = parseFloat(newPlan.price)
     const sessions = parseInt(newPlan.sessions)
@@ -132,6 +140,7 @@ export function useServicesConfig() {
     toast.success('Pacote removido.')
   }
 
+  // ─── Coupons Handlers (client-side for now) ───────────────────
   const handleAddCoupon = () => {
     const coupon: Coupon = {
       id: Math.random().toString(),
@@ -162,6 +171,9 @@ export function useServicesConfig() {
     setSessionPrice,
     sessionDuration,
     setSessionDuration,
+    averagePlatformPrice,
+    isLoading,
+    isSaving,
     plans,
     coupons,
     dialogs: {

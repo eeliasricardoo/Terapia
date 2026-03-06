@@ -18,13 +18,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { DollarSign, Check } from 'lucide-react'
+import { DollarSign, Check, Loader2 } from 'lucide-react'
 
 interface GeneralConfigProps {
   sessionPrice: string
   setSessionPrice: (val: string) => void
   sessionDuration: string
   setSessionDuration: (val: string) => void
+  averagePlatformPrice: string | null
+  isSaving: boolean
   onSave: () => void
 }
 
@@ -33,6 +35,8 @@ export function GeneralConfig({
   setSessionPrice,
   sessionDuration,
   setSessionDuration,
+  averagePlatformPrice,
+  isSaving,
   onSave,
 }: GeneralConfigProps) {
   return (
@@ -63,7 +67,12 @@ export function GeneralConfig({
                 className="pl-10 text-lg font-semibold border-slate-200 bg-slate-50 focus:bg-white"
               />
             </div>
-            <p className="text-xs text-slate-400">O valor médio na plataforma é R$ 180,00</p>
+            {averagePlatformPrice && (
+              <p className="text-xs text-slate-400">
+                O valor médio na plataforma é R${' '}
+                {Number(averagePlatformPrice).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -86,9 +95,17 @@ export function GeneralConfig({
         </div>
       </CardContent>
       <CardFooter className="bg-slate-50/50 border-t border-slate-100 p-6 flex justify-end">
-        <Button onClick={onSave} className="bg-slate-900 text-white shadow-sm hover:bg-slate-800">
-          <Check className="h-4 w-4 mr-2" />
-          Salvar Alterações
+        <Button
+          onClick={onSave}
+          disabled={isSaving}
+          className="bg-slate-900 text-white shadow-sm hover:bg-slate-800"
+        >
+          {isSaving ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Check className="h-4 w-4 mr-2" />
+          )}
+          {isSaving ? 'Salvando...' : 'Salvar Alterações'}
         </Button>
       </CardFooter>
     </Card>
