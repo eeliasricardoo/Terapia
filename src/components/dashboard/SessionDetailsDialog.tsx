@@ -22,9 +22,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Clock, MapPin, Video, FileText } from 'lucide-react'
+import { Calendar, Clock, Video, FileText, Loader2 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
+import { cancelSession } from '@/lib/actions/sessions'
+import { useRouter } from 'next/navigation'
 
 interface SessionDetailsDialogProps {
   children: React.ReactNode
@@ -43,13 +45,35 @@ interface SessionDetailsDialogProps {
 
 export function SessionDetailsDialog({ children, session }: SessionDetailsDialogProps) {
   const [open, setOpen] = useState(false)
+  const [isCanceling, setIsCanceling] = useState(false)
+  const router = useRouter()
 
-  const handleCancelSession = () => {
-    toast.success('Sessão cancelada com sucesso', {
-      description: 'Você receberá um e-mail de confirmação em breve.',
-      duration: 4000,
-    })
-    setOpen(false)
+  const handleCancelSession = async () => {
+    setIsCanceling(true)
+    try {
+      const result = await cancelSession(session.id)
+
+      if (result.success) {
+        toast.success('Sessão cancelada com sucesso', {
+          description: 'O profissional será notificado sobre o cancelamento.',
+          duration: 4000,
+        })
+        setOpen(false)
+        router.refresh()
+      } else {
+        toast.error('Erro ao cancelar sessão', {
+          description: result.error || 'Tente novamente mais tarde.',
+          duration: 4000,
+        })
+      }
+    } catch {
+      toast.error('Erro ao cancelar sessão', {
+        description: 'Ocorreu um erro inesperado. Tente novamente.',
+        duration: 4000,
+      })
+    } finally {
+      setIsCanceling(false)
+    }
   }
 
   return (
@@ -158,8 +182,15 @@ export function SessionDetailsDialog({ children, session }: SessionDetailsDialog
           <div className="flex gap-3 pt-4">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="flex-1">
-                  Cancelar Sessão
+                <Button variant="destructive" className="flex-1" disabled={isCanceling}>
+                  {isCanceling ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Cancelando...
+                    </>
+                  ) : (
+                    'Cancelar Sessão'
+                  )}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -175,15 +206,13 @@ export function SessionDetailsDialog({ children, session }: SessionDetailsDialog
                   <AlertDialogAction
                     onClick={handleCancelSession}
                     className="bg-red-600 hover:bg-red-700"
+                    disabled={isCanceling}
                   >
-                    Sim, cancelar sessão
+                    {isCanceling ? 'Cancelando...' : 'Sim, cancelar sessão'}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-            <Button variant="outline" className="flex-1">
-              Reagendar
-            </Button>
           </div>
         </div>
       </DialogContent>
