@@ -51,6 +51,10 @@ export type PatientDashboardData = {
     date: string
     status: string
   }[]
+  monthlyProgress: {
+    completedSessions: number
+    totalSessions: number
+  }
 }
 
 export async function getPsychologistDashboardData(): Promise<PsychologistDashboardData> {
@@ -281,12 +285,35 @@ export async function getPatientDashboardData(): Promise<PatientDashboardData> {
       status: s.status.toLowerCase(),
     }))
 
+    // 3. Monthly Progress
+    const now = new Date()
+    const monthStart = startOfMonth(now)
+    const monthEnd = endOfMonth(now)
+    const monthlyAppointments = await prisma.appointment.findMany({
+      where: {
+        patientId: user.id,
+        scheduledAt: { gte: monthStart, lte: monthEnd },
+        status: { in: ['COMPLETED', 'SCHEDULED'] },
+      },
+    })
+
+    const completedSessions = monthlyAppointments.filter((a) => a.status === 'COMPLETED').length
+    const totalSessions = monthlyAppointments.length
+
     return {
       nextSession,
       recentSessions,
+      monthlyProgress: {
+        completedSessions,
+        totalSessions: totalSessions > 0 ? totalSessions : 4, // fallback to min 4 to avoid 0/0
+      },
     }
   } catch (error) {
     logger.error('Error fetching patient dashboard data:', error)
-    return { nextSession: null, recentSessions: [] }
+    return {
+      nextSession: null,
+      recentSessions: [],
+      monthlyProgress: { completedSessions: 0, totalSessions: 4 },
+    }
   }
 }

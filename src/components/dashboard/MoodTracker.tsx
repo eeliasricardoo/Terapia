@@ -16,7 +16,14 @@ const MOODS = [
   { emoji: '😄', label: 'Muito bem', value: 5 },
 ]
 
-export function MoodTracker() {
+interface MoodTrackerProps {
+  monthlyProgress: {
+    completedSessions: number
+    totalSessions: number
+  }
+}
+
+export function MoodTracker({ monthlyProgress }: MoodTrackerProps) {
   const [selectedMood, setSelectedMood] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -111,9 +118,15 @@ export function MoodTracker() {
           <div className="space-y-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-600">Sessões este mês</span>
-              <span className="font-bold text-slate-900">3/4</span>
+              <span className="font-bold text-slate-900">
+                {monthlyProgress.completedSessions}/{monthlyProgress.totalSessions}
+              </span>
             </div>
-            <Progress value={75} className="h-2 bg-slate-100" indicatorClassName="bg-blue-500" />
+            <Progress
+              value={(monthlyProgress.completedSessions / monthlyProgress.totalSessions) * 100}
+              className="h-2 bg-slate-100"
+              indicatorClassName="bg-blue-500"
+            />
           </div>
         </div>
       </CardContent>
