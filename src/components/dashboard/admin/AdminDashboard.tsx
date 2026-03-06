@@ -5,11 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Users, ShieldCheck, Activity, Search, LayoutDashboard } from 'lucide-react'
 
+import { AdminDashboardData } from '@/lib/actions/dashboard'
+
 interface Props {
   userProfile: any
+  dashboardData: AdminDashboardData
 }
 
-export function AdminDashboard({ userProfile }: Props) {
+export function AdminDashboard({ userProfile, dashboardData }: Props) {
   const userName = userProfile?.full_name?.split(' ')[0] || 'Admin'
 
   return (
@@ -30,10 +33,30 @@ export function AdminDashboard({ userProfile }: Props) {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Usuários" value="--" icon={Users} color="blue" />
-        <StatCard title="Psicólogos Verificados" value="--" icon={ShieldCheck} color="emerald" />
-        <StatCard title="Sessões Ativas" value="--" icon={Activity} color="indigo" />
-        <StatCard title="Buscas Hoje" value="--" icon={Search} color="amber" />
+        <StatCard
+          title="Total Usuários"
+          value={dashboardData.totalUsers}
+          icon={Users}
+          color="blue"
+        />
+        <StatCard
+          title="Psicólogos Verificados"
+          value={dashboardData.verifiedPsychologists}
+          icon={ShieldCheck}
+          color="emerald"
+        />
+        <StatCard
+          title="Sessões Ativas"
+          value={dashboardData.activeSessions}
+          icon={Activity}
+          color="indigo"
+        />
+        <StatCard
+          title="Buscas Hoje"
+          value={dashboardData.searchesToday}
+          icon={Search}
+          color="amber"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
