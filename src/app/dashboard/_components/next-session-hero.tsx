@@ -27,7 +27,7 @@ interface Props {
 export function NextSessionHero({ session }: Props) {
   if (!session) {
     return (
-      <Card className="col-span-1 md:col-span-2 lg:col-span-2 border-none shadow-md overflow-hidden relative p-8 flex flex-col items-center justify-center text-center bg-white min-h-[300px]">
+      <Card className="border-none shadow-md overflow-hidden relative p-8 flex flex-col items-center justify-center text-center bg-white min-h-[300px]">
         <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
           <CalendarIcon className="h-8 w-8 text-slate-300" />
         </div>
@@ -49,7 +49,7 @@ export function NextSessionHero({ session }: Props) {
   const timeRange = `${format(scheduledDate, 'HH:mm')} - ${format(new Date(scheduledDate.getTime() + session.durationMinutes * 60000), 'HH:mm')}`
 
   return (
-    <Card className="col-span-1 md:col-span-2 lg:col-span-2 border-none shadow-md overflow-hidden relative">
+    <Card className="border-none shadow-md overflow-hidden relative">
       <div className="absolute top-0 right-0 p-6 opacity-10 hidden md:block">
         <CalendarIcon className="h-32 w-32 text-blue-600" />
       </div>
@@ -93,7 +93,7 @@ export function NextSessionHero({ session }: Props) {
         <div className="w-full md:w-1/3 bg-blue-50 relative min-h-[200px]">
           <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
             <p className="text-sm text-blue-800 italic">
-              "O autoconhecimento é o começo de toda sabedoria."
+              &quot;O autoconhecimento é o começo de toda sabedoria.&quot;
             </p>
           </div>
         </div>

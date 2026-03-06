@@ -23,7 +23,7 @@ interface Props {
 
 export function RecentHistory({ history }: Props) {
   return (
-    <Card className="col-span-1 md:col-span-2 lg:col-span-3 border-none shadow-sm">
+    <Card className="border-none shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between px-6 py-5 border-b border-slate-50">
         <div>
           <CardTitle className="text-lg font-semibold text-slate-900">Histórico Recente</CardTitle>

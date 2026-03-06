@@ -7,7 +7,7 @@ import Link from 'next/link'
 
 export function FindPsychologistCTA() {
   return (
-    <Card className="col-span-1 md:col-span-2 lg:col-span-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-none shadow-lg overflow-hidden relative">
+    <Card className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-none shadow-lg overflow-hidden relative">
       <div className="absolute top-0 right-0 p-6 opacity-10">
         <Search className="h-64 w-64 text-white" />
       </div>

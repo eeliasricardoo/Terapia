@@ -7,7 +7,7 @@ import Link from 'next/link'
 
 export function QuickActions() {
   return (
-    <div className="col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 gap-6">
       <Card className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
         <CardContent className="p-6">
           <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
