@@ -159,6 +159,39 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
       take: 10,
     })
 
+    // Get psychologist's Profile (for PatientPsychologistLink lookup)
+    const psychUserProfile = await prisma.profile.findUnique({
+      where: { user_id: user.id },
+      select: { id: true },
+    })
+
+    // Get unique patient IDs
+    const uniquePatientIds = [...new Set(recentAppts.map((a) => a.patientId))]
+
+    // Fetch link statuses for these patients
+    const patientLinks = psychUserProfile
+      ? await prisma.patientPsychologistLink.findMany({
+          where: {
+            psychologistId: psychUserProfile.id,
+            patientId: {
+              in: await prisma.profile
+                .findMany({
+                  where: { user_id: { in: uniquePatientIds } },
+                  select: { id: true },
+                })
+                .then((profiles) => profiles.map((p) => p.id)),
+            },
+          },
+          include: { patient: true },
+        })
+      : []
+
+    // Build a map: userId -> link status
+    const statusByUserId = new Map<string, string>()
+    patientLinks.forEach((link) => {
+      statusByUserId.set(link.patient.user_id, link.status)
+    })
+
     // Unique patients from recent appointments
     const uniquePatientsMap = new Map()
     recentAppts.forEach((appt) => {
@@ -167,7 +200,7 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
           id: appt.patientId,
           name: appt.patient.profiles?.fullName || appt.patient.name || 'Paciente',
           lastSession: appt.scheduledAt,
-          status: 'active', // Simplified
+          status: statusByUserId.get(appt.patientId) || 'active',
         })
       }
     })
