@@ -28,9 +28,20 @@ import { toast } from 'sonner'
 
 interface SessionDetailsDialogProps {
   children: React.ReactNode
+  session: {
+    id: string
+    type: string
+    scheduledAt: string
+    durationMinutes: number
+    psychologist: {
+      name: string
+      specialty: string
+      image?: string
+    }
+  }
 }
 
-export function SessionDetailsDialog({ children }: SessionDetailsDialogProps) {
+export function SessionDetailsDialog({ children, session }: SessionDetailsDialogProps) {
   const [open, setOpen] = useState(false)
 
   const handleCancelSession = () => {
@@ -53,7 +64,7 @@ export function SessionDetailsDialog({ children }: SessionDetailsDialogProps) {
           {/* Session Type */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground mb-2">Tipo de Sessão</h3>
-            <p className="text-lg font-semibold">Terapia Individual</p>
+            <p className="text-lg font-semibold">{session.type}</p>
             <Badge variant="secondary" className="mt-2">
               Próxima Sessão
             </Badge>
@@ -66,13 +77,12 @@ export function SessionDetailsDialog({ children }: SessionDetailsDialogProps) {
             <h3 className="text-sm font-medium text-muted-foreground mb-3">Profissional</h3>
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16 border-2 border-blue-100">
-                <AvatarImage src="/avatars/01.png" />
-                <AvatarFallback>SP</AvatarFallback>
+                <AvatarImage src={session.psychologist.image || undefined} />
+                <AvatarFallback>{session.psychologist.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-lg">Dra. Sofía Pérez</p>
-                <p className="text-sm text-muted-foreground">Psicóloga Clínica</p>
-                <p className="text-xs text-muted-foreground mt-1">CRP: 06/123456</p>
+                <p className="font-semibold text-lg">{session.psychologist.name}</p>
+                <p className="text-sm text-muted-foreground">{session.psychologist.specialty}</p>
               </div>
             </div>
           </div>
@@ -86,14 +96,34 @@ export function SessionDetailsDialog({ children }: SessionDetailsDialogProps) {
                 <Calendar className="h-4 w-4" />
                 Data
               </h3>
-              <p className="font-medium">Hoje, 10 de Fevereiro</p>
+              <p className="font-medium">
+                {new Intl.DateTimeFormat('pt-BR', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                }).format(new Date(session.scheduledAt))}
+              </p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 Horário
               </h3>
-              <p className="font-medium">14:00 - 14:50</p>
+              <p className="font-medium">
+                {new Intl.DateTimeFormat('pt-BR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                }).format(new Date(session.scheduledAt))}{' '}
+                -{' '}
+                {new Intl.DateTimeFormat('pt-BR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                }).format(
+                  new Date(
+                    new Date(session.scheduledAt).getTime() + session.durationMinutes * 60000
+                  )
+                )}
+              </p>
             </div>
           </div>
 
@@ -136,8 +166,8 @@ export function SessionDetailsDialog({ children }: SessionDetailsDialogProps) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Tem certeza que deseja cancelar?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Esta ação não pode ser desfeita. A sessão agendada para hoje às 14:00 será
-                    cancelada e o profissional será notificado.
+                    Esta ação não pode ser desfeita. A sessão agendada será cancelada e o
+                    profissional será notificado.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

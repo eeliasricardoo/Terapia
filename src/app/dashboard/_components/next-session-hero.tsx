@@ -75,7 +75,7 @@ export function NextSessionHero({ session }: Props) {
           </div>
 
           <div className="flex gap-3">
-            <SessionDetailsDialog>
+            <SessionDetailsDialog session={session}>
               <Button
                 variant="outline"
                 className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
