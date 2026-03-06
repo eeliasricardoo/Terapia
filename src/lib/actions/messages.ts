@@ -59,11 +59,29 @@ export async function getConversations() {
     },
   })
 
-  return participants
-    .map((p) => {
+  const conversationsWithData = await Promise.all(
+    participants.map(async (p) => {
       const conv = p.conversation
       const otherParticipant = conv.participants[0]
       const lastMsg = conv.messages[0]
+
+      let unreadCount = 0
+      if (p.lastReadAt) {
+        unreadCount = await prisma.message.count({
+          where: {
+            conversationId: conv.id,
+            senderId: { not: userId },
+            createdAt: { gt: p.lastReadAt },
+          },
+        })
+      } else {
+        unreadCount = await prisma.message.count({
+          where: {
+            conversationId: conv.id,
+            senderId: { not: userId },
+          },
+        })
+      }
 
       return {
         id: conv.id,
@@ -71,15 +89,17 @@ export async function getConversations() {
         avatar: otherParticipant?.user.profiles?.avatarUrl,
         lastMessage: decryptData(lastMsg?.content || ''),
         lastMessageAt: lastMsg?.createdAt,
-        unreadCount: 0, // TODO: Implement unread count logic
+        unreadCount,
         otherParticipantId: otherParticipant?.userId,
       } as ConversationData
     })
-    .sort((a: ConversationData, b: ConversationData) => {
-      const timeA = a.lastMessageAt?.getTime() || 0
-      const timeB = b.lastMessageAt?.getTime() || 0
-      return timeB - timeA
-    })
+  )
+
+  return conversationsWithData.sort((a: ConversationData, b: ConversationData) => {
+    const timeA = a.lastMessageAt?.getTime() || 0
+    const timeB = b.lastMessageAt?.getTime() || 0
+    return timeB - timeA
+  })
 }
 
 export async function getMessages(conversationId: string) {
