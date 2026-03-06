@@ -206,31 +206,61 @@ export function FinancialManager() {
             <CardDescription>Preferência dos pacientes</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
-                  <CreditCard className="h-4 w-4" />
-                </div>
-                <span className="text-sm font-medium text-slate-700">Cartão de Crédito</span>
-              </div>
-              <span className="text-sm font-bold text-slate-900">0%</span>
-            </div>
-            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-              <div className="bg-blue-600 h-2 rounded-full" style={{ width: '0%' }}></div>
-            </div>
+            {stats.paymentMethods.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-4">
+                Nenhum pagamento registrado ainda.
+              </p>
+            ) : (
+              stats.paymentMethods.map((pm) => {
+                const iconMap: Record<
+                  string,
+                  { bg: string; text: string; Icon: typeof CreditCard }
+                > = {
+                  Stripe: { bg: 'bg-indigo-50', text: 'text-indigo-600', Icon: CreditCard },
+                  Pix: { bg: 'bg-emerald-50', text: 'text-emerald-600', Icon: TrendingUp },
+                  'Cartão de Crédito': {
+                    bg: 'bg-blue-50',
+                    text: 'text-blue-600',
+                    Icon: CreditCard,
+                  },
+                  Boleto: { bg: 'bg-amber-50', text: 'text-amber-600', Icon: CreditCard },
+                }
+                const style = iconMap[pm.method] || {
+                  bg: 'bg-slate-50',
+                  text: 'text-slate-600',
+                  Icon: CreditCard,
+                }
+                const barColors: Record<string, string> = {
+                  Stripe: 'bg-indigo-500',
+                  Pix: 'bg-emerald-500',
+                  'Cartão de Crédito': 'bg-blue-600',
+                  Boleto: 'bg-amber-500',
+                }
+                const barColor = barColors[pm.method] || 'bg-slate-400'
 
-            <div className="flex items-center justify-between pt-2">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
-                  <TrendingUp className="h-4 w-4" />
-                </div>
-                <span className="text-sm font-medium text-slate-700">Pix/Boleto</span>
-              </div>
-              <span className="text-sm font-bold text-slate-900">100%</span>
-            </div>
-            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-              <div className="bg-emerald-500 h-2 rounded-full" style={{ width: '100%' }}></div>
-            </div>
+                return (
+                  <div key={pm.method}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`h-8 w-8 rounded-lg ${style.bg} flex items-center justify-center ${style.text}`}
+                        >
+                          <style.Icon className="h-4 w-4" />
+                        </div>
+                        <span className="text-sm font-medium text-slate-700">{pm.method}</span>
+                      </div>
+                      <span className="text-sm font-bold text-slate-900">{pm.percentage}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden mt-2">
+                      <div
+                        className={`${barColor} h-2 rounded-full`}
+                        style={{ width: `${pm.percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )
+              })
+            )}
           </CardContent>
         </Card>
       </div>

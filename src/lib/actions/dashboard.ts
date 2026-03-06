@@ -190,14 +190,14 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
         totalPatients: totalLinks,
         monthlyRevenue,
         revenueChange: Math.round(revenueChange),
-        averageRating: 0, // Ratings not yet implemented
+        averageRating: 0,
       },
       isVerified: psychProfile.isVerified,
       upcomingSessions: sessionsToday.map((s) => ({
         id: s.id,
         patientName: s.patient.profiles?.fullName || s.patient.name || 'Paciente',
         time: formatTime(s.scheduledAt),
-        type: 'Terapia Individual',
+        type: s.sessionType,
         status: s.status.toLowerCase(),
         image: s.patient.profiles?.avatarUrl || undefined,
         duration: s.durationMinutes,
@@ -244,7 +244,7 @@ export async function getPatientDashboardData(): Promise<PatientDashboardData> {
       const pProfile = nextSessionAppt.psychologist.user.profiles
       nextSession = {
         id: nextSessionAppt.id,
-        type: 'Terapia Individual',
+        type: nextSessionAppt.sessionType,
         scheduledAt: nextSessionAppt.scheduledAt.toISOString(),
         durationMinutes: nextSessionAppt.durationMinutes,
         psychologist: {
@@ -305,7 +305,7 @@ export async function getPatientDashboardData(): Promise<PatientDashboardData> {
       recentSessions,
       monthlyProgress: {
         completedSessions,
-        totalSessions: totalSessions > 0 ? totalSessions : 4, // fallback to min 4 to avoid 0/0
+        totalSessions,
       },
     }
   } catch (error) {
@@ -313,7 +313,7 @@ export async function getPatientDashboardData(): Promise<PatientDashboardData> {
     return {
       nextSession: null,
       recentSessions: [],
-      monthlyProgress: { completedSessions: 0, totalSessions: 4 },
+      monthlyProgress: { completedSessions: 0, totalSessions: 0 },
     }
   }
 }

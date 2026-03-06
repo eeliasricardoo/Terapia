@@ -36,6 +36,7 @@ export async function POST(req: Request) {
           scheduledAt: new Date(metadata.scheduledAt),
           durationMinutes: parseInt(metadata.durationMinutes),
           price: metadata.price,
+          paymentMethod: 'Stripe',
           status: 'SCHEDULED', // Now it's paid and scheduled
         },
       })

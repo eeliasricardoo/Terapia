@@ -12,6 +12,7 @@ export type FinancialStats = {
   averageTicket: number
   revenueChange: number
   monthlyData: { month: string; value: number }[]
+  paymentMethods: { method: string; percentage: number }[]
   recentTransactions: {
     id: string
     patient: string
@@ -141,7 +142,28 @@ export async function getFinancialStats(): Promise<FinancialStats> {
       date: format(new Date(appt.scheduledAt), "dd 'de' MMM, yyyy", { locale: ptBR }),
       amount: Number(appt.price),
       status: appt.status.toLowerCase(),
-      method: 'Pix', // We don't have a method field in DB yet, defaulting to Pix
+      method: appt.paymentMethod || 'Stripe',
+    }))
+
+    // Calculate payment method breakdown from all completed appointments
+    const allCompletedAppts = await prisma.appointment.findMany({
+      where: {
+        psychologistId: psychologistProfile.id,
+        status: 'COMPLETED',
+      },
+      select: { paymentMethod: true },
+    })
+
+    const methodCounts: Record<string, number> = {}
+    allCompletedAppts.forEach((appt) => {
+      const method = appt.paymentMethod || 'Stripe'
+      methodCounts[method] = (methodCounts[method] || 0) + 1
+    })
+
+    const totalCompleted = allCompletedAppts.length
+    const paymentMethods = Object.entries(methodCounts).map(([method, count]) => ({
+      method,
+      percentage: totalCompleted > 0 ? Math.round((count / totalCompleted) * 100) : 0,
     }))
 
     return {
@@ -150,6 +172,7 @@ export async function getFinancialStats(): Promise<FinancialStats> {
       averageTicket,
       revenueChange,
       monthlyData,
+      paymentMethods,
       recentTransactions,
     }
   } catch (error) {
@@ -160,6 +183,7 @@ export async function getFinancialStats(): Promise<FinancialStats> {
       averageTicket: 0,
       revenueChange: 0,
       monthlyData: [],
+      paymentMethods: [],
       recentTransactions: [],
     }
   }
