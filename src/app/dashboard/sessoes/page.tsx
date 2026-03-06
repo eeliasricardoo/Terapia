@@ -10,6 +10,7 @@ import { getUserSessions } from '@/lib/actions/sessions'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
 
 export default async function SessionsPage() {
   const profile = await getCurrentUserProfile()
@@ -26,6 +27,17 @@ export default async function SessionsPage() {
   }
 
   const sessions = await getUserSessions(profile.user_id)
+
+  // Fetch psychologist profiles for dynamic data in RescheduleDialog
+  const psychologistIds = [...new Set(sessions.map((s) => s.psychologist_id))]
+  const psychProfiles =
+    psychologistIds.length > 0
+      ? await prisma.psychologistProfile.findMany({
+          where: { userId: { in: psychologistIds } },
+          select: { userId: true, crp: true, specialties: true, pricePerSession: true },
+        })
+      : []
+  const psychMap = new Map(psychProfiles.map((p) => [p.userId, p]))
 
   return (
     <div className="space-y-6">
@@ -136,6 +148,11 @@ export default async function SessionsPage() {
                               date: format(scheduledDate, "dd 'de' MMMM, yyyy", { locale: ptBR }),
                               time: format(scheduledDate, 'HH:mm'),
                               psychologistId: session.psychologist_id,
+                              crp: psychMap.get(session.psychologist_id)?.crp || undefined,
+                              specialties: psychMap.get(session.psychologist_id)?.specialties || [],
+                              price: psychMap.get(session.psychologist_id)?.pricePerSession
+                                ? Number(psychMap.get(session.psychologist_id)!.pricePerSession)
+                                : undefined,
                             }}
                           >
                             <Button variant="outline" className="w-full md:w-auto">

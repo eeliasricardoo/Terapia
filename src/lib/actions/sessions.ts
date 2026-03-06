@@ -257,3 +257,66 @@ export async function cancelSession(sessionId: string) {
 
   return { success: true }
 }
+
+/**
+ * Get session summary with evolution notes
+ */
+export async function getSessionSummary(sessionId: string) {
+  if (!isValidUUID(sessionId)) {
+    return null
+  }
+
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return null
+
+  // Fetch appointment with profile data
+  const { data: appointment, error: apptError } = await supabase
+    .from('appointments')
+    .select(
+      `
+      *,
+      psychologist:profiles!appointments_psychologist_id_fkey(*)
+    `
+    )
+    .eq('id', sessionId)
+    .single()
+
+  if (apptError || !appointment) return null
+
+  // Verify ownership
+  if (user.id !== appointment.patient_id && user.id !== appointment.psychologist_id) {
+    return null
+  }
+
+  // Fetch psychologist profile for specialties
+  const { data: psychProfile } = await supabase
+    .from('psychologist_profiles')
+    .select('specialties')
+    .eq('userId', appointment.psychologist_id)
+    .single()
+
+  // Fetch the closest evolution note for this session
+  const { data: evolution } = await supabase
+    .from('evolutions')
+    .select('public_summary, mood, date')
+    .eq('patient_id', appointment.patient_id)
+    .eq('psychologist_id', appointment.psychologist_id)
+    .order('date', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  return {
+    id: appointment.id,
+    durationMinutes: appointment.duration_minutes,
+    scheduledAt: appointment.scheduled_at,
+    status: appointment.status,
+    psychologistName: (appointment.psychologist as any)?.full_name || 'Especialista',
+    specialty: psychProfile?.specialties?.[0] || 'Psicologia',
+    publicSummary: evolution?.public_summary || null,
+    mood: evolution?.mood || null,
+  }
+}

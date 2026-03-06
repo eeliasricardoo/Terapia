@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { addDays, format, startOfToday, startOfWeek } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
@@ -21,6 +21,9 @@ interface RescheduleDialogProps {
     date: string
     time: string
     psychologistId?: string
+    crp?: string
+    specialties?: string[]
+    price?: number
   }
 }
 
@@ -85,6 +88,12 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
     }
   }
 
+  const specialties = session.specialties || []
+  const formattedPrice =
+    session.price !== undefined
+      ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(session.price)
+      : null
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -100,38 +109,31 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
               <div>
                 <h3 className="font-bold text-lg leading-tight">{session.doctor}</h3>
                 <p className="text-sm text-muted-foreground">{session.role}</p>
-                <p className="text-xs text-muted-foreground mt-1">CRP: 04/51372</p>
+                {session.crp && (
+                  <p className="text-xs text-muted-foreground mt-1">CRP: {session.crp}</p>
+                )}
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-6">
-              <Badge variant="secondary" className="font-normal text-xs">
-                Autoestima
-              </Badge>
-              <Badge variant="secondary" className="font-normal text-xs">
-                Ansiedade
-              </Badge>
-              <Badge variant="secondary" className="font-normal text-xs">
-                TCC
-              </Badge>
-            </div>
+            {specialties.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {specialties.map((spec) => (
+                  <Badge key={spec} variant="secondary" className="font-normal text-xs">
+                    {spec}
+                  </Badge>
+                ))}
+              </div>
+            )}
 
             <div className="mt-auto space-y-4">
-              <div className="flex items-center gap-1 text-sm">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                <span className="font-bold">4.9</span>
-                <span className="text-muted-foreground">(204 comentários)</span>
-              </div>
-
-              <div className="pt-4 border-t">
-                <div className="flex justify-between items-end">
-                  <span className="text-sm text-muted-foreground">Sessão 50 min</span>
-                  <div className="text-right">
-                    <span className="text-xs text-muted-foreground line-through block">R$ 150</span>
-                    <span className="text-xl font-bold text-green-600">R$ 0</span>
+              {formattedPrice && (
+                <div className="pt-4 border-t">
+                  <div className="flex justify-between items-end">
+                    <span className="text-sm text-muted-foreground">Sessão 50 min</span>
+                    <span className="text-xl font-bold text-slate-900">{formattedPrice}</span>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -179,15 +181,11 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
               </Button>
             </div>
 
-            {/* Banner */}
-            <div className="bg-primary text-primary-foreground text-center py-2 rounded-md text-sm font-medium mb-6 shadow-sm">
-              Próximo horário: hoje, 14:00
-            </div>
-
             {/* Time Slots */}
             <div className="flex-1 overflow-y-auto pr-2">
               {isLoadingSlots ? (
-                <div className="flex justify-center py-8 text-muted-foreground">
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin" />
                   <span className="text-sm">Carregando horários...</span>
                 </div>
               ) : timeSlots.length === 0 ? (

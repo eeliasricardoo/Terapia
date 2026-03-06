@@ -10,6 +10,17 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
 
+const QUOTES = [
+  'O autoconhecimento é o começo de toda sabedoria.',
+  'Cuide da sua mente com a mesma dedicação que cuida do seu corpo.',
+  'Cada passo na direção certa, por menor que seja, é um progresso.',
+  'Permita-se sentir. Suas emoções são válidas.',
+  'A vulnerabilidade é a maior medida de coragem.',
+  'Não existe saúde sem saúde mental.',
+  'Pedir ajuda é um ato de força, não de fraqueza.',
+  'O melhor momento para cuidar de si é agora.',
+]
+
 interface Props {
   session: {
     id: string
@@ -93,7 +104,7 @@ export function NextSessionHero({ session }: Props) {
         <div className="w-full md:w-1/3 bg-blue-50 relative min-h-[200px]">
           <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
             <p className="text-sm text-blue-800 italic">
-              &quot;O autoconhecimento é o começo de toda sabedoria.&quot;
+              &quot;{QUOTES[Math.floor(Date.now() / 86400000) % QUOTES.length]}&quot;
             </p>
           </div>
         </div>

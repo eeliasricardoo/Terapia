@@ -70,7 +70,6 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             className="relative border-slate-200 text-slate-600 hover:text-slate-900"
           >
             <Bell className="h-4 w-4" />
-            <span className="absolute top-2.5 right-2.5 h-1.5 w-1.5 bg-red-500 rounded-full" />
           </Button>
           <Link href="/dashboard/ajustes">
             <Button
