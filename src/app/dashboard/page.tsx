@@ -15,7 +15,11 @@ import { RecentHistory } from './_components/recent-history'
 import { PaymentStatusToast } from './_components/payment-status-toast'
 import { Suspense } from 'react'
 
-import { getPsychologistDashboardData, getPatientDashboardData } from '@/lib/actions/dashboard'
+import {
+  getPsychologistDashboardData,
+  getPatientDashboardData,
+  getAdminDashboardData,
+} from '@/lib/actions/dashboard'
 
 export default async function DashboardPage() {
   let userProfile = await getCurrentUserProfile()
@@ -58,7 +62,8 @@ export default async function DashboardPage() {
   }
 
   if (userProfile.role === 'ADMIN') {
-    return <AdminDashboard userProfile={userProfile} />
+    const adminData = await getAdminDashboardData()
+    return <AdminDashboard userProfile={userProfile} dashboardData={adminData} />
   }
 
   if (userProfile.role === 'COMPANY') {

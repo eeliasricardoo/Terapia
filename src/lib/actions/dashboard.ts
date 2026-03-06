@@ -290,3 +290,54 @@ export async function getPatientDashboardData(): Promise<PatientDashboardData> {
     return { nextSession: null, recentSessions: [] }
   }
 }
+
+export type AdminDashboardData = {
+  totalUsers: number
+  verifiedPsychologists: number
+  activeSessions: number
+  searchesToday: number
+}
+
+export async function getAdminDashboardData(): Promise<AdminDashboardData> {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) throw new Error('Não autenticado')
+
+    const totalUsers = await prisma.user.count()
+    const verifiedPsychologists = await prisma.psychologistProfile.count({
+      where: { isVerified: true },
+    })
+
+    // Active sessions: let's say future appointments or appointments this month
+    const now = new Date()
+    const monthStart = startOfMonth(now)
+    const activeSessions = await prisma.appointment.count({
+      where: {
+        scheduledAt: { gte: monthStart },
+        status: { not: 'CANCELED' },
+      },
+    })
+
+    // since we don't have searches recorded, return a placeholder or 0
+    const searchesToday = 0
+
+    return {
+      totalUsers,
+      verifiedPsychologists,
+      activeSessions,
+      searchesToday,
+    }
+  } catch (error) {
+    logger.error('Error fetching admin dashboard data:', error)
+    return {
+      totalUsers: 0,
+      verifiedPsychologists: 0,
+      activeSessions: 0,
+      searchesToday: 0,
+    }
+  }
+}
