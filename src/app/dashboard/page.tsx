@@ -87,7 +87,7 @@ export default async function DashboardPage() {
         <div className="col-span-1 md:col-span-2 lg:col-span-2 space-y-8">
           <FindPsychologistCTA />
           <NextSessionHero session={patientData.nextSession} />
-          <MoodTracker />
+          <MoodTracker monthlyProgress={patientData.monthlyProgress} />
         </div>
 
         <div className="col-span-1 space-y-8">
