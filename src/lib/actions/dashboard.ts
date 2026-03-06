@@ -355,7 +355,7 @@ export type AdminDashboardData = {
   totalUsers: number
   verifiedPsychologists: number
   activeSessions: number
-  searchesToday: number
+  totalAppointments: number
 }
 
 export async function getAdminDashboardData(): Promise<AdminDashboardData> {
@@ -372,7 +372,6 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
       where: { isVerified: true },
     })
 
-    // Active sessions: let's say future appointments or appointments this month
     const now = new Date()
     const monthStart = startOfMonth(now)
     const activeSessions = await prisma.appointment.count({
@@ -382,14 +381,13 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
       },
     })
 
-    // since we don't have searches recorded, return a placeholder or 0
-    const searchesToday = 0
+    const totalAppointments = await prisma.appointment.count()
 
     return {
       totalUsers,
       verifiedPsychologists,
       activeSessions,
-      searchesToday,
+      totalAppointments,
     }
   } catch (error) {
     logger.error('Error fetching admin dashboard data:', error)
@@ -397,7 +395,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
       totalUsers: 0,
       verifiedPsychologists: 0,
       activeSessions: 0,
-      searchesToday: 0,
+      totalAppointments: 0,
     }
   }
 }

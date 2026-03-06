@@ -3,7 +3,7 @@
 import { AdminVerificationManager } from './AdminVerificationManager'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Users, ShieldCheck, Activity, Search, LayoutDashboard } from 'lucide-react'
+import { Users, ShieldCheck, Activity, Calendar, LayoutDashboard } from 'lucide-react'
 
 import { AdminDashboardData } from '@/lib/actions/dashboard'
 
@@ -52,9 +52,9 @@ export function AdminDashboard({ userProfile, dashboardData }: Props) {
           color="indigo"
         />
         <StatCard
-          title="Buscas Hoje"
-          value={dashboardData.searchesToday}
-          icon={Search}
+          title="Total Agendamentos"
+          value={dashboardData.totalAppointments}
+          icon={Calendar}
           color="amber"
         />
       </div>
@@ -81,7 +81,7 @@ export function AdminDashboard({ userProfile, dashboardData }: Props) {
                 className="w-full justify-start text-slate-600 gap-3 border-slate-200"
                 disabled
               >
-                <Search className="h-4 w-4" /> Logs de Busca
+                <Calendar className="h-4 w-4" /> Histórico de Sessões
               </Button>
               <Button
                 variant="outline"
