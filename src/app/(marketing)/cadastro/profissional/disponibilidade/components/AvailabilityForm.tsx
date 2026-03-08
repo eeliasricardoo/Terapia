@@ -150,6 +150,26 @@ export function AvailabilityForm() {
         newEnd = HOURS[newEndIndex]
       }
 
+      const adjustedEndIndex = HOURS.indexOf(newEnd)
+
+      // Verificação de Sobreposição (Overlap)
+      const hasOverlap = newSlots.some((slot, i) => {
+        if (i === index) return false
+        const slotStartIndex = HOURS.indexOf(slot.start)
+        const slotEndIndex = HOURS.indexOf(slot.end)
+
+        // Sobreposição: InícioAntesDoFimAtual E FimDepoisDoInicioAtual
+        return startIndex < slotEndIndex && adjustedEndIndex > slotStartIndex
+      })
+
+      if (hasOverlap) {
+        toast.error('Conflito de horários', {
+          description:
+            'O intervalo selecionado conflita com outro horário já definido para este dia.',
+        })
+        return prev // Ignora a alteração e mantém o estado anterior
+      }
+
       newSlots[index] = { start: newStart, end: newEnd }
 
       // Auto-sort slots by start time
