@@ -1,20 +1,10 @@
 'use client'
 
-import { ptBR } from 'date-fns/locale'
-
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Pencil, Trash2, Plus } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Form } from '@/components/ui/form'
-import { Calendar } from '@/components/ui/calendar'
-import { format } from 'date-fns'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Switch } from '@/components/ui/switch'
 import {
   Select,
   SelectContent,
@@ -22,768 +12,382 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { saveAvailability } from '@/lib/actions/availability'
+import { createClient } from '@/lib/supabase/client'
 
-const sessionDurations = [
-  { value: '30', label: '30 min' },
-  { value: '50', label: '50 min' },
-  { value: '60', label: '60 min' },
-]
+// --- Types ---
 
-const daysOfWeek = [
-  { value: 'seg', label: 'SEG' },
-  { value: 'ter', label: 'TER' },
-  { value: 'qua', label: 'QUA' },
-  { value: 'qui', label: 'QUI' },
-  { value: 'sex', label: 'SEX' },
-  { value: 'sab', label: 'SAB' },
-  { value: 'dom', label: 'DOM' },
-]
-
-const recurrenceOptions = [
-  { value: 'none', label: 'Não se repete' },
-  { value: 'daily', label: 'Diariamente' },
-  { value: 'weekdays', label: 'Dias úteis (Segunda a Sexta)' },
-  { value: 'weekly', label: 'Semanalmente' },
-  { value: 'monthly', label: 'Mensalmente' },
-  { value: 'custom', label: 'Personalizado...' },
-]
-
-interface RecurringSchedule {
-  id: string
-  day: string
-  startTime: string
-  endTime: string
+type TimeSlot = {
+  start: string
+  end: string
 }
 
-interface SpecificDateSchedule {
-  id: string
-  date: Date
-  startTime: string
-  endTime: string
+type DaySchedule = {
+  enabled: boolean
+  slots: TimeSlot[]
 }
 
-const formSchema = z.object({
-  sessionDuration: z.string().min(1, 'Selecione uma duração de sessão'),
-  schedules: z
-    .array(
-      z.object({
-        id: z.string(),
-        day: z.string(),
-        startTime: z.string(),
-        endTime: z.string(),
-      })
-    )
-    .min(1, 'Adicione pelo menos um horário'),
-})
-
-const generateTimeSlots = (sessionDuration: number, interval: number = 10) => {
-  const slots: string[] = []
-  const startHour = 8 // 8:00 AM
-  const endHour = 18 // 6:00 PM
-
-  for (let hour = startHour; hour < endHour; hour++) {
-    for (let minute = 0; minute < 60; minute += sessionDuration + interval) {
-      if (hour === endHour - 1 && minute + sessionDuration > 60) break
-
-      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-      slots.push(timeString)
-
-      // Se o próximo slot ultrapassaria a hora, para
-      if (minute + sessionDuration + interval >= 60) break
-    }
-  }
-
-  return slots
+type WeeklySchedule = {
+  [key: string]: DaySchedule
 }
+
+// --- Constants ---
+
+const DAYS_OF_WEEK = [
+  { id: 'monday', label: 'Segunda', fullLabel: 'Segunda-feira' },
+  { id: 'tuesday', label: 'Terça', fullLabel: 'Terça-feira' },
+  { id: 'wednesday', label: 'Quarta', fullLabel: 'Quarta-feira' },
+  { id: 'thursday', label: 'Quinta', fullLabel: 'Quinta-feira' },
+  { id: 'friday', label: 'Sexta', fullLabel: 'Sexta-feira' },
+  { id: 'saturday', label: 'Sábado', fullLabel: 'Sábado' },
+  { id: 'sunday', label: 'Domingo', fullLabel: 'Domingo' },
+]
+
+const HOURS = Array.from({ length: 24 }).map((_, i) => i.toString().padStart(2, '0') + ':00')
+
+const DEFAULT_SLOTS: TimeSlot[] = [
+  { start: '09:00', end: '12:00' },
+  { start: '14:00', end: '18:00' },
+]
+
+const TIMEZONES = [
+  'America/Sao_Paulo',
+  'America/Manaus',
+  'America/Belem',
+  'America/Fortaleza',
+  'America/Recife',
+  'America/Cuiaba',
+  'America/Bahia',
+  'Europe/Lisbon',
+  'Europe/London',
+  'UTC',
+]
 
 export function AvailabilityForm() {
   const router = useRouter()
-  const [selectedTimes, setSelectedTimes] = useState<string[]>([])
-  const [isNotAvailable, setIsNotAvailable] = useState(false)
-  const [openDialog, setOpenDialog] = useState(false)
-  const [selectedDay, setSelectedDay] = useState<string | null>(null)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [isSpecificDate, setIsSpecificDate] = useState(false)
-  const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null)
-  const [unavailableDays, setUnavailableDays] = useState<string[]>([])
-  const [unavailableDates, setUnavailableDates] = useState<Date[]>([])
-  const [recurrence, setRecurrence] = useState('none')
-  const [recurringSchedules, setRecurringSchedules] = useState<RecurringSchedule[]>([
-    { id: '1', day: 'mar', startTime: '9:00 AM', endTime: '12:00 PM' },
-    { id: '2', day: 'jue', startTime: '2:00 PM', endTime: '5:00 PM' },
-  ])
-  const [specificDateSchedules, setSpecificDateSchedules] = useState<SpecificDateSchedule[]>([])
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  // --- State ---
+  const [isLoading, setIsLoading] = useState(false)
+  const [timezone, setTimezone] = useState('America/Sao_Paulo')
+  const [sessionDuration, setSessionDuration] = useState<string>('50')
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    mode: 'onChange',
-    defaultValues: {
-      sessionDuration: '50',
-      schedules: recurringSchedules,
-    },
+  // Weekly Routine (The "Base" Layer)
+  const [weeklySchedule, setWeeklySchedule] = useState<WeeklySchedule>({
+    monday: { enabled: true, slots: [...DEFAULT_SLOTS] },
+    tuesday: { enabled: true, slots: [...DEFAULT_SLOTS] },
+    wednesday: { enabled: true, slots: [...DEFAULT_SLOTS] },
+    thursday: { enabled: true, slots: [...DEFAULT_SLOTS] },
+    friday: { enabled: true, slots: [{ start: '09:00', end: '16:00' }] },
+    saturday: { enabled: false, slots: [] },
+    sunday: { enabled: false, slots: [] },
   })
 
-  const selectedDuration = form.watch('sessionDuration')
-  const sessionDurationMinutes = parseInt(selectedDuration) || 50
-  const timeSlots = generateTimeSlots(sessionDurationMinutes)
+  // --- Load Data ---
+  useEffect(() => {
+    const loadData = async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) return
 
-  const handleDeleteSchedule = (id: string) => {
-    const newSchedules = recurringSchedules.filter((schedule) => schedule.id !== id)
-    setRecurringSchedules(newSchedules)
-    form.setValue('schedules', newSchedules, { shouldValidate: true })
-  }
+      // Load Profile (Weekly Schedule)
+      const { data: profile } = await supabase
+        .from('psychologist_profiles')
+        .select('id, weekly_schedule, timezone')
+        .eq('userId', user.id)
+        .single()
 
-  const handleDurationChange = (duration: string) => {
-    form.setValue('sessionDuration', duration, { shouldValidate: true })
-  }
-
-  const handleTimeToggle = (time: string) => {
-    setSelectedTimes((prev) =>
-      prev.includes(time) ? prev.filter((t) => t !== time) : [...prev, time].sort()
-    )
-  }
-
-  const handleNotAvailableToggle = () => {
-    setIsNotAvailable(!isNotAvailable)
-    if (!isNotAvailable) {
-      setSelectedTimes([]) // Limpa horários selecionados se marcar como não disponível
-    }
-  }
-
-  const handleSaveSchedule = () => {
-    // Se for data específica
-    if (isSpecificDate && selectedDate) {
-      if (isNotAvailable) {
-        setUnavailableDates((prev) => {
-          if (!prev.some((d) => d.toDateString() === selectedDate.toDateString())) {
-            return [...prev, selectedDate]
-          }
-          return prev
-        })
-        setSpecificDateSchedules((prev) =>
-          prev.filter((s) => s.date.toDateString() !== selectedDate.toDateString())
-        )
-      } else if (selectedTimes.length > 0) {
-        const formatTime = (time: string) => {
-          const [hours, minutes] = time.split(':')
-          const hour = parseInt(hours)
-          if (hour === 0) return `12:${minutes} AM`
-          if (hour < 12) return `${hour}:${minutes} AM`
-          if (hour === 12) return `12:${minutes} PM`
-          return `${hour - 12}:${minutes} PM`
+      if (profile?.weekly_schedule) {
+        const ws = profile.weekly_schedule as any
+        if (ws.sessionDuration) {
+          setSessionDuration(ws.sessionDuration)
         }
-
-        const sortedTimes = selectedTimes.sort()
-        const startTimeFormatted = sortedTimes[0]
-        const endTimeFormatted = sortedTimes[sortedTimes.length - 1]
-
-        const updatedSchedules = specificDateSchedules.filter(
-          (s) => s.date.toDateString() !== selectedDate.toDateString()
-        )
-
-        updatedSchedules.push({
-          id: `date-${Date.now()}-${Math.random()}`,
-          date: selectedDate,
-          startTime: formatTime(startTimeFormatted),
-          endTime: formatTime(endTimeFormatted),
-        })
-
-        setSpecificDateSchedules(updatedSchedules)
-        setUnavailableDates((prev) =>
-          prev.filter((d) => d.toDateString() !== selectedDate.toDateString())
-        )
+        setWeeklySchedule(profile.weekly_schedule as unknown as WeeklySchedule)
       }
-      setOpenDialog(false)
-      setSelectedDate(null)
-      setSelectedTimes([])
-      setIsNotAvailable(false)
-      setRecurrence('none')
-      setIsSpecificDate(false)
-      setEditingScheduleId(null)
-      return
+      if (profile?.timezone) {
+        setTimezone(profile.timezone)
+      }
     }
+    loadData()
+  }, [])
 
-    // Se for dia da semana recorrente
-    if (!selectedDay) return
+  // --- Handlers: Weekly ---
 
-    if (isNotAvailable) {
-      let daysToApply: string[] = [selectedDay]
-
-      if (recurrence === 'weekdays') {
-        daysToApply = ['seg', 'ter', 'qua', 'qui', 'sex']
-      } else if (recurrence === 'daily') {
-        daysToApply = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom']
-      } else if (recurrence === 'weekly') {
-        daysToApply = [selectedDay]
-      }
-
-      setUnavailableDays((prev) => {
-        const newDays = [...prev]
-        daysToApply.forEach((day) => {
-          if (!newDays.includes(day)) {
-            newDays.push(day)
-          }
-        })
-        return newDays
-      })
-
-      const updatedSchedules = recurringSchedules.filter((s) => !daysToApply.includes(s.day))
-      setRecurringSchedules(updatedSchedules)
-      form.setValue('schedules', updatedSchedules, { shouldValidate: true })
-    } else if (selectedTimes.length > 0) {
-      const formatTime = (time: string) => {
-        const [hours, minutes] = time.split(':')
-        const hour = parseInt(hours)
-        if (hour === 0) return `12:${minutes} AM`
-        if (hour < 12) return `${hour}:${minutes} AM`
-        if (hour === 12) return `12:${minutes} PM`
-        return `${hour - 12}:${minutes} PM`
-      }
-
-      let daysToApply: string[] = [selectedDay]
-
-      if (recurrence === 'weekdays') {
-        daysToApply = ['seg', 'ter', 'qua', 'qui', 'sex']
-      } else if (recurrence === 'daily') {
-        daysToApply = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom']
-      } else if (recurrence === 'weekly') {
-        daysToApply = [selectedDay]
-      }
-
-      const sortedTimes = selectedTimes.sort()
-      const startTimeFormatted = sortedTimes[0]
-      const endTimeFormatted = sortedTimes[sortedTimes.length - 1]
-
-      // Se estiver editando, remover o horário antigo primeiro
-      let updatedSchedules = recurringSchedules
-      if (editingScheduleId) {
-        updatedSchedules = recurringSchedules.filter((s) => s.id !== editingScheduleId)
-      } else {
-        updatedSchedules = recurringSchedules.filter((s) => !daysToApply.includes(s.day))
-      }
-
-      daysToApply.forEach((day) => {
-        // Se estiver editando e for o mesmo dia, manter o ID
-        if (editingScheduleId && day === selectedDay) {
-          const existingSchedule = recurringSchedules.find((s) => s.id === editingScheduleId)
-          if (existingSchedule) {
-            updatedSchedules.push({
-              ...existingSchedule,
-              startTime: formatTime(startTimeFormatted),
-              endTime: formatTime(endTimeFormatted),
-            })
-            return
-          }
-        }
-
-        // Para novos schedules ou dias diferentes, criar novo ID
-        const newSchedule: RecurringSchedule = {
-          id: `${day}-${Date.now()}-${Math.random()}`,
-          day: day,
-          startTime: formatTime(startTimeFormatted),
-          endTime: formatTime(endTimeFormatted),
-        }
-        updatedSchedules.push(newSchedule)
-      })
-
-      setRecurringSchedules(updatedSchedules)
-      form.setValue('schedules', updatedSchedules, { shouldValidate: true })
-
-      setUnavailableDays((prev) => prev.filter((d) => !daysToApply.includes(d)))
-    }
-
-    setOpenDialog(false)
-    setSelectedDay(null)
-    setSelectedTimes([])
-    setIsNotAvailable(false)
-    setRecurrence('none')
-    setEditingScheduleId(null)
+  const handleWeeklyToggle = (dayId: string) => {
+    setWeeklySchedule((prev) => ({
+      ...prev,
+      [dayId]: { ...prev[dayId], enabled: !prev[dayId].enabled },
+    }))
   }
 
-  const handleDayClick = (day: string) => {
-    setSelectedDay(day)
-    setSelectedDate(null)
-    setIsSpecificDate(false)
-    // Carregar horários já configurados para este dia, se houver
-    const existingSchedule = recurringSchedules.find((s) => s.day === day)
-    const isUnavailable = unavailableDays.includes(day)
-
-    if (existingSchedule) {
-      // Converter horários AM/PM para formato 24h para pré-selecionar
-      const parseTime = (timeStr: string) => {
-        const [time, period] = timeStr.split(' ')
-        const [hours, minutes] = time.split(':')
-        let hour = parseInt(hours)
-        if (period === 'PM' && hour !== 12) hour += 12
-        if (period === 'AM' && hour === 12) hour = 0
-        return `${hour.toString().padStart(2, '0')}:${minutes}`
-      }
-
-      const start = parseTime(existingSchedule.startTime)
-      const end = parseTime(existingSchedule.endTime)
-
-      // Gerar slots entre start e end
-      const slots: string[] = []
-      const [startHour, startMin] = start.split(':').map(Number)
-      const [endHour, endMin] = end.split(':').map(Number)
-
-      for (let h = startHour; h < endHour || (h === endHour && startMin < endMin); h++) {
-        for (let m = 0; m < 60; m += sessionDurationMinutes + 10) {
-          if (h === startHour && m < startMin) continue
-          if (h === endHour && m >= endMin) break
-          slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`)
-        }
-      }
-
-      setSelectedTimes(slots)
-    } else {
-      setSelectedTimes([])
-    }
-
-    setIsNotAvailable(isUnavailable)
-    setRecurrence('none')
-    setOpenDialog(true)
+  const handleWeeklySlotChange = (
+    dayId: string,
+    index: number,
+    field: 'start' | 'end',
+    value: string
+  ) => {
+    setWeeklySchedule((prev) => {
+      const newSlots = [...prev[dayId].slots]
+      newSlots[index] = { ...newSlots[index], [field]: value }
+      return { ...prev, [dayId]: { ...prev[dayId], slots: newSlots } }
+    })
   }
 
-  const handleDateClick = (date: Date) => {
-    setSelectedDate(date)
-    setSelectedDay(null)
-    setIsSpecificDate(true)
-    // Carregar horários já configurados para esta data, se houver
-    const existingSchedule = specificDateSchedules.find(
-      (s) => s.date.toDateString() === date.toDateString()
-    )
-    const isUnavailable = unavailableDates.some((d) => d.toDateString() === date.toDateString())
-
-    if (existingSchedule) {
-      const parseTime = (timeStr: string) => {
-        const [time, period] = timeStr.split(' ')
-        const [hours, minutes] = time.split(':')
-        let hour = parseInt(hours)
-        if (period === 'PM' && hour !== 12) hour += 12
-        if (period === 'AM' && hour === 12) hour = 0
-        return `${hour.toString().padStart(2, '0')}:${minutes}`
-      }
-
-      const start = parseTime(existingSchedule.startTime)
-      const end = parseTime(existingSchedule.endTime)
-
-      const slots: string[] = []
-      const [startHour, startMin] = start.split(':').map(Number)
-      const [endHour, endMin] = end.split(':').map(Number)
-
-      for (let h = startHour; h < endHour || (h === endHour && startMin < endMin); h++) {
-        for (let m = 0; m < 60; m += sessionDurationMinutes + 10) {
-          if (h === startHour && m < startMin) continue
-          if (h === endHour && m >= endMin) break
-          slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`)
-        }
-      }
-
-      setSelectedTimes(slots)
-    } else {
-      setSelectedTimes([])
-    }
-
-    setIsNotAvailable(isUnavailable)
-    setRecurrence('none')
-    setOpenDialog(true)
+  const handleWeeklyAddSlot = (dayId: string) => {
+    setWeeklySchedule((prev) => ({
+      ...prev,
+      [dayId]: { ...prev[dayId], slots: [...prev[dayId].slots, { start: '09:00', end: '10:00' }] },
+    }))
   }
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
+  const handleWeeklyRemoveSlot = (dayId: string, index: number) => {
+    setWeeklySchedule((prev) => ({
+      ...prev,
+      [dayId]: { ...prev[dayId], slots: prev[dayId].slots.filter((_, i) => i !== index) },
+    }))
+  }
 
+  const handleSave = async () => {
+    setIsLoading(true)
     try {
-      const result = await saveAvailability(
-        form.getValues('sessionDuration'),
-        recurringSchedules,
-        specificDateSchedules.map((s) => ({ ...s, date: s.date.toISOString() })),
-        unavailableDays,
-        unavailableDates.map((d) => d.toISOString())
-      )
-
-      if (result.success) {
-        toast.success('Disponibilidade salva!', {
-          description: 'Seus horários foram atualizados com sucesso.',
-        })
-        router.push('/cadastro/profissional/pagamento')
-      } else {
-        toast.error('Erro ao salvar', {
-          description: result.error || 'Ocorreu um erro inesperado.',
-        })
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Simulated success for availability without auth in dev')
+          toast.success('Disponibilidade salva!')
+          router.push('/cadastro/profissional/pagamento')
+          return
+        }
+        return
       }
-    } catch (error) {
-      toast.error('Erro no servidor', {
-        description: 'Tente novamente mais tarde.',
+
+      // 1. Get Profile ID
+      const { data: profile } = await supabase
+        .from('psychologist_profiles')
+        .select('id')
+        .eq('userId', user.id)
+        .single()
+
+      if (!profile) throw new Error('Perfil não encontrado')
+
+      // 2. Save Weekly Schedule
+      const { error } = await supabase
+        .from('psychologist_profiles')
+        .update({
+          weekly_schedule: { ...weeklySchedule, sessionDuration } as unknown as {
+            [key: string]: any
+          },
+          timezone: timezone,
+        })
+        .eq('id', profile.id)
+
+      if (error) {
+        console.error('Error saving schedule:', error)
+        toast.error('Erro ao salvar', {
+          description: 'Tente novamente mais tarde.',
+        })
+        return
+      }
+
+      toast.success('Disponibilidade salva!', {
+        description: 'Seus horários foram atualizados com sucesso.',
       })
+      router.push('/cadastro/profissional/pagamento')
+    } catch (error) {
+      console.error(error)
+      toast.error('Erro ao salvar', { description: 'Tente novamente mais tarde.' })
     } finally {
-      setIsSubmitting(false)
+      setIsLoading(false)
     }
   }
 
+  // --- Render ---
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* Header */}
-        <div className="space-y-4">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight">Configurar sua Disponibilidade</h1>
-            <p className="text-muted-foreground mt-2">
-              Selecione os dias e horários em que você estará disponível para atender seus
-              pacientes. Todos os horários são salvos em GMT-3 (Brasília).
+    <div className="max-w-4xl mx-auto pb-20 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Header */}
+      <div className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-3xl font-black tracking-tight text-slate-900">
+            Configurar sua Disponibilidade
+          </h2>
+          <p className="text-slate-500 mt-2 text-lg">
+            Selecione os dias e horários em que você estará disponível para atender seus pacientes.
+          </p>
+          <div className="mt-4 p-4 bg-emerald-50 border border-emerald-100/50 rounded-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5 bg-emerald-500 w-32 h-32 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+            <p className="text-sm text-emerald-800 font-medium relative z-10">
+              💡 <strong>Não se preocupe!</strong> Você poderá configurar exceções (feriados,
+              folgas, dias específicos) e alterar essa rotina a qualquer momento através da página
+              de Agenda no seu painel.
             </p>
-            <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg">
-              <p className="text-sm text-muted-foreground">
-                💡 <strong>Não se preocupe!</strong> Você poderá alterar sua disponibilidade a
-                qualquer momento pelo painel de controle após o cadastro.
-              </p>
-            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Session Duration and Weekly Schedules */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Session Duration Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>1. Defina a duração da sessão</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-3">
-                  {sessionDurations.map((duration) => (
-                    <Button
-                      key={duration.value}
-                      type="button"
-                      variant={selectedDuration === duration.value ? 'default' : 'outline'}
-                      className={cn(
-                        'h-[44px] rounded-full px-6',
-                        selectedDuration === duration.value && 'font-bold'
-                      )}
-                      onClick={() => handleDurationChange(duration.value)}
-                    >
-                      {duration.label}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+        <div className="flex flex-col sm:flex-row gap-6 mt-2 pt-4 border-t border-slate-100">
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-semibold text-slate-700">Duração da Sessão:</span>
+            <Select value={sessionDuration} onValueChange={setSessionDuration}>
+              <SelectTrigger className="w-[180px] h-[44px] bg-white">
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="30">30 minutos</SelectItem>
+                <SelectItem value="50">50 minutos</SelectItem>
+                <SelectItem value="60">1 hora</SelectItem>
+                <SelectItem value="90">1 hora e 30 min</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-            {/* Weekly Schedules Card - Simple Grid */}
-            <Card>
-              <CardHeader>
-                <CardTitle>2. Selecione seus horários semanais</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-7 gap-3">
-                  {daysOfWeek.map((day) => {
-                    const schedule = recurringSchedules.find((s) => s.day === day.value)
-                    const isUnavailable = unavailableDays.includes(day.value)
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-semibold text-slate-700">Fuso Horário Local:</span>
+            <Select value={timezone} onValueChange={setTimezone}>
+              <SelectTrigger className="w-[280px] h-[44px] bg-white">
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent>
+                {TIMEZONES.map((tz) => (
+                  <SelectItem key={tz} value={tz}>
+                    {tz.replace('_', ' ')}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
 
-                    return (
-                      <div key={day.value} className="space-y-2">
-                        <div className="text-center text-sm font-medium">{day.label}</div>
-                        <div
-                          className={cn(
-                            'h-24 rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors',
-                            schedule
-                              ? 'bg-primary/10 border-primary'
-                              : isUnavailable
-                                ? 'bg-destructive/10 border-destructive'
-                                : 'bg-muted/30 border-muted hover:border-primary/50'
-                          )}
-                          onClick={() => handleDayClick(day.value)}
-                        >
-                          {schedule ? (
-                            <div className="text-center px-2">
-                              <div className="text-xs font-medium">
-                                {schedule.startTime.replace(' AM', '').replace(' PM', '')} -{' '}
-                                {schedule.endTime.replace(' AM', '').replace(' PM', '')}
-                              </div>
-                            </div>
-                          ) : isUnavailable ? (
-                            <div className="text-xs font-medium text-destructive">Indisponível</div>
-                          ) : (
-                            <Plus className="h-5 w-5 text-muted-foreground" />
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+      {/* Routine list inline */}
+      <Card className="border border-slate-200/60 shadow-xl shadow-slate-200/20 bg-white/70 backdrop-blur-xl overflow-hidden rounded-2xl">
+        <CardHeader className="border-b border-slate-100 pb-5 bg-white/50">
+          <CardTitle className="text-xl font-bold text-slate-800">Sua Rotina Semanal</CardTitle>
+          <CardDescription className="text-slate-500 text-[15px]">
+            Defina os horários base para cada dia da semana. Ative apenas os dias que deseja
+            trabalhar.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="divide-y divide-slate-100">
+            {DAYS_OF_WEEK.map((day) => {
+              const daySchedule = weeklySchedule[day.id] || { enabled: false, slots: [] }
+              const isAvailable = daySchedule.enabled
 
-            {/* Calendar for Specific Dates */}
-            <Card>
-              <CardHeader>
-                <CardTitle>3. Dias específicos do mês</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-center bg-muted/30 p-8 rounded-lg">
-                  <div className="w-full max-w-md">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate || undefined}
-                      onSelect={(date: Date | undefined) => {
-                        if (date) handleDateClick(date)
-                      }}
-                      locale={ptBR}
-                      className="rounded-md w-full"
-                      modifiers={{
-                        scheduled: specificDateSchedules.map((s) => s.date),
-                        unavailable: unavailableDates,
-                      }}
-                      modifiersClassNames={{
-                        scheduled: 'bg-primary text-primary-foreground font-medium rounded-full',
-                        unavailable:
-                          'bg-destructive text-destructive-foreground font-medium rounded-full',
-                      }}
+              return (
+                <div
+                  key={day.id}
+                  className={`p-6 transition-all flex flex-col sm:flex-row gap-6 ${isAvailable ? 'bg-white' : 'bg-slate-50/40'}`}
+                >
+                  <div className="flex items-center gap-4 sm:w-[200px] shrink-0">
+                    <Switch
+                      checked={isAvailable}
+                      onCheckedChange={() => handleWeeklyToggle(day.id)}
+                      className="data-[state=checked]:bg-emerald-500 shadow-sm"
                     />
+                    <span
+                      className={`font-bold text-[15px] ${isAvailable ? 'text-slate-900' : 'text-slate-400'}`}
+                    >
+                      {day.fullLabel}
+                    </span>
+                  </div>
+
+                  <div className="flex-1 transition-all">
+                    {!isAvailable ? (
+                      <span className="text-sm font-medium text-slate-400 tracking-wide flex items-center h-10 px-2">
+                        Indisponível neste dia
+                      </span>
+                    ) : (
+                      <div className="space-y-4">
+                        {daySchedule.slots.length === 0 && (
+                          <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-md font-medium border border-amber-100/50">
+                            Nenhum horário definido. Por favor, adicione um intervalo.
+                          </div>
+                        )}
+                        {daySchedule.slots.map((slot, idx) => (
+                          <div key={idx} className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 bg-slate-50/80 p-1.5 rounded-xl border border-slate-200/60 shadow-sm">
+                              <Select
+                                value={slot.start}
+                                onValueChange={(v) =>
+                                  handleWeeklySlotChange(day.id, idx, 'start', v)
+                                }
+                              >
+                                <SelectTrigger className="w-[105px] h-10 bg-white text-sm font-bold shadow-sm border-slate-200">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-[250px]">
+                                  {HOURS.map((h) => (
+                                    <SelectItem key={h} value={h}>
+                                      {h}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <span className="text-slate-400 font-medium px-1 text-sm">até</span>
+                              <Select
+                                value={slot.end}
+                                onValueChange={(v) => handleWeeklySlotChange(day.id, idx, 'end', v)}
+                              >
+                                <SelectTrigger className="w-[105px] h-10 bg-white text-sm font-bold shadow-sm border-slate-200">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-[250px]">
+                                  {HOURS.map((h) => (
+                                    <SelectItem key={h} value={h}>
+                                      {h}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-10 w-10 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              onClick={() => handleWeeklyRemoveSlot(day.id, idx)}
+                            >
+                              <Trash2 className="h-5 w-5" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-[#D9416D] hover:text-[#D9416D] hover:bg-[#D9416D]/10 text-[14px] h-10 px-3 font-bold mt-1 -ml-3 rounded-lg transition-colors"
+                          onClick={() => handleWeeklyAddSlot(day.id)}
+                        >
+                          <Plus className="h-4 w-4 mr-2" /> Adicionar intervalo
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              )
+            })}
           </div>
+        </CardContent>
+      </Card>
 
-          {/* Right Column - Recurring Schedules */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Horários Recorrentes</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {recurringSchedules.map((schedule) => {
-                  const dayLabel =
-                    daysOfWeek.find((d) => d.value === schedule.day)?.label || schedule.day
-                  const dayName =
-                    {
-                      seg: 'Segunda-feira',
-                      ter: 'Terça-feira',
-                      qua: 'Quarta-feira',
-                      qui: 'Quinta-feira',
-                      sex: 'Sexta-feira',
-                      sab: 'Sábado',
-                      dom: 'Domingo',
-                    }[schedule.day] || schedule.day
-
-                  return (
-                    <div
-                      key={schedule.id}
-                      className="flex items-center justify-between p-3 rounded-lg border bg-muted/30"
-                    >
-                      <div>
-                        <div className="font-medium text-sm">Toda {dayName}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {schedule.startTime} - {schedule.endTime}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => {
-                            setEditingScheduleId(schedule.id)
-                            // Carregar dados do horário para edição
-                            const parseTime = (timeStr: string) => {
-                              const [time, period] = timeStr.split(' ')
-                              const [hours, minutes] = time.split(':')
-                              let hour = parseInt(hours)
-                              if (period === 'PM' && hour !== 12) hour += 12
-                              if (period === 'AM' && hour === 12) hour = 0
-                              return `${hour.toString().padStart(2, '0')}:${minutes}`
-                            }
-
-                            const start = parseTime(schedule.startTime)
-                            const end = parseTime(schedule.endTime)
-
-                            // Gerar slots entre start e end
-                            const slots: string[] = []
-                            const [startHour, startMin] = start.split(':').map(Number)
-                            const [endHour, endMin] = end.split(':').map(Number)
-
-                            for (
-                              let h = startHour;
-                              h < endHour || (h === endHour && startMin < endMin);
-                              h++
-                            ) {
-                              for (let m = 0; m < 60; m += sessionDurationMinutes + 10) {
-                                if (h === startHour && m < startMin) continue
-                                if (h === endHour && m >= endMin) break
-                                slots.push(
-                                  `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
-                                )
-                              }
-                            }
-
-                            setSelectedDay(schedule.day)
-                            setSelectedDate(null)
-                            setIsSpecificDate(false)
-                            setSelectedTimes(slots)
-                            setIsNotAvailable(false)
-                            setRecurrence('none')
-                            setOpenDialog(true)
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          onClick={() => handleDeleteSchedule(schedule.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  )
-                })}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Save Button */}
-        <div className="flex justify-end">
-          <Button
-            type="submit"
-            className="font-bold h-[44px]"
-            disabled={!form.formState.isValid || isSubmitting}
-          >
-            {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
-          </Button>
-        </div>
-      </form>
-
-      {/* Dialog for selecting schedule */}
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-        <DialogContent className="max-w-2xl professional-theme">
-          <DialogHeader>
-            <DialogTitle>
-              {isSpecificDate && selectedDate
-                ? `Configurar Horários - ${format(selectedDate, "d 'de' MMMM", { locale: ptBR })}`
-                : selectedDay
-                  ? `Configurar Horários - ${daysOfWeek.find((d) => d.value === selectedDay)?.label}`
-                  : 'Configurar Horários'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-6">
-            {/* Indisponível option */}
-            <div>
-              <Button
-                type="button"
-                variant={isNotAvailable ? 'default' : 'outline'}
-                className={cn(
-                  'w-full h-[44px]',
-                  isNotAvailable
-                    ? 'bg-primary text-primary-foreground font-medium'
-                    : 'border-primary/30 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary'
-                )}
-                onClick={handleNotAvailableToggle}
-              >
-                Indisponível
-              </Button>
-            </div>
-
-            {/* Time Slots Grid */}
-            {!isNotAvailable && (
-              <div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Selecione os horários disponíveis:
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  {timeSlots.map((time) => (
-                    <Button
-                      key={time}
-                      type="button"
-                      variant={selectedTimes.includes(time) ? 'default' : 'outline'}
-                      className={cn(
-                        'h-[44px]',
-                        selectedTimes.includes(time)
-                          ? 'bg-primary text-primary-foreground font-medium rounded-full'
-                          : 'border-primary/30 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary rounded-full'
-                      )}
-                      style={
-                        selectedTimes.includes(time)
-                          ? {
-                              backgroundColor: 'hsl(340 72% 61%)',
-                              color: 'white',
-                            }
-                          : {}
-                      }
-                      onClick={() => handleTimeToggle(time)}
-                    >
-                      {time}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              className="h-[44px] border-primary/30 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary"
-              onClick={() => {
-                setOpenDialog(false)
-                setSelectedDay(null)
-                setSelectedDate(null)
-                setSelectedTimes([])
-                setIsNotAvailable(false)
-                setRecurrence('none')
-                setIsSpecificDate(false)
-                setEditingScheduleId(null)
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              onClick={handleSaveSchedule}
-              disabled={!isNotAvailable && selectedTimes.length === 0}
-              className="font-bold h-[44px] bg-primary text-primary-foreground hover:bg-primary/90"
-              style={{
-                backgroundColor: 'hsl(340 72% 61%)',
-                color: 'white',
-              }}
-            >
-              Salvar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Navigation Buttons */}
-      <div className="flex justify-between pt-6 border-t">
+      <div className="flex justify-between items-center pt-6 pb-12">
         <Button
           type="button"
           variant="outline"
           onClick={() => router.push('/cadastro/profissional/dados')}
+          className="h-[48px] px-6 font-semibold border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50"
         >
           Voltar
         </Button>
         <Button
-          type="submit"
-          disabled={
-            (recurringSchedules.length === 0 && specificDateSchedules.length === 0) || isSubmitting
-          }
-          className="font-bold"
-          style={{
-            backgroundColor: 'hsl(340 72% 61%)',
-            color: 'white',
-          }}
+          onClick={handleSave}
+          disabled={isLoading}
+          className="bg-[#D9416D] text-white hover:bg-[#D9416D]/90 shadow-lg shadow-[#D9416D]/20 font-bold h-[48px] px-10 rounded-xl"
         >
-          Próximo
+          {isLoading ? 'Salvando...' : 'Próximo Passo'}
         </Button>
       </div>
-    </Form>
+    </div>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Menu, User } from 'lucide-react'
@@ -14,6 +15,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 import { useAuth } from '@/components/providers/auth-provider'
@@ -27,6 +39,9 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
   const { isAuthenticated, role, fullName, avatarUrl } = useAuth()
   const [loginOpen, setLoginOpen] = useState(false)
   const [registerOpen, setRegisterOpen] = useState(false)
+
+  const pathname = usePathname()
+  const router = useRouter()
 
   // Use props if provided (prioritize props for overrides), otherwise use auth context
   const isLoggedIn = propIsLoggedIn ?? isAuthenticated
@@ -76,6 +91,56 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
   }
 
   const links = getNavLinks()
+
+  const isRegistrationFlow = pathname?.startsWith('/cadastro')
+
+  if (isRegistrationFlow) {
+    return (
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between">
+          <div className="flex items-center gap-8">
+            <Link
+              href="/"
+              className="flex items-center space-x-2 opacity-50 hover:opacity-100 transition-opacity"
+            >
+              <span className="text-xl font-bold tracking-tight font-heading">MindCare</span>
+            </Link>
+          </div>
+          <div className="flex items-center gap-4">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="text-slate-500 hover:text-slate-900 hover:bg-slate-100 font-medium h-9 px-4"
+                >
+                  Cancelar Cadastro
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Tem certeza que deseja sair?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Ao prosseguir, você sairá do fluxo de cadastro. Seu progresso pode não ser
+                    completamente salvo e você precisará reiniciar as etapas que não foram
+                    confirmadas.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Voltar ao Cadastro</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90 w-full sm:w-auto mt-2 sm:mt-0 font-bold"
+                    onClick={() => router.push('/')}
+                  >
+                    Sair mesmo assim
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+      </header>
+    )
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
