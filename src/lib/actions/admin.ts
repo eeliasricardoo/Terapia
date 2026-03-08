@@ -73,10 +73,70 @@ export async function verifyPsychologist(psychologistId: string) {
       data: { isVerified: true },
     })
 
-    revalidatePath('/dashboard')
+    revalidatePath('/admin-sistema')
     return { success: true }
   } catch (error) {
     logger.error('Error verifying psychologist:', error)
     return { success: false, error: 'Falha ao verificar psicólogo' }
+  }
+}
+
+export async function getAdminStats() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) throw new Error('Não autenticado')
+
+    const profile = await prisma.profile.findUnique({
+      where: { user_id: user.id },
+    })
+
+    if (!profile || profile.role !== 'ADMIN') {
+      throw new Error('Não autorizado')
+    }
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const [
+      totalPatients,
+      totalPsychologists,
+      pendingPsychologists,
+      activeAppointments,
+      activeUsersToday,
+      totalRevenue,
+    ] = await Promise.all([
+      prisma.user.count({ where: { role: 'PATIENT' } }),
+      prisma.user.count({ where: { role: 'PSYCHOLOGIST' } }),
+      prisma.psychologistProfile.count({ where: { isVerified: false } }),
+      prisma.appointment.count({ where: { status: 'SCHEDULED' } }),
+      prisma.user.count({ where: { updatedAt: { gte: today } } }),
+      prisma.appointment.aggregate({
+        where: { status: 'COMPLETED' },
+        _sum: { price: true },
+      }),
+    ])
+
+    return {
+      totalPatients,
+      totalPsychologists,
+      pendingPsychologists,
+      activeAppointments,
+      activeUsersToday,
+      totalRevenue: Number(totalRevenue._sum.price || 0),
+    }
+  } catch (error) {
+    logger.error('Error fetching admin stats:', error)
+    return {
+      totalPatients: 0,
+      totalPsychologists: 0,
+      pendingPsychologists: 0,
+      activeAppointments: 0,
+      activeUsersToday: 0,
+      totalRevenue: 0,
+    }
   }
 }
