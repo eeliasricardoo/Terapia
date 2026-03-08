@@ -19,8 +19,10 @@ import {
 } from '@/components/ui/sheet'
 import { Search, Filter, ListFilter } from 'lucide-react'
 import { motion, Variants } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { useAuth } from '@/components/providers/auth-provider'
+import { searchPsychologists } from '@/lib/actions/psychologists'
+import { PsychologistSearchFilters, PsychologistWithProfile } from '@/lib/supabase/types'
 
 import { PsychologistCard } from './_components/psychologist-card'
 import { SearchFilters } from './_components/search-filters'
@@ -42,10 +44,49 @@ const itemVars: Variants = {
   },
 }
 
-export default function SearchClient({ initialPsychologists }: { initialPsychologists: any[] }) {
+export default function SearchClient({
+  initialPsychologists,
+}: {
+  initialPsychologists: PsychologistWithProfile[]
+}) {
   const { isAuthenticated } = useAuth()
-  const [psychologists, setPsychologists] = useState<any[]>(initialPsychologists)
-  const [loading, setLoading] = useState(false)
+  const [psychologists, setPsychologists] =
+    useState<PsychologistWithProfile[]>(initialPsychologists)
+  const [isPending, startTransition] = useTransition()
+
+  const [filters, setFilters] = useState<PsychologistSearchFilters>({
+    specialties: [],
+    maxPrice: 500,
+    searchQuery: '',
+  })
+
+  // Trigger search when filters change
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      handleSearch(filters)
+    }, 400)
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [filters])
+
+  const handleSearch = async (currentFilters: PsychologistSearchFilters) => {
+    startTransition(async () => {
+      const results = await searchPsychologists(currentFilters)
+      setPsychologists(results)
+    })
+  }
+
+  const handleFilterChange = (newFilters: PsychologistSearchFilters) => {
+    setFilters(newFilters)
+  }
+
+  const clearFilters = () => {
+    setFilters({
+      specialties: [],
+      maxPrice: 500,
+      searchQuery: '',
+    })
+  }
 
   return (
     <motion.div variants={containerVars} initial="initial" animate="animate" className="space-y-8">
@@ -72,7 +113,9 @@ export default function SearchClient({ initialPsychologists }: { initialPsycholo
             <div className="absolute inset-0 bg-blue-500/5 rounded-full blur-md group-hover:bg-blue-500/10 transition-colors duration-500" />
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400 group-hover:text-blue-500 transition-colors duration-300 z-10" />
             <Input
-              placeholder="Busque por nome, especialidade ou abordagem..."
+              value={filters.searchQuery}
+              onChange={(e) => setFilters({ ...filters, searchQuery: e.target.value })}
+              placeholder="Busque por nome do especialista..."
               className="pl-16 pr-6 h-16 text-lg shadow-sm w-full rounded-full border-2 border-slate-200 focus:border-blue-500 hover:border-slate-300 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 relative z-0 bg-white/80 backdrop-blur-sm"
             />
           </div>
@@ -98,7 +141,7 @@ export default function SearchClient({ initialPsychologists }: { initialPsycholo
                 </SheetDescription>
               </SheetHeader>
               <div className="py-6">
-                <SearchFilters />
+                <SearchFilters filters={filters} onFilterChange={handleFilterChange} />
               </div>
             </SheetContent>
           </Sheet>
@@ -111,7 +154,6 @@ export default function SearchClient({ initialPsychologists }: { initialPsycholo
               <SelectItem value="relevance">Relevância</SelectItem>
               <SelectItem value="price_asc">Menor Preço</SelectItem>
               <SelectItem value="price_desc">Maior Preço</SelectItem>
-              <SelectItem value="rating">Avaliação</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -127,12 +169,13 @@ export default function SearchClient({ initialPsychologists }: { initialPsycholo
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={clearFilters}
                 className="h-8 text-xs text-slate-500 hover:text-slate-900 hover:bg-slate-100 px-3 rounded-full transition-colors"
               >
                 Limpar tudo
               </Button>
             </div>
-            <SearchFilters />
+            <SearchFilters filters={filters} onFilterChange={handleFilterChange} />
           </div>
         </motion.aside>
 
@@ -153,17 +196,19 @@ export default function SearchClient({ initialPsychologists }: { initialPsycholo
                   <SelectItem value="relevance">Relevância</SelectItem>
                   <SelectItem value="price_asc">Menor Preço</SelectItem>
                   <SelectItem value="price_desc">Maior Preço</SelectItem>
-                  <SelectItem value="rating">Avaliação</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          {loading ? (
-            <motion.div variants={itemVars} className="text-center py-20">
-              <div className="h-8 w-8 rounded-full border-4 border-slate-200 border-t-blue-600 animate-spin mx-auto mb-4" />
-              <p className="text-slate-500 font-medium">Buscando os melhores profissionais...</p>
-            </motion.div>
+          {isPending ? (
+            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6 opacity-60 grayscale-[0.5] transition-all">
+              {psychologists.map((psychologist) => (
+                <div key={psychologist.id} className="h-full">
+                  <PsychologistCard psychologist={psychologist} />
+                </div>
+              ))}
+            </div>
           ) : psychologists.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-3xl border border-slate-200/60 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
               <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -173,7 +218,7 @@ export default function SearchClient({ initialPsychologists }: { initialPsycholo
               <p className="text-slate-500 max-w-sm mx-auto mt-2">
                 Tente ajustar seus filtros ou buscar por outros termos para encontrar o que precisa.
               </p>
-              <Button className="mt-6 rounded-full px-8" variant="outline">
+              <Button onClick={clearFilters} className="mt-6 rounded-full px-8" variant="outline">
                 Limpar filtros
               </Button>
             </div>
@@ -191,7 +236,7 @@ export default function SearchClient({ initialPsychologists }: { initialPsycholo
           )}
 
           {/* Pagination */}
-          {psychologists.length > 0 && (
+          {psychologists.length > 0 && !isPending && (
             <motion.div variants={itemVars} className="mt-12 flex justify-center">
               <Button
                 variant="outline"

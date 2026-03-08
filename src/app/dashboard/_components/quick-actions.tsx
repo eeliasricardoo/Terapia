@@ -41,16 +41,18 @@ export function QuickActions() {
           </div>
           <div className="mt-4 pt-4 border-t border-white/10 flex gap-2">
             <Button
+              asChild
               variant="ghost"
               className="text-white hover:text-white hover:bg-white/10 text-sm font-medium px-2"
             >
-              Conteúdos
+              <Link href="/dashboard/bem-estar">Conteúdos</Link>
             </Button>
             <Button
+              asChild
               variant="ghost"
               className="text-blue-300 hover:text-blue-200 hover:bg-white/5 text-sm font-medium px-2 ml-auto"
             >
-              Suporte
+              <Link href="/dashboard/suporte">Suporte</Link>
             </Button>
           </div>
         </CardContent>

@@ -46,9 +46,9 @@ export function PsychologistCard({ psychologist }: PsychologistCardProps) {
                   </h3>
                   <p className="text-xs text-slate-500 font-medium tracking-wide">CRP {crp}</p>
                 </div>
-                <div className="flex items-center gap-1.5 bg-amber-50 px-2.5 py-1 rounded-full text-xs font-bold text-amber-700 shadow-sm">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  <span>5.0</span>
+                <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-full text-xs font-bold text-slate-500 shadow-sm border border-slate-100">
+                  <Star className="w-3.5 h-3.5 text-slate-300" />
+                  <span>Novo</span>
                 </div>
               </div>
 
@@ -60,7 +60,11 @@ export function PsychologistCard({ psychologist }: PsychologistCardProps) {
                 <span className="w-1 h-1 rounded-full bg-slate-300" />
                 <div className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="truncate max-w-[100px]">São Paulo, SP</span>
+                  <span className="truncate max-w-[120px]">
+                    {profile?.city && profile?.state
+                      ? `${profile.city}, ${profile.state}`
+                      : profile?.city || profile?.state || 'Brasil'}
+                  </span>
                 </div>
               </div>
             </div>
