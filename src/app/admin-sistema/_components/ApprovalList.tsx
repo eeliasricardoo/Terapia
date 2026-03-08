@@ -1,9 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { verifyPsychologist } from '@/lib/actions/admin'
+import { verifyPsychologist, rejectPsychologist } from '@/lib/actions/admin'
 import { Check, X, ShieldAlert, FileText, CalendarDays } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 type PendingPsychologist = {
   id: string
@@ -19,6 +28,7 @@ type PendingPsychologist = {
 export function ApprovalList({ initialPending }: { initialPending: PendingPsychologist[] }) {
   const [pending, setPending] = useState(initialPending)
   const [loadingId, setLoadingId] = useState<string | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
 
   const handleApprove = async (id: string, name: string) => {
     setLoadingId(id)
@@ -29,6 +39,25 @@ export function ApprovalList({ initialPending }: { initialPending: PendingPsycho
       setPending((prev) => prev.filter((p) => p.id !== id))
     } else {
       toast.error(result.error || 'Ocorreu um erro ao aprovar.')
+    }
+    setLoadingId(null)
+  }
+
+  const handleReject = async (id: string, name: string) => {
+    if (!rejectReason.trim()) {
+      toast.error('Informe um motivo para a rejeição.')
+      return
+    }
+
+    setLoadingId(id)
+    const result = await rejectPsychologist(id, rejectReason)
+
+    if (result.success) {
+      toast.success(`Cadastro de ${name} rejeitado.`)
+      setPending((prev) => prev.filter((p) => p.id !== id))
+      setRejectReason('')
+    } else {
+      toast.error(result.error || 'Ocorreu um erro ao rejeitar.')
     }
     setLoadingId(null)
   }
@@ -106,21 +135,64 @@ export function ApprovalList({ initialPending }: { initialPending: PendingPsycho
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-2 mt-4">
             <button
               onClick={() => handleApprove(p.id, p.fullName)}
               disabled={loadingId === p.id}
-              className="px-4 py-2 border border-transparent font-medium rounded-lg text-sm text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary w-full flex items-center justify-center transition disabled:opacity-50"
+              className="flex-1 px-3 py-2 border border-transparent font-medium rounded-lg text-sm text-white bg-primary hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center"
             >
               {loadingId === p.id ? (
                 'Aprovando...'
               ) : (
                 <>
-                  <Check className="w-4 h-4 mr-2" />
-                  Aprovar
+                  <Check className="w-4 h-4 mr-1.5" /> Aprovar
                 </>
               )}
             </button>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <button
+                  disabled={loadingId === p.id}
+                  className="flex-1 px-3 py-2 border border-neutral-200 font-medium rounded-lg text-sm text-neutral-700 bg-white hover:bg-neutral-50 hover:text-red-600 transition disabled:opacity-50 flex items-center justify-center"
+                >
+                  <X className="w-4 h-4 mr-1.5" /> Rejeitar
+                </button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Rejeitar Cadastro de {p.fullName}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <p className="text-sm text-neutral-500">
+                    Ao rejeitar, um e-mail será enviado para o psicólogo informando o motivo.
+                  </p>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Motivo da Rejeição
+                    </label>
+                    <textarea
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      className="w-full border-neutral-300 rounded-md shadow-sm text-sm p-3 min-h-[100px]"
+                      placeholder="Ex: CRP inválido, documento ilegível..."
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setRejectReason('')}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleReject(p.id, p.fullName)}
+                    disabled={!rejectReason.trim()}
+                  >
+                    Confirmar Rejeição
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       ))}

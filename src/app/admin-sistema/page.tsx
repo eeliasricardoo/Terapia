@@ -1,14 +1,12 @@
-import { getAdminStats, getPendingPsychologists } from '@/lib/actions/admin'
-import { ApprovalList } from './_components/ApprovalList'
+import { getAdminStats } from '@/lib/actions/admin'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboardPage() {
   const stats = await getAdminStats()
-  const pending = await getPendingPsychologists()
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-semibold mb-2 text-neutral-900">Visão Geral</h2>
         <p className="text-neutral-500 mb-6 font-medium">Métricas em tempo real da plataforma.</p>
@@ -24,21 +22,6 @@ export default async function AdminDashboardPage() {
             value={`R$ ${stats.totalRevenue.toFixed(2).replace('.', ',')}`}
           />
         </div>
-      </div>
-
-      <div className="pt-8 border-t border-neutral-200">
-        <h2 className="text-2xl font-semibold mb-2 text-neutral-900">Aprovações Pendentes</h2>
-        <p className="text-neutral-500 mb-6 font-medium">
-          Os psicólogos abaixo aguardam verificação de documentos para atuar na plataforma.
-        </p>
-
-        {pending.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-neutral-300 p-8 text-center bg-neutral-50">
-            <p className="text-neutral-500">Não há psicólogos pendentes de aprovação no momento.</p>
-          </div>
-        ) : (
-          <ApprovalList initialPending={pending} />
-        )}
       </div>
     </div>
   )
