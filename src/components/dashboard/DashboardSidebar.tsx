@@ -66,7 +66,12 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
       ? {
           name: initialProfile.full_name || 'Usuário',
           email: '', // Not strictly needed for UI, but keeping for compatibility
-          role: initialProfile.role === 'PSYCHOLOGIST' ? 'Psicólogo' : 'Paciente',
+          role:
+            initialProfile.role === 'ADMIN'
+              ? 'Administrador'
+              : initialProfile.role === 'PSYCHOLOGIST'
+                ? 'Psicólogo'
+                : 'Paciente',
           rawRole: initialProfile.role,
           avatar_url: initialProfile.avatar_url || undefined,
         }
@@ -93,6 +98,13 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
           const finalRole =
             profile?.role || (metaRole === 'PSYCHOLOGIST' ? 'PSYCHOLOGIST' : 'PATIENT')
 
+          const displayRole =
+            finalRole === 'ADMIN'
+              ? 'Administrador'
+              : finalRole === 'PSYCHOLOGIST'
+                ? 'Psicólogo'
+                : 'Paciente'
+
           if (!initialProfile) {
             setUser({
               name:
@@ -101,7 +113,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
                 authUser.email?.split('@')[0] ||
                 'Usuário',
               email: authUser.email || '',
-              role: finalRole === 'PSYCHOLOGIST' ? 'Psicólogo' : 'Paciente',
+              role: displayRole,
               rawRole: finalRole,
               avatar_url: profile?.avatar_url,
             })
@@ -235,6 +247,19 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
           )
         })}
       </nav>
+
+      {/* Admin Quick Action */}
+      {user?.rawRole === 'ADMIN' && (
+        <div className="p-4 border-t border-slate-100">
+          <Link
+            href="/admin-sistema"
+            className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-primary bg-primary/10 hover:bg-primary/20 transition-colors w-full"
+          >
+            <Settings className="h-4 w-4" />
+            Painel Administrativo
+          </Link>
+        </div>
+      )}
 
       {/* Logout */}
       <div className="p-4 border-t border-slate-100">
