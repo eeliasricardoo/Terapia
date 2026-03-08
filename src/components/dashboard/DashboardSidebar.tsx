@@ -196,7 +196,13 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
     )
   }
 
-  const menuItems = user?.rawRole === 'PSYCHOLOGIST' ? PSYCHOLOGIST_MENU : PATIENT_MENU
+  // Special case: if user is ADMIN, they shouldn't see regular features.
+  const isAdmin = user?.rawRole === 'ADMIN'
+  const menuItems = isAdmin
+    ? []
+    : user?.rawRole === 'PSYCHOLOGIST'
+      ? PSYCHOLOGIST_MENU
+      : PATIENT_MENU
 
   return (
     <aside
@@ -223,6 +229,13 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-4">
+        {isAdmin && (
+          <div className="text-sm text-neutral-500 mb-4 px-3 py-2 bg-slate-50 rounded-lg">
+            Sua conta possui acesso administrativo exclusivo. Clique no botão abaixo para gerenciar
+            a plataforma.
+          </div>
+        )}
+
         {menuItems.map((item) => {
           const isActive = pathname === item.href
           return (
@@ -249,7 +262,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
       </nav>
 
       {/* Admin Quick Action */}
-      {user?.rawRole === 'ADMIN' && (
+      {isAdmin && (
         <div className="p-4 border-t border-slate-100">
           <Link
             href="/admin-sistema"
