@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Copy } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 
@@ -44,7 +44,13 @@ const DAYS_OF_WEEK = [
   { id: 'sunday', label: 'Domingo', fullLabel: 'Domingo' },
 ]
 
-const HOURS = Array.from({ length: 24 }).map((_, i) => i.toString().padStart(2, '0') + ':00')
+const HOURS = Array.from({ length: 48 }).map((_, i) => {
+  const hour = Math.floor(i / 2)
+    .toString()
+    .padStart(2, '0')
+  const minute = i % 2 === 0 ? '00' : '30'
+  return `${hour}:${minute}`
+})
 
 const DEFAULT_SLOTS: TimeSlot[] = [
   { start: '09:00', end: '12:00' },
@@ -128,17 +134,65 @@ export function AvailabilityForm() {
     value: string
   ) => {
     setWeeklySchedule((prev) => {
-      const newSlots = [...prev[dayId].slots]
-      newSlots[index] = { ...newSlots[index], [field]: value }
+      let newSlots = [...prev[dayId].slots]
+      const currentSlot = newSlots[index]
+
+      let newStart = field === 'start' ? value : currentSlot.start
+      let newEnd = field === 'end' ? value : currentSlot.end
+
+      const startIndex = HOURS.indexOf(newStart)
+      const endIndex = HOURS.indexOf(newEnd)
+
+      // Se o usuário tentar colocar o início "depois" ou "igual" ao fim, avançamos o fim automaticamente
+      if (field === 'start' && startIndex >= endIndex) {
+        // Empurra o fim 2 blocos pra frente (1 hora) ou pro final da lista
+        const newEndIndex = Math.min(HOURS.length - 1, startIndex + 2)
+        newEnd = HOURS[newEndIndex]
+      }
+
+      newSlots[index] = { start: newStart, end: newEnd }
+
+      // Auto-sort slots by start time
+      newSlots.sort((a, b) => HOURS.indexOf(a.start) - HOURS.indexOf(b.start))
+
       return { ...prev, [dayId]: { ...prev[dayId], slots: newSlots } }
     })
   }
 
   const handleWeeklyAddSlot = (dayId: string) => {
-    setWeeklySchedule((prev) => ({
-      ...prev,
-      [dayId]: { ...prev[dayId], slots: [...prev[dayId].slots, { start: '09:00', end: '10:00' }] },
-    }))
+    setWeeklySchedule((prev) => {
+      const currentSlots = [...prev[dayId].slots]
+
+      let nextStart = '09:00'
+      let nextEnd = '10:00'
+
+      if (currentSlots.length > 0) {
+        // Find the slot with the latest end time
+        const latestSlot = currentSlots.reduce((latest, slot) => {
+          return HOURS.indexOf(slot.end) > HOURS.indexOf(latest.end) ? slot : latest
+        })
+
+        const latestEndIndex = HOURS.indexOf(latestSlot.end)
+
+        // Se ainda tem espaço no dia (pelo menos 1 hora / 2 blocos)
+        if (latestEndIndex < HOURS.length - 2) {
+          nextStart = HOURS[latestEndIndex]
+          nextEnd = HOURS[Math.min(HOURS.length - 1, latestEndIndex + 2)]
+        } else {
+          // Se o fim do dia já ta ocupado, coloca qualquer um e deixa o usuario mudar
+          nextStart = '08:00'
+          nextEnd = '09:00'
+        }
+      }
+
+      const newSlots = [...currentSlots, { start: nextStart, end: nextEnd }]
+      newSlots.sort((a, b) => HOURS.indexOf(a.start) - HOURS.indexOf(b.start))
+
+      return {
+        ...prev,
+        [dayId]: { ...prev[dayId], slots: newSlots },
+      }
+    })
   }
 
   const handleWeeklyRemoveSlot = (dayId: string, index: number) => {
@@ -146,6 +200,29 @@ export function AvailabilityForm() {
       ...prev,
       [dayId]: { ...prev[dayId], slots: prev[dayId].slots.filter((_, i) => i !== index) },
     }))
+  }
+
+  const handleCopyToAllWeekdays = (sourceDayId: string) => {
+    const sourceSlots = weeklySchedule[sourceDayId].slots
+
+    setWeeklySchedule((prev) => {
+      const updated = { ...prev }
+      const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+      weekdays.forEach((day) => {
+        if (day !== sourceDayId) {
+          updated[day] = {
+            ...updated[day],
+            enabled: true,
+            slots: sourceSlots.map((s) => ({ ...s })),
+          }
+        }
+      })
+      return updated
+    })
+
+    toast.success('Horários copiados para todos os dias úteis!', {
+      description: 'A rotina foi aplicada de segunda a sexta-feira.',
+    })
   }
 
   const handleSave = async () => {
@@ -159,7 +236,7 @@ export function AvailabilityForm() {
         if (process.env.NODE_ENV === 'development') {
           console.warn('Simulated success for availability without auth in dev')
           toast.success('Disponibilidade salva!')
-          router.push('/cadastro/profissional/pagamento')
+          router.push('/cadastro/profissional/sucesso')
           return
         }
         return
@@ -193,10 +270,10 @@ export function AvailabilityForm() {
         return
       }
 
-      toast.success('Disponibilidade salva!', {
-        description: 'Seus horários foram atualizados com sucesso.',
+      toast.success('Disponibilidade salva e cadastro concluído!', {
+        description: 'Página de sucesso',
       })
-      router.push('/cadastro/profissional/pagamento')
+      router.push('/cadastro/profissional/sucesso')
     } catch (error) {
       console.error(error)
       toast.error('Erro ao salvar', { description: 'Tente novamente mais tarde.' })
@@ -281,19 +358,30 @@ export function AvailabilityForm() {
                   key={day.id}
                   className={`p-6 transition-all flex flex-col sm:flex-row gap-6 ${isAvailable ? 'bg-white' : 'bg-slate-50/40'}`}
                 >
-                  <div className="flex items-center gap-4 sm:w-[200px] shrink-0">
-                    <Switch
-                      checked={isAvailable}
-                      onCheckedChange={() => handleWeeklyToggle(day.id)}
-                      className="data-[state=checked]:bg-emerald-500 shadow-sm"
-                    />
-                    <span
-                      className={`font-bold text-[15px] ${isAvailable ? 'text-slate-900' : 'text-slate-400'}`}
-                    >
-                      {day.fullLabel}
-                    </span>
+                  <div className="flex sm:flex-col items-center sm:items-start sm:w-[220px] shrink-0 gap-4 sm:gap-2">
+                    <div className="flex items-center gap-3">
+                      <Switch
+                        checked={isAvailable}
+                        onCheckedChange={() => handleWeeklyToggle(day.id)}
+                        className="data-[state=checked]:bg-emerald-500 shadow-sm"
+                      />
+                      <span
+                        className={`font-bold text-[15px] ${isAvailable ? 'text-slate-900' : 'text-slate-400'}`}
+                      >
+                        {day.fullLabel}
+                      </span>
+                    </div>
+                    {isAvailable &&
+                      ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].includes(day.id) && (
+                        <button
+                          type="button"
+                          onClick={() => handleCopyToAllWeekdays(day.id)}
+                          className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1.5 transition-colors sm:ml-0 ml-auto bg-blue-50/50 hover:bg-blue-50 px-2 py-1.5 rounded-md border border-blue-100/50"
+                        >
+                          <Copy className="h-3.5 w-3.5" /> Copiar p/ dias úteis
+                        </button>
+                      )}
                   </div>
-
                   <div className="flex-1 transition-all">
                     {!isAvailable ? (
                       <span className="text-sm font-medium text-slate-400 tracking-wide flex items-center h-10 px-2">
@@ -302,8 +390,8 @@ export function AvailabilityForm() {
                     ) : (
                       <div className="space-y-4">
                         {daySchedule.slots.length === 0 && (
-                          <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-md font-medium border border-amber-100/50">
-                            Nenhum horário definido. Por favor, adicione um intervalo.
+                          <div className="text-[14px] text-slate-500 italic pb-2">
+                            Nenhum horário definido. Clique abaixo para adicionar.
                           </div>
                         )}
                         {daySchedule.slots.map((slot, idx) => (
@@ -335,7 +423,9 @@ export function AvailabilityForm() {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent className="max-h-[250px]">
-                                  {HOURS.map((h) => (
+                                  {HOURS.filter(
+                                    (h) => HOURS.indexOf(h) > HOURS.indexOf(slot.start)
+                                  ).map((h) => (
                                     <SelectItem key={h} value={h}>
                                       {h}
                                     </SelectItem>
@@ -385,7 +475,7 @@ export function AvailabilityForm() {
           disabled={isLoading}
           className="bg-[#D9416D] text-white hover:bg-[#D9416D]/90 shadow-lg shadow-[#D9416D]/20 font-bold h-[48px] px-10 rounded-xl"
         >
-          {isLoading ? 'Salvando...' : 'Próximo Passo'}
+          {isLoading ? 'Salvando...' : 'Finalizar Cadastro'}
         </Button>
       </div>
     </div>

@@ -4,7 +4,6 @@ import { Stepper } from '@/components/ui/stepper'
 const STEPS = [
   { id: 'dados', title: 'Dados Profissionais', description: 'Informações básicas' },
   { id: 'disponibilidade', title: 'Disponibilidade', description: 'Configure sua agenda' },
-  { id: 'pagamento', title: 'Configuração de Pagamento', description: 'Dados bancários' },
 ]
 
 export default function AvailabilityPage() {
