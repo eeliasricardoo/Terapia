@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -22,6 +22,8 @@ import { auth } from '@/lib/supabase/auth'
 
 export function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
   const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<LoginInput>({
@@ -44,7 +46,7 @@ export function LoginForm() {
       }
 
       toast.success('Login realizado com sucesso!')
-      router.push('/dashboard')
+      router.push(returnTo || '/dashboard')
       router.refresh()
     } catch (error) {
       toast.error('Erro ao fazer login. Tente novamente.')
@@ -149,7 +151,10 @@ export function LoginForm() {
 
         <div className="mt-4 text-center text-sm">
           Não tem uma conta?{' '}
-          <Link href="/cadastro/paciente" className="underline text-primary">
+          <Link
+            href={`/cadastro/paciente${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`}
+            className="underline text-primary"
+          >
             Cadastre-se
           </Link>
         </div>

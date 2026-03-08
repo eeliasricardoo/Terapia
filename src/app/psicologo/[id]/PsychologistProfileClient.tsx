@@ -14,6 +14,9 @@ import { AboutSection } from './_components/about-section'
 import { PresentationVideo } from './_components/presentation-video'
 import { ReviewsSection } from './_components/reviews-section'
 import { BookingWidget } from './_components/booking-widget'
+import { useAuth } from '@/components/providers/auth-provider'
+import { GuestBookingDialog } from './_components/guest-booking-dialog'
+import { useState } from 'react'
 
 interface Props {
   psychologist: PsychologistWithProfile
@@ -21,6 +24,9 @@ interface Props {
 }
 
 export function PsychologistProfileClient({ psychologist, availability }: Props) {
+  const { isAuthenticated } = useAuth()
+  const [isGuestDialogOpen, setIsGuestDialogOpen] = useState(false)
+
   const {
     selectedDay,
     setSelectedDay,
@@ -38,10 +44,28 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
   const firstSpecialty = psychologist.specialties?.[0] || 'Psicologia Clínica'
 
   const handleBooking = () => {
-    if (selectedTime) {
-      window.location.href = `/pagamento?doctor=${psychologist.userId}&date=${calendar.currentYear}-${currentDate.getMonth() + 1}-${selectedDay}&time=${selectedTime}&plan=${selectedPlan}`
+    if (!selectedTime) return
+
+    const bookingUrl = `/pagamento?doctor=${psychologist.userId}&date=${calendar.currentYear}-${currentDate.getMonth() + 1}-${selectedDay}&time=${selectedTime}&plan=${selectedPlan}`
+
+    if (!isAuthenticated) {
+      setIsGuestDialogOpen(true)
+      return
     }
+
+    window.location.href = bookingUrl
   }
+
+  const formattedDate = selectedDay
+    ? new Date(calendar.currentYear, currentDate.getMonth(), selectedDay).toLocaleDateString(
+        'pt-BR',
+        {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }
+      )
+    : ''
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -148,6 +172,15 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
       </div>
 
       <Footer />
+
+      <GuestBookingDialog
+        isOpen={isGuestDialogOpen}
+        onClose={() => setIsGuestDialogOpen(false)}
+        psychologistName={displayName}
+        selectedDate={formattedDate}
+        selectedTime={selectedTime || ''}
+        bookingUrl={`/pagamento?doctor=${psychologist.userId}&date=${calendar.currentYear}-${currentDate.getMonth() + 1}-${selectedDay}&time=${selectedTime}&plan=${selectedPlan}`}
+      />
     </div>
   )
 }

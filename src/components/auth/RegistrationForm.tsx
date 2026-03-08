@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { cn } from '@/lib/utils'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -28,6 +28,8 @@ import { auth } from '@/lib/supabase/auth'
 
 export function RegistrationForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
   const [step, setStep] = useState(1)
   const [isPending, startTransition] = useTransition()
   const form = useForm<RegistrationInput>({
@@ -73,7 +75,9 @@ export function RegistrationForm() {
           toast.success(
             'Conta criada com sucesso! Enviamos um email de confirmação. Por favor, verifique sua caixa de entrada e confirme seu email antes de fazer login.'
           )
-          router.push('/login/paciente')
+          router.push(
+            `/login/paciente${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`
+          )
         }
       } catch (error) {
         console.error('Registration error:', error)
@@ -165,6 +169,16 @@ export function RegistrationForm() {
                 <Button type="button" onClick={nextStep} className="w-full">
                   Continuar <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
+
+                <p className="text-sm text-muted-foreground text-center pt-2">
+                  Já tem uma conta?{' '}
+                  <Link
+                    href={`/login/paciente${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Faça login
+                  </Link>
+                </p>
               </div>
             )}
 
