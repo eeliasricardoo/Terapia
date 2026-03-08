@@ -83,24 +83,12 @@ export function RegistrationForm() {
   }
 
   const nextStep = async () => {
-    const isValid = await form.trigger('document')
-    if (isValid) {
+    // Validar apenas os campos do passo 1 antes de avançar
+    const isStep1FieldsValid = await form.trigger(['name', 'email'])
+    if (isStep1FieldsValid) {
       setStep(2)
     }
   }
-
-  // Verificar se o step 1 está válido (apenas CPF)
-  const documentValue = form.watch('document')
-  const cleanedCPF = documentValue ? cleanCPF(documentValue) : ''
-  const isStep1Valid =
-    step === 1 &&
-    documentValue &&
-    cleanedCPF.length === 11 &&
-    isValidCPF(documentValue) &&
-    !form.formState.errors.document
-
-  // Verificar se o step 2 está válido e dirty
-  const isStep2Valid = step === 2 && isValid && isDirty
 
   const prevStep = () => {
     setStep(1)
@@ -119,11 +107,13 @@ export function RegistrationForm() {
       )}
     >
       <CardHeader>
-        <CardTitle className="text-xl">{step === 1 ? 'Identificação' : 'Dados Pessoais'}</CardTitle>
+        <CardTitle className="text-xl">
+          {step === 1 ? 'Crie sua conta' : 'Dados Necessários'}
+        </CardTitle>
         <CardDescription>
           {step === 1
-            ? 'Informe seu documento para continuar.'
-            : 'Preencha seus dados para finalizar o cadastro.'}
+            ? 'Comece informando seus dados básicos.'
+            : 'Preencha as informações restantes para sua segurança.'}
         </CardDescription>
       </CardHeader>
       {step === 1 && (
@@ -146,62 +136,63 @@ export function RegistrationForm() {
               <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="document"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CPF</FormLabel>
+                      <FormLabel>Nome Completo</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="000.000.000-00"
-                          maxLength={14}
-                          {...field}
-                          onChange={(e) => {
-                            const masked = maskDocument(e.target.value)
-                            field.onChange(masked)
-                          }}
-                        />
+                        <Input placeholder="Como gostaria de ser chamado?" {...field} />
                       </FormControl>
-                      <FormDescription>Digite apenas os números do seu CPF</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button type="button" onClick={nextStep} className="w-full" disabled={false}>
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="seu@email.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="button" onClick={nextStep} className="w-full">
                   Continuar <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             )}
 
             {step === 2 && (
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome Completo</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Seu nome" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
+              <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="birthDate"
+                    name="document"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Data de Nascimento</FormLabel>
+                        <FormLabel>CPF</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} />
+                          <Input
+                            placeholder="000.000.000-00"
+                            maxLength={14}
+                            {...field}
+                            onChange={(e) => {
+                              const masked = maskDocument(e.target.value)
+                              field.onChange(masked)
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="phone"
@@ -227,13 +218,14 @@ export function RegistrationForm() {
 
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="birthDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>Data de Nascimento</FormLabel>
                       <FormControl>
-                        <Input placeholder="m@example.com" {...field} />
+                        <Input type="date" {...field} />
                       </FormControl>
+                      <FormDescription>Você deve ter pelo menos 18 anos</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -324,7 +316,7 @@ export function RegistrationForm() {
                   )}
                 />
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Button type="button" variant="outline" onClick={prevStep} className="w-full">
                     <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
                   </Button>
