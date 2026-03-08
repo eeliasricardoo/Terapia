@@ -8,43 +8,40 @@ datasource db {
 }
 
 model User {
-  id                  String               @id @default(uuid())
+  id                  String                    @id @default(uuid())
   name                String?
-  email               String               @unique
+  email               String                    @unique
   emailVerified       DateTime?
   image               String?
   password            String?
-  role                UserRole             @default(PATIENT)
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  role                UserRole                  @default(PATIENT)
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  patientAppointments Appointment[]             @relation("PatientAppointments")
+  participants        ConversationParticipant[]
+  diaryEntries        DiaryEntry[]
+  sentMessages        Message[]                 @relation("SentMessages")
   profiles            Profile?
   psychologistProfile PsychologistProfile?
-  patientAppointments Appointment[]        @relation("PatientAppointments")
-  diaryEntries        DiaryEntry[]
-  
-  participants        ConversationParticipant[]
-  sentMessages        Message[]                @relation("SentMessages")
-  
+
   @@map("users")
 }
 
-
 model Appointment {
-  id              String            @id @default(uuid())
-  patientId       String            @map("patient_id")
-  psychologistId  String            @map("psychologist_id")
-  scheduledAt     DateTime          @map("scheduled_at")
-  durationMinutes Int               @default(50) @map("duration_minutes")
-  status          AppointmentStatus @default(SCHEDULED)
-  sessionType     String            @default("Terapia Individual") @map("session_type")
-  price           Decimal           @db.Decimal(10, 2)
-  paymentMethod   String?           @map("payment_method")
-  meetingUrl      String?           @map("meeting_url")
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @updatedAt @map("updated_at")
-
-  patient      User                @relation("PatientAppointments", fields: [patientId], references: [id])
-  psychologist PsychologistProfile @relation(fields: [psychologistId], references: [id])
+  id              String              @id @default(uuid())
+  patientId       String              @map("patient_id")
+  psychologistId  String              @map("psychologist_id")
+  scheduledAt     DateTime            @map("scheduled_at")
+  durationMinutes Int                 @default(50) @map("duration_minutes")
+  status          AppointmentStatus   @default(SCHEDULED)
+  price           Decimal             @db.Decimal(10, 2)
+  meetingUrl      String?             @map("meeting_url")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+  paymentMethod   String?             @map("payment_method")
+  sessionType     String              @default("Terapia Individual") @map("session_type")
+  patient         User                @relation("PatientAppointments", fields: [patientId], references: [id])
+  psychologist    PsychologistProfile @relation(fields: [psychologistId], references: [id])
 
   @@index([patientId])
   @@index([psychologistId])
@@ -52,84 +49,174 @@ model Appointment {
   @@map("appointments")
 }
 
-
-
 model Profile {
-  id         String    @id @default(uuid())
-  fullName   String?   @map("full_name")
-  avatarUrl  String?   @map("avatar_url")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
-  onboardingData Json? @map("onboarding_data")
-  birth_date DateTime? @db.Date
-  document   String?
-  phone      String?
-  gender     String?
-  profession String?
-  addressLine String? @map("address_line")
-  city       String?
-  state      String?
-  zipCode    String?  @map("zip_code")
-  role       UserRole  @default(PATIENT)
-  user_id    String    @unique
-  users      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  anamnesis            Anamnesis[]
-  evolutions           Evolution[]
-  psychologistLinks    PatientPsychologistLink[] @relation("PatientLinks")
-  patientLinks         PatientPsychologistLink[] @relation("PsychologistLinks")
+  id                String                    @id @default(uuid())
+  fullName          String?                   @map("full_name")
+  avatarUrl         String?                   @map("avatar_url")
+  createdAt         DateTime                  @default(now()) @map("created_at")
+  updatedAt         DateTime                  @updatedAt @map("updated_at")
+  birth_date        DateTime?                 @db.Date
+  document          String?
+  phone             String?
+  gender            String?
+  profession        String?
+  addressLine       String?                   @map("address_line")
+  city              String?
+  state             String?
+  zipCode           String?                   @map("zip_code")
+  role              UserRole                  @default(PATIENT)
+  user_id           String                    @unique
+  onboardingData    Json?                     @map("onboarding_data")
+  anamnesis         Anamnesis?
+  evolutions        Evolution[]
+  psychologistLinks PatientPsychologistLink[] @relation("PatientLinks")
+  patientLinks      PatientPsychologistLink[] @relation("PsychologistLinks")
+  users             User                      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("profiles")
 }
 
 model PsychologistProfile {
-  id                   String   @id @default(uuid())
-  userId               String   @unique
-  crp                  String?  @unique
+  id                   String             @id @default(uuid())
+  userId               String             @unique
+  crp                  String?            @unique
   bio                  String?
-  specialties          String[] @default([])
-  pricePerSession      Decimal? @map("price_per_session") @db.Decimal(10, 2)
-  sessionDuration      Int      @default(50) @map("session_duration")
-  videoPresentationUrl String?  @map("video_presentation_url")
-  isVerified           Boolean  @default(false) @map("is_verified")
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @updatedAt @map("updated_at")
-  
-  weeklySchedule     Json?    @map("weekly_schedule")
-  timezone           String   @default("America/Sao_Paulo")
-
-  university         String?
-  academicLevel      String?
-  title              String?
-  crpExpiration      DateTime?
-  yearsOfExperience  Int?
-  
-  bank               String?
-  accountNumber      String?
-  accountType        String?
-  taxIdType          String?
-  taxIdNumber        String?
-  
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialties          String[]           @default([])
+  pricePerSession      Decimal?           @map("price_per_session") @db.Decimal(10, 2)
+  videoPresentationUrl String?            @map("video_presentation_url")
+  isVerified           Boolean            @default(false) @map("is_verified")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+  weeklySchedule       Json?              @map("weekly_schedule")
+  timezone             String             @default("America/Sao_Paulo")
+  academicLevel        String?
+  accountNumber        String?
+  accountType          String?
+  bank                 String?
+  crpExpiration        DateTime?
+  taxIdNumber          String?
+  taxIdType            String?
+  title                String?
+  university           String?
+  yearsOfExperience    Int?
+  sessionDuration      Int                @default(50) @map("session_duration")
   appointments         Appointment[]
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   scheduleOverrides    ScheduleOverride[]
 
   @@map("psychologist_profiles")
 }
 
 model ScheduleOverride {
-  id              String             @id @default(uuid())
-  psychologistId  String             @map("psychologist_id")
-  date            String             // Format YYYY-MM-DD
-  type            String             // 'blocked' | 'custom'
-  slots           Json               // Array of { start, end }
-  createdAt       DateTime           @default(now()) @map("created_at")
-  updatedAt       DateTime           @updatedAt @map("updated_at")
-
-  psychologist    PsychologistProfile @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  id             String              @id @default(uuid())
+  psychologistId String              @map("psychologist_id")
+  date           String
+  type           String
+  slots          Json
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  psychologist   PsychologistProfile @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
 
   @@unique([psychologistId, date])
   @@map("schedule_overrides")
+}
+
+model PatientPsychologistLink {
+  id             String   @id @default(uuid())
+  patientId      String   @map("patient_id")
+  psychologistId String   @map("psychologist_id")
+  status         String   @default("active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  patient        Profile  @relation("PatientLinks", fields: [patientId], references: [id], onDelete: Cascade)
+  psychologist   Profile  @relation("PsychologistLinks", fields: [psychologistId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, psychologistId])
+  @@map("patient_psychologist_links")
+}
+
+model Anamnesis {
+  id                   String   @id @default(uuid())
+  patientId            String   @unique @map("patient_id")
+  psychologistId       String   @map("psychologist_id")
+  mainComplaint        String?  @map("main_complaint")
+  familyHistory        String?  @map("family_history")
+  medication           String?
+  diagnosticHypothesis String?  @map("diagnostic_hypothesis")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  patient              Profile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("anamnesis")
+}
+
+model Evolution {
+  id             String   @id @default(uuid())
+  patientId      String   @map("patient_id")
+  psychologistId String   @map("psychologist_id")
+  mood           String?
+  publicSummary  String?  @map("public_summary")
+  privateNotes   String?  @map("private_notes")
+  date           DateTime @default(now())
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  patient        Profile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("evolutions")
+}
+
+model DiaryEntry {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  mood      Int
+  emotions  String[] @default([])
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("diary_entries")
+}
+
+model Conversation {
+  id            String                    @id @default(uuid())
+  createdAt     DateTime                  @default(now()) @map("created_at")
+  updatedAt     DateTime                  @updatedAt @map("updated_at")
+  lastMessageAt DateTime?                 @map("last_message_at")
+  participants  ConversationParticipant[]
+  messages      Message[]
+
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String       @id @default(uuid())
+  conversationId String       @map("conversation_id")
+  userId         String       @map("user_id")
+  lastReadAt     DateTime?    @map("last_read_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String       @map("conversation_id")
+  senderId       String       @map("sender_id")
+  content        String
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@map("messages")
 }
 
 enum AppointmentStatus {
@@ -146,109 +233,3 @@ enum UserRole {
   COMPANY
   ADMIN
 }
-
-model PatientPsychologistLink {
-  id              String   @id @default(uuid())
-  patientId       String   @map("patient_id")
-  psychologistId  String   @map("psychologist_id")
-  status          String   @default("active") // active, inactive, archived
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  patient         Profile  @relation("PatientLinks", fields: [patientId], references: [id], onDelete: Cascade)
-  psychologist    Profile  @relation("PsychologistLinks", fields: [psychologistId], references: [id], onDelete: Cascade)
-
-  @@unique([patientId, psychologistId])
-  @@map("patient_psychologist_links")
-}
-
-model Anamnesis {
-  id                   String   @id @default(uuid())
-  patientId            String   @unique @map("patient_id")
-  psychologistId       String   @map("psychologist_id")
-  mainComplaint        String?  @map("main_complaint")
-  familyHistory        String?  @map("family_history")
-  medication           String?
-  diagnosticHypothesis String?  @map("diagnostic_hypothesis")
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @updatedAt @map("updated_at")
-
-  patient              Profile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-
-  @@map("anamnesis")
-}
-
-model Evolution {
-  id              String   @id @default(uuid())
-  patientId       String   @map("patient_id")
-  psychologistId  String   @map("psychologist_id")
-  mood            String?  // Bem, Neutro, Mal, Crise
-  publicSummary   String?  @map("public_summary")
-  privateNotes    String?  @map("private_notes")
-  date            DateTime @default(now())
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  patient         Profile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-
-  @@map("evolutions")
-}
-
-model DiaryEntry {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  mood      Int      // 1-5 scale
-  emotions  String[] @default([])
-  content   String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([createdAt])
-  @@map("diary_entries")
-}
-
-model Conversation {
-  id            String    @id @default(uuid())
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  lastMessageAt DateTime? @map("last_message_at")
-
-  messages      Message[]
-  participants  ConversationParticipant[]
-
-  @@map("conversations")
-}
-
-model ConversationParticipant {
-  id             String       @id @default(uuid())
-  conversationId String       @map("conversation_id")
-  userId         String       @map("user_id")
-  lastReadAt     DateTime?    @map("last_read_at")
-  createdAt      DateTime     @default(now()) @map("created_at")
-
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([conversationId, userId])
-  @@map("conversation_participants")
-}
-
-model Message {
-  id             String       @id @default(uuid())
-  conversationId String       @map("conversation_id")
-  senderId       String       @map("sender_id")
-  content        String
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-
-  @@index([conversationId])
-  @@index([createdAt])
-  @@map("messages")
-}
-
