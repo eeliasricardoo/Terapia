@@ -18,8 +18,6 @@ import {
   BarChart3,
   BookOpen,
   FileText,
-  LayoutDashboard,
-  UserCheck,
   ShieldCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -47,17 +45,17 @@ const PSYCHOLOGIST_MENU = [
   { href: '/dashboard/ajustes', label: 'Ajustes', icon: Settings },
 ]
 
-const ADMIN_MENU = [
-  { href: '/dashboard', label: 'Estatísticas Globais', icon: LayoutDashboard },
-  { href: '/dashboard/admin/aprovacoes', label: 'Aprovações', icon: UserCheck },
-  { href: '/dashboard/admin/psicologos', label: 'Psicólogos', icon: ShieldCheck },
-  { href: '/dashboard/pacientes', label: 'Todos os Usuários', icon: Users },
-]
-
 interface DashboardSidebarProps {
   className?: string
   initialProfile?: Profile | null
 }
+
+const ADMIN_MENU = [
+  { href: '/dashboard', label: 'Visão Geral', icon: LayoutGrid },
+  { href: '/dashboard/admin/aprovacoes', label: 'Aprovações', icon: ShieldCheck },
+  { href: '/dashboard/admin/psicologos', label: 'Psicólogos', icon: Users },
+  { href: '/dashboard/perfil', label: 'Meu Perfil', icon: User },
+]
 
 export function DashboardSidebar({ className, initialProfile }: DashboardSidebarProps) {
   const pathname = usePathname()
@@ -206,6 +204,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
     )
   }
 
+  // Special case: if user is ADMIN, they shouldn't see regular features.
   const isAdmin = user?.rawRole === 'ADMIN'
   const menuItems = isAdmin
     ? ADMIN_MENU

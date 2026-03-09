@@ -4,7 +4,6 @@ import { AdminVerificationManager } from './AdminVerificationManager'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Users, ShieldCheck, Activity, Calendar, LayoutDashboard } from 'lucide-react'
-import Link from 'next/link'
 
 import { AdminDashboardData } from '@/lib/actions/dashboard'
 
@@ -70,30 +69,27 @@ export function AdminDashboard({ userProfile, dashboardData }: Props) {
               <CardTitle className="text-lg">Atalhos Administrativos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Link href="/dashboard/pacientes" className="block w-full">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-slate-600 gap-3 border-slate-200"
-                >
-                  <Users className="h-4 w-4" /> Gerenciar Usuários
-                </Button>
-              </Link>
-              <Link href="/dashboard/admin/psicologos" className="block w-full">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-slate-600 gap-3 border-slate-200"
-                >
-                  <ShieldCheck className="h-4 w-4" /> Psicólogos Cadastrados
-                </Button>
-              </Link>
-              <Link href="/dashboard/admin/aprovacoes" className="block w-full">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-slate-600 gap-3 border-slate-200"
-                >
-                  <Calendar className="h-4 w-4" /> Centro de Aprovações
-                </Button>
-              </Link>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-slate-600 gap-3 border-slate-200"
+                disabled
+              >
+                <Users className="h-4 w-4" /> Gerenciar Usuários
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-slate-600 gap-3 border-slate-200"
+                disabled
+              >
+                <Calendar className="h-4 w-4" /> Histórico de Sessões
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-slate-600 gap-3 border-slate-200"
+                disabled
+              >
+                <LayoutDashboard className="h-4 w-4" /> Configurações
+              </Button>
             </CardContent>
           </Card>
 

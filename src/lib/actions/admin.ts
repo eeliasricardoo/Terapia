@@ -91,7 +91,7 @@ export async function verifyPsychologist(psychologistId: string) {
       `,
     })
 
-    revalidatePath('/dashboard/admin/aprovacoes')
+    revalidatePath('/admin-sistema')
     return { success: true }
   } catch (error) {
     logger.error('Error verifying psychologist:', error)
