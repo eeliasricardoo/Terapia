@@ -76,9 +76,7 @@ export async function savePsychologistProfile(data: PsychologistOnboardingData) 
         specialties: allSpecialties,
         price_per_session: data.price,
         video_presentation_url: sanitizedVideoUrl,
-        is_verified: true, // Auto-verify for dev/MVP purposes? Or false? Let's say false usually but for demo true.
-        // Actually `getPsychologists` filters by `is_verified: true`. So if I want to see it, I must set true.
-        // Let's set true for now.
+        is_verified: false, // Default false to enable Admin Verification flow
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'userId' }

@@ -101,7 +101,8 @@ export async function savePaymentConfig(data: {
         accountType: data.accountType,
         taxIdType: data.taxIdType,
         taxIdNumber: data.taxIdNumber,
-        is_verified: true, // We can consider them verified after payment setup
+        video_presentation_url: '',
+        is_verified: false, // Must be approved by an Admin
         updated_at: new Date().toISOString(),
       })
       .eq('userId', user.id)
