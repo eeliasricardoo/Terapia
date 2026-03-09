@@ -23,7 +23,7 @@ export default function ProfilePage() {
       <Tabs defaultValue="general" className="w-full">
         <TabsList className="grid w-full md:w-[600px] grid-cols-1 md:grid-cols-3 h-auto mb-8">
           <TabsTrigger value="general">Informações Gerais</TabsTrigger>
-          <TabsTrigger value="plans">Meus Planos</TabsTrigger>
+          {user?.rawRole !== 'ADMIN' && <TabsTrigger value="plans">Meus Planos</TabsTrigger>}
           <TabsTrigger value="security">Segurança</TabsTrigger>
         </TabsList>
 
@@ -63,9 +63,11 @@ export default function ProfilePage() {
           />
         </TabsContent>
 
-        <TabsContent value="plans" className="space-y-6">
-          <SubscriptionPlansCard />
-        </TabsContent>
+        {user?.rawRole !== 'ADMIN' && (
+          <TabsContent value="plans" className="space-y-6">
+            <SubscriptionPlansCard />
+          </TabsContent>
+        )}
 
         <TabsContent value="security" className="space-y-6">
           <SecuritySettingsCard />

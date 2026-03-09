@@ -56,16 +56,21 @@ export function useProfileData() {
           console.error('Error fetching profile:', profileError)
         }
 
-        const isPsychologist =
-          profile?.role === 'PSYCHOLOGIST' || authUser.user_metadata?.role === 'PSYCHOLOGIST'
+        const rawRole = profile?.role || authUser.user_metadata?.role || 'PATIENT'
+        const isPsychologist = rawRole === 'PSYCHOLOGIST'
+        const isAdmin = rawRole === 'ADMIN'
+
+        let displayRole = 'Paciente'
+        if (isPsychologist) displayRole = 'Psicólogo'
+        if (isAdmin) displayRole = 'Administrador'
 
         setUser({
           id: authUser.id,
           name: profile?.full_name || authUser.user_metadata?.full_name || '',
           email: authUser.email || '',
           phone: profile?.phone || '',
-          role: isPsychologist ? 'Psicólogo' : 'Paciente',
-          rawRole: isPsychologist ? 'PSYCHOLOGIST' : 'PATIENT',
+          role: displayRole,
+          rawRole: rawRole,
           image: profile?.avatar_url || '/avatars/01.png',
           birth_date: profile?.birth_date,
           document: profile?.document,
