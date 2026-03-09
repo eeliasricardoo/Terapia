@@ -265,7 +265,12 @@ export async function rejectPsychologist(psychologistId: string, reason: string)
   }
 }
 
-export async function suspendPsychologistAccess(psychologistId: string, reason: string) {
+export async function suspendPsychologistAccess(
+  psychologistId: string,
+  reason: string,
+  sendEmailNotification: boolean = true,
+  emailMessage?: string
+) {
   try {
     const supabase = await createClient()
     const {
@@ -290,21 +295,27 @@ export async function suspendPsychologistAccess(psychologistId: string, reason: 
       },
     })
 
-    // Notify Psychologist
-    await sendEmail({
-      to: psychologist.user.email,
-      subject: 'Aviso Importante: Acesso Suspenso na Terapia',
-      html: `
-        <h2>Olá, ${psychologist.user.profiles?.fullName || 'Psicólogo'}.</h2>
-        <p>A equipe de moderação da Terapia suspendeu seu acesso à plataforma.</p>
-        <p><strong>Motivo:</strong> ${reason}</p>
-        <p>Seu perfil público foi ocultado e você retornou para a fase de análise de cadastro.</p>
-        <p>Entre em contato com o suporte para mais informações.</p>
-        <br/>
-        <p>Atenciosamente,</p>
-        <p>Equipe Terapia</p>
-      `,
-    })
+    if (sendEmailNotification) {
+      // Notify Psychologist
+      const customMessageHtml = emailMessage
+        ? `<p><strong>Mensagem da Moderação:</strong> ${emailMessage}</p>`
+        : `<p><strong>Motivo:</strong> ${reason}</p>`
+
+      await sendEmail({
+        to: psychologist.user.email,
+        subject: 'Aviso Importante: Acesso Suspenso na Terapia',
+        html: `
+          <h2>Olá, ${psychologist.user.profiles?.fullName || 'Psicólogo'}.</h2>
+          <p>A equipe de moderação da Terapia suspendeu seu acesso à plataforma.</p>
+          ${customMessageHtml}
+          <p>Seu perfil público foi ocultado e você retornou para a fase de análise de cadastro.</p>
+          <p>Entre em contato com o suporte para mais informações.</p>
+          <br/>
+          <p>Atenciosamente,</p>
+          <p>Equipe Terapia</p>
+        `,
+      })
+    }
 
     revalidatePath('/dashboard/admin/psicologos')
     return { success: true }

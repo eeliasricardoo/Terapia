@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { suspendPsychologistAccess } from '@/lib/actions/admin'
-import { ShieldAlert, ShieldCheck, Mail, Calendar, Ban } from 'lucide-react'
+import { ShieldAlert, ShieldCheck, Mail, Calendar, Ban, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -35,9 +35,17 @@ export function PsychologistList({
   const [searchTerm, setSearchTerm] = useState('')
 
   const [loadingId, setLoadingId] = useState<string | null>(null)
+
+  // Suspension State
   const [suspendReason, setSuspendReason] = useState('')
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [sendEmailNotification, setSendEmailNotification] = useState(true)
+  const [emailMessage, setEmailMessage] = useState('')
+  const [isSuspendDialogOpen, setIsSuspendDialogOpen] = useState(false)
   const [selectedPsy, setSelectedPsy] = useState<Psychologist | null>(null)
+
+  // View Reason State
+  const [isReasonDialogOpen, setIsReasonDialogOpen] = useState(false)
+  const [viewReasonData, setViewReasonData] = useState<Psychologist | null>(null)
 
   const filtered = psychologists.filter(
     (p) =>
@@ -49,12 +57,17 @@ export function PsychologistList({
   const handleSuspend = async () => {
     if (!selectedPsy) return
     if (!suspendReason.trim()) {
-      toast.error('Informe o motivo da suspensão para prosseguir.')
+      toast.error('Informe o motivo interno da suspensão para prosseguir.')
       return
     }
 
     setLoadingId(selectedPsy.id)
-    const result = await suspendPsychologistAccess(selectedPsy.id, suspendReason)
+    const result = await suspendPsychologistAccess(
+      selectedPsy.id,
+      suspendReason,
+      sendEmailNotification,
+      emailMessage
+    )
 
     if (result.success) {
       toast.success(`O acesso de ${selectedPsy.fullName} foi suspenso com sucesso.`)
@@ -63,8 +76,10 @@ export function PsychologistList({
           p.id === selectedPsy.id ? { ...p, isVerified: false, suspensionReason: suspendReason } : p
         )
       )
-      setIsDialogOpen(false)
+      setIsSuspendDialogOpen(false)
       setSuspendReason('')
+      setEmailMessage('')
+      setSendEmailNotification(true)
     } else {
       toast.error(result.error || 'Ocorreu um erro ao suspender a conta.')
     }
@@ -73,7 +88,12 @@ export function PsychologistList({
 
   const openSuspendDialog = (p: Psychologist) => {
     setSelectedPsy(p)
-    setIsDialogOpen(true)
+    setIsSuspendDialogOpen(true)
+  }
+
+  const openReasonDialog = (p: Psychologist) => {
+    setViewReasonData(p)
+    setIsReasonDialogOpen(true)
   }
 
   return (
@@ -160,15 +180,20 @@ export function PsychologistList({
                         Aprovado
                       </span>
                     ) : p.suspensionReason ? (
-                      <div className="flex flex-col gap-1 items-start">
+                      <div className="flex items-center gap-2">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 whitespace-nowrap">
                           <Ban className="w-3.5 h-3.5 mr-1" />
                           Suspenso
                         </span>
-                        <div className="text-xs text-red-600/80 text-left max-w-[200px] break-words whitespace-normal leading-tight">
-                          <span className="font-semibold block">Motivo:</span>
-                          {p.suspensionReason}
-                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 px-2 py-0 text-xs font-medium text-neutral-500 hover:text-neutral-700 bg-white"
+                          onClick={() => openReasonDialog(p)}
+                        >
+                          <Eye className="h-3.5 w-3.5 mr-1" />
+                          Motivo
+                        </Button>
                       </div>
                     ) : (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">
@@ -214,31 +239,67 @@ export function PsychologistList({
         </div>
       </div>
 
-      {/* Suspend Dialog controlled state */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+      {/* Suspend Action Dialog */}
+      <Dialog open={isSuspendDialogOpen} onOpenChange={setIsSuspendDialogOpen}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Suspender Acesso de {selectedPsy?.fullName}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-neutral-500">
-              Ao suspender, o psicólogo não poderá mais receber novos agendamentos públicos e você
-              será exigido a revalidá-lo. Um e-mail será enviado com o motivo abaix.
+              O psicólogo não poderá mais receber novos agendamentos e precisará ser revalidado.
             </p>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Motivo da Suspensão
-              </label>
-              <textarea
-                value={suspendReason}
-                onChange={(e) => setSuspendReason(e.target.value)}
-                className="w-full border border-neutral-300 rounded-md shadow-sm text-sm p-3 min-h-[100px] focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
-                placeholder="Descreva o motivo que o levou a revogar este acesso..."
-              />
+
+            <div className="space-y-4 pt-2">
+              <div>
+                <label className="block text-sm font-semibold text-neutral-900 mb-1">
+                  Motivo Interno <span className="text-red-500">*</span>
+                </label>
+                <p className="text-xs text-neutral-500 mb-2">
+                  Este motivo ficará registrado apenas para administradores.
+                </p>
+                <textarea
+                  value={suspendReason}
+                  onChange={(e) => setSuspendReason(e.target.value)}
+                  className="w-full border border-neutral-300 rounded-md shadow-sm text-sm p-3 min-h-[80px] focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+                  placeholder="Descreva o motivo que o levou a revogar este acesso..."
+                />
+              </div>
+
+              <div className="border-t border-neutral-100 pt-4">
+                <label className="flex items-center space-x-2 cursor-pointer mb-3">
+                  <input
+                    type="checkbox"
+                    checked={sendEmailNotification}
+                    onChange={(e) => setSendEmailNotification(e.target.checked)}
+                    className="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary"
+                  />
+                  <span className="text-sm font-medium text-neutral-900">
+                    Notificar profissional por E-mail
+                  </span>
+                </label>
+
+                {sendEmailNotification && (
+                  <div className="pl-6 transition-all animate-in fade-in duration-300">
+                    <label className="block text-sm font-semibold text-neutral-900 mb-1">
+                      Mensagem para o Psicólogo (Opcional)
+                    </label>
+                    <p className="text-xs text-neutral-500 mb-2">
+                      Se vazio, o e-mail enviará o motivo interno acima.
+                    </p>
+                    <textarea
+                      value={emailMessage}
+                      onChange={(e) => setEmailMessage(e.target.value)}
+                      className="w-full border border-neutral-300 rounded-md shadow-sm text-sm p-3 min-h-[80px] focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                      placeholder="Mensagem amigável que será enviada no corpo do e-mail..."
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsSuspendDialogOpen(false)}>
               Cancelar
             </Button>
             <Button
@@ -247,6 +308,30 @@ export function PsychologistList({
               disabled={!suspendReason.trim() || loadingId === selectedPsy?.id}
             >
               {loadingId === selectedPsy?.id ? 'Aguarde...' : 'Confirmar Suspensão'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Reason Dialog */}
+      <Dialog open={isReasonDialogOpen} onOpenChange={setIsReasonDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detalhes da Suspensão</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-red-50 border border-red-100 p-4 rounded-lg text-sm text-red-900">
+              <span className="block font-semibold mb-2">
+                Profissional: {viewReasonData?.fullName}
+              </span>
+              <p className="whitespace-pre-wrap leading-relaxed">
+                {viewReasonData?.suspensionReason || 'Nenhum motivo registrado pelo administrador.'}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsReasonDialogOpen(false)}>
+              Fechar
             </Button>
           </DialogFooter>
         </DialogContent>
