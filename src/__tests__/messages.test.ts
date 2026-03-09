@@ -22,6 +22,7 @@ jest.mock('@/lib/prisma', () => ({
     message: {
       findMany: jest.fn(),
       create: jest.fn(),
+      count: jest.fn(),
     },
     conversation: {
       create: jest.fn(),

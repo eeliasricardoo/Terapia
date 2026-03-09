@@ -19,7 +19,7 @@ describe('Landing Page', () => {
   it('renders the "Sou Psicólogo(a)" button', async () => {
     const ResolvedHome = await Home()
     render(ResolvedHome)
-    const button = screen.getByRole('button', { name: /Sou Psicólogo\(a\)/i })
-    expect(button).toBeInTheDocument()
+    const buttons = screen.getAllByRole('button', { name: /Sou Psicólogo\(a\)/i })
+    expect(buttons.length).toBeGreaterThan(0)
   })
 })

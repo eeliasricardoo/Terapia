@@ -92,6 +92,9 @@ describe('financial actions', () => {
         },
       ])
 
+      // 11. allCompletedAppts (and fallback)
+      findManyMock.mockResolvedValue([])
+
       const stats = await getFinancialStats()
 
       // Total revenue should be 100 + 150 = 250

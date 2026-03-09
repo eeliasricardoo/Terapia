@@ -12,7 +12,12 @@ jest.mock('@/lib/prisma', () => ({
     psychologistProfile: {
       findUnique: jest.fn(),
     },
+    profile: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+    },
     appointment: {
+      findFirst: jest.fn(),
       findMany: jest.fn(),
     },
     patientPsychologistLink: {
@@ -70,6 +75,8 @@ describe('dashboard actions', () => {
         id: 'psych-1',
         isVerified: true,
       })
+      ;(prisma.profile.findUnique as jest.Mock).mockResolvedValueOnce({ id: 'prof-1' })
+      ;(prisma.profile.findMany as jest.Mock).mockResolvedValueOnce([{ id: 'patient-1' }])
 
       // mock today sessions
       ;(prisma.appointment.findMany as jest.Mock).mockResolvedValueOnce([
@@ -95,12 +102,25 @@ describe('dashboard actions', () => {
         { price: 150 },
       ])
 
+      // mock last month sessions (for revenueChange calculation)
+      ;(prisma.appointment.findMany as jest.Mock).mockResolvedValueOnce([{ price: 100 }])
+
       // mock recent patients via last apps
       ;(prisma.appointment.findMany as jest.Mock).mockResolvedValueOnce([
         {
           patientId: 'patient-1',
           scheduledAt: new Date(),
           patient: { profiles: { fullName: 'John Doe' } },
+        },
+      ])
+
+      // mock profile lookups for links
+      ;(prisma.profile.findMany as jest.Mock).mockResolvedValueOnce([{ id: 'prof-patient-1' }])
+      // mock the actual links
+      ;(prisma.patientPsychologistLink.findMany as jest.Mock).mockResolvedValueOnce([
+        {
+          status: 'active',
+          patient: { user_id: 'patient-1' },
         },
       ])
 
@@ -120,36 +140,40 @@ describe('dashboard actions', () => {
     it('should return error baseline on exception (e.g. not authenticated)', async () => {
       mockSupabase.auth.getUser.mockResolvedValueOnce({ data: { user: null } })
       const result = await getPatientDashboardData()
-      expect(result).toEqual({ nextSession: null, recentSessions: [] })
+      expect(result).toEqual({
+        nextSession: null,
+        recentSessions: [],
+        monthlyProgress: { completedSessions: 0, totalSessions: 0 },
+      })
     })
 
     it('should fetch next session and recent sessions', async () => {
       mockSupabase.auth.getUser.mockResolvedValueOnce({ data: { user: mockUser } })
 
-      const now = new Date().toISOString()
+      const now = new Date()
 
-      const chainObj: any = {}
-      chainObj.single = jest.fn().mockResolvedValueOnce({
-        data: {
-          id: 'sess-1',
-          scheduled_at: now,
-          duration_minutes: 50,
-          psychologist: { full_name: 'Dr. John' },
+      ;(prisma.appointment.findFirst as jest.Mock).mockResolvedValueOnce({
+        id: 'sess-1',
+        sessionType: 'online',
+        scheduledAt: now,
+        durationMinutes: 50,
+        psychologist: {
+          user: { profiles: { fullName: 'Dr. John' } },
+          specialties: ['Psicólogo Clínico'],
         },
       })
-      chainObj.then = (resolve: any) =>
-        resolve({
-          data: [
-            {
-              id: 'sess-2',
-              scheduled_at: now,
-              status: 'COMPLETED',
-              psychologist: { full_name: 'Dr. John' },
-            },
-          ],
-        })
 
-      mockSupabase.limit.mockReturnValue(chainObj)
+      // First findMany for recentSessions, Second for monthlyProgress
+      ;(prisma.appointment.findMany as jest.Mock)
+        .mockResolvedValueOnce([
+          {
+            id: 'sess-2',
+            scheduledAt: now,
+            status: 'COMPLETED',
+            psychologist: { user: { profiles: { fullName: 'Dr. John' } } },
+          },
+        ])
+        .mockResolvedValueOnce([])
 
       const result = await getPatientDashboardData()
 
