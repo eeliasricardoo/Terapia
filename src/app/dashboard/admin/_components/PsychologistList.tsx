@@ -1,8 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { verifyPsychologist, rejectPsychologist } from '@/lib/actions/admin'
-import { ShieldAlert, ShieldCheck, Mail, Calendar, Stethoscope } from 'lucide-react'
+import { suspendPsychologistAccess } from '@/lib/actions/admin'
+import { ShieldAlert, ShieldCheck, Mail, Calendar, Ban } from 'lucide-react'
+import { toast } from 'sonner'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 type Psychologist = {
   id: string
@@ -24,12 +33,45 @@ export function PsychologistList({
   const [psychologists, setPsychologists] = useState(initialPsychologists)
   const [searchTerm, setSearchTerm] = useState('')
 
+  const [loadingId, setLoadingId] = useState<string | null>(null)
+  const [suspendReason, setSuspendReason] = useState('')
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [selectedPsy, setSelectedPsy] = useState<Psychologist | null>(null)
+
   const filtered = psychologists.filter(
     (p) =>
       p.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (p.crp && p.crp.includes(searchTerm))
   )
+
+  const handleSuspend = async () => {
+    if (!selectedPsy) return
+    if (!suspendReason.trim()) {
+      toast.error('Informe o motivo da suspensão para prosseguir.')
+      return
+    }
+
+    setLoadingId(selectedPsy.id)
+    const result = await suspendPsychologistAccess(selectedPsy.id, suspendReason)
+
+    if (result.success) {
+      toast.success(`O acesso de ${selectedPsy.fullName} foi suspenso com sucesso.`)
+      setPsychologists((prev) =>
+        prev.map((p) => (p.id === selectedPsy.id ? { ...p, isVerified: false } : p))
+      )
+      setIsDialogOpen(false)
+      setSuspendReason('')
+    } else {
+      toast.error(result.error || 'Ocorreu um erro ao suspender a conta.')
+    }
+    setLoadingId(null)
+  }
+
+  const openSuspendDialog = (p: Psychologist) => {
+    setSelectedPsy(p)
+    setIsDialogOpen(true)
+  }
 
   return (
     <div className="space-y-6">
@@ -42,7 +84,7 @@ export function PsychologistList({
           className="w-full sm:max-w-md px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
         />
         <div className="text-sm text-neutral-500 font-medium">
-          Total: {filtered.length} psicólogos
+          Total: {filtered.length} registrados
         </div>
       </div>
 
@@ -74,6 +116,12 @@ export function PsychologistList({
                   className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider"
                 >
                   Entrada
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider"
+                >
+                  Ações
                 </th>
               </tr>
             </thead>
@@ -111,7 +159,7 @@ export function PsychologistList({
                     ) : (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                         <ShieldAlert className="w-3.5 h-3.5 mr-1" />
-                        Aguardando
+                        Aguardando ou Suspenso
                       </span>
                     )}
                   </td>
@@ -120,6 +168,20 @@ export function PsychologistList({
                       <Calendar className="w-4 h-4 mr-1.5" />
                       {new Date(p.createdAt).toLocaleDateString('pt-BR')}
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    {p.isVerified && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-50"
+                        onClick={() => openSuspendDialog(p)}
+                        disabled={loadingId === p.id}
+                      >
+                        <Ban className="w-4 h-4 mr-2" />
+                        Suspender
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -137,6 +199,44 @@ export function PsychologistList({
           </table>
         </div>
       </div>
+
+      {/* Suspend Dialog controlled state */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Suspender Acesso de {selectedPsy?.fullName}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-neutral-500">
+              Ao suspender, o psicólogo não poderá mais receber novos agendamentos públicos e você
+              será exigido a revalidá-lo. Um e-mail será enviado com o motivo abaix.
+            </p>
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
+                Motivo da Suspensão
+              </label>
+              <textarea
+                value={suspendReason}
+                onChange={(e) => setSuspendReason(e.target.value)}
+                className="w-full border border-neutral-300 rounded-md shadow-sm text-sm p-3 min-h-[100px] focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+                placeholder="Descreva o motivo que o levou a revogar este acesso..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleSuspend}
+              disabled={!suspendReason.trim() || loadingId === selectedPsy?.id}
+            >
+              {loadingId === selectedPsy?.id ? 'Aguarde...' : 'Confirmar Suspensão'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

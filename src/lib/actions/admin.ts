@@ -263,3 +263,52 @@ export async function rejectPsychologist(psychologistId: string, reason: string)
     return { success: false, error: 'Falha ao rejeitar psicólogo' }
   }
 }
+
+export async function suspendPsychologistAccess(psychologistId: string, reason: string) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) throw new Error('Não autenticado')
+
+    const profile = await prisma.profile.findUnique({
+      where: { user_id: user.id },
+    })
+
+    if (!profile || profile.role !== 'ADMIN') {
+      throw new Error('Não autorizado')
+    }
+
+    const psychologist = await prisma.psychologistProfile.update({
+      where: { id: psychologistId },
+      data: { isVerified: false }, // Suspende o acesso público e trava a conta
+      include: {
+        user: { include: { profiles: true } },
+      },
+    })
+
+    // Notify Psychologist
+    await sendEmail({
+      to: psychologist.user.email,
+      subject: 'Aviso Importante: Acesso Suspenso na Terapia',
+      html: `
+        <h2>Olá, ${psychologist.user.profiles?.fullName || 'Psicólogo'}.</h2>
+        <p>A equipe de moderação da Terapia suspendeu seu acesso à plataforma.</p>
+        <p><strong>Motivo:</strong> ${reason}</p>
+        <p>Seu perfil público foi ocultado e você retornou para a fase de análise de cadastro.</p>
+        <p>Entre em contato com o suporte para mais informações.</p>
+        <br/>
+        <p>Atenciosamente,</p>
+        <p>Equipe Terapia</p>
+      `,
+    })
+
+    revalidatePath('/dashboard/admin/psicologos')
+    return { success: true }
+  } catch (error) {
+    logger.error('Error suspending psychologist:', error)
+    return { success: false, error: 'Falha ao suspender acesso' }
+  }
+}
