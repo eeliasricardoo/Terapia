@@ -21,6 +21,7 @@ type Psychologist = {
   crp: string | null
   specialties: string[]
   isVerified: boolean
+  suspensionReason?: string | null
   createdAt: string
   avatarUrl?: string | null
 }
@@ -58,7 +59,9 @@ export function PsychologistList({
     if (result.success) {
       toast.success(`O acesso de ${selectedPsy.fullName} foi suspenso com sucesso.`)
       setPsychologists((prev) =>
-        prev.map((p) => (p.id === selectedPsy.id ? { ...p, isVerified: false } : p))
+        prev.map((p) =>
+          p.id === selectedPsy.id ? { ...p, isVerified: false, suspensionReason: suspendReason } : p
+        )
       )
       setIsDialogOpen(false)
       setSuspendReason('')
@@ -150,16 +153,27 @@ export function PsychologistList({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-neutral-900 font-medium">{p.crp || '---'}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4">
                     {p.isVerified ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap">
                         <ShieldCheck className="w-3.5 h-3.5 mr-1" />
                         Aprovado
                       </span>
+                    ) : p.suspensionReason ? (
+                      <div className="flex flex-col gap-1 items-start">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 whitespace-nowrap">
+                          <Ban className="w-3.5 h-3.5 mr-1" />
+                          Suspenso
+                        </span>
+                        <div className="text-xs text-red-600/80 text-left max-w-[200px] break-words whitespace-normal leading-tight">
+                          <span className="font-semibold block">Motivo:</span>
+                          {p.suspensionReason}
+                        </div>
+                      </div>
                     ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">
                         <ShieldAlert className="w-3.5 h-3.5 mr-1" />
-                        Aguardando ou Suspenso
+                        Aguardando Aprovação
                       </span>
                     )}
                   </td>

@@ -86,6 +86,7 @@ model PsychologistProfile {
   pricePerSession      Decimal?           @map("price_per_session") @db.Decimal(10, 2)
   videoPresentationUrl String?            @map("video_presentation_url")
   isVerified           Boolean            @default(false) @map("is_verified")
+  suspensionReason     String?            @map("suspension_reason")
   createdAt            DateTime           @default(now()) @map("created_at")
   updatedAt            DateTime           @updatedAt @map("updated_at")
   weeklySchedule       Json?              @map("weekly_schedule")

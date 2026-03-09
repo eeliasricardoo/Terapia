@@ -71,7 +71,7 @@ export async function verifyPsychologist(psychologistId: string) {
 
     const psychologist = await prisma.psychologistProfile.update({
       where: { id: psychologistId },
-      data: { isVerified: true },
+      data: { isVerified: true, suspensionReason: null },
       include: {
         user: { include: { profiles: true } },
       },
@@ -195,6 +195,7 @@ export async function getAllPsychologists() {
       crp: p.crp,
       specialties: p.specialties,
       isVerified: p.isVerified,
+      suspensionReason: p.suspensionReason,
       createdAt: p.createdAt.toISOString(),
       avatarUrl: p.user.profiles?.avatarUrl,
     }))
@@ -283,7 +284,7 @@ export async function suspendPsychologistAccess(psychologistId: string, reason: 
 
     const psychologist = await prisma.psychologistProfile.update({
       where: { id: psychologistId },
-      data: { isVerified: false }, // Suspende o acesso público e trava a conta
+      data: { isVerified: false, suspensionReason: reason }, // Suspende o acesso público e trava a conta
       include: {
         user: { include: { profiles: true } },
       },
