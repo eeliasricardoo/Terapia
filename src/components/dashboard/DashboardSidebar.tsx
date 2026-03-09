@@ -18,6 +18,9 @@ import {
   BarChart3,
   BookOpen,
   FileText,
+  LayoutDashboard,
+  UserCheck,
+  ShieldCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -42,6 +45,13 @@ const PSYCHOLOGIST_MENU = [
   { href: '/dashboard/financeiro', label: 'Financeiro', icon: BarChart3 },
   { href: '/dashboard/perfil', label: 'Meu Perfil', icon: User },
   { href: '/dashboard/ajustes', label: 'Ajustes', icon: Settings },
+]
+
+const ADMIN_MENU = [
+  { href: '/dashboard', label: 'Estatísticas Globais', icon: LayoutDashboard },
+  { href: '/dashboard/admin/aprovacoes', label: 'Aprovações', icon: UserCheck },
+  { href: '/dashboard/admin/psicologos', label: 'Psicólogos', icon: ShieldCheck },
+  { href: '/dashboard/pacientes', label: 'Todos os Usuários', icon: Users },
 ]
 
 interface DashboardSidebarProps {
@@ -196,10 +206,9 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
     )
   }
 
-  // Special case: if user is ADMIN, they shouldn't see regular features.
   const isAdmin = user?.rawRole === 'ADMIN'
   const menuItems = isAdmin
-    ? []
+    ? ADMIN_MENU
     : user?.rawRole === 'PSYCHOLOGIST'
       ? PSYCHOLOGIST_MENU
       : PATIENT_MENU
@@ -229,13 +238,6 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-4">
-        {isAdmin && (
-          <div className="text-sm text-neutral-500 mb-4 px-3 py-2 bg-slate-50 rounded-lg">
-            Sua conta possui acesso administrativo exclusivo. Clique no botão abaixo para gerenciar
-            a plataforma.
-          </div>
-        )}
-
         {menuItems.map((item) => {
           const isActive = pathname === item.href
           return (
@@ -260,19 +262,6 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
           )
         })}
       </nav>
-
-      {/* Admin Quick Action */}
-      {isAdmin && (
-        <div className="p-4 border-t border-slate-100">
-          <Link
-            href="/admin-sistema"
-            className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg text-primary bg-primary/10 hover:bg-primary/20 transition-colors w-full"
-          >
-            <Settings className="h-4 w-4" />
-            Painel Administrativo
-          </Link>
-        </div>
-      )}
 
       {/* Logout */}
       <div className="p-4 border-t border-slate-100">
