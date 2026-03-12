@@ -28,8 +28,9 @@ export async function middleware(request: NextRequest) {
   )
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+  } = await supabase.auth.getUser()
+  const session = !!user
   const { pathname } = request.nextUrl
 
   // Protect dashboard and admin routes
@@ -42,9 +43,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // Redirect authenticated users away from home, login, and register pages
+  // BUT allow them to access onboarding/profile completion
   if (
     (pathname === '/' || pathname.startsWith('/login') || pathname.startsWith('/cadastro')) &&
-    session
+    session &&
+    !pathname.includes('completar-perfil') &&
+    !pathname.includes('onboarding')
   ) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'

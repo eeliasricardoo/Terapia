@@ -39,23 +39,21 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
         create: { id: user.id, email: user.email!, name: fullName, role: role as any },
       })
 
-      // Create in Supabase profiles table
-      const { data: newProfile, error: insertError } = await supabase
-        .from('profiles')
-        .insert({
+      // Create in Supabase profiles table using Prisma to ensure defaults (like ID) are handled
+      const newProfile = await prisma.profile.create({
+        data: {
           user_id: user.id,
-          full_name: fullName,
-          role: role,
-          avatar_url: null,
-        })
-        .select()
-        .single()
+          fullName: fullName,
+          role: role as any,
+          avatarUrl: null,
+        },
+      })
 
-      if (!insertError) {
-        data = newProfile
+      if (newProfile) {
+        data = newProfile as any // Cast to any to match the Supabase return type expectation in the rest of the function
       }
     } catch (err) {
-      console.error('Error auto-syncing profile:', err)
+      console.error('Error auto-syncing profile (Prisma/General):', err)
     }
   } else if (error) {
     console.error('Error fetching user profile:', error)
@@ -69,11 +67,18 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
       where: { id: user.id },
     })
 
-    if (userInDb && userInDb.role !== (data as Profile).role) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { role: (data as Profile).role as any },
-      })
+    if (data && userInDb) {
+      if (userInDb.role !== (data as Profile).role) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: (data as Profile).role as any },
+        })
+      }
+    } else {
+      // Log exactly what is missing for debugging
+      if (!data && !userInDb) console.log('DEBUG: Both profile data and userInDb are null')
+      else if (!data) console.log('DEBUG: Profile data is null')
+      else if (!userInDb) console.log('DEBUG: userInDb is null for ID:', user.id)
     }
   } catch (err) {
     console.error('Error syncing user role:', err)

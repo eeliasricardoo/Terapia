@@ -34,9 +34,9 @@ export default async function DashboardPage() {
       // Se autenticado mas sem perfil, redireciona para onboarding ou gera erro controlado
       const metaRole = user.user_metadata?.role as string | undefined
       if (metaRole === 'PSYCHOLOGIST') {
-        redirect('/cadastro/profissional/completar-perfil')
+        redirect('/cadastro/profissional/dados')
       } else {
-        redirect('/onboarding')
+        redirect('/')
       }
     } else {
       redirect('/login/paciente')
