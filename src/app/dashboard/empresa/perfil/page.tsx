@@ -13,10 +13,88 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Building2, ShieldCheck, Users, Calendar, Building } from 'lucide-react'
+import {
+  Building2,
+  ShieldCheck,
+  Users,
+  Calendar,
+  Building,
+  Plus,
+  Trash2,
+  Lock,
+  Eye,
+  Globe,
+} from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { toast } from 'sonner'
 
 export default function CompanyProfilePage() {
-  const [copied, setCopied] = useState(false)
+  const [domains, setDomains] = useState(['milano.com.br', 'milano.io'])
+  const [newDomain, setNewDomain] = useState('')
+
+  const handleAddDomain = () => {
+    if (newDomain && !domains.includes(newDomain)) {
+      setDomains([...domains, newDomain])
+      setNewDomain('')
+      toast.success('Domínio adicionado com sucesso!')
+    }
+  }
+
+  const handleRemoveDomain = (domain: string) => {
+    setDomains(domains.filter((d) => d !== domain))
+    toast.error('Domínio removido.')
+  }
+
+  const SECURITY_LOGS = [
+    {
+      id: 1,
+      event: 'Novo Vínculo',
+      status: 'Sucesso',
+      user: 'ana.s@milano.com.br',
+      date: 'Hoje, 14:20',
+      ip: '189.12.43.1',
+    },
+    {
+      id: 2,
+      event: 'Tentativa Bloqueada',
+      status: 'Bloqueado',
+      user: 'hack@externo.com',
+      date: 'Hoje, 10:05',
+      ip: '45.1.99.2',
+    },
+    {
+      id: 3,
+      event: 'Alteração de Subsídio',
+      status: 'Admin RH',
+      user: 'rh@milano.com.br',
+      date: 'Ontem, 16:45',
+      ip: '189.12.43.1',
+    },
+    {
+      id: 4,
+      event: 'Convite Gerado',
+      status: 'Sucesso',
+      user: 'marcos.t@milano.com.br',
+      date: '06 Mar, 09:12',
+      ip: '189.12.43.1',
+    },
+  ]
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-700">
@@ -49,12 +127,122 @@ export default function CompanyProfilePage() {
                     corporativo para garantir segurança máxima.
                   </p>
                   <div className="flex flex-wrap gap-4">
-                    <Button className="bg-blue-600 hover:bg-blue-500 rounded-xl px-6 h-12 font-bold transition-all shadow-lg shadow-blue-600/20">
-                      Configurar Domínios
-                    </Button>
-                    <Button className="bg-white text-slate-900 hover:bg-slate-100 rounded-xl px-6 h-12 font-bold transition-all shadow-lg">
-                      Ver Logs de Segurança
-                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="bg-blue-600 hover:bg-blue-500 rounded-xl px-6 h-12 font-bold transition-all shadow-lg shadow-blue-600/20 gap-2">
+                          <Globe className="h-4 w-4" />
+                          Configurar Domínios
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="rounded-3xl max-w-md">
+                        <DialogHeader>
+                          <DialogTitle className="text-2xl font-bold font-outfit">
+                            Domínios Autorizados
+                          </DialogTitle>
+                          <DialogDescription className="font-medium">
+                            Apenas usuários com e-mails destes domínios poderão ativar o benefício.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-6 py-4">
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="ex: empresa.com"
+                              value={newDomain}
+                              onChange={(e) => setNewDomain(e.target.value)}
+                              className="rounded-xl h-12 border-slate-100 bg-slate-50 focus:bg-white"
+                            />
+                            <Button
+                              onClick={handleAddDomain}
+                              className="rounded-xl h-12 bg-slate-900 px-4"
+                            >
+                              <Plus className="h-5 w-5" />
+                            </Button>
+                          </div>
+                          <div className="space-y-2">
+                            {domains.map((domain) => (
+                              <div
+                                key={domain}
+                                className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100"
+                              >
+                                <span className="font-bold text-slate-700">{domain}</span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleRemoveDomain(domain)}
+                                  className="h-8 w-8 p-0 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl h-12 font-bold">
+                            Salvar Configurações
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="bg-white text-slate-900 hover:bg-slate-100 rounded-xl px-6 h-12 font-bold transition-all shadow-lg gap-2">
+                          <Lock className="h-4 w-4" />
+                          Logs de Segurança
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="rounded-3xl max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle className="text-2xl font-bold font-outfit">
+                            Logs de Atividade de Segurança
+                          </DialogTitle>
+                          <DialogDescription className="font-medium">
+                            Histórico de acessos, tentativas e alterações de segurança.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="font-bold">Evento</TableHead>
+                                <TableHead className="font-bold">Usuário</TableHead>
+                                <TableHead className="font-bold text-center">Status</TableHead>
+                                <TableHead className="font-bold">Data/Hora</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {SECURITY_LOGS.map((log) => (
+                                <TableRow key={log.id}>
+                                  <TableCell className="font-medium text-slate-900">
+                                    {log.event}
+                                  </TableCell>
+                                  <TableCell className="text-xs text-slate-500">
+                                    {log.user}
+                                  </TableCell>
+                                  <TableCell className="text-center">
+                                    <Badge
+                                      className={`rounded-full text-[9px] uppercase font-black ${
+                                        log.status === 'Sucesso'
+                                          ? 'bg-emerald-50 text-emerald-600'
+                                          : log.status === 'Bloqueado'
+                                            ? 'bg-red-50 text-red-600'
+                                            : 'bg-blue-50 text-blue-600'
+                                      }`}
+                                    >
+                                      {log.status}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="text-xs text-slate-500">
+                                    {log.date}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
 
@@ -72,7 +260,7 @@ export default function CompanyProfilePage() {
                   <div className="space-y-4">
                     {[
                       { label: 'Convites Únicos', status: 'Ativo' },
-                      { label: 'Restrição de Domínio', status: 'Inativo' },
+                      { label: 'Restrição de Domínio', status: 'Configurável' },
                       { label: 'Login via SSO', status: 'Enterprise' },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center justify-between text-sm py-1">

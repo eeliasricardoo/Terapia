@@ -12,6 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Search,
   Filter,
@@ -22,6 +23,8 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  Download,
+  Send,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -32,7 +35,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Download } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { toast } from 'sonner'
 
 const MOCK_EMPLOYEES = [
   {
@@ -84,12 +96,22 @@ const MOCK_EMPLOYEES = [
 
 export default function EmployeesPage() {
   const [searchTerm, setSearchTerm] = useState('')
+  const [isInviteOpen, setIsInviteOpen] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
 
   const filteredEmployees = MOCK_EMPLOYEES.filter(
     (emp) =>
       emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.email.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const handleSendInvite = () => {
+    if (inviteEmail) {
+      toast.success(`Convite exclusivo enviado para ${inviteEmail}!`)
+      setIsInviteOpen(false)
+      setInviteEmail('')
+    }
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl animate-in fade-in duration-700">
@@ -110,10 +132,49 @@ export default function EmployeesPage() {
             <Download className="h-4 w-4" />
             Exportar Lista
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 rounded-xl px-6 h-12 shadow-lg shadow-blue-600/20 gap-2 font-bold">
-            <UserPlus className="h-4 w-4" />
-            Enviar Convite Único
-          </Button>
+
+          <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-blue-600 hover:bg-blue-700 rounded-xl px-6 h-12 shadow-lg shadow-blue-600/20 gap-2 font-bold">
+                <UserPlus className="h-4 w-4" />
+                Enviar Convite Único
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="rounded-3xl max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold font-outfit">
+                  Enviar Novo Convite
+                </DialogTitle>
+                <DialogDescription className="font-medium">
+                  Gere um token de acesso único e seguro para um colaborador.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label className="font-bold text-slate-700">E-mail Corporativo</Label>
+                  <Input
+                    placeholder="email@empresa.com.br"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="rounded-xl h-12 border-slate-100 bg-slate-50 focus:bg-white"
+                  />
+                </div>
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 italic text-xs text-amber-700 font-medium leading-relaxed">
+                  Este convite expirará em 48 horas e só poderá ser utilizado por uma única conta
+                  associada a este e-mail.
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={handleSendInvite}
+                  className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl h-12 font-bold gap-2"
+                >
+                  <Send className="h-4 w-4" />
+                  Enviar Token Seguro
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -152,12 +213,6 @@ export default function EmployeesPage() {
               >
                 <Filter className="h-4 w-4" />
                 Filtros
-              </Button>
-              <Button
-                variant="outline"
-                className="h-12 rounded-2xl border-slate-200 gap-2 px-5 font-bold text-slate-600"
-              >
-                Exportar CSV
               </Button>
             </div>
           </div>
@@ -250,10 +305,6 @@ export default function EmployeesPage() {
                               <CheckCircle2 className="h-4 w-4" /> Ativar Benefício
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuSeparator className="bg-slate-50" />
-                          <DropdownMenuItem className="rounded-xl focus:bg-red-50 focus:text-red-600 cursor-pointer gap-3 py-2.5 px-3 text-red-500 font-medium">
-                            <XCircle className="h-4 w-4" /> Remover Vínculo
-                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -261,43 +312,6 @@ export default function EmployeesPage() {
                 ))}
               </TableBody>
             </Table>
-
-            {filteredEmployees.length === 0 && (
-              <div className="py-20 text-center">
-                <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100">
-                  <Search className="h-8 w-8 text-slate-300" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">
-                  Nenhum colaborador encontrado
-                </h3>
-                <p className="text-slate-500 max-w-xs mx-auto">
-                  Tente ajustar sua busca ou limpar os filtros para encontrar quem você procura.
-                </p>
-              </div>
-            )}
-
-            <div className="px-8 py-5 border-t border-slate-50 flex items-center justify-between bg-slate-50/30">
-              <p className="text-sm font-medium text-slate-500">
-                Mostrando {filteredEmployees.length} de {MOCK_EMPLOYEES.length} colaboradores
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-lg border-slate-200 font-bold"
-                  disabled
-                >
-                  Anterior
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-lg border-slate-200 font-bold"
-                >
-                  Próximo
-                </Button>
-              </div>
-            </div>
           </div>
         </TabsContent>
 
@@ -316,7 +330,10 @@ export default function EmployeesPage() {
                 </p>
               </div>
             </div>
-            <Button className="bg-white text-blue-600 border border-blue-100 hover:bg-blue-50 rounded-xl px-6 h-12 font-bold whitespace-nowrap">
+            <Button
+              onClick={() => setIsInviteOpen(true)}
+              className="bg-white text-blue-600 border border-blue-100 hover:bg-blue-50 rounded-xl px-6 h-12 font-bold whitespace-nowrap"
+            >
               Novo Convite +
             </Button>
           </div>
