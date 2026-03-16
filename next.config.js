@@ -1,9 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.pravatar.cc',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+    ],
+  },
   async headers() {
     return [
       {
-        // Aplica esses headers em todas as rotas
         source: '/(.*)',
         headers: [
           {
@@ -28,8 +39,6 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            // Allow camera and microphone for Daily.co video consultations
-            // Block other unused privacy-sensitive features
             value: 'geolocation=(), browsing-topics=()',
           },
           {
@@ -39,7 +48,7 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com",
+              "img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com https://i.pravatar.cc https://images.unsplash.com",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.daily.co wss://*.daily.co https://*.upstash.io",
               "frame-src 'self' https://js.stripe.com https://*.daily.co",
               "object-src 'none'",
@@ -57,4 +66,3 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
-// trigger reload

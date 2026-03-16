@@ -20,56 +20,72 @@ const staggerContainer: Variants = {
 
 export function Features() {
   return (
-    <section className="w-full py-20 md:py-32 bg-gradient-to-b from-white to-[#FFFAF3] relative overflow-hidden">
-      <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-orange-100/40 rounded-full blur-[100px] mix-blend-multiply pointer-events-none" />
+    <section className="w-full py-20 md:py-40 bg-[#FFFAF3]/30 relative overflow-hidden">
+      {/* Decorative center glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-orange-100/30 rounded-full blur-[120px] mix-blend-multiply pointer-events-none" />
 
-      <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
+      <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl font-outfit">
+        <motion.div
+          variants={fadeIn}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true }}
+          className="text-center mb-20 space-y-4"
+        >
+          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900">
+            Porque escolher a MindCare?
+          </h2>
+          <p className="text-xl text-slate-500 max-w-2xl mx-auto font-light">
+            Unimos tecnologia e empatia para criar o ambiente ideal para o seu crescimento pessoal.
+          </p>
+        </motion.div>
+
         <motion.div
           variants={staggerContainer}
           initial="initial"
           whileInView="animate"
-          viewport={{ once: true, margin: '-100px' }}
+          viewport={{ once: true }}
           className="grid gap-8 lg:grid-cols-3"
         >
           <motion.div
             variants={fadeIn}
-            className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group"
+            className="group bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] transition-all duration-500"
           >
-            <div className="h-16 w-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-indigo-100 transition-all duration-300">
-              <CoreHeartIcon className="h-8 w-8 text-indigo-600" />
+            <div className="h-20 w-20 rounded-[2rem] bg-indigo-50 flex items-center justify-center mb-8 group-hover:rotate-6 group-hover:scale-110 transition-all duration-500">
+              <CoreHeartIcon className="h-10 w-10 text-indigo-600" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-3">Conexão Genuína</h3>
-            <p className="text-slate-600 text-lg leading-relaxed">
-              Ajudamos você a encontrar o profissional certo não apenas através de técnicas, mas por
-              afinidade e verdadeiro respeito à sua história.
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">Conexão Genuína</h3>
+            <p className="text-slate-500 text-lg leading-relaxed font-light">
+              Ajudamos você a encontrar o profissional certo por afinidade e verdadeiro respeito à
+              sua história.
             </p>
           </motion.div>
 
           <motion.div
             variants={fadeIn}
-            className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group"
+            className="group bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:shadow-[0_40_80px_-20px_rgba(0,0,0,0.08)] transition-all duration-500"
           >
-            <div className="h-16 w-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-blue-100 transition-all duration-300">
-              <CoreVideoIcon className="h-8 w-8 text-blue-600" />
+            <div className="h-20 w-20 rounded-[2rem] bg-rose-50 flex items-center justify-center mb-8 group-hover:-rotate-6 group-hover:scale-110 transition-all duration-500">
+              <CoreVideoIcon className="h-10 w-10 text-rose-600" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-3">Sessões Humanizadas</h3>
-            <p className="text-slate-600 text-lg leading-relaxed">
-              Vídeo-chamadas de altíssima qualidade direto do seu navegador, construídas para que
-              você sinta o calor do acolhimento mesmo à distância.
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">Sessões Humanizadas</h3>
+            <p className="text-slate-500 text-lg leading-relaxed font-light">
+              Vídeo-chamadas de altíssima qualidade direto do seu navegador, construídas com foco no
+              seu acolhimento.
             </p>
           </motion.div>
 
           <motion.div
             variants={fadeIn}
-            className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group"
+            className="group bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] transition-all duration-500"
           >
-            <div className="h-16 w-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-emerald-100 transition-all duration-300">
-              <CoreShieldIcon className="h-8 w-8 text-emerald-600" />
+            <div className="h-20 w-20 rounded-[2rem] bg-emerald-50 flex items-center justify-center mb-8 group-hover:rotate-6 group-hover:scale-110 transition-all duration-500">
+              <CoreShieldIcon className="h-10 w-10 text-emerald-600" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-3">Seu Espaço Seguro</h3>
-            <p className="text-slate-600 text-lg leading-relaxed">
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">Seu Espaço Seguro</h3>
+            <p className="text-slate-500 text-lg leading-relaxed font-light">
               Respeito absoluto à sua intimidade. Criptografia de ponta a ponta e anonimato
-              garantido para você falar sobre o que realmente importa.
+              garantido em cada sessão.
             </p>
           </motion.div>
         </motion.div>

@@ -27,7 +27,7 @@ export default async function Home() {
   const displayCount = Math.max(500, totalVerifiedPsychologists + 500)
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between">
+    <main className="flex min-h-screen flex-col items-center justify-between overflow-x-hidden">
       <Hero />
       <SearchHighlight totalPsychologists={displayCount} />
       <Features />

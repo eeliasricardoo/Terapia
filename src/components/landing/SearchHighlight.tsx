@@ -27,57 +27,57 @@ interface SearchHighlightProps {
 
 export function SearchHighlight({ totalPsychologists = 500 }: SearchHighlightProps) {
   return (
-    <section className="w-full py-20 md:py-32 bg-gradient-to-b from-[#FFFAF3] to-white relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[length:32px_32px] pointer-events-none" />
-      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-orange-100/40 rounded-full blur-[100px] mix-blend-multiply pointer-events-none" />
+    <section className="w-full py-20 md:py-40 bg-white relative overflow-hidden">
+      {/* Subtle Background Textures */}
+      <div className="absolute inset-0 bg-grid-slate-900/[0.02] bg-[length:40px_40px] pointer-events-none" />
+      <div className="absolute -top-24 right-0 w-[600px] h-[600px] bg-blue-50/50 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
+      <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl font-outfit">
         <motion.div
           variants={staggerContainer}
           initial="initial"
           whileInView="animate"
           viewport={{ once: true, margin: '-100px' }}
-          className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center"
+          className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center"
         >
-          {/* Left side - Main CTA */}
-          <div className="space-y-8">
+          {/* Left side - Content */}
+          <div className="space-y-10">
             <motion.div
               variants={fadeIn}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 shadow-sm"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-blue-50/80 backdrop-blur-sm border border-blue-100 shadow-sm"
             >
-              <Search className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-semibold text-blue-700">
+              <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+              <span className="text-sm font-semibold text-blue-800 tracking-wide uppercase">
                 Encontre a sua melhor versão
               </span>
             </motion.div>
 
             <motion.h2
               variants={fadeIn}
-              className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900"
+              className="text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1]"
             >
               O profissional certo
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mt-2">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-600 mt-2">
                 para o seu momento
               </span>
             </motion.h2>
 
             <motion.p
               variants={fadeIn}
-              className="text-lg md:text-xl text-slate-600 max-w-xl leading-relaxed"
+              className="text-xl text-slate-500 max-w-xl leading-relaxed font-light"
             >
               Sabemos que o primeiro passo é o mais importante. Nossa plataforma ajuda você a
-              encontrar um psicólogo de forma leve, respeitando seu tempo e sua realidade.
+              encontrar um psicólogo de forma leve e respeitosa.
             </motion.p>
 
-            <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 pt-4">
+            <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-6 pt-4">
               <Button
                 asChild
                 size="lg"
-                className="group h-14 px-8 text-lg bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20"
+                className="group h-16 px-10 text-lg bg-slate-900 hover:bg-black text-white shadow-2xl transition-all rounded-2xl"
               >
-                <Link href="/busca" className="flex items-center gap-2">
-                  <Search className="h-5 w-5" />
+                <Link href="/busca" className="flex items-center gap-3">
+                  <Search className="h-5 w-5 opacity-70" />
                   Quero conhecer
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
@@ -85,63 +85,72 @@ export function SearchHighlight({ totalPsychologists = 500 }: SearchHighlightPro
 
               <Button
                 asChild
-                variant="outline"
+                variant="ghost"
                 size="lg"
-                className="h-14 px-8 text-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                className="h-16 px-10 text-lg text-slate-600 hover:text-slate-900 border-2 border-transparent hover:border-slate-100 rounded-2xl transition-all"
               >
                 <Link href="/cadastro">Começar Gratuitamente</Link>
               </Button>
             </motion.div>
           </div>
 
-          {/* Right side - Stats/Features */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 relative">
-            {/* Decorative glow behind cards */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-blue-100 to-transparent blur-3xl -z-10 opacity-50 rounded-full" />
+          {/* Right side - Stats/Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative">
             <motion.div
               variants={fadeIn}
-              className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-8 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+              className="bg-white border border-slate-100 rounded-[2rem] p-10 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] transition-all duration-500 hover:-translate-y-2 group"
             >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 rounded-xl bg-blue-100/50 text-blue-600">
+              <div className="flex flex-col gap-6">
+                <div className="h-14 w-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                   <CoreUsersIcon className="h-7 w-7" />
                 </div>
-                <h3 className="font-extrabold text-3xl text-slate-900">{totalPsychologists}+</h3>
+                <div>
+                  <h3 className="font-extrabold text-4xl text-slate-900 mb-2">
+                    {totalPsychologists}+
+                  </h3>
+                  <p className="text-slate-500 font-medium leading-relaxed">
+                    Especialistas acolhedores e verificados.
+                  </p>
+                </div>
               </div>
-              <p className="text-slate-600 font-medium">
-                Especialistas acolhedores e prontos para ouvir você sem julgamentos.
-              </p>
             </motion.div>
 
             <motion.div
               variants={fadeIn}
-              className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-8 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+              className="bg-slate-900 border border-white/10 rounded-[2rem] p-10 shadow-2xl hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-2 group"
             >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 rounded-xl bg-amber-100/50 text-amber-600">
+              <div className="flex flex-col gap-6">
+                <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
                   <CoreStarIcon className="h-7 w-7" />
                 </div>
-                <h3 className="font-extrabold text-3xl text-slate-900">4.9/5</h3>
+                <div>
+                  <h3 className="font-extrabold text-4xl text-white mb-2">4.9/5</h3>
+                  <p className="text-slate-400 font-medium leading-relaxed">
+                    Avaliação média baseada em cuidado real.
+                  </p>
+                </div>
               </div>
-              <p className="text-slate-600 font-medium">
-                Vidas transformadas diariamente através do cuidado verdadeiro e atento.
-              </p>
             </motion.div>
 
             <motion.div
               variants={fadeIn}
-              className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl p-8 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 sm:col-span-2"
+              className="sm:col-span-2 bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 rounded-[2rem] p-10 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] transition-all duration-500 hover:-translate-y-2 group relative overflow-hidden"
             >
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
-                <div className="p-3 rounded-xl bg-emerald-100/50 text-emerald-600 shrink-0">
-                  <CoreClockIcon className="h-7 w-7" />
-                </div>
-                <h3 className="font-bold text-2xl text-slate-900">Terapia que se adapta a você</h3>
+              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 transition-transform duration-700">
+                <CoreClockIcon className="h-32 w-32" />
               </div>
-              <p className="text-slate-600 font-medium text-lg">
-                Sessões online onde e quando quiser, no seu ritmo e no seu espaço. Cuidado 24/7 com
-                máxima privacidade.
-              </p>
+              <div className="relative z-10">
+                <h3 className="font-bold text-2xl text-slate-900 mb-4 flex items-center gap-3">
+                  <span className="h-8 w-8 rounded-lg bg-indigo-200/50 flex items-center justify-center">
+                    <CoreClockIcon className="h-4 w-4 text-indigo-700" />
+                  </span>
+                  Terapia que se adapta a você
+                </h3>
+                <p className="text-slate-600 font-medium text-lg max-w-xl">
+                  Sessões online no seu ritmo e espaço. Cuidado 24/7 com máxima privacidade e
+                  segurança.
+                </p>
+              </div>
             </motion.div>
           </div>
         </motion.div>
