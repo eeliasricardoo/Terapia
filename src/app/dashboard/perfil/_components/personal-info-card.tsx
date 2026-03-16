@@ -199,11 +199,7 @@ export function PersonalInfoCard({
         </div>
       </CardContent>
       <CardFooter className="flex justify-end border-t p-6">
-        <Button
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-          onClick={handleSaveProfile}
-          disabled={isLoading}
-        >
+        <Button onClick={handleSaveProfile} disabled={isLoading}>
           {isLoading ? (
             <>Salvando...</>
           ) : (

@@ -124,8 +124,8 @@ export function FinancialManager() {
         <Card className="border border-slate-200 shadow-sm bg-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center">
-                <CreditCard className="h-5 w-5 text-blue-600" />
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <CreditCard className="h-5 w-5 text-primary" />
               </div>
               <Badge variant="secondary" className="bg-slate-100 text-slate-600">
                 Pendente
@@ -233,7 +233,7 @@ export function FinancialManager() {
                 const barColors: Record<string, string> = {
                   Stripe: 'bg-indigo-500',
                   Pix: 'bg-emerald-500',
-                  'Cartão de Crédito': 'bg-blue-600',
+                  'Cartão de Crédito': 'bg-primary',
                   Boleto: 'bg-amber-500',
                 }
                 const barColor = barColors[pm.method] || 'bg-slate-400'
@@ -273,7 +273,7 @@ export function FinancialManager() {
               <CardTitle className="text-lg">Transações Recentes</CardTitle>
               <CardDescription>Histórico dos últimos atendimentos</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50">
+            <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
               Ver todas
             </Button>
           </div>

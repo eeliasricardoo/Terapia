@@ -161,11 +161,7 @@ export function SecuritySettingsCard() {
         <Button variant="outline" className="mr-4">
           Cancelar
         </Button>
-        <Button
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-          onClick={handlePasswordChange}
-          disabled={isLoading}
-        >
+        <Button onClick={handlePasswordChange} disabled={isLoading}>
           {isLoading ? 'Alterando...' : 'Alterar Senha'}
         </Button>
       </CardFooter>

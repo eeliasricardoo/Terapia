@@ -36,7 +36,7 @@ export function MobileNav() {
         href="/dashboard"
         className="flex items-center gap-2 font-semibold text-lg hover:opacity-80 transition-opacity"
       >
-        <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+        <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
           T
         </div>
         Terapia
@@ -72,12 +72,12 @@ export function MobileNav() {
                     className={cn(
                       'flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors',
                       isActive
-                        ? 'bg-blue-50 text-blue-600'
+                        ? 'bg-primary/10 text-primary'
                         : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                     )}
                   >
                     <item.icon
-                      className={cn('h-5 w-5', isActive ? 'text-blue-600' : 'text-slate-400')}
+                      className={cn('h-5 w-5', isActive ? 'text-primary' : 'text-slate-400')}
                     />
                     {item.label}
                   </Link>

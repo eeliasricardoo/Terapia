@@ -21,17 +21,17 @@ export function PsychologistCard({ psychologist }: PsychologistCardProps) {
     'Olá! Sou especialista em saúde mental e estou aqui para ajudar você a alcançar seus objetivos e bem-estar. Meu consultório é um espaço seguro e acolhedor.'
 
   return (
-    <Card className="overflow-hidden hover:shadow-2xl hover:shadow-blue-900/10 hover:border-blue-200/60 transition-all duration-500 border-slate-200/60 rounded-3xl group flex flex-col bg-white h-full relative hover:-translate-y-1">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+    <Card className="overflow-hidden hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/20 transition-all duration-500 border-slate-200/60 rounded-3xl group flex flex-col bg-white h-full relative hover:-translate-y-1">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
       <CardContent className="p-0 flex flex-col flex-1 relative z-10">
         <div className="p-6 md:p-8 flex flex-col flex-1">
           <div className="flex gap-5 mb-5">
             <div className="relative flex-shrink-0">
-              <div className="absolute inset-0 bg-blue-100 rounded-full blur-md opacity-0 group-hover:opacity-60 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-md opacity-0 group-hover:opacity-60 transition-opacity duration-500" />
               <Avatar className="h-24 w-24 border-[3px] border-white shadow-md ring-1 ring-slate-100/50 relative z-10 group-hover:scale-105 transition-transform duration-500">
                 <AvatarImage src={profile?.avatar_url || undefined} className="object-cover" />
-                <AvatarFallback className="bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-600 text-2xl font-bold">
+                <AvatarFallback className="bg-gradient-to-br from-primary/10 to-indigo-50/30 text-primary text-2xl font-bold">
                   {displayName.charAt(0)}
                 </AvatarFallback>
               </Avatar>
@@ -41,7 +41,7 @@ export function PsychologistCard({ psychologist }: PsychologistCardProps) {
             <div className="flex-1 min-w-0 flex flex-col justify-center">
               <div className="flex justify-between items-start gap-2 mb-1">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-extrabold text-xl text-slate-900 truncate group-hover:text-blue-700 transition-colors duration-300">
+                  <h3 className="font-extrabold text-xl text-slate-900 truncate group-hover:text-primary transition-colors duration-300">
                     {displayName}
                   </h3>
                   <p className="text-xs text-slate-500 font-medium tracking-wide">CRP {crp}</p>
@@ -54,7 +54,7 @@ export function PsychologistCard({ psychologist }: PsychologistCardProps) {
 
               <div className="flex items-center gap-3 text-xs text-slate-500 mt-2 font-medium">
                 <div className="flex items-center gap-1">
-                  <Video className="w-3.5 h-3.5 text-blue-500" />
+                  <Video className="w-3.5 h-3.5 text-primary" />
                   <span>Online</span>
                 </div>
                 <span className="w-1 h-1 rounded-full bg-slate-300" />
@@ -75,7 +75,7 @@ export function PsychologistCard({ psychologist }: PsychologistCardProps) {
               <Badge
                 key={specialty}
                 variant="secondary"
-                className="font-medium text-[11px] px-2.5 py-0.5 bg-slate-100/80 text-slate-700 group-hover:bg-blue-50 group-hover:text-blue-700 transition-colors border border-slate-200/60 rounded-full"
+                className="font-medium text-[11px] px-2.5 py-0.5 bg-slate-100/80 text-slate-700 group-hover:bg-primary/10 group-hover:text-primary transition-colors border border-slate-200/60 rounded-full"
               >
                 {specialty}
               </Badge>
@@ -105,7 +105,7 @@ export function PsychologistCard({ psychologist }: PsychologistCardProps) {
 
         <Link
           href={`/psicologo/${psychologist.userId}`}
-          className="flex items-center justify-center gap-2 bg-blue-600/10 hover:bg-blue-600 text-blue-700 hover:text-white transition-all duration-300 font-bold text-sm h-11 px-6 rounded-full group-hover:shadow-md group-hover:shadow-blue-500/20 active:scale-95"
+          className="flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground transition-all duration-300 font-bold text-sm h-11 px-6 rounded-full group-hover:shadow-md group-hover:shadow-primary/20 active:scale-95 whitespace-nowrap"
         >
           Ver Perfil
           <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

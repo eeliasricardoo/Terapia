@@ -204,10 +204,10 @@ export function OnboardingWizard() {
           <div className="flex-1 mr-6">
             <Progress
               value={(step / 4) * 100}
-              className="h-2 transition-all duration-700 bg-slate-100 [&>div]:bg-blue-600 rounded-full"
+              className="h-2 transition-all duration-700 bg-slate-100 [&>div]:bg-primary rounded-full"
             />
           </div>
-          <span className="text-[10px] font-black text-blue-700 bg-blue-100/50 px-3 py-1.5 rounded-full uppercase tracking-tighter ring-1 ring-blue-500/10">
+          <span className="text-[10px] font-black text-primary bg-primary/10 px-3 py-1.5 rounded-full uppercase tracking-tighter ring-1 ring-primary/20">
             Passo {step}/4
           </span>
         </div>
@@ -244,18 +244,21 @@ export function OnboardingWizard() {
                         className={cn(
                           'flex items-center gap-3 px-4 py-4 rounded-2xl text-sm font-semibold transition-all duration-300 border-2 text-left group',
                           isSelected
-                            ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20 scale-[0.98]'
-                            : 'bg-white border-slate-100 hover:border-blue-300 hover:shadow-md text-slate-600'
+                            ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[0.98]'
+                            : 'bg-white border-slate-100 hover:border-primary/40 hover:shadow-md text-slate-600'
                         )}
                       >
                         <div
                           className={cn(
                             'p-2 rounded-xl transition-colors',
-                            isSelected ? 'bg-white/20' : 'bg-slate-50 group-hover:bg-blue-50'
+                            isSelected ? 'bg-white/20' : 'bg-slate-50 group-hover:bg-primary/10'
                           )}
                         >
                           <Icon
-                            className={cn('h-5 w-5', isSelected ? 'text-white' : 'text-blue-500')}
+                            className={cn(
+                              'h-5 w-5',
+                              isSelected ? 'text-primary-foreground' : 'text-primary'
+                            )}
                           />
                         </div>
                         {area.name}
@@ -270,7 +273,7 @@ export function OnboardingWizard() {
                 <div className="space-y-8 my-4">
                   <div className="space-y-4">
                     <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                      <User className="h-5 w-5 text-blue-500" /> Preferência de Gênero
+                      <User className="h-5 w-5 text-primary" /> Preferência de Gênero
                     </h3>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {['Feminino', 'Masculino', 'Não-binário', 'Sem preferência'].map((option) => (
@@ -280,8 +283,8 @@ export function OnboardingWizard() {
                           className={cn(
                             'px-3 py-4 rounded-2xl text-xs font-bold transition-all duration-200 border-2',
                             preferences.gender === option
-                              ? 'bg-blue-600 border-blue-600 text-white shadow-md'
-                              : 'bg-white border-slate-100 text-slate-500 hover:border-blue-200'
+                              ? 'bg-primary border-primary text-primary-foreground shadow-md'
+                              : 'bg-white border-slate-100 text-slate-500 hover:border-primary/20'
                           )}
                         >
                           {option}
@@ -353,7 +356,7 @@ export function OnboardingWizard() {
                 <div className="space-y-8 my-4">
                   <div className="space-y-4">
                     <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                      <CalendarDays className="h-5 w-5 text-blue-500" /> Dias da Semana
+                      <CalendarDays className="h-5 w-5 text-primary" /> Dias da Semana
                     </h3>
                     <div className="flex justify-between gap-1">
                       {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((day) => (
@@ -363,8 +366,8 @@ export function OnboardingWizard() {
                           className={cn(
                             'flex-1 h-14 rounded-xl text-xs font-black transition-all duration-200 border-2 flex flex-col items-center justify-center gap-1',
                             availability.days.includes(day)
-                              ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20 scale-[0.98]'
-                              : 'bg-white border-slate-100 text-slate-400 hover:border-blue-200 hover:text-blue-500'
+                              ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[0.98]'
+                              : 'bg-white border-slate-100 text-slate-400 hover:border-primary/20 hover:text-primary'
                           )}
                         >
                           {day}
@@ -375,7 +378,7 @@ export function OnboardingWizard() {
 
                   <div className="space-y-4">
                     <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-blue-500" /> Períodos de Preferência
+                      <Clock className="h-5 w-5 text-primary" /> Períodos de Preferência
                     </h3>
                     <div className="grid grid-cols-3 gap-3">
                       {[
@@ -389,8 +392,8 @@ export function OnboardingWizard() {
                           className={cn(
                             'px-4 py-6 rounded-3xl text-sm font-bold transition-all border-2 flex flex-col items-center gap-3',
                             availability.times.includes(time.name)
-                              ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20 scale-[0.98]'
-                              : 'bg-white border-slate-100 text-slate-500 hover:border-blue-200 hover:text-blue-500 hover:bg-slate-50'
+                              ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[0.98]'
+                              : 'bg-white border-slate-100 text-slate-500 hover:border-primary/20 hover:text-primary hover:bg-slate-50'
                           )}
                         >
                           <time.icon
@@ -470,7 +473,7 @@ export function OnboardingWizard() {
                     <h3 className="font-bold text-slate-800">Observações adicionais (opcional)</h3>
                     <Textarea
                       placeholder="Conte um pouquinho sobre o que espera da terapia, sintomas recentes, etc..."
-                      className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus-visible:ring-blue-500 focus-visible:border-blue-500 shadow-sm transition-all p-4 resize-none bg-slate-50/50 focus:bg-white"
+                      className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus-visible:ring-primary focus-visible:border-primary shadow-sm transition-all p-4 resize-none bg-slate-50/50 focus:bg-white"
                       value={history.bio}
                       onChange={(e) => updateHistory('bio', e.target.value)}
                     />
@@ -509,7 +512,7 @@ export function OnboardingWizard() {
               'px-8 h-14 text-sm font-black shadow-xl transition-all duration-300 rounded-2xl hover:scale-[1.03] active:scale-[0.97]',
               step === 4
                 ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/25 text-white ring-2 ring-emerald-600/20 ring-offset-2'
-                : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/25 text-white'
+                : 'bg-primary hover:bg-primary/90 shadow-primary/25 text-primary-foreground'
             )}
           >
             {isSubmitting ? (

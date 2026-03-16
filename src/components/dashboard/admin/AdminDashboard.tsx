@@ -27,7 +27,7 @@ export function AdminDashboard({ userProfile, dashboardData }: Props) {
             Bem-vindo(a), {userName}. Gestão global da plataforma Terapia.
           </p>
         </div>
-        <div className="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-md">
+        <div className="h-10 w-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground shadow-md transition-colors">
           <LayoutDashboard className="h-5 w-5" />
         </div>
       </div>
@@ -96,7 +96,7 @@ export function AdminDashboard({ userProfile, dashboardData }: Props) {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
+          <Card className="border-none shadow-sm bg-primary text-primary-foreground">
             <CardContent className="p-6">
               <h4 className="font-bold mb-2">Dica do Sistema</h4>
               <p className="text-blue-100 text-sm leading-relaxed">

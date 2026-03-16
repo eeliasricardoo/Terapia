@@ -502,7 +502,7 @@ export function ScheduleManager() {
                           <Switch
                             checked={isAvailable}
                             onCheckedChange={() => handleWeeklyToggle(day.id)}
-                            className="data-[state=checked]:bg-blue-600"
+                            className="data-[state=checked]:bg-primary"
                           />
                           <span
                             className={`font-semibold ${isAvailable ? 'text-slate-900' : 'text-slate-500'}`}
@@ -571,7 +571,7 @@ export function ScheduleManager() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs h-8 px-2"
+                            className="text-primary hover:text-primary/90 hover:bg-primary/10 text-xs h-8 px-2"
                             onClick={() => handleWeeklyAddSlot(day.id)}
                           >
                             <Plus className="h-3 w-3 mr-1" /> Adicionar intervalo
@@ -595,7 +595,7 @@ export function ScheduleManager() {
 
           <Button
             onClick={handleSave}
-            className="bg-slate-900 text-white hover:bg-slate-800 gap-2 shadow-sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-sm"
           >
             <Save className="h-4 w-4" />
             Salvar Alterações
@@ -661,7 +661,7 @@ export function ScheduleManager() {
                       <span className="text-sm font-medium">{date.getDate()}</span>
                       <div className="flex gap-0.5 mt-1">
                         {isBlocked && <div className="h-1.5 w-1.5 rounded-full bg-red-400" />}
-                        {isCustom && <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />}
+                        {isCustom && <div className="h-1.5 w-1.5 rounded-full bg-primary" />}
                         {hasRoutine && <div className="h-1.5 w-1.5 rounded-full bg-slate-300" />}
                         {!hasRoutine && !isBlocked && !isCustom && (
                           <div className="h-1.5 w-1.5 rounded-full border border-slate-200" />
@@ -679,7 +679,7 @@ export function ScheduleManager() {
               <div className="h-2 w-2 rounded-full bg-slate-300" /> Padrão
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-blue-500" /> Personalizado
+              <div className="h-2 w-2 rounded-full bg-primary" /> Personalizado
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-red-400" /> Bloqueado
@@ -704,12 +704,12 @@ export function ScheduleManager() {
             <>
               {/* Card Header with Date Info */}
               <div
-                className={`p-6 border-b transition-colors ${effective?.type === 'blocked' ? 'bg-red-50 border-red-100' : effective?.type === 'custom' ? 'bg-blue-50 border-blue-100' : 'bg-slate-50 border-slate-100'}`}
+                className={`p-6 border-b transition-colors ${effective?.type === 'blocked' ? 'bg-red-50 border-red-100' : effective?.type === 'custom' ? 'bg-primary/10 border-primary/20' : 'bg-slate-50 border-slate-100'}`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <Badge
                     variant="outline"
-                    className={`bg-white uppercase tracking-wide text-[10px] font-bold h-5 ${effective?.type === 'blocked' ? 'text-red-700 border-red-200' : effective?.type === 'custom' ? 'text-blue-700 border-blue-200' : 'text-slate-600 border-slate-200'}`}
+                    className={`bg-white uppercase tracking-wide text-[10px] font-bold h-5 ${effective?.type === 'blocked' ? 'text-red-700 border-red-200' : effective?.type === 'custom' ? 'text-primary border-primary/20' : 'text-slate-600 border-slate-200'}`}
                   >
                     {effective?.type === 'blocked'
                       ? 'Bloqueado'
@@ -733,7 +733,7 @@ export function ScheduleManager() {
                   {format(selectedDate, 'dd', { locale: ptBR })}
                 </h3>
                 <p
-                  className={`text-sm font-medium uppercase tracking-wide ${effective?.type === 'blocked' ? 'text-red-600' : effective?.type === 'custom' ? 'text-blue-600' : 'text-slate-500'}`}
+                  className={`text-sm font-medium uppercase tracking-wide ${effective?.type === 'blocked' ? 'text-red-600' : effective?.type === 'custom' ? 'text-primary' : 'text-slate-500'}`}
                 >
                   {format(selectedDate, 'MMMM, EEEE', { locale: ptBR })}
                 </p>

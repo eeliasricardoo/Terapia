@@ -26,6 +26,8 @@
     --radius: 1rem;
     --professional-primary: 340 72% 61%;
     --professional-primary-foreground: 0 0% 100%;
+    --admin-primary: 250 84% 54%;
+    --admin-primary-foreground: 0 0% 100%;
   }
 
   .dark {
@@ -50,12 +52,20 @@
     --ring: 217.2 91.2% 59.8%;
     --professional-primary: 340 72% 61%;
     --professional-primary-foreground: 0 0% 100%;
+    --admin-primary: 250 84% 54%;
+    --admin-primary-foreground: 0 0% 100%;
   }
 
   .professional-theme {
     --primary: var(--professional-primary);
     --primary-foreground: var(--professional-primary-foreground);
     --ring: var(--professional-primary);
+  }
+
+  .admin-theme {
+    --primary: var(--admin-primary);
+    --primary-foreground: var(--admin-primary-foreground);
+    --ring: var(--admin-primary);
   }
 }
 

@@ -127,11 +127,7 @@ export function AddressInfoCard({ user, setUser, isLoading, setIsLoading }: Addr
         </div>
       </CardContent>
       <CardFooter className="flex justify-end border-t p-6">
-        <Button
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-          onClick={handleSaveAddress}
-          disabled={isLoading}
-        >
+        <Button onClick={handleSaveAddress} disabled={isLoading}>
           {isLoading ? (
             <>Salvando...</>
           ) : (

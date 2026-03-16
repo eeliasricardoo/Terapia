@@ -102,7 +102,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                   Ajustes
                 </Button>
               </Link>
-              <Button className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-200 border border-transparent transition-all">
+              <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm shadow-primary/20 border border-transparent transition-all">
                 <Video className="h-4 w-4" />
                 Sala Virtual
               </Button>
@@ -115,8 +115,8 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-sm font-medium text-slate-500">Sessões (Hoje)</span>
-                  <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center">
-                    <CalendarIcon className="h-4 w-4 text-blue-600" />
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <CalendarIcon className="h-4 w-4 text-primary" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
@@ -207,7 +207,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium text-xs"
+                    className="text-primary hover:text-primary/90 hover:bg-primary/10 font-medium text-xs"
                     asChild
                   >
                     <Link href="/dashboard/agenda">VER AGENDA &rarr;</Link>
@@ -223,14 +223,14 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                         key={session.id}
                         className={`
                                             flex items-stretch 
-                                            ${isNext ? 'bg-blue-50/30' : 'bg-white'} 
+                                            ${isNext ? 'bg-primary/5' : 'bg-white'} 
                                             border-b border-slate-100 last:border-0 transition-colors
                                         `}
                       >
                         {/* Time Column */}
                         <div className="w-24 relative flex flex-col items-center justify-center py-6 border-r border-slate-100/50">
                           <span
-                            className={`text-lg font-bold ${isNext ? 'text-blue-600' : 'text-slate-700'}`}
+                            className={`text-lg font-bold ${isNext ? 'text-primary' : 'text-slate-700'}`}
                           >
                             {session.time}
                           </span>
@@ -243,11 +243,11 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                         <div className="flex-1 flex items-center justify-between p-6">
                           <div className="flex items-center gap-4">
                             <Avatar
-                              className={`h-12 w-12 border-2 ${isNext ? 'border-blue-200' : 'border-slate-100'}`}
+                              className={`h-12 w-12 border-2 ${isNext ? 'border-primary/20' : 'border-slate-100'}`}
                             >
                               <AvatarImage src={session.image} />
                               <AvatarFallback
-                                className={`${isNext ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-600'}`}
+                                className={`${isNext ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-600'}`}
                               >
                                 {session.patientName.charAt(0)}
                               </AvatarFallback>
@@ -255,7 +255,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
 
                             <div>
                               <h4
-                                className={`font-semibold text-base ${isNext ? 'text-blue-900' : 'text-slate-900'}`}
+                                className={`font-semibold text-base ${isNext ? 'text-primary/90' : 'text-slate-900'}`}
                               >
                                 {session.patientName}
                               </h4>
@@ -268,7 +268,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                   </div>
                                 )}
                                 {session.status === 'scheduled' && (
-                                  <div className="flex items-center text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-medium">
+                                  <div className="flex items-center text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded font-medium">
                                     <Clock className="h-3 w-3 mr-1" />
                                     Agendada
                                   </div>
@@ -282,7 +282,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                               <Link href={`/sala/${session.id}`} className="w-full">
                                 <Button
                                   size="sm"
-                                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 h-9 shadow-md shadow-blue-200 text-xs font-semibold transition-all hover:scale-105 w-full"
+                                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-4 h-9 shadow-md shadow-primary/20 text-xs font-semibold transition-all hover:scale-105 w-full"
                                 >
                                   <Video className="w-3 h-3 mr-2" />
                                   Iniciar Atendimento
