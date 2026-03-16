@@ -1,6 +1,8 @@
 import { getPsychologists } from '@/lib/actions/psychologists'
 import SearchClient from './SearchClient'
+import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { SearchHero } from '@/components/search/SearchHero'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { unstable_cache } from 'next/cache'
@@ -45,15 +47,17 @@ export default async function SearchPage() {
   const psychologists = await getCachedPsychologists()
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-7xl">
-        <div className="mb-6">
-          <div className="flex items-center text-sm text-slate-500 gap-2">
-            <Link href="/" className="hover:text-blue-600 transition-colors">
+    <div className="min-h-screen flex flex-col bg-white">
+      <Navbar />
+      <SearchHero />
+      <main className="flex-1 container mx-auto px-4 py-12 max-w-7xl">
+        <div className="mb-10">
+          <div className="flex items-center text-sm text-slate-500 gap-2 px-1">
+            <Link href="/" className="hover:text-orange-600 transition-colors">
               Home
             </Link>
             <ChevronRight className="h-4 w-4" />
-            <span className="text-slate-700 font-medium">Buscar Psicólogos</span>
+            <span className="text-slate-700 font-medium font-outfit">Explorar Profissionais</span>
           </div>
         </div>
 
