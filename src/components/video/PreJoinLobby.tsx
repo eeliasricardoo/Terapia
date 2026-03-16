@@ -34,14 +34,14 @@ export function PreJoinLobby() {
   }, [daily])
 
   const toggleMic = () => {
-    if (!daily) return
+    if (!daily || daily.isDestroyed()) return
     const newState = !isMicOn
     daily.setLocalAudio(newState)
     setIsMicOn(newState)
   }
 
   const toggleCam = () => {
-    if (!daily) return
+    if (!daily || daily.isDestroyed()) return
     const newState = !isCamOn
     daily.setLocalVideo(newState)
     setIsCamOn(newState)

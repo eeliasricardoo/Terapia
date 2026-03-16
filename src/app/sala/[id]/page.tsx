@@ -100,13 +100,13 @@ function ActiveRoomInterface({
   )
 
   const toggleMic = useCallback(() => {
-    if (!daily) return
+    if (!daily || daily.isDestroyed()) return
     daily.setLocalAudio(!isMicOn)
     setIsMicOn(!isMicOn)
   }, [daily, isMicOn])
 
   const toggleCam = useCallback(() => {
-    if (!daily) return
+    if (!daily || daily.isDestroyed()) return
     daily.setLocalVideo(!isCamOn)
     setIsCamOn(!isCamOn)
   }, [daily, isCamOn])

@@ -106,14 +106,15 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
     })
 
     // 2. Active Patients Count (from links table)
+    // Links relate Profile (user.id) to Profile (user.id)
     const activeLinks = await prisma.patientPsychologistLink.findMany({
       where: {
-        psychologistId: psychProfile.id,
+        psychologistId: user.id,
         status: 'active',
       },
     })
     const totalLinks = await prisma.patientPsychologistLink.count({
-      where: { psychologistId: psychProfile.id },
+      where: { psychologistId: user.id },
     })
 
     // 3. Monthly Revenue (Completed only)
@@ -208,10 +209,20 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
     }
 
     const getTimeAgo = (date: Date) => {
-      const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-      if (diffInDays === 0) return 'Hoje'
-      if (diffInDays === 1) return 'Ontem'
-      return `Há ${diffInDays} dias`
+      const diffInTime = now.getTime() - date.getTime()
+      const diffInDays = Math.floor(Math.abs(diffInTime) / (1000 * 60 * 60 * 24))
+
+      if (diffInTime < 0) {
+        // Futuro
+        if (diffInDays === 0) return 'Hoje'
+        if (diffInDays === 1) return 'Amanhã'
+        return `Em ${diffInDays} dias`
+      } else {
+        // Passado
+        if (diffInDays === 0) return 'Hoje'
+        if (diffInDays === 1) return 'Ontem'
+        return `Há ${diffInDays} dias`
+      }
     }
 
     return {

@@ -2,6 +2,22 @@ import { render, screen } from '@testing-library/react'
 import Home from '../app/(marketing)/page'
 import '@testing-library/jest-dom'
 
+jest.mock('@/lib/supabase/server', () => ({
+  createClient: jest.fn(() => ({
+    auth: {
+      getUser: jest.fn().mockResolvedValue({ data: { user: null } }),
+    },
+  })),
+}))
+
+jest.mock('@/lib/prisma', () => ({
+  prisma: {
+    psychologistProfile: {
+      count: jest.fn().mockResolvedValue(10),
+    },
+  },
+}))
+
 describe('Landing Page', () => {
   it('renders the main value proposition', async () => {
     const ResolvedHome = await Home()

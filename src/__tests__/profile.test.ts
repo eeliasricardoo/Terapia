@@ -13,6 +13,9 @@ jest.mock('@/lib/prisma', () => ({
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    profile: {
+      create: jest.fn(),
+    },
   },
 }))
 
@@ -70,15 +73,17 @@ describe('profile actions', () => {
 
     it('should recreate missing profile automatically', async () => {
       mockSupabase.auth.getUser.mockResolvedValueOnce({ data: { user: mockUser }, error: null })
-      // Simulate profile missing
+      // Simulate profile missing in Supabase check
       mockSupabase.single.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } })
 
-      const newProfile = { id: 'new-prof', role: 'PATIENT', full_name: 'Test User' }
-      mockSupabase.single.mockResolvedValueOnce({ data: newProfile, error: null }) // mock insert single result
+      const newProfile = { id: 'new-prof', role: 'PATIENT', fullName: 'Test User' }
+      ;(prisma.user.upsert as jest.Mock).mockResolvedValue({ id: 'user-1' })
+      ;(prisma.profile.create as jest.Mock).mockResolvedValue(newProfile)
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'user-1', role: 'PATIENT' })
 
       const result = await getCurrentUserProfile()
 
-      // Prisma upsert should have been called
+      // Prisma upsert should have been called for the user
       expect(prisma.user.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: mockUser.id },
@@ -86,13 +91,14 @@ describe('profile actions', () => {
         })
       )
 
-      // Supabase relative data
-      expect(mockSupabase.from).toHaveBeenCalledWith('profiles')
-      expect(mockSupabase.insert).toHaveBeenCalledWith(
+      // Prisma create should have been called for the profile
+      expect(prisma.profile.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          user_id: mockUser.id,
-          full_name: 'Test User',
-          role: 'PATIENT',
+          data: expect.objectContaining({
+            user_id: mockUser.id,
+            fullName: 'Test User',
+            role: 'PATIENT',
+          }),
         })
       )
 

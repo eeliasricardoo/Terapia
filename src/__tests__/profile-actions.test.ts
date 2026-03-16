@@ -134,15 +134,13 @@ describe('profile actions', () => {
     })
 
     it('should return error if admin update fails', async () => {
-      mockAdminSupabase.select.mockResolvedValueOnce({ data: [], error: { message: 'DB Error' } })
-      // In the actual code, update is called before potentially upserting.
-      // Let's mock a failure in the update chain.
-      mockAdminSupabase.update.mockReturnValue({
-        eq: () => Promise.resolve({ error: { message: 'Update failed' } }),
-      } as any)
+      // Setup the chain to fail
+      const mockEq = jest.fn().mockResolvedValue({ error: { message: 'Update failed' } })
+      mockAdminSupabase.update.mockReturnValue({ eq: mockEq })
 
       const result = await updateUserProfile({ name: 'Test', phone: '123' })
       expect(result.error).toContain('Erro ao atualizar perfil')
+      expect(result.error).toContain('Update failed')
     })
   })
 })
