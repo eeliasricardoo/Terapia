@@ -8,6 +8,7 @@ import { PersonalInfoCard } from './_components/personal-info-card'
 import { AddressInfoCard } from './_components/address-info-card'
 import { SubscriptionPlansCard } from './_components/subscription-plans-card'
 import { SecuritySettingsCard } from './_components/security-settings-card'
+import { CompanyBenefitCard } from './_components/company-benefit-card'
 
 export default function ProfilePage() {
   const { user, setUser, isLoading, setIsLoading, isSaving, setIsSaving, professionalInfo } =
@@ -24,6 +25,7 @@ export default function ProfilePage() {
         <TabsList className="grid w-full md:w-[600px] grid-cols-1 md:grid-cols-3 h-auto mb-8">
           <TabsTrigger value="general">Informações Gerais</TabsTrigger>
           {user?.rawRole !== 'ADMIN' && <TabsTrigger value="plans">Meus Planos</TabsTrigger>}
+          {user?.rawRole === 'PATIENT' && <TabsTrigger value="benefits">Benefícios</TabsTrigger>}
           <TabsTrigger value="security">Segurança</TabsTrigger>
         </TabsList>
 
@@ -72,6 +74,12 @@ export default function ProfilePage() {
         <TabsContent value="security" className="space-y-6">
           <SecuritySettingsCard />
         </TabsContent>
+
+        {user?.rawRole === 'PATIENT' && (
+          <TabsContent value="benefits" className="space-y-6">
+            <CompanyBenefitCard />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )

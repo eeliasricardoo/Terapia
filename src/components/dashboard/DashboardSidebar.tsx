@@ -19,6 +19,8 @@ import {
   BookOpen,
   FileText,
   ShieldCheck,
+  Building2,
+  LifeBuoy,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -57,6 +59,15 @@ const ADMIN_MENU = [
   { href: '/dashboard/perfil', label: 'Meu Perfil', icon: User },
 ]
 
+const COMPANY_MENU = [
+  { href: '/dashboard', label: 'Visão Geral', icon: LayoutGrid },
+  { href: '/dashboard/empresa/colaboradores', label: 'Colaboradores', icon: Users },
+  { href: '/dashboard/empresa/financeiro', label: 'Financeiro', icon: DollarSign },
+  { href: '/dashboard/empresa/perfil', label: 'Perfil da Empresa', icon: Building2 },
+  { href: '/dashboard/empresa/suporte', label: 'Suporte', icon: LifeBuoy },
+  { href: '/dashboard/ajustes', label: 'Configurações', icon: Settings },
+]
+
 export function DashboardSidebar({ className, initialProfile }: DashboardSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
@@ -79,7 +90,9 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
               ? 'Administrador'
               : initialProfile.role === 'PSYCHOLOGIST'
                 ? 'Psicólogo'
-                : 'Paciente',
+                : initialProfile.role === 'COMPANY'
+                  ? 'Gestor de RH'
+                  : 'Paciente',
           rawRole: initialProfile.role,
           avatar_url: initialProfile.avatar_url || undefined,
         }
@@ -111,7 +124,9 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
               ? 'Administrador'
               : finalRole === 'PSYCHOLOGIST'
                 ? 'Psicólogo'
-                : 'Paciente'
+                : finalRole === 'COMPANY'
+                  ? 'Gestor de RH'
+                  : 'Paciente'
 
           if (!initialProfile) {
             setUser({
@@ -210,7 +225,9 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
     ? ADMIN_MENU
     : user?.rawRole === 'PSYCHOLOGIST'
       ? PSYCHOLOGIST_MENU
-      : PATIENT_MENU
+      : user?.rawRole === 'COMPANY'
+        ? COMPANY_MENU
+        : PATIENT_MENU
 
   return (
     <aside

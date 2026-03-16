@@ -24,6 +24,7 @@ model User {
   sentMessages        Message[]                 @relation("SentMessages")
   profiles            Profile?
   psychologistProfile PsychologistProfile?
+  companyProfile      CompanyProfile?
 
   @@map("users")
 }
@@ -73,6 +74,7 @@ model Profile {
   psychologistLinks PatientPsychologistLink[] @relation("PatientLinks")
   patientLinks      PatientPsychologistLink[] @relation("PsychologistLinks")
   users             User                      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  companyMembers    CompanyMember[]
 
   @@map("profiles")
 }
@@ -234,4 +236,34 @@ enum UserRole {
   PSYCHOLOGIST
   COMPANY
   ADMIN
+}
+
+model CompanyProfile {
+  id               String          @id @default(uuid())
+  userId           String          @unique @map("user_id")
+  name             String
+  cnpj             String?
+  logoUrl          String?         @map("logo_url")
+  organizationCode String          @unique @map("organization_code")
+  active           Boolean         @default(true)
+  benefitConfig    Json?           @map("benefit_config")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members          CompanyMember[]
+
+  @@map("company_profiles")
+}
+
+model CompanyMember {
+  id        String         @id @default(uuid())
+  companyId String         @map("company_id")
+  profileId String         @map("profile_id")
+  status    String         @default("ACTIVE") // ACTIVE, INACTIVE
+  joinedAt  DateTime       @default(now()) @map("joined_at")
+  company   CompanyProfile @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  profile   Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, profileId])
+  @@map("company_members")
 }
