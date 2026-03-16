@@ -32,8 +32,7 @@ export function BlogGrid() {
       category: 'Saúde',
       date: '05 Mar 2024',
       readTime: '4 min',
-      image:
-        'https://images.unsplash.com/photo-1511295742364-9031f010178c?q=80&w=800&auto=format&fit=crop',
+      image: '/blog-sleep.png',
     },
   ]
 
