@@ -73,10 +73,10 @@ export function RegistrationForm() {
           }
         } else {
           toast.success(
-            'Conta criada com sucesso! Enviamos um email de confirmação. Por favor, verifique sua caixa de entrada e confirme seu email antes de fazer login.'
+            'Conta criada com sucesso! Enviamos um código de confirmação para seu e-mail.'
           )
           router.push(
-            `/login/paciente${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`
+            `/cadastro/confirmar-email?email=${encodeURIComponent(values.email)}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`
           )
         }
       } catch (error) {
@@ -122,7 +122,7 @@ export function RegistrationForm() {
       </CardHeader>
       {step === 1 && (
         <div className="px-6 pb-4">
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-sm text-muted-foreground text-left">
             É um profissional?{' '}
             <Link
               href="/cadastro/profissional"
@@ -177,6 +177,13 @@ export function RegistrationForm() {
                     className="text-primary hover:underline font-medium"
                   >
                     Faça login
+                  </Link>{' '}
+                  ou{' '}
+                  <Link
+                    href="/login/esqueci-senha"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    recupere sua senha
                   </Link>
                 </p>
               </div>

@@ -40,19 +40,32 @@ export async function middleware(request: NextRequest) {
       url.pathname = '/login/paciente'
       return NextResponse.redirect(url)
     }
+
+    // Direct unconfirmed users to verification if they somehow have a session
+    if (user && !user.email_confirmed_at && !pathname.includes('confirmar-email')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/cadastro/confirmar-email'
+      url.searchParams.set('email', user.email || '')
+      return NextResponse.redirect(url)
+    }
   }
 
   // Redirect authenticated users away from home, login, and register pages
-  // BUT allow them to access onboarding/profile completion
+  // BUT allow them to access onboarding/profile completion and verification
   if (
     (pathname === '/' || pathname.startsWith('/login') || pathname.startsWith('/cadastro')) &&
     session &&
     !pathname.includes('completar-perfil') &&
-    !pathname.includes('onboarding')
+    !pathname.includes('onboarding') &&
+    !pathname.includes('confirmar-email') &&
+    !pathname.includes('reset-password')
   ) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+    // Only redirect if email is confirmed
+    if (user.email_confirmed_at) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
   }
 
   return response

@@ -107,4 +107,29 @@ export const auth = {
 
     return { data, error }
   },
+
+  // Verify OTP (email confirmation code)
+  async verifyOtp(
+    email: string,
+    token: string,
+    type: 'signup' | 'recovery' | 'email_change' = 'signup'
+  ) {
+    const supabase = createClient()
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type,
+    })
+    return { data, error }
+  },
+
+  // Resend OTP
+  async resendOtp(email: string, type: 'signup' | 'email_change' = 'signup') {
+    const supabase = createClient()
+    const { data, error } = await supabase.auth.resend({
+      type,
+      email,
+    })
+    return { data, error }
+  },
 }

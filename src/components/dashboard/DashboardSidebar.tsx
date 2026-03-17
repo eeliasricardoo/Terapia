@@ -83,8 +83,8 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
   } | null>(
     initialProfile
       ? {
-          name: initialProfile.full_name || 'Usuário',
-          email: '', // Not strictly needed for UI, but keeping for compatibility
+          name: (initialProfile as any).full_name || (initialProfile as any).fullName || 'Usuário',
+          email: '',
           role:
             initialProfile.role === 'ADMIN'
               ? 'Administrador'
@@ -94,7 +94,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
                   ? 'Gestor de RH'
                   : 'Paciente',
           rawRole: initialProfile.role,
-          avatar_url: initialProfile.avatar_url || undefined,
+          avatar_url: initialProfile.avatar_url || (initialProfile as any).avatarUrl || undefined,
         }
       : null
   )
@@ -128,17 +128,19 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
                   ? 'Gestor de RH'
                   : 'Paciente'
 
-          if (!initialProfile) {
+          if (!initialProfile || !user?.name || user.name === 'Usuário') {
             setUser({
               name:
                 profile?.full_name ||
+                (profile as any)?.fullName ||
                 authUser.user_metadata?.full_name ||
+                authUser.user_metadata?.name ||
                 authUser.email?.split('@')[0] ||
                 'Usuário',
               email: authUser.email || '',
               role: displayRole,
               rawRole: finalRole,
-              avatar_url: profile?.avatar_url,
+              avatar_url: profile?.avatar_url || (profile as any)?.avatarUrl,
             })
           }
 

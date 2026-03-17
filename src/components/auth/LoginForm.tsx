@@ -41,6 +41,13 @@ export function LoginForm() {
       const { error } = await auth.signIn(values.email, values.password)
 
       if (error) {
+        if (error.message.includes('Email not confirmed')) {
+          toast.error('Seu e-mail ainda não foi confirmado.')
+          router.push(
+            `/cadastro/confirmar-email?email=${encodeURIComponent(values.email)}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`
+          )
+          return
+        }
         toast.error('Credenciais inválidas')
         return
       }
@@ -98,7 +105,15 @@ export function LoginForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Senha</FormLabel>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>Senha</FormLabel>
+                    <Link
+                      href="/login/esqueci-senha"
+                      className="text-xs text-primary hover:underline font-medium"
+                    >
+                      Esqueci minha senha
+                    </Link>
+                  </div>
                   <FormControl>
                     <Input type="password" placeholder="******" {...field} />
                   </FormControl>
