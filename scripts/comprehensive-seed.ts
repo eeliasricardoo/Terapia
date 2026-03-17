@@ -25,6 +25,7 @@ const PSYCHOLOGISTS = [
     specialties: ['Terapia Cognitivo-Comportamental', 'Ansiedade'],
     bio: 'Especialista em transtornos de ansiedade com 10 anos de experiência.',
     price: 180.0,
+    avatarUrl: '/avatars/ana.png',
   },
   {
     email: 'psicologo.joao@test.com',
@@ -33,13 +34,14 @@ const PSYCHOLOGISTS = [
     specialties: ['Psicanálise', 'Depressão', 'Relacionamentos'],
     bio: 'Foco em psicoterapia profunda e autoconhecimento.',
     price: 150.0,
+    avatarUrl: '/avatars/joao.png',
   },
 ]
 
 const PATIENTS = [
-  { email: 'paciente.carlos@test.com', name: 'Carlos Oliveira' },
-  { email: 'paciente.maria@test.com', name: 'Maria Souza' },
-  { email: 'paciente.pedro@test.com', name: 'Pedro Ferreira' },
+  { email: 'paciente.carlos@test.com', name: 'Carlos Oliveira', avatarUrl: '/avatars/carlos.png' },
+  { email: 'paciente.maria@test.com', name: 'Maria Souza', avatarUrl: '/avatars/maria.png' },
+  { email: 'paciente.pedro@test.com', name: 'Pedro Ferreira', avatarUrl: null },
 ]
 
 async function createAuthUser(email: string, name: string) {
@@ -96,12 +98,13 @@ async function main() {
       // Upsert Profile
       await prisma.profile.upsert({
         where: { user_id: user.id },
-        update: { fullName: p.name, role: UserRole.PSYCHOLOGIST },
+        update: { fullName: p.name, role: UserRole.PSYCHOLOGIST, avatarUrl: p.avatarUrl },
         create: {
           id: user.id,
           user_id: user.id,
           fullName: p.name,
           role: UserRole.PSYCHOLOGIST,
+          avatarUrl: p.avatarUrl,
         },
       })
 
@@ -169,12 +172,13 @@ async function main() {
 
       const profile = await prisma.profile.upsert({
         where: { user_id: user.id },
-        update: { fullName: p.name, role: UserRole.PATIENT },
+        update: { fullName: p.name, role: UserRole.PATIENT, avatarUrl: p.avatarUrl },
         create: {
           id: user.id,
           user_id: user.id,
           fullName: p.name,
           role: UserRole.PATIENT,
+          avatarUrl: p.avatarUrl,
         },
       })
 

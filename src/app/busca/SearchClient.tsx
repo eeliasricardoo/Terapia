@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/sheet'
 import { Search, Filter, ListFilter } from 'lucide-react'
 import { motion, Variants } from 'framer-motion'
-import { useState, useTransition, useEffect } from 'react'
+import { useRef, useCallback, useState, useTransition, useEffect } from 'react'
 import { useAuth } from '@/components/providers/auth-provider'
 import { searchPsychologists } from '@/lib/actions/psychologists'
 import { PsychologistSearchFilters, PsychologistWithProfile } from '@/lib/supabase/types'
@@ -59,22 +59,72 @@ export default function SearchClient({
     maxPrice: 500,
     searchQuery: '',
   })
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
+  const loaderRef = useRef<HTMLDivElement>(null)
+  const pageSize = 12
 
   // Trigger search when filters change
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      handleSearch(filters)
+      setPage(1)
+      setHasMore(true)
+      handleSearch(filters, 1, false)
     }, 400)
 
     return () => clearTimeout(delayDebounceFn)
   }, [filters])
 
-  const handleSearch = async (currentFilters: PsychologistSearchFilters) => {
+  const handleSearch = async (
+    currentFilters: PsychologistSearchFilters,
+    currentPage: number,
+    isLoadMore: boolean
+  ) => {
     startTransition(async () => {
-      const results = await searchPsychologists(currentFilters)
-      setPsychologists(results)
+      const results = await searchPsychologists({
+        ...currentFilters,
+        page: currentPage,
+        pageSize,
+      })
+
+      if (isLoadMore) {
+        setPsychologists((prev) => [...prev, ...results])
+      } else {
+        setPsychologists(results)
+        setIsInitialLoading(false)
+      }
+
+      if (results.length < pageSize) {
+        setHasMore(false)
+      }
     })
   }
+
+  const loadMore = useCallback(() => {
+    if (isPending || !hasMore) return
+    const nextPage = page + 1
+    setPage(nextPage)
+    handleSearch(filters, nextPage, true)
+  }, [isPending, hasMore, page, filters])
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isPending) {
+          loadMore()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [loadMore, hasMore, isPending])
 
   const handleFilterChange = (newFilters: PsychologistSearchFilters) => {
     setFilters(newFilters)
@@ -201,7 +251,7 @@ export default function SearchClient({
             </div>
           </div>
 
-          {isPending ? (
+          {isInitialLoading && isPending ? (
             <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6 opacity-60 grayscale-[0.5] transition-all">
               {psychologists.map((psychologist) => (
                 <div key={psychologist.id} className="h-full">
@@ -209,7 +259,7 @@ export default function SearchClient({
                 </div>
               ))}
             </div>
-          ) : psychologists.length === 0 ? (
+          ) : psychologists.length === 0 && !isPending ? (
             <div className="text-center py-20 bg-white rounded-3xl border border-slate-200/60 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
               <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="h-10 w-10 text-blue-400" />
@@ -223,28 +273,28 @@ export default function SearchClient({
               </Button>
             </div>
           ) : (
-            <motion.div
-              variants={containerVars}
-              className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6"
-            >
-              {psychologists.map((psychologist) => (
-                <motion.div key={psychologist.id} variants={itemVars} className="h-full">
-                  <PsychologistCard psychologist={psychologist} />
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-
-          {/* Pagination */}
-          {psychologists.length > 0 && !isPending && (
-            <motion.div variants={itemVars} className="mt-12 flex justify-center">
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto h-12 px-8 rounded-full border-slate-200 hover:bg-slate-50 text-slate-700 font-medium"
+            <>
+              <motion.div
+                variants={containerVars}
+                className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6"
               >
-                Carregar mais profissionais
-              </Button>
-            </motion.div>
+                {psychologists.map((psychologist) => (
+                  <motion.div key={psychologist.id} variants={itemVars} className="h-full">
+                    <PsychologistCard psychologist={psychologist} />
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {/* Infinite Scroll Trigger */}
+              <div ref={loaderRef} className="h-20 flex items-center justify-center mt-8">
+                {isPending && hasMore && (
+                  <div className="flex items-center gap-2 text-slate-500 font-medium">
+                    <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    Carregando mais...
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>

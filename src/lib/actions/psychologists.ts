@@ -88,6 +88,10 @@ export async function searchPsychologists(
 ): Promise<PsychologistWithProfile[]> {
   const supabase = await createClient()
 
+  const { page = 1, pageSize = 12 } = filters
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+
   let query = supabase.from('psychologist_profiles').select('*').eq('is_verified', true)
 
   // Filter by specialties
@@ -101,6 +105,13 @@ export async function searchPsychologists(
   }
   if (filters.maxPrice !== undefined) {
     query = query.lte('price_per_session', filters.maxPrice)
+  }
+
+  // Apply pagination only if searchQuery is NOT provided
+  // If searchQuery is provided, we fetch everything and filter in memory for now
+  // (Note: This is suboptimal but matches existing logic structure)
+  if (!filters.searchQuery) {
+    query = query.range(from, to)
   }
 
   const { data: psychologists, error } = await query.order('created_at', { ascending: false })
@@ -130,7 +141,6 @@ export async function searchPsychologists(
   }
 
   // Merge manual join and optionally filter if searchQuery was used
-  // (if searchQuery was passing, then profiles array will be smaller, we should only return merged that have a matched profile)
   let merged = psychologists.map((psych: any) => {
     const profileInfo = profiles?.find((profile: any) => profile.user_id === psych.userId)
     return {
@@ -141,6 +151,8 @@ export async function searchPsychologists(
 
   if (filters.searchQuery) {
     merged = merged.filter((item: any) => item.profile !== null)
+    // Manually paginate the filtered results if searchQuery was used
+    merged = merged.slice(from, to + 1)
   }
 
   return merged as PsychologistWithProfile[]

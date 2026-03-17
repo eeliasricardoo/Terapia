@@ -530,4 +530,6 @@ export type PsychologistSearchFilters = {
   minPrice?: number
   maxPrice?: number
   searchQuery?: string
+  page?: number
+  pageSize?: number
 }
