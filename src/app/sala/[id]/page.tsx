@@ -35,10 +35,23 @@ export default function VideoRoomPage({ params }: { params: { id: string } }) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-red-500 mb-4">{error}</p>
-            <Button variant="outline" onClick={() => window.location.reload()}>
-              Tentar Novamente
-            </Button>
+            <p className="text-red-500 mb-6">{error}</p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="default"
+                className="bg-red-600 hover:bg-red-700 flex-1"
+                onClick={() => window.location.reload()}
+              >
+                Tentar Novamente
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 border-red-200 text-red-700 hover:bg-red-100"
+                onClick={() => (window.location.href = '/dashboard')}
+              >
+                Voltar ao Dashboard
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -8,12 +8,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { auth } from '@/lib/supabase/auth'
 import { toast } from 'sonner'
+import { Checkbox } from '@/components/ui/checkbox'
 
 export function LoginFormSupabase() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(true)
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -93,6 +95,17 @@ export function LoginFormSupabase() {
             required
             disabled={loading}
           />
+        </div>
+
+        <div className="flex items-center space-x-2 py-2">
+          <Checkbox
+            id="rememberMe"
+            checked={rememberMe}
+            onCheckedChange={(checked) => setRememberMe(checked === true)}
+          />
+          <Label htmlFor="rememberMe" className="text-sm font-medium text-slate-600 cursor-pointer">
+            Mantenha-me conectado
+          </Label>
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>

@@ -75,7 +75,7 @@ function PaymentContent() {
                 handlePayment={handlePayment}
                 isProcessing={isProcessing}
                 isFetchingInfo={isFetchingInfo}
-                price={price}
+                price={finalPrice}
               />
             </div>
           </>

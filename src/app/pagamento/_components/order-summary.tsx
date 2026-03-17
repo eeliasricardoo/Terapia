@@ -15,7 +15,7 @@ interface OrderSummaryProps {
   isValidatingCoupon: boolean
   appliedCoupon: { code: string; type: string; value: number } | null
   discountAmount: number
-  finalPrice: number
+  finalPrice: string
 }
 
 export function OrderSummary({
@@ -120,9 +120,7 @@ export function OrderSummary({
             )}
             <div className="flex justify-between items-center">
               <span className="font-bold text-lg text-slate-900">Total a pagar:</span>
-              <span className="font-extrabold text-2xl text-blue-600">
-                R$ {finalPrice.toFixed(2).replace('.', ',')}
-              </span>
+              <span className="font-extrabold text-2xl text-blue-600">{finalPrice}</span>
             </div>
           </div>
         </CardContent>

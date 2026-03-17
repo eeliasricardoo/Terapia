@@ -149,7 +149,6 @@ export async function validateCoupon(
     const coupon = await prisma.coupon.findFirst({
       where: {
         code: code.toUpperCase(),
-        psychologistId,
         active: true,
       },
     })

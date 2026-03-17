@@ -25,10 +25,18 @@ export async function createStripeCheckoutSession(data: {
     if (!user) throw new Error('Não autenticado')
 
     // 1. Fetch psychologist info for price and name
-    const psych = await prisma.psychologistProfile.findUnique({
+    let psych = await prisma.psychologistProfile.findUnique({
       where: { id: data.psychologistId },
       include: { user: { include: { profiles: true } } },
     })
+
+    // If not found by ID, try by userId (some parts of the app might be passing userId)
+    if (!psych) {
+      psych = await prisma.psychologistProfile.findUnique({
+        where: { userId: data.psychologistId },
+        include: { user: { include: { profiles: true } } },
+      })
+    }
 
     if (!psych) throw new Error('Psicólogo não encontrado')
 
@@ -37,11 +45,9 @@ export async function createStripeCheckoutSession(data: {
 
     // 1b. Apply Coupon if exists
     if (data.couponCode) {
-      // @ts-ignore
       const coupon = await prisma.coupon.findFirst({
         where: {
           code: data.couponCode.toUpperCase(),
-          psychologistId: data.psychologistId,
           active: true,
         },
       })
@@ -63,16 +69,26 @@ export async function createStripeCheckoutSession(data: {
       }
     }
 
-    const stripeAmount = Math.round(finalPrice * 100) // Price in cents
-
-    if (stripeAmount <= 0 && finalPrice > 0) {
-      // In case of rounding error or invalid price
-      throw new Error('Preço inválido para pagamento via Stripe')
-    }
-
     const psychologistName = psych.user.profiles?.fullName || psych.user.name || 'Psicólogo'
 
-    // 2. Create the Checkout Session
+    // 2. IF FREE (100% DISCOUNT): Create appointment directly and return success
+    if (finalPrice <= 0) {
+      await prisma.appointment.create({
+        data: {
+          patientId: user.id,
+          psychologistId: psych.id,
+          scheduledAt: new Date(data.scheduledAt),
+          durationMinutes: data.durationMinutes,
+          price: 0,
+          paymentMethod: 'Coupon',
+          status: 'SCHEDULED',
+        },
+      })
+      return { url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success` }
+    }
+
+    // 3. Create the Checkout Session
+    const stripeAmount = Math.round(finalPrice * 100)
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -91,7 +107,7 @@ export async function createStripeCheckoutSession(data: {
       mode: 'payment',
       metadata: {
         patientId: user.id,
-        psychologistId: data.psychologistId,
+        psychologistId: psych.id,
         scheduledAt: data.scheduledAt,
         durationMinutes: data.durationMinutes,
         price: finalPrice.toString(),

@@ -113,7 +113,16 @@ export function useCheckout() {
 
     setIsProcessing(true)
     try {
-      const localDateTimeString = `${date}T${time}:00`
+      // Normalizar data (YYYY-M-D -> YYYY-MM-DD)
+      const normalizedDate = date
+        .split('-')
+        .map((part, i) => (i === 0 ? part : part.padStart(2, '0')))
+        .join('-')
+
+      // Normalizar hora (H:mm -> HH:mm)
+      const normalizedTime = time.padStart(5, '0')
+
+      const localDateTimeString = `${normalizedDate}T${normalizedTime}:00`
       const utcDate = fromZonedTime(localDateTimeString, psychTimezone)
       const scheduledAt = utcDate.toISOString()
 
@@ -158,7 +167,7 @@ export function useCheckout() {
     isValidatingCoupon,
     appliedCoupon,
     discountAmount,
-    finalPrice,
+    finalPrice: `R$ ${finalPrice.toFixed(2).replace('.', ',')}`,
 
     handlePayment,
     applyCoupon,
