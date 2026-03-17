@@ -20,7 +20,7 @@ interface BookingWidgetProps {
   handlePrevMonth: () => void
   handleNextMonth: () => void
   daysInMonth: number
-  selectedDay: number
+  selectedDay: number | null
   setSelectedDay: (day: number) => void
   setSelectedTime: (time: string | null) => void
   isDayAvailable: (date: Date) => boolean
@@ -168,7 +168,7 @@ export function BookingWidget({
                 return (
                   <button
                     key={day}
-                    disabled={!available && day !== selectedDay}
+                    disabled={!available}
                     onClick={() => {
                       if (available) {
                         setSelectedDay(day)

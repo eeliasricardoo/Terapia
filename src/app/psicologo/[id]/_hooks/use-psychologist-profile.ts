@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { format, isBefore, startOfDay, addMinutes } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import type { PsychologistWithProfile } from '@/lib/supabase/types'
@@ -10,7 +10,6 @@ export function usePsychologistProfile(
   psychologist: PsychologistWithProfile,
   availability: PsychologistAvailability | null
 ) {
-  const [selectedDay, setSelectedDay] = useState<number>(15)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [selectedPlan, setSelectedPlan] = useState<'single' | 'monthly'>('monthly')
@@ -23,25 +22,18 @@ export function usePsychologistProfile(
   const timezone = availability?.timezone || 'America/Sao_Paulo'
   const today = toZonedTime(new Date(), timezone)
 
-  const handlePrevMonth = () => {
-    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1))
-    setSelectedDay(1)
-  }
-
-  const handleNextMonth = () => {
-    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1))
-    setSelectedDay(1)
-  }
-
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
   }
 
+  const todayStr = format(today, 'yyyy-MM-dd')
+
   const isDayAvailable = (date: Date) => {
     if (!availability) return false
-    if (isBefore(date, startOfDay(today))) return false
 
     const dateStr = format(date, 'yyyy-MM-dd')
+    if (dateStr < todayStr) return false
+
     if (availability.overrides[dateStr]) {
       return (
         availability.overrides[dateStr].type === 'custom' &&
@@ -61,10 +53,51 @@ export function usePsychologistProfile(
       'saturday',
     ] as const
     const dayKey = daysMap[dayOfWeekIndex]
-    return (
-      availability.weeklySchedule[dayKey]?.enabled &&
-      availability.weeklySchedule[dayKey].slots.length > 0
-    )
+    const wsDay = (availability.weeklySchedule as any)[dayKey]
+    return wsDay?.enabled && wsDay.slots.length > 0
+  }
+
+  // Find first available day
+  const initialAvailableDay = useMemo(() => {
+    const daysCount = getDaysInMonth(currentDate)
+    const isCurrentMonth =
+      currentDate.getMonth() === today.getMonth() &&
+      currentDate.getFullYear() === today.getFullYear()
+    const startFrom = isCurrentMonth ? today.getDate() : 1
+
+    for (let d = startFrom; d <= daysCount; d++) {
+      const checkDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), d)
+      if (isDayAvailable(checkDate)) return d
+    }
+    return null
+  }, [currentDate, availability])
+
+  const [selectedDay, setSelectedDay] = useState<number | null>(null)
+
+  // Sync selectedDay with initialAvailableDay on mount or month change if current selection is invalid
+  useEffect(() => {
+    if (initialAvailableDay) {
+      if (
+        !selectedDay ||
+        !isDayAvailable(new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDay))
+      ) {
+        setSelectedDay(initialAvailableDay)
+      }
+    } else {
+      setSelectedDay(null)
+    }
+  }, [initialAvailableDay, currentDate])
+
+  const handlePrevMonth = () => {
+    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1))
+    setSelectedDay(null)
+    setSelectedTime(null)
+  }
+
+  const handleNextMonth = () => {
+    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1))
+    setSelectedDay(null)
+    setSelectedTime(null)
   }
 
   const getAvailableSlotsForDay = (date: Date) => {
@@ -73,9 +106,10 @@ export function usePsychologistProfile(
     const dateStr = format(date, 'yyyy-MM-dd')
     let slotsDef: { start: string; end: string }[] = []
 
+    const ws = availability.weeklySchedule as any
     if (availability.overrides[dateStr] && availability.overrides[dateStr].type === 'custom') {
       slotsDef = availability.overrides[dateStr].slots
-    } else if (availability.weeklySchedule) {
+    } else if (ws) {
       const dayOfWeekIndex = date.getDay()
       const daysMap = [
         'sunday',
@@ -87,13 +121,11 @@ export function usePsychologistProfile(
         'saturday',
       ] as const
       const dayKey = daysMap[dayOfWeekIndex]
-      slotsDef = availability.weeklySchedule[dayKey]?.slots || []
+      slotsDef = ws[dayKey]?.slots || []
     }
 
-    const durationMinutes = availability.weeklySchedule?.sessionDuration
-      ? parseInt(availability.weeklySchedule.sessionDuration)
-      : 50
-    const breakMinutes = 10
+    const durationMinutes = ws?.sessionDuration ? parseInt(ws.sessionDuration) : 50
+    const breakMinutes = ws?.breakDuration !== undefined ? parseInt(ws.breakDuration) : 10
     let generatedSlots: string[] = []
 
     const apptsOnThisDay = (availability.appointments || []).filter((appt) => {
@@ -115,6 +147,7 @@ export function usePsychologistProfile(
         const slotStartMin = current.getHours() * 60 + current.getMinutes()
         const slotEndMin = slotStartMin + durationMinutes
 
+        // Check availability window
         const hasConflict = apptsOnThisDay.some((appt) => {
           const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
           const apptStartMin = zonedAppt.getHours() * 60 + zonedAppt.getMinutes()
@@ -124,7 +157,11 @@ export function usePsychologistProfile(
 
         const isPast = isToday && slotStartMin <= nowMinutes + 30
 
-        if (!hasConflict && !isPast) {
+        if (
+          !hasConflict &&
+          !isPast &&
+          slotStartMin + durationMinutes <= end.getHours() * 60 + end.getMinutes()
+        ) {
           generatedSlots.push(`${hour}:${min}`)
         }
 

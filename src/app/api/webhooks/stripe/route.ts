@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
+import { revalidateTag } from 'next/cache'
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
 
@@ -44,6 +45,8 @@ export async function POST(req: Request) {
       logger.info(
         `Appointment created for patient ${metadata.patientId} via Stripe session ${session.id}`
       )
+      revalidateTag('appointments')
+      revalidateTag('psychologist-profile-view')
     } catch (error) {
       logger.error(`Error completing booking for session ${session.id}:`, error)
       return NextResponse.json({ error: 'Internal server error during booking' }, { status: 500 })

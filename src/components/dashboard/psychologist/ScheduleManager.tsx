@@ -46,6 +46,7 @@ import { ptBR } from 'date-fns/locale'
 import { format, isSameDay } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
+import { cn } from '@/lib/utils'
 
 // --- Types ---
 
@@ -118,6 +119,7 @@ export function ScheduleManager() {
   const [isLoading, setIsLoading] = useState(false)
   const [timezone, setTimezone] = useState('America/Sao_Paulo')
   const [sessionDuration, setSessionDuration] = useState<string>('50')
+  const [breakDuration, setBreakDuration] = useState<string>('10')
 
   // Weekly Routine (The "Base" Layer)
   const [weeklySchedule, setWeeklySchedule] = useState<WeeklySchedule>({
@@ -157,6 +159,9 @@ export function ScheduleManager() {
         const ws = profile.weekly_schedule as any
         if (ws.sessionDuration) {
           setSessionDuration(ws.sessionDuration)
+        }
+        if (ws.breakDuration) {
+          setBreakDuration(ws.breakDuration)
         }
         setWeeklySchedule(profile.weekly_schedule as unknown as WeeklySchedule)
       }
@@ -265,6 +270,36 @@ export function ScheduleManager() {
       slots: weekly.slots,
       source: 'weekly',
     }
+  }
+
+  const getGeneratedSlots = (date: Date) => {
+    const effective = getEffectiveSchedule(date)
+    if (effective.type === 'blocked') return []
+
+    const slots: string[] = []
+    const duration = parseInt(sessionDuration)
+    const breakTime = parseInt(breakDuration)
+
+    effective.slots.forEach((range) => {
+      let current = new Date(`1970-01-01T${range.start}:00`)
+      const end = new Date(`1970-01-01T${range.end}:00`)
+
+      while (current < end) {
+        const h = current.getHours().toString().padStart(2, '0')
+        const m = current.getMinutes().toString().padStart(2, '0')
+        const timeStr = `${h}:${m}`
+
+        // Check if there's enough time for the session within the range
+        const sessionEnd = new Date(current.getTime() + duration * 60000)
+        if (sessionEnd <= end) {
+          slots.push(timeStr)
+        }
+
+        current = new Date(current.getTime() + (duration + breakTime) * 60000)
+      }
+    })
+
+    return slots
   }
 
   // --- Handlers: Weekly ---
@@ -388,7 +423,7 @@ export function ScheduleManager() {
       await supabase
         .from('psychologist_profiles')
         .update({
-          weekly_schedule: { ...weeklySchedule, sessionDuration } as unknown as {
+          weekly_schedule: { ...weeklySchedule, sessionDuration, breakDuration } as unknown as {
             [key: string]: any
           },
           timezone: timezone,
@@ -439,6 +474,25 @@ export function ScheduleManager() {
     }
   }
 
+  const handleUpdateAppointmentStatus = async (id: string, newStatus: string) => {
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('appointments')
+        .update({ status: newStatus })
+        .eq('id', id)
+
+      if (error) throw error
+
+      setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a)))
+
+      toast.success(`Sessão marcada como ${newStatus.toLowerCase()}`)
+    } catch (error) {
+      console.error(error)
+      toast.error('Erro ao atualizar status')
+    }
+  }
+
   // --- Render ---
   const effective = selectedDate ? getEffectiveSchedule(selectedDate) : null
 
@@ -481,11 +535,47 @@ export function ScheduleManager() {
             </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Rotina Semanal Padrão</DialogTitle>
+                <DialogTitle>Configurações da Agenda</DialogTitle>
                 <DialogDescription>
-                  Defina os horários base para cada dia da semana.
+                  Defina os horários base e a duração das suas sessões.
                 </DialogDescription>
               </DialogHeader>
+
+              <div className="grid grid-cols-2 gap-4 py-4 border-b border-slate-100 mb-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700">Duração da Sessão</label>
+                  <Select value={sessionDuration} onValueChange={setSessionDuration}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="30">30 minutos</SelectItem>
+                      <SelectItem value="45">45 minutos</SelectItem>
+                      <SelectItem value="50">50 minutos</SelectItem>
+                      <SelectItem value="60">60 minutos</SelectItem>
+                      <SelectItem value="90">90 minutos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700">
+                    Intervalo entre Sessões
+                  </label>
+                  <Select value={breakDuration} onValueChange={setBreakDuration}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">Sem intervalo</SelectItem>
+                      <SelectItem value="5">5 minutos</SelectItem>
+                      <SelectItem value="10">10 minutos</SelectItem>
+                      <SelectItem value="15">15 minutos</SelectItem>
+                      <SelectItem value="20">20 minutos</SelectItem>
+                      <SelectItem value="30">30 minutos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
               <div className="space-y-6 py-4">
                 {DAYS_OF_WEEK.map((day) => {
@@ -845,30 +935,68 @@ export function ScheduleManager() {
                     {effective?.source === 'weekly' ? (
                       <div className="pt-4 space-y-3">
                         <Button
-                          className="w-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-sm transition-all"
+                          className="w-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-sm transition-all text-xs"
                           onClick={() => handleOverride('custom')}
                         >
-                          Editar Horário Deste Dia
+                          Customizar Horários do Dia
                         </Button>
                         <Button
                           variant="ghost"
-                          className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 text-xs"
                           onClick={() => handleOverride('blocked')}
                         >
-                          <Ban className="h-4 w-4 mr-2" /> Bloquear Dia
+                          <Ban className="h-4 w-4 mr-2" /> Marcar como Folga
                         </Button>
                       </div>
                     ) : (
                       <div className="pt-4">
                         <Button
                           variant="outline"
-                          className="w-full border-dashed border-slate-300 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50"
+                          className="w-full border-dashed border-slate-300 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 text-xs"
                           onClick={handleAddCustomSlot}
                         >
                           <Plus className="h-4 w-4 mr-2" /> Adicionar Intervalo
                         </Button>
                       </div>
                     )}
+
+                    {/* View Generated Slots Tooltip/info */}
+                    <div className="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
+                        Slots Visíveis para Pacientes
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedDate &&
+                          getGeneratedSlots(selectedDate).map((time) => {
+                            const isBooked = appointments.some(
+                              (a) =>
+                                a.scheduled_at.startsWith(format(selectedDate, 'yyyy-MM-dd')) &&
+                                format(new Date(a.scheduled_at), 'HH:mm') === time &&
+                                a.status !== 'cancelled'
+                            )
+                            return (
+                              <Badge
+                                key={time}
+                                variant="outline"
+                                className={cn(
+                                  'bg-white text-[11px] font-medium h-7 px-2.5',
+                                  isBooked
+                                    ? 'border-emerald-200 text-emerald-700 bg-emerald-50'
+                                    : 'border-slate-200 text-slate-600'
+                                )}
+                              >
+                                {time}
+                                {isBooked && (
+                                  <div className="ml-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                )}
+                              </Badge>
+                            )
+                          })}
+                        {selectedDate && getGeneratedSlots(selectedDate).length === 0 && (
+                          <p className="text-[10px] text-slate-400 italic">Nenhum slot gerado.</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -900,24 +1028,76 @@ export function ScheduleManager() {
                           .map((appt) => (
                             <div
                               key={appt.id}
-                              className="flex items-start gap-3 p-3 rounded-lg bg-emerald-50 border border-emerald-100"
+                              className={cn(
+                                'flex items-start justify-between p-3 rounded-xl border transition-all',
+                                appt.status === 'COMPLETED'
+                                  ? 'bg-slate-50 border-slate-100 opacity-60'
+                                  : appt.status === 'cancelled'
+                                    ? 'bg-red-50 border-red-100 opacity-60'
+                                    : 'bg-emerald-50 border-emerald-100 shadow-sm'
+                              )}
                             >
-                              <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-emerald-600 font-bold text-xs border border-emerald-100">
-                                {appt.patient_name.charAt(0)}
+                              <div className="flex items-start gap-3">
+                                <div
+                                  className={cn(
+                                    'h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs border',
+                                    appt.status === 'COMPLETED'
+                                      ? 'bg-slate-200 text-slate-500 border-slate-300'
+                                      : 'bg-white text-emerald-600 border-emerald-100'
+                                  )}
+                                >
+                                  {appt.patient_name.charAt(0)}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-slate-900">
+                                    {appt.patient_name}
+                                  </p>
+                                  <p
+                                    className={cn(
+                                      'text-xs flex items-center gap-1.5 mt-0.5',
+                                      appt.status === 'COMPLETED'
+                                        ? 'text-slate-500'
+                                        : 'text-emerald-700'
+                                    )}
+                                  >
+                                    <Clock className="h-3 w-3" />
+                                    {format(new Date(appt.scheduled_at), 'HH:mm')}
+                                    <span className="opacity-50">•</span>
+                                    {appt.duration} min
+                                    <span className="opacity-50">•</span>
+                                    <span className="uppercase text-[9px] font-bold">
+                                      {appt.status}
+                                    </span>
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-sm font-semibold text-slate-900">
-                                  {appt.patient_name}
-                                </p>
-                                <p className="text-xs text-emerald-700 flex items-center gap-1.5 mt-0.5">
-                                  <Clock className="h-3 w-3" />
-                                  {format(new Date(appt.scheduled_at), 'HH:mm')}
-                                  <span className="opacity-50">•</span>
-                                  {appt.duration} min
-                                  <span className="opacity-50">•</span>
-                                  {appt.status}
-                                </p>
-                              </div>
+
+                              {appt.status === 'scheduled' && (
+                                <div className="flex gap-1">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100 rounded-full"
+                                    title="Marcar como realizada"
+                                    onClick={() =>
+                                      handleUpdateAppointmentStatus(appt.id, 'COMPLETED')
+                                    }
+                                  >
+                                    <CheckCircle2 className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-100 rounded-full"
+                                    title="Cancelar sessão"
+                                    onClick={() =>
+                                      handleUpdateAppointmentStatus(appt.id, 'cancelled')
+                                    }
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           ))}
                       </div>

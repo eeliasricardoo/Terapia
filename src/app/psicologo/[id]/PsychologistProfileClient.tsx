@@ -44,7 +44,7 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
   const firstSpecialty = psychologist.specialties?.[0] || 'Psicologia Clínica'
 
   const handleBooking = () => {
-    if (!selectedTime) return
+    if (!selectedTime || selectedDay === null) return
 
     const bookingUrl = `/pagamento?doctor=${psychologist.userId}&date=${calendar.currentYear}-${currentDate.getMonth() + 1}-${selectedDay}&time=${selectedTime}&plan=${selectedPlan}`
 
@@ -179,7 +179,11 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
         psychologistName={displayName}
         selectedDate={formattedDate}
         selectedTime={selectedTime || ''}
-        bookingUrl={`/pagamento?doctor=${psychologist.userId}&date=${calendar.currentYear}-${currentDate.getMonth() + 1}-${selectedDay}&time=${selectedTime}&plan=${selectedPlan}`}
+        bookingUrl={
+          selectedDay
+            ? `/pagamento?doctor=${psychologist.userId}&date=${calendar.currentYear}-${currentDate.getMonth() + 1}-${selectedDay}&time=${selectedTime}&plan=${selectedPlan}`
+            : '#'
+        }
       />
     </div>
   )

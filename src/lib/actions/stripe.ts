@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { isValidUUID } from '@/lib/security'
+import { revalidateTag } from 'next/cache'
 
 export async function createStripeCheckoutSession(data: {
   psychologistId: string
@@ -84,6 +85,8 @@ export async function createStripeCheckoutSession(data: {
           status: 'SCHEDULED',
         },
       })
+      revalidateTag('appointments')
+      revalidateTag('psychologist-profile-view')
       return { url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success` }
     }
 
