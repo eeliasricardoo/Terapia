@@ -10,11 +10,11 @@ import { RoleSelectionDialog } from '@/components/auth/RoleSelectionDialog'
 
 export function ProfessionalsHero() {
   return (
-    <section className="w-full pt-20 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 bg-[#F2FAF6] overflow-hidden relative bg-mesh-emerald">
-      {/* Animated Aesthetic Blobs - Emerald/Teal themed */}
-      <div className="absolute top-0 -left-4 w-72 h-72 bg-emerald-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" />
-      <div className="absolute top-0 -right-4 w-72 h-72 bg-teal-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
-      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-green-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000" />
+    <section className="w-full pt-20 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 bg-[#F8FAFF] overflow-hidden relative bg-mesh-indigo">
+      {/* Animated Aesthetic Blobs - Indigo/Violet themed */}
+      <div className="absolute top-0 -left-4 w-72 h-72 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" />
+      <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
+      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-violet-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000" />
 
       <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -24,9 +24,9 @@ export function ProfessionalsHero() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50/80 backdrop-blur-sm border border-emerald-200/50 text-emerald-800 text-sm font-medium mb-2 shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50/80 backdrop-blur-sm border border-indigo-200/50 text-indigo-800 text-sm font-medium mb-2 shadow-sm"
             >
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
               Para Profissionais da Saúde
             </motion.div>
 
@@ -39,7 +39,7 @@ export function ProfessionalsHero() {
               >
                 <span className="text-slate-900">Transforme sua</span>
                 <br />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 via-teal-500 to-green-600">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-blue-500 to-violet-600">
                   prática clínica.
                 </span>
               </motion.h1>
@@ -63,7 +63,7 @@ export function ProfessionalsHero() {
               <RoleSelectionDialog mode="register">
                 <Button
                   size="lg"
-                  className="h-16 px-10 text-lg shadow-2xl shadow-emerald-600/20 hover:shadow-emerald-600/40 transition-all hover:-translate-y-1 bg-gradient-to-br from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 border-0 rounded-2xl"
+                  className="h-16 px-10 text-lg shadow-2xl shadow-indigo-600/20 hover:shadow-indigo-600/40 transition-all hover:-translate-y-1 bg-gradient-to-br from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 border-0 rounded-2xl"
                 >
                   Cadastrar meu perfil
                 </Button>
@@ -71,7 +71,7 @@ export function ProfessionalsHero() {
               <Button
                 variant="outline"
                 size="lg"
-                className="h-16 px-10 text-lg border-2 border-slate-200/60 text-slate-700 hover:bg-white hover:border-emerald-200 transition-all hover:-translate-y-1 bg-white/40 backdrop-blur-md rounded-2xl"
+                className="h-16 px-10 text-lg border-2 border-slate-200/60 text-slate-700 hover:bg-white hover:border-indigo-200 transition-all hover:-translate-y-1 bg-white/40 backdrop-blur-md rounded-2xl"
               >
                 Como funciona
               </Button>
@@ -98,7 +98,7 @@ export function ProfessionalsHero() {
                       />
                     </div>
                   ))}
-                  <div className="h-10 w-10 rounded-full border-2 border-white bg-emerald-100 flex items-center justify-center text-[10px] font-bold text-emerald-600">
+                  <div className="h-10 w-10 rounded-full border-2 border-white bg-indigo-100 flex items-center justify-center text-[10px] font-bold text-indigo-600">
                     +500
                   </div>
                 </div>
@@ -115,7 +115,7 @@ export function ProfessionalsHero() {
             className="relative mx-auto w-full mt-8 lg:mt-0"
           >
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-tr from-emerald-200/30 to-teal-200/30 blur-3xl rounded-full scale-90 group-hover:scale-100 transition-transform duration-1000" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-200/30 to-blue-200/30 blur-3xl rounded-full scale-90 group-hover:scale-100 transition-transform duration-1000" />
 
               <motion.div
                 animate={{ y: [0, -15, 0] }}
@@ -130,7 +130,7 @@ export function ProfessionalsHero() {
                     className="object-cover transition-transform duration-1000 group-hover:scale-110"
                     priority
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/20 to-transparent opacity-40" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/20 to-transparent opacity-40" />
                 </div>
               </motion.div>
 
@@ -140,8 +140,8 @@ export function ProfessionalsHero() {
                 transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
                 className="absolute -left-10 top-1/4 bg-white/90 backdrop-blur-xl border border-white p-5 rounded-2xl shadow-2xl flex items-center gap-4 z-20"
               >
-                <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-                  <CoreClockIcon className="h-6 w-6 text-emerald-500" />
+                <div className="h-12 w-12 rounded-xl bg-indigo-100 flex items-center justify-center">
+                  <CoreClockIcon className="h-6 w-6 text-indigo-500" />
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
@@ -157,7 +157,7 @@ export function ProfessionalsHero() {
                 className="absolute -right-6 bottom-1/4 bg-slate-900/90 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl flex items-center gap-4 z-20"
               >
                 <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center">
-                  <CoreHeartIcon className="h-6 w-6 text-rose-400" />
+                  <CoreHeartIcon className="h-6 w-6 text-indigo-400" />
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">

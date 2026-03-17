@@ -2,7 +2,6 @@ import { getPsychologists } from '@/lib/actions/psychologists'
 import SearchClient from './SearchClient'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
-import { SearchHero } from '@/components/search/SearchHero'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { unstable_cache } from 'next/cache'
@@ -49,7 +48,6 @@ export default async function SearchPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
-      <SearchHero />
       <main className="flex-1 container mx-auto px-4 py-12 max-w-7xl">
         <div className="mb-10">
           <div className="flex items-center text-sm text-slate-500 gap-2 px-1">

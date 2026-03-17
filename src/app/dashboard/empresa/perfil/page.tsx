@@ -160,7 +160,7 @@ export default function CompanyProfilePage() {
                     corporativo para garantir segurança máxima.
                   </p>
                   <div className="flex flex-wrap gap-4">
-                    <Dialog resizeable={false}>
+                    <Dialog>
                       <DialogTrigger asChild>
                         <Button className="bg-blue-600 hover:bg-blue-500 rounded-xl px-6 h-12 font-bold transition-all shadow-lg shadow-blue-600/20 gap-2">
                           <Globe className="h-4 w-4" />

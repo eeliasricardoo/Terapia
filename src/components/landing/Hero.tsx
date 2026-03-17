@@ -9,11 +9,11 @@ import { CoreHeartIcon, CoreStarIcon, CoreShieldIcon } from '@/components/ui/exc
 
 export function Hero() {
   return (
-    <section className="w-full pt-20 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 bg-[#FFFAF3] overflow-hidden relative bg-mesh">
+    <section className="w-full pt-20 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 bg-[#F8FAFC] overflow-hidden relative bg-mesh">
       {/* Animated Aesthetic Blobs */}
-      <div className="absolute top-0 -left-4 w-72 h-72 bg-emerald-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" />
-      <div className="absolute top-0 -right-4 w-72 h-72 bg-rose-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
-      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-amber-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000" />
+      <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" />
+      <div className="absolute top-0 -right-4 w-72 h-72 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
+      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-slate-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000" />
 
       <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -23,9 +23,9 @@ export function Hero() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-50/80 backdrop-blur-sm border border-orange-200/50 text-orange-800 text-sm font-medium mb-2 shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50/80 backdrop-blur-sm border border-blue-200/50 text-blue-800 text-sm font-medium mb-2 shadow-sm"
             >
-              <span className="flex h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+              <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
               Terapia Acessível & Solidária
             </motion.div>
 
@@ -38,7 +38,7 @@ export function Hero() {
               >
                 <span className="text-slate-900">Encontre seu</span>
                 <br />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-600 via-rose-500 to-amber-600">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-800">
                   equilíbrio real.
                 </span>
               </motion.h1>
@@ -49,7 +49,7 @@ export function Hero() {
                 className="text-slate-600 md:text-xl font-light leading-relaxed max-w-[550px] mx-auto lg:mx-0"
               >
                 Um espaço seguro para cuidar de si com terapeutas acolhedores.{' '}
-                <span className="font-semibold text-slate-800 underline decoration-orange-200 underline-offset-4">
+                <span className="font-semibold text-slate-800 underline decoration-blue-200 underline-offset-4">
                   Para profissionais:
                 </span>{' '}
                 faça parte de uma rede solidária.
@@ -65,7 +65,7 @@ export function Hero() {
               <Button
                 asChild
                 size="lg"
-                className="h-16 px-10 text-lg shadow-2xl shadow-orange-600/20 hover:shadow-orange-600/40 transition-all hover:-translate-y-1 bg-gradient-to-br from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 border-0 rounded-2xl"
+                className="h-16 px-10 text-lg shadow-2xl shadow-blue-600/20 hover:shadow-blue-600/40 transition-all hover:-translate-y-1 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 border-0 rounded-2xl"
               >
                 <Link href="/busca">Quero fazer terapia</Link>
               </Button>
@@ -73,7 +73,7 @@ export function Hero() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="h-16 px-10 text-lg border-2 border-slate-200/60 text-slate-700 hover:bg-white hover:border-orange-200 transition-all hover:-translate-y-1 bg-white/40 backdrop-blur-md rounded-2xl"
+                  className="h-16 px-10 text-lg border-2 border-slate-200/60 text-slate-700 hover:bg-white hover:border-blue-200 transition-all hover:-translate-y-1 bg-white/40 backdrop-blur-md rounded-2xl"
                 >
                   Sou Psicólogo(a)
                 </Button>
@@ -101,7 +101,7 @@ export function Hero() {
                       />
                     </div>
                   ))}
-                  <div className="h-10 w-10 rounded-full border-2 border-white bg-orange-100 flex items-center justify-center text-[10px] font-bold text-orange-600">
+                  <div className="h-10 w-10 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600">
                     +2k
                   </div>
                 </div>
@@ -130,7 +130,7 @@ export function Hero() {
           >
             <div className="relative group">
               {/* Decorative background glow */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-orange-200/30 to-rose-200/30 blur-3xl rounded-full scale-90 group-hover:scale-100 transition-transform duration-1000" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-blue-200/30 to-indigo-200/30 blur-3xl rounded-full scale-90 group-hover:scale-100 transition-transform duration-1000" />
 
               <motion.div
                 animate={{ y: [0, -15, 0] }}
@@ -156,8 +156,8 @@ export function Hero() {
                 transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
                 className="absolute -left-10 top-1/4 bg-white/90 backdrop-blur-xl border border-white p-5 rounded-2xl shadow-2xl flex items-center gap-4 z-20"
               >
-                <div className="h-12 w-12 rounded-xl bg-orange-100 flex items-center justify-center">
-                  <CoreHeartIcon className="h-6 w-6 text-orange-500" />
+                <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                  <CoreHeartIcon className="h-6 w-6 text-blue-500" />
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">

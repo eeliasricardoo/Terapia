@@ -31,29 +31,29 @@ export function ProfessionalsFeatures() {
       title: 'Plataforma Completa',
       description:
         'Gestão de agenda, prontuários eletrônicos e faturamento em um único dashboard intuitivo.',
-      icon: <CoreShieldIcon className="h-10 w-10 text-emerald-600" />,
-      bg: 'bg-emerald-50',
+      icon: <CoreShieldIcon className="h-10 w-10 text-indigo-600" />,
+      bg: 'bg-indigo-50',
     },
     {
       title: 'Atendimento Online',
       description:
         'Sala de vídeo própria com criptografia de ponta a ponta, sem necessidade de softwares externos.',
-      icon: <CoreVideoIcon className="h-10 w-10 text-teal-600" />,
-      bg: 'bg-teal-50',
+      icon: <CoreVideoIcon className="h-10 w-10 text-blue-600" />,
+      bg: 'bg-blue-50',
     },
     {
       title: 'Remuneração Justa',
       description:
         'Processo de repasse transparente e rápido. Defina seus horários e receba por cada sessão realizada.',
-      icon: <CoreClockIcon className="h-10 w-10 text-green-600" />,
-      bg: 'bg-green-50',
+      icon: <CoreClockIcon className="h-10 w-10 text-violet-600" />,
+      bg: 'bg-violet-50',
     },
   ]
 
   return (
     <section className="w-full py-20 md:py-40 bg-white relative overflow-hidden">
       {/* Decorative center glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald-50/30 rounded-full blur-[120px] mix-blend-multiply pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-indigo-50/30 rounded-full blur-[120px] mix-blend-multiply pointer-events-none" />
 
       <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl font-outfit">
         <motion.div

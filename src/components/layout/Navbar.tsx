@@ -103,7 +103,7 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
               href="/"
               className="flex items-center space-x-2 opacity-50 hover:opacity-100 transition-opacity"
             >
-              <span className="text-xl font-bold tracking-tight font-heading">MindCare</span>
+              <span className="text-xl font-bold tracking-tight font-heading">Terapia</span>
             </Link>
           </div>
           <div className="flex items-center gap-4">
@@ -147,7 +147,7 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href={isLoggedIn ? '/dashboard' : '/'} className="flex items-center space-x-2">
-            <span className="text-xl font-bold tracking-tight font-heading">MindCare</span>
+            <span className="text-xl font-bold tracking-tight font-heading">Terapia</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             {links.map((link) => (

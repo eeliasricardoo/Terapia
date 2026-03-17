@@ -22,21 +22,21 @@ export function CTA() {
           className="relative group box-border"
         >
           {/* Decorative Glow */}
-          <div className="absolute -inset-4 bg-gradient-to-r from-orange-500 via-rose-500 to-amber-500 rounded-[3rem] blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-700" />
+          <div className="absolute -inset-4 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 rounded-[3rem] blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-700" />
 
           <div className="relative flex flex-col items-center justify-center space-y-10 text-center bg-slate-900 border border-white/10 p-12 md:p-24 rounded-[3rem] shadow-2xl overflow-hidden">
             {/* Background Pattern */}
             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-10 mix-blend-luminosity scale-110 group-hover:scale-100 transition-transform duration-1000" />
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-900/90 to-orange-900/20" />
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-900/90 to-blue-900/20" />
 
             <div className="relative z-10 space-y-6">
               <div className="h-20 w-20 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-500">
-                <Heart className="h-10 w-10 text-rose-400" />
+                <Heart className="h-10 w-10 text-blue-400" />
               </div>
 
               <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
                 Pronto para dar o <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">
                   primeiro passo?
                 </span>
               </h2>
@@ -49,7 +49,7 @@ export function CTA() {
               <Button
                 asChild
                 size="lg"
-                className="h-16 px-12 text-lg bg-white text-slate-900 hover:bg-orange-50 shadow-2xl transition-all rounded-2xl border-0"
+                className="h-16 px-12 text-lg bg-white text-slate-900 hover:bg-blue-50 shadow-2xl transition-all rounded-2xl border-0"
               >
                 <Link href="/busca" className="flex items-center gap-3 font-bold">
                   Encontrar Meu Psicólogo
@@ -62,7 +62,7 @@ export function CTA() {
               É um profissional?{' '}
               <Link
                 href="/cadastro?role=psychologist"
-                className="text-orange-400 hover:text-white transition-colors"
+                className="text-blue-400 hover:text-white transition-colors"
               >
                 Junte-se ao movimento solidário
               </Link>

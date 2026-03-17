@@ -26,7 +26,7 @@ export function CompaniesHero() {
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50/80 backdrop-blur-sm border border-blue-200/50 text-blue-800 text-sm font-medium mb-2 shadow-sm"
             >
               <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-              MindCare for Business
+              Terapia Corporativa
             </motion.div>
 
             <div className="space-y-6">
