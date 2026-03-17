@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Table,
   TableBody,
@@ -25,6 +25,7 @@ import {
   Clock,
   Download,
   Send,
+  Loader2,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -45,72 +46,52 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-
-const MOCK_EMPLOYEES = [
-  {
-    id: '1',
-    name: 'Ana Silva',
-    email: 'ana.silva@empresa.com',
-    dept: 'Marketing',
-    sessions: 4,
-    status: 'Ativo',
-    lastActive: '2 horas atrás',
-  },
-  {
-    id: '2',
-    name: 'Marcos Oliveira',
-    email: 'marcos.o@empresa.com',
-    dept: 'TI',
-    sessions: 2,
-    status: 'Ativo',
-    lastActive: 'Ontem',
-  },
-  {
-    id: '3',
-    name: 'Juliana Costa',
-    email: 'juliana.c@empresa.com',
-    dept: 'RH',
-    sessions: 0,
-    status: 'Pendente',
-    lastActive: 'Nunca',
-  },
-  {
-    id: '4',
-    name: 'Roberto Santos',
-    email: 'roberto.s@empresa.com',
-    dept: 'Vendas',
-    sessions: 1,
-    status: 'Inativo',
-    lastActive: 'Janeiro',
-  },
-  {
-    id: '5',
-    name: 'Carla Dias',
-    email: 'carla.d@empresa.com',
-    dept: 'Financeiro',
-    sessions: 3,
-    status: 'Ativo',
-    lastActive: 'Hoje',
-  },
-]
+import { getCompanyMembers, inviteEmployee } from '../actions'
 
 export default function EmployeesPage() {
+  const [loading, setLoading] = useState(true)
+  const [employees, setEmployees] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [isInviteOpen, setIsInviteOpen] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
+  const [sendingInvite, setSendingInvite] = useState(false)
 
-  const filteredEmployees = MOCK_EMPLOYEES.filter(
+  useEffect(() => {
+    async function loadData() {
+      const data = await getCompanyMembers()
+      setEmployees(data)
+      setLoading(false)
+    }
+    loadData()
+  }, [])
+
+  const filteredEmployees = employees.filter(
     (emp) =>
-      emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.email.toLowerCase().includes(searchTerm.toLowerCase())
+      emp.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.profile?.users?.email?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleSendInvite = () => {
+  const handleSendInvite = async () => {
     if (inviteEmail) {
-      toast.success(`Convite exclusivo enviado para ${inviteEmail}!`)
-      setIsInviteOpen(false)
-      setInviteEmail('')
+      setSendingInvite(true)
+      const res = await inviteEmployee(inviteEmail)
+      if (res.success) {
+        toast.success(res.message)
+        setIsInviteOpen(false)
+        setInviteEmail('')
+      } else {
+        toast.error('Erro ao enviar convite.')
+      }
+      setSendingInvite(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    )
   }
 
   return (
@@ -167,9 +148,14 @@ export default function EmployeesPage() {
               <DialogFooter>
                 <Button
                   onClick={handleSendInvite}
+                  disabled={sendingInvite}
                   className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl h-12 font-bold gap-2"
                 >
-                  <Send className="h-4 w-4" />
+                  {sendingInvite ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
                   Enviar Token Seguro
                 </Button>
               </DialogFooter>
@@ -184,18 +170,17 @@ export default function EmployeesPage() {
             value="active"
             className="rounded-xl px-8 py-3 font-bold data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 transition-all"
           >
-            Ativos (42)
+            Ativos ({employees.filter((e) => e.status === 'ACTIVE').length})
           </TabsTrigger>
           <TabsTrigger
             value="invites"
             className="rounded-xl px-8 py-3 font-bold data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 transition-all"
           >
-            Convites Pendentes (5)
+            Convites Pendentes (0)
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="active" className="space-y-8">
-          {/* Filters and Search */}
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 mb-8 flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -206,110 +191,91 @@ export default function EmployeesPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="h-12 rounded-2xl border-slate-200 gap-2 px-5 font-bold text-slate-600"
-              >
-                <Filter className="h-4 w-4" />
-                Filtros
-              </Button>
-            </div>
           </div>
 
-          {/* Table Section */}
           <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
             <Table>
               <TableHeader className="bg-slate-50/50">
                 <TableRow className="border-slate-50">
                   <TableHead className="px-8 py-5 font-bold text-slate-900">Colaborador</TableHead>
-                  <TableHead className="font-bold text-slate-900">Departamento</TableHead>
-                  <TableHead className="font-bold text-slate-900">Sessões (Mês)</TableHead>
+                  <TableHead className="font-bold text-slate-900">Cargo</TableHead>
                   <TableHead className="font-bold text-slate-900 text-center">Status</TableHead>
-                  <TableHead className="font-bold text-slate-900">Última Atividade</TableHead>
+                  <TableHead className="font-bold text-slate-900">Entrou em</TableHead>
                   <TableHead className="w-[100px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredEmployees.map((emp) => (
-                  <TableRow
-                    key={emp.id}
-                    className="group hover:bg-slate-50/50 transition-colors border-slate-50"
-                  >
-                    <TableCell className="px-8 py-5">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center font-bold text-blue-600 border border-blue-100">
-                          {emp.name.charAt(0)}
+                {filteredEmployees.length > 0 ? (
+                  filteredEmployees.map((emp) => (
+                    <TableRow
+                      key={emp.id}
+                      className="group hover:bg-slate-50/50 transition-colors border-slate-50"
+                    >
+                      <TableCell className="px-8 py-5">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center font-bold text-blue-600 border border-blue-100">
+                            {emp.profile?.full_name?.charAt(0) || '?'}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-900 leading-none mb-1">
+                              {emp.profile?.full_name || 'Usuário'}
+                            </p>
+                            <p className="text-xs text-slate-400 font-medium">
+                              {emp.profile?.users?.email}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-bold text-slate-900 leading-none mb-1">{emp.name}</p>
-                          <p className="text-xs text-slate-400 font-medium">{emp.email}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-slate-600 font-medium">{emp.dept}</TableCell>
-                    <TableCell className="text-center">
-                      <div className="inline-flex items-center gap-1.5 font-bold text-slate-900">
-                        <div
-                          className={`h-2 w-2 rounded-full ${emp.sessions > 0 ? 'bg-blue-500' : 'bg-slate-200'}`}
-                        />
-                        {emp.sessions}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge
-                        className={`rounded-full px-3 py-1 font-bold text-[10px] uppercase tracking-wider ${
-                          emp.status === 'Ativo'
-                            ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-100'
-                            : emp.status === 'Pendente'
-                              ? 'bg-amber-50 text-amber-600 hover:bg-amber-100 border-amber-100'
-                              : 'bg-slate-50 text-slate-400 hover:bg-slate-100 border-slate-100'
-                        }`}
-                      >
-                        {emp.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-slate-500 font-medium">
-                      {emp.lastActive}
-                    </TableCell>
-                    <TableCell className="px-8">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            className="h-8 w-8 p-0 rounded-lg hover:bg-white border border-transparent hover:border-slate-100 shadow-none"
-                          >
-                            <MoreVertical className="h-4 w-4 text-slate-400" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="w-56 p-2 rounded-2xl border-slate-100 shadow-xl shadow-slate-200/50"
+                      </TableCell>
+                      <TableCell className="text-sm text-slate-600 font-medium">
+                        {emp.profile?.profession || 'Membro'}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge
+                          className={`rounded-full px-3 py-1 font-bold text-[10px] uppercase tracking-wider ${
+                            emp.status === 'ACTIVE'
+                              ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                              : 'bg-slate-50 text-slate-400 border-slate-100'
+                          }`}
                         >
-                          <DropdownMenuLabel className="font-bold text-slate-900 px-3 py-2">
-                            Ações Corporativas
-                          </DropdownMenuLabel>
-                          <DropdownMenuSeparator className="bg-slate-50" />
-                          <DropdownMenuItem className="rounded-xl focus:bg-blue-50 focus:text-blue-600 cursor-pointer gap-3 py-2.5 px-3">
-                            <Mail className="h-4 w-4" /> Enviar Mensagem
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="rounded-xl focus:bg-blue-50 focus:text-blue-600 cursor-pointer gap-3 py-2.5 px-3">
-                            <Clock className="h-4 w-4" /> Ver Histórico de Uso
-                          </DropdownMenuItem>
-                          {emp.status === 'Ativo' ? (
+                          {emp.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-slate-500 font-medium">
+                        {new Date(emp.joined_at).toLocaleDateString('pt-BR')}
+                      </TableCell>
+                      <TableCell className="px-8">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              className="h-8 w-8 p-0 rounded-lg hover:bg-white border border-transparent hover:border-slate-100 shadow-none"
+                            >
+                              <MoreVertical className="h-4 w-4 text-slate-400" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-56 p-2 rounded-2xl border-slate-100 shadow-xl shadow-slate-200/50"
+                          >
+                            <DropdownMenuLabel className="font-bold text-slate-900 px-3 py-2">
+                              Ações Corporativas
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator className="bg-slate-50" />
                             <DropdownMenuItem className="rounded-xl focus:bg-red-50 focus:text-red-600 cursor-pointer gap-3 py-2.5 px-3">
-                              <UserMinus className="h-4 w-4" /> Desativar Benefício
+                              <UserMinus className="h-4 w-4" /> Remover do Benefício
                             </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem className="rounded-xl focus:bg-emerald-50 focus:text-emerald-600 cursor-pointer gap-3 py-2.5 px-3">
-                              <CheckCircle2 className="h-4 w-4" /> Ativar Benefício
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="py-12 text-center text-slate-400 italic">
+                      Nenhum colaborador encontrado.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
@@ -342,10 +308,10 @@ export default function EmployeesPage() {
             <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <Clock className="h-8 w-8 text-slate-300" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Aguardando colaboradores</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Monitoramento de Segurança</h3>
             <p className="text-slate-500 max-w-md mx-auto">
-              Os convites enviados aparecerão aqui. Você poderá ver quem já visualizou e reenviar
-              tokens se necessário.
+              Ao enviar convites, você poderá ver o status da ativação e o token gerado para cada
+              e-mail.
             </p>
           </div>
         </TabsContent>

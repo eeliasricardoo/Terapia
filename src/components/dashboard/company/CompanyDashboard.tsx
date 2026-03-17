@@ -17,69 +17,67 @@ import type { Profile } from '@/lib/supabase/types'
 
 interface CompanyDashboardProps {
   userProfile: Profile
-  dashboardData?: any // We will type this later
+  dashboardData: {
+    stats: {
+      totalEmployees: number
+      activeSessions: number
+      monthlyInvestment: number
+      wellbeingIndex: number
+      employeesChange: string
+      sessionsChange: string
+      investmentChange: string
+      wellbeingChange: string
+    }
+    recentActivity: {
+      user: string
+      department: string
+      date: string
+      type: string
+      status: string
+    }[]
+  }
 }
 
-const STATS = [
-  {
-    label: 'Total de Colaboradores',
-    value: '42',
-    change: '+5 este mês',
-    icon: Users,
-    color: 'text-blue-600',
-    bg: 'bg-blue-50',
-  },
-  {
-    label: 'Sessões Realizadas',
-    value: '128',
-    change: '85% de utilização',
-    icon: Calendar,
-    color: 'text-emerald-600',
-    bg: 'bg-emerald-50',
-  },
-  {
-    label: 'Investimento Mensal',
-    value: 'R$ 8.420',
-    change: 'Dentro do orçamento',
-    icon: DollarSign,
-    color: 'text-indigo-600',
-    bg: 'bg-indigo-50',
-  },
-  {
-    label: 'Índice de Bem-Estar',
-    value: '8.2',
-    change: '+0.4 vs mês anterior',
-    icon: TrendingUp,
-    color: 'text-amber-600',
-    bg: 'bg-amber-50',
-  },
-]
+export function CompanyDashboard({ userProfile, dashboardData }: CompanyDashboardProps) {
+  const { stats, recentActivity } = dashboardData
 
-const RECENT_ACTIVITY = [
-  {
-    user: 'Ana Silva',
-    department: 'Marketing',
-    date: 'Hoje, 14:00',
-    type: 'Sessão Individual',
-    status: 'Agendado',
-  },
-  {
-    user: 'Marcos Oliveira',
-    department: 'TI',
-    date: 'Ontem',
-    type: 'Consulta de Retorno',
-    status: 'Concluído',
-  },
-  {
-    user: 'Juliana Costa',
-    department: 'RH',
-    date: '06 Mar',
-    type: 'Primeira Consulta',
-    status: 'Concluído',
-  },
-]
+  const dynamicStats = [
+    {
+      label: 'Total de Colaboradores',
+      value: stats.totalEmployees.toString(),
+      change: stats.employeesChange,
+      icon: Users,
+      color: 'text-blue-600',
+      bg: 'bg-blue-50',
+    },
+    {
+      label: 'Sessões Realizadas',
+      value: stats.activeSessions.toString(),
+      change: stats.sessionsChange,
+      icon: Calendar,
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-50',
+    },
+    {
+      label: 'Investimento Mensal',
+      value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+        stats.monthlyInvestment
+      ),
+      change: stats.investmentChange,
+      icon: DollarSign,
+      color: 'text-indigo-600',
+      bg: 'bg-indigo-50',
+    },
+    {
+      label: 'Índice de Bem-Estar',
+      value: stats.wellbeingIndex.toFixed(1),
+      change: `${stats.wellbeingChange} vs mês anterior`,
+      icon: TrendingUp,
+      color: 'text-amber-600',
+      bg: 'bg-amber-50',
+    },
+  ]
 
-export function CompanyDashboard({ userProfile }: CompanyDashboardProps) {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header Section */}
@@ -108,7 +106,7 @@ export function CompanyDashboard({ userProfile }: CompanyDashboardProps) {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {STATS.map((stat, i) => (
+        {dynamicStats.map((stat, i) => (
           <div
             key={i}
             className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all group"
@@ -134,7 +132,7 @@ export function CompanyDashboard({ userProfile }: CompanyDashboardProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Activity Table */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden h-full">
             <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Atividade Recente</h3>
@@ -150,43 +148,49 @@ export function CompanyDashboard({ userProfile }: CompanyDashboardProps) {
               </Link>
             </div>
             <div className="divide-y divide-slate-50">
-              {RECENT_ACTIVITY.map((act, i) => (
-                <div
-                  key={i}
-                  className="px-8 py-5 flex items-center justify-between hover:bg-slate-50 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center font-bold text-slate-400 text-sm border border-slate-100 group-hover:border-blue-200 transition-colors">
-                      {act.user.charAt(0)}
+              {recentActivity.length > 0 ? (
+                recentActivity.map((act, i) => (
+                  <div
+                    key={i}
+                    className="px-8 py-5 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center font-bold text-slate-400 text-sm border border-slate-100 group-hover:border-blue-200 transition-colors">
+                        {act.user.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{act.user}</p>
+                        <p className="text-xs text-slate-400 font-medium">
+                          {act.department} • {act.type}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-900">{act.user}</p>
-                      <p className="text-xs text-slate-400 font-medium">
-                        {act.department} • {act.type}
-                      </p>
+                    <div className="text-right">
+                      <p className="text-xs font-bold text-slate-900 mb-1">{act.date}</p>
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                          act.status === 'Concluído'
+                            ? 'text-emerald-600 bg-emerald-50 border border-emerald-100'
+                            : 'text-blue-600 bg-blue-50 border border-blue-100'
+                        }`}
+                      >
+                        {act.status}
+                      </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs font-bold text-slate-900 mb-1">{act.date}</p>
-                    <span
-                      className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                        act.status === 'Concluído'
-                          ? 'text-emerald-600 bg-emerald-50 border border-emerald-100'
-                          : 'text-blue-600 bg-blue-50 border border-blue-100'
-                      }`}
-                    >
-                      {act.status}
-                    </span>
-                  </div>
+                ))
+              ) : (
+                <div className="px-8 py-12 text-center text-slate-400 italic">
+                  Nenhuma atividade registrada este mês.
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
 
         {/* Impact Sidebar */}
         <div className="space-y-6">
-          <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl shadow-slate-900/20 h-full flex flex-col">
+          <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl shadow-slate-900/20 h-full flex flex-col min-h-[400px]">
             <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
 
             <div className="mb-8">

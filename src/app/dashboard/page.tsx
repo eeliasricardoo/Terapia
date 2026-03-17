@@ -20,6 +20,7 @@ import {
   getPsychologistDashboardData,
   getPatientDashboardData,
   getAdminDashboardData,
+  getCompanyDashboardData,
 } from '@/lib/actions/dashboard'
 
 export default async function DashboardPage() {
@@ -55,9 +56,10 @@ export default async function DashboardPage() {
   }
 
   if (userProfile.role === 'COMPANY') {
+    const companyData = await getCompanyDashboardData()
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <CompanyDashboard userProfile={userProfile} />
+        <CompanyDashboard userProfile={userProfile} dashboardData={companyData} />
       </div>
     )
   }

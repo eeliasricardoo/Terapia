@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Card,
   CardContent,
@@ -24,6 +24,7 @@ import {
   Lock,
   Eye,
   Globe,
+  Loader2,
 } from 'lucide-react'
 import {
   Dialog,
@@ -43,22 +44,62 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { toast } from 'sonner'
+import { getCompanyProfile, updateCompanyBenefit } from '../actions'
 
 export default function CompanyProfilePage() {
-  const [domains, setDomains] = useState(['milano.com.br', 'milano.io'])
+  const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState<any>(null)
+  const [domains, setDomains] = useState<string[]>([])
   const [newDomain, setNewDomain] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    async function loadData() {
+      const data = await getCompanyProfile()
+      if (data) {
+        setProfile(data)
+        const config = data.benefitConfig as any
+        setDomains(config?.allowedDomains || [])
+      }
+      setLoading(false)
+    }
+    loadData()
+  }, [])
 
   const handleAddDomain = () => {
     if (newDomain && !domains.includes(newDomain)) {
       setDomains([...domains, newDomain])
       setNewDomain('')
-      toast.success('Domínio adicionado com sucesso!')
+      toast.success('Domínio adicionado!')
     }
   }
 
   const handleRemoveDomain = (domain: string) => {
     setDomains(domains.filter((d) => d !== domain))
     toast.error('Domínio removido.')
+  }
+
+  const handleSaveConfig = async () => {
+    setIsSaving(true)
+    const res = await updateCompanyBenefit({
+      ...((profile?.benefitConfig as any) || {}),
+      allowedDomains: domains,
+    })
+
+    if (res.success) {
+      toast.success('Configurações de segurança salvas!')
+    } else {
+      toast.error('Erro ao salvar configurações.')
+    }
+    setIsSaving(false)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    )
   }
 
   const SECURITY_LOGS = [
@@ -84,14 +125,6 @@ export default function CompanyProfilePage() {
       status: 'Admin RH',
       user: 'rh@milano.com.br',
       date: 'Ontem, 16:45',
-      ip: '189.12.43.1',
-    },
-    {
-      id: 4,
-      event: 'Convite Gerado',
-      status: 'Sucesso',
-      user: 'marcos.t@milano.com.br',
-      date: '06 Mar, 09:12',
       ip: '189.12.43.1',
     },
   ]
@@ -127,7 +160,7 @@ export default function CompanyProfilePage() {
                     corporativo para garantir segurança máxima.
                   </p>
                   <div className="flex flex-wrap gap-4">
-                    <Dialog>
+                    <Dialog resizeable={false}>
                       <DialogTrigger asChild>
                         <Button className="bg-blue-600 hover:bg-blue-500 rounded-xl px-6 h-12 font-bold transition-all shadow-lg shadow-blue-600/20 gap-2">
                           <Globe className="h-4 w-4" />
@@ -158,28 +191,42 @@ export default function CompanyProfilePage() {
                               <Plus className="h-5 w-5" />
                             </Button>
                           </div>
-                          <div className="space-y-2">
-                            {domains.map((domain) => (
-                              <div
-                                key={domain}
-                                className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100"
-                              >
-                                <span className="font-bold text-slate-700">{domain}</span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleRemoveDomain(domain)}
-                                  className="h-8 w-8 p-0 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                          <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
+                            {domains.length > 0 ? (
+                              domains.map((domain) => (
+                                <div
+                                  key={domain}
+                                  className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100"
                                 >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                                  <span className="font-bold text-slate-700">{domain}</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleRemoveDomain(domain)}
+                                    className="h-8 w-8 p-0 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-center py-4 text-slate-400 text-sm">
+                                Nenhum domínio restrito.
                               </div>
-                            ))}
+                            )}
                           </div>
                         </div>
                         <DialogFooter>
-                          <Button className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl h-12 font-bold">
-                            Salvar Configurações
+                          <Button
+                            disabled={isSaving}
+                            onClick={handleSaveConfig}
+                            className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl h-12 font-bold"
+                          >
+                            {isSaving ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              'Salvar Configurações'
+                            )}
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -260,12 +307,23 @@ export default function CompanyProfilePage() {
                   <div className="space-y-4">
                     {[
                       { label: 'Convites Únicos', status: 'Ativo' },
-                      { label: 'Restrição de Domínio', status: 'Configurável' },
+                      {
+                        label: 'Restrição de Domínio',
+                        status: domains.length > 0 ? 'Ativo' : 'Inativo',
+                      },
                       { label: 'Login via SSO', status: 'Enterprise' },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center justify-between text-sm py-1">
                         <span className="text-slate-400 font-medium">{item.label}</span>
-                        <span className="text-[10px] font-black uppercase text-blue-500 tracking-wider bg-blue-500/10 px-2 py-0.5 rounded">
+                        <span
+                          className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${
+                            item.status === 'Ativo'
+                              ? 'text-blue-500 bg-blue-500/10'
+                              : item.status === 'Enterprise'
+                                ? 'text-amber-500 bg-amber-500/10'
+                                : 'text-slate-500 bg-slate-500/10'
+                          }`}
+                        >
                           {item.status}
                         </span>
                       </div>
@@ -300,21 +358,21 @@ export default function CompanyProfilePage() {
                 <div className="space-y-2">
                   <Label className="font-bold text-slate-700">Razão Social</Label>
                   <Input
-                    defaultValue="Milano Tecnologia & Inovação"
+                    defaultValue={profile?.name || 'Milano Tecnologia'}
                     className="rounded-xl h-12 border-slate-100 bg-slate-50/50 focus:bg-white"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-slate-700">CNPJ</Label>
                   <Input
-                    defaultValue="12.345.678/0001-90"
+                    defaultValue={profile?.cnpj || '12.345.678/0001-90'}
                     className="rounded-xl h-12 border-slate-100 bg-slate-50/50 focus:bg-white"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-slate-700">E-mail Administrativo</Label>
                   <Input
-                    defaultValue="rh@milano.com.br"
+                    defaultValue={profile?.user?.email || 'rh@empresa.com'}
                     className="rounded-xl h-12 border-slate-100 bg-slate-50/50 focus:bg-white"
                   />
                 </div>
@@ -352,7 +410,7 @@ export default function CompanyProfilePage() {
                     variant="secondary"
                     className="bg-blue-50 text-blue-600 rounded-lg px-2 py-1 font-bold"
                   >
-                    4 sessões/colab
+                    {profile?.benefitConfig?.sessionsPerMonth || 4} sessões/colab
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
@@ -362,15 +420,6 @@ export default function CompanyProfilePage() {
                     className="bg-emerald-50 text-emerald-600 rounded-lg px-2 py-1 font-bold"
                   >
                     Subsídio 100%
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-500">Dependentes</span>
-                  <Badge
-                    variant="secondary"
-                    className="bg-slate-50 text-slate-400 rounded-lg px-2 py-1 font-bold"
-                  >
-                    Desativado
                   </Badge>
                 </div>
               </div>
@@ -389,11 +438,14 @@ export default function CompanyProfilePage() {
             </h4>
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-bold text-slate-500">
-                <span>42 de 50 seats usados</span>
-                <span>84%</span>
+                <span>{profile?._count?.members || 0} de 50 seats usados</span>
+                <span>{Math.round(((profile?._count?.members || 0) / 50) * 100)}%</span>
               </div>
               <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-600 w-[84%]" />
+                <div
+                  className="h-full bg-blue-600"
+                  style={{ width: `${Math.round(((profile?._count?.members || 0) / 50) * 100)}%` }}
+                />
               </div>
               <p className="text-[10px] text-slate-400 mt-2">
                 Sua fatura será ajustada automaticamente ao atingir 50 colaboradores.

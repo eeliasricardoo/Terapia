@@ -56,6 +56,26 @@ export type PatientDashboardData = {
   }
 }
 
+export type CompanyDashboardData = {
+  stats: {
+    totalEmployees: number
+    activeSessions: number
+    monthlyInvestment: number
+    wellbeingIndex: number
+    employeesChange: string
+    sessionsChange: string
+    investmentChange: string
+    wellbeingChange: string
+  }
+  recentActivity: {
+    user: string
+    department: string
+    date: string
+    type: string
+    status: string
+  }[]
+}
+
 export async function getPsychologistDashboardData(): Promise<PsychologistDashboardData> {
   try {
     const supabase = await createClient()
@@ -405,5 +425,93 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
       activeSessions: 0,
       totalAppointments: 0,
     }
+  }
+}
+
+export async function getCompanyDashboardData(): Promise<CompanyDashboardData> {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error('Não autenticado')
+
+    const company = await prisma.companyProfile.findUnique({
+      where: { userId: user.id },
+      include: {
+        members: {
+          include: {
+            profile: {
+              include: {
+                users: {
+                  include: {
+                    patientAppointments: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (!company) {
+      return {
+        stats: {
+          totalEmployees: 0,
+          activeSessions: 0,
+          monthlyInvestment: 0,
+          wellbeingIndex: 0,
+          employeesChange: '+0 este mês',
+          sessionsChange: '0%',
+          investmentChange: 'Estável',
+          wellbeingChange: '0',
+        },
+        recentActivity: [],
+      }
+    }
+
+    const totalEmployees = company.members.length
+    const now = new Date()
+    const monthStart = startOfMonth(now)
+
+    const allMembersAppts = company.members.flatMap((m: any) =>
+      m.profile.users.patientAppointments.filter((a: any) => a.scheduledAt >= monthStart)
+    )
+
+    const activeSessions = allMembersAppts.length
+    const monthlyInvestment = activeSessions * 199
+
+    const recentActivity = allMembersAppts
+      .sort((a: any, b: any) => b.scheduledAt.getTime() - a.scheduledAt.getTime())
+      .slice(0, 5)
+      .map((a: any) => ({
+        user:
+          company.members.find((m: any) => m.profile.user_id === a.patientId)?.profile.fullName ||
+          'Colaborador',
+        department: 'Time',
+        date: new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(
+          a.scheduledAt
+        ),
+        type: a.sessionType,
+        status: a.status === 'COMPLETED' ? 'Concluído' : 'Agendado',
+      }))
+
+    return {
+      stats: {
+        totalEmployees,
+        activeSessions,
+        monthlyInvestment,
+        wellbeingIndex: 8.2,
+        employeesChange: '+0 este mês',
+        sessionsChange: '100% de utilização',
+        investmentChange: 'Dentro do orçamento',
+        wellbeingChange: '+0.0',
+      },
+      recentActivity,
+    }
+  } catch (error) {
+    logger.error('Error fetching company dashboard data:', error)
+    throw error
   }
 }
