@@ -37,6 +37,7 @@ export function useServicesConfig() {
 
   const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false)
   const [isCouponDialogOpen, setIsCouponDialogOpen] = useState(false)
+  const [isFetchingCoupons, setIsFetchingCoupons] = useState(false)
 
   const [newPlan, setNewPlan] = useState({ name: '', sessions: '4', price: '' })
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null)
@@ -54,9 +55,20 @@ export function useServicesConfig() {
     setIsLoading(false)
   }, [])
 
+  const loadCoupons = useCallback(async () => {
+    setIsFetchingCoupons(true)
+    const { getCoupons } = await import('@/lib/actions/coupons')
+    const result = await getCoupons()
+    if (result.success) {
+      setCoupons(result.data)
+    }
+    setIsFetchingCoupons(false)
+  }, [])
+
   useEffect(() => {
     loadConfig()
-  }, [loadConfig])
+    loadCoupons()
+  }, [loadConfig, loadCoupons])
 
   // ─── Save General Config ──────────────────────────────────────
   const handleSaveGeneral = async () => {
@@ -140,30 +152,50 @@ export function useServicesConfig() {
     toast.success('Pacote removido.')
   }
 
-  // ─── Coupons Handlers (client-side for now) ───────────────────
-  const handleAddCoupon = () => {
-    const coupon: Coupon = {
-      id: Math.random().toString(),
-      code: newCoupon.code.toUpperCase(),
-      type: newCoupon.type as 'percentage' | 'fixed',
+  // ─── Coupons Handlers ───────────────────────────────────────
+  const handleAddCoupon = async () => {
+    const { createCoupon } = await import('@/lib/actions/coupons')
+    const result = await createCoupon({
+      code: newCoupon.code,
+      type: newCoupon.type,
       value: parseFloat(newCoupon.value),
       maxUses: newCoupon.limit ? parseInt(newCoupon.limit) : undefined,
-      used: 0,
-      active: true,
+    })
+
+    if (result.success) {
+      toast.success('Cupom criado com sucesso!')
+      loadCoupons()
+      setIsCouponDialogOpen(false)
+      setNewCoupon({ code: '', type: 'percentage', value: '', limit: '' })
+    } else {
+      toast.error('Erro ao criar cupom', { description: result.error })
     }
-    setCoupons([...coupons, coupon])
-    setIsCouponDialogOpen(false)
-    setNewCoupon({ code: '', type: 'percentage', value: '', limit: '' })
-    toast.success('Cupom criado com sucesso!')
   }
 
-  const handleToggleCoupon = (id: string) => {
-    setCoupons(coupons.map((c) => (c.id === id ? { ...c, active: !c.active } : c)))
+  const handleToggleCoupon = async (id: string) => {
+    const coupon = coupons.find((c) => c.id === id)
+    if (!coupon) return
+
+    const { toggleCoupon } = await import('@/lib/actions/coupons')
+    const result = await toggleCoupon(id, !coupon.active)
+
+    if (result.success) {
+      setCoupons(coupons.map((c) => (c.id === id ? { ...c, active: !c.active } : c)))
+    } else {
+      toast.error('Erro ao atualizar cupom', { description: result.error })
+    }
   }
 
-  const handleDeleteCoupon = (id: string) => {
-    setCoupons(coupons.filter((c) => c.id !== id))
-    toast.success('Cupom removido.')
+  const handleDeleteCoupon = async (id: string) => {
+    const { deleteCoupon } = await import('@/lib/actions/coupons')
+    const result = await deleteCoupon(id)
+
+    if (result.success) {
+      setCoupons(coupons.filter((c) => c.id !== id))
+      toast.success('Cupom removido.')
+    } else {
+      toast.error('Erro ao excluir cupom', { description: result.error })
+    }
   }
 
   return {

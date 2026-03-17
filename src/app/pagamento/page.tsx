@@ -20,7 +20,15 @@ function PaymentContent() {
     isSuccess,
     psychTimezone,
 
+    couponCode,
+    setCouponCode,
+    isValidatingCoupon,
+    appliedCoupon,
+    discountAmount,
+    finalPrice,
+
     handlePayment,
+    applyCoupon,
   } = useCheckout()
 
   return (
@@ -54,6 +62,13 @@ function PaymentContent() {
                 time={time}
                 price={price}
                 psychTimezone={psychTimezone}
+                couponCode={couponCode}
+                setCouponCode={setCouponCode}
+                onApplyCoupon={applyCoupon}
+                isValidatingCoupon={isValidatingCoupon}
+                appliedCoupon={appliedCoupon}
+                discountAmount={discountAmount}
+                finalPrice={finalPrice}
               />
 
               <PaymentMethods

@@ -26,6 +26,17 @@ export function useCheckout() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [psychTimezone, setPsychTimezone] = useState('America/Sao_Paulo')
 
+  // Coupon States
+  const [couponCode, setCouponCode] = useState('')
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false)
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string
+    type: 'percentage' | 'fixed'
+    value: number
+  } | null>(null)
+  const [discountAmount, setDiscountAmount] = useState(0)
+  const [finalPrice, setFinalPrice] = useState(0)
+
   useEffect(() => {
     const loadCheckoutInfo = async () => {
       setIsFetchingInfo(true)
@@ -57,6 +68,43 @@ export function useCheckout() {
     loadCheckoutInfo()
   }, [doctorId])
 
+  useEffect(() => {
+    let discount = 0
+    if (appliedCoupon) {
+      if (appliedCoupon.type === 'percentage') {
+        discount = priceRaw * (appliedCoupon.value / 100)
+      } else {
+        discount = appliedCoupon.value
+      }
+    }
+    setDiscountAmount(discount)
+    setFinalPrice(Math.max(0, priceRaw - discount))
+  }, [priceRaw, appliedCoupon])
+
+  const applyCoupon = async () => {
+    if (!couponCode || !doctorId) return
+
+    setIsValidatingCoupon(true)
+    try {
+      const { validateCoupon } = await import('@/lib/actions/coupons')
+      const result = await validateCoupon(couponCode, doctorId)
+
+      if (result.success) {
+        setAppliedCoupon({
+          code: result.data.code,
+          type: result.data.type,
+          value: result.data.value,
+        })
+      } else {
+        alert(result.error)
+      }
+    } catch (err) {
+      alert('Erro ao validar cupom')
+    } finally {
+      setIsValidatingCoupon(false)
+    }
+  }
+
   const handlePayment = async () => {
     if (!userId || !doctorId || !date || !time) {
       alert('Informações de agendamento incompletas. Por favor, volte ao perfil do psicólogo.')
@@ -74,6 +122,7 @@ export function useCheckout() {
         psychologistId: doctorId,
         scheduledAt: scheduledAt,
         durationMinutes: 50,
+        couponCode: appliedCoupon?.code,
       })
 
       if (result.error) {
@@ -104,6 +153,14 @@ export function useCheckout() {
     isSuccess,
     psychTimezone,
 
+    couponCode,
+    setCouponCode,
+    isValidatingCoupon,
+    appliedCoupon,
+    discountAmount,
+    finalPrice,
+
     handlePayment,
+    applyCoupon,
   }
 }

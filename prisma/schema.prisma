@@ -19,12 +19,12 @@ model User {
   createdAt           DateTime                  @default(now())
   updatedAt           DateTime                  @updatedAt
   patientAppointments Appointment[]             @relation("PatientAppointments")
+  companyProfile      CompanyProfile?
   participants        ConversationParticipant[]
   diaryEntries        DiaryEntry[]
   sentMessages        Message[]                 @relation("SentMessages")
   profiles            Profile?
   psychologistProfile PsychologistProfile?
-  companyProfile      CompanyProfile?
 
   @@map("users")
 }
@@ -70,11 +70,11 @@ model Profile {
   user_id           String                    @unique
   onboardingData    Json?                     @map("onboarding_data")
   anamnesis         Anamnesis?
+  companyMembers    CompanyMember[]
   evolutions        Evolution[]
   psychologistLinks PatientPsychologistLink[] @relation("PatientLinks")
   patientLinks      PatientPsychologistLink[] @relation("PsychologistLinks")
   users             User                      @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  companyMembers    CompanyMember[]
 
   @@map("profiles")
 }
@@ -88,7 +88,6 @@ model PsychologistProfile {
   pricePerSession      Decimal?           @map("price_per_session") @db.Decimal(10, 2)
   videoPresentationUrl String?            @map("video_presentation_url")
   isVerified           Boolean            @default(false) @map("is_verified")
-  suspensionReason     String?            @map("suspension_reason")
   createdAt            DateTime           @default(now()) @map("created_at")
   updatedAt            DateTime           @updatedAt @map("updated_at")
   weeklySchedule       Json?              @map("weekly_schedule")
@@ -104,11 +103,31 @@ model PsychologistProfile {
   university           String?
   yearsOfExperience    Int?
   sessionDuration      Int                @default(50) @map("session_duration")
+  suspensionReason     String?            @map("suspension_reason")
   appointments         Appointment[]
+  coupons              Coupon[]
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   scheduleOverrides    ScheduleOverride[]
 
   @@map("psychologist_profiles")
+}
+
+model Coupon {
+  id             String              @id @default(uuid())
+  psychologistId String              @map("psychologist_id")
+  code           String
+  type           String
+  value          Decimal             @db.Decimal(10, 2)
+  maxUses        Int?                @map("max_uses")
+  used           Int                 @default(0)
+  active         Boolean             @default(true)
+  expiresAt      DateTime?           @map("expires_at")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  psychologist   PsychologistProfile @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+
+  @@unique([psychologistId, code])
+  @@map("coupons")
 }
 
 model ScheduleOverride {
@@ -223,6 +242,36 @@ model Message {
   @@map("messages")
 }
 
+model CompanyProfile {
+  id               String          @id @default(uuid())
+  userId           String          @unique @map("user_id")
+  name             String
+  cnpj             String?
+  logoUrl          String?         @map("logo_url")
+  organizationCode String          @unique @map("organization_code")
+  active           Boolean         @default(true)
+  benefitConfig    Json?           @map("benefit_config")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+  members          CompanyMember[]
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("company_profiles")
+}
+
+model CompanyMember {
+  id        String         @id @default(uuid())
+  companyId String         @map("company_id")
+  profileId String         @map("profile_id")
+  status    String         @default("ACTIVE")
+  joinedAt  DateTime       @default(now()) @map("joined_at")
+  company   CompanyProfile @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  profile   Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, profileId])
+  @@map("company_members")
+}
+
 enum AppointmentStatus {
   SCHEDULED
   COMPLETED
@@ -236,34 +285,4 @@ enum UserRole {
   PSYCHOLOGIST
   COMPANY
   ADMIN
-}
-
-model CompanyProfile {
-  id               String          @id @default(uuid())
-  userId           String          @unique @map("user_id")
-  name             String
-  cnpj             String?
-  logoUrl          String?         @map("logo_url")
-  organizationCode String          @unique @map("organization_code")
-  active           Boolean         @default(true)
-  benefitConfig    Json?           @map("benefit_config")
-  createdAt        DateTime        @default(now()) @map("created_at")
-  updatedAt        DateTime        @updatedAt @map("updated_at")
-  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  members          CompanyMember[]
-
-  @@map("company_profiles")
-}
-
-model CompanyMember {
-  id        String         @id @default(uuid())
-  companyId String         @map("company_id")
-  profileId String         @map("profile_id")
-  status    String         @default("ACTIVE") // ACTIVE, INACTIVE
-  joinedAt  DateTime       @default(now()) @map("joined_at")
-  company   CompanyProfile @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  profile   Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  @@unique([companyId, profileId])
-  @@map("company_members")
 }

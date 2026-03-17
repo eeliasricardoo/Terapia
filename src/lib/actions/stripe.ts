@@ -10,6 +10,7 @@ export async function createStripeCheckoutSession(data: {
   psychologistId: string
   scheduledAt: string
   durationMinutes: number
+  couponCode?: string
 }) {
   try {
     if (!isValidUUID(data.psychologistId)) {
@@ -32,11 +33,40 @@ export async function createStripeCheckoutSession(data: {
     if (!psych) throw new Error('Psicólogo não encontrado')
 
     const price = Number(psych.pricePerSession) || 0
-    const stripeAmount = Math.round(price * 100) // Price in cents
+    let finalPrice = price
 
-    if (stripeAmount <= 0) {
-      // In case of free, we don't need Stripe, but MVP should handle it.
-      // For now assume price > 0.
+    // 1b. Apply Coupon if exists
+    if (data.couponCode) {
+      // @ts-ignore
+      const coupon = await prisma.coupon.findFirst({
+        where: {
+          code: data.couponCode.toUpperCase(),
+          psychologistId: data.psychologistId,
+          active: true,
+        },
+      })
+
+      if (coupon) {
+        if (coupon.type === 'percentage') {
+          finalPrice = price * (1 - Number(coupon.value) / 100)
+        } else {
+          finalPrice = price - Number(coupon.value)
+        }
+        finalPrice = Math.max(0, finalPrice)
+
+        // Increment usage
+        // @ts-ignore
+        await prisma.coupon.update({
+          where: { id: coupon.id },
+          data: { used: { increment: 1 } },
+        })
+      }
+    }
+
+    const stripeAmount = Math.round(finalPrice * 100) // Price in cents
+
+    if (stripeAmount <= 0 && finalPrice > 0) {
+      // In case of rounding error or invalid price
       throw new Error('Preço inválido para pagamento via Stripe')
     }
 
@@ -64,7 +94,9 @@ export async function createStripeCheckoutSession(data: {
         psychologistId: data.psychologistId,
         scheduledAt: data.scheduledAt,
         durationMinutes: data.durationMinutes,
-        price: price.toString(),
+        price: finalPrice.toString(),
+        originalPrice: price.toString(),
+        couponCode: data.couponCode || '',
       },
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pagamento?payment=cancelled`,

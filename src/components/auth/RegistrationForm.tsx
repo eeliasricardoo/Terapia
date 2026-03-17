@@ -184,7 +184,7 @@ export function RegistrationForm() {
 
             {step === 2 && (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                   <FormField
                     control={form.control}
                     name="document"
@@ -245,7 +245,7 @@ export function RegistrationForm() {
                   )}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                   <FormField
                     control={form.control}
                     name="password"
