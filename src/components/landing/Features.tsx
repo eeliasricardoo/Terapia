@@ -1,92 +1,105 @@
 'use client'
 
-import { CoreHeartIcon, CoreVideoIcon, CoreShieldIcon } from '@/components/ui/exclusive-icons'
 import { motion, Variants } from 'framer-motion'
+import { Heart, Video, Shield } from 'lucide-react'
 
 const fadeIn: Variants = {
-  initial: { opacity: 0, y: 40 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } },
+  initial: { opacity: 0, y: 30 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
 }
 
-const staggerContainer: Variants = {
+const stagger: Variants = {
   initial: {},
-  animate: {
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.1,
-    },
-  },
+  animate: { transition: { staggerChildren: 0.15 } },
 }
+
+const features = [
+  {
+    icon: Heart,
+    title: 'Conexão Genuína',
+    description:
+      'Encontre o profissional certo por afinidade e verdadeiro respeito à sua história.',
+    number: '01',
+  },
+  {
+    icon: Video,
+    title: 'Sessões Humanizadas',
+    description:
+      'Vídeo-chamadas de alta qualidade direto do seu navegador, com foco no acolhimento.',
+    number: '02',
+  },
+  {
+    icon: Shield,
+    title: 'Seu Espaço Seguro',
+    description: 'Criptografia de ponta a ponta e anonimato garantido em cada sessão.',
+    number: '03',
+  },
+]
 
 export function Features() {
   return (
-    <section className="w-full py-20 md:py-40 bg-slate-50 relative overflow-hidden">
-      {/* Decorative center glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-100/30 rounded-full blur-[120px] mix-blend-multiply pointer-events-none" />
-
-      <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl font-outfit">
+    <section className="w-full py-32 md:py-40 bg-white relative">
+      <div className="container px-6 relative z-10 mx-auto max-w-5xl">
         <motion.div
-          variants={fadeIn}
+          variants={stagger}
           initial="initial"
           whileInView="animate"
-          viewport={{ once: true }}
-          className="text-center mb-20 space-y-4"
+          viewport={{ once: true, margin: '-80px' }}
+          className="space-y-20"
         >
-          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900">
-            Porque escolher a Terapia?
-          </h2>
-          <p className="text-xl text-slate-500 max-w-2xl mx-auto font-light">
-            Unimos tecnologia e empatia para criar o ambiente ideal para o seu crescimento pessoal.
-          </p>
-        </motion.div>
+          {/* Section header */}
+          <div className="text-center space-y-5">
+            <motion.p
+              variants={fadeIn}
+              className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em]"
+            >
+              Diferenciais
+            </motion.p>
+            <motion.h2
+              variants={fadeIn}
+              className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 font-outfit"
+            >
+              Porque escolher a Terapia?
+            </motion.h2>
+            <motion.p
+              variants={fadeIn}
+              className="text-lg text-slate-500 max-w-md mx-auto leading-relaxed"
+            >
+              Tecnologia e empatia unidos para o seu crescimento pessoal.
+            </motion.p>
+          </div>
 
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true }}
-          className="grid gap-8 lg:grid-cols-3"
-        >
-          <motion.div
-            variants={fadeIn}
-            className="group bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] transition-all duration-500"
-          >
-            <div className="h-20 w-20 rounded-[2rem] bg-indigo-50 flex items-center justify-center mb-8 group-hover:rotate-6 group-hover:scale-110 transition-all duration-500">
-              <CoreHeartIcon className="h-10 w-10 text-indigo-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">Conexão Genuína</h3>
-            <p className="text-slate-500 text-lg leading-relaxed font-light">
-              Ajudamos você a encontrar o profissional certo por afinidade e verdadeiro respeito à
-              sua história.
-            </p>
-          </motion.div>
+          {/* Features list */}
+          <motion.div variants={stagger} className="space-y-0 divide-y divide-slate-100">
+            {features.map((feature) => (
+              <motion.div
+                key={feature.number}
+                variants={fadeIn}
+                className="group grid md:grid-cols-12 gap-6 py-12 md:py-16 items-start"
+              >
+                {/* Number */}
+                <div className="md:col-span-1">
+                  <span className="text-xs font-mono text-slate-300 font-semibold">
+                    {feature.number}
+                  </span>
+                </div>
 
-          <motion.div
-            variants={fadeIn}
-            className="group bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:shadow-[0_40_80px_-20px_rgba(0,0,0,0.08)] transition-all duration-500"
-          >
-            <div className="h-20 w-20 rounded-[2rem] bg-blue-50 flex items-center justify-center mb-8 group-hover:-rotate-6 group-hover:scale-110 transition-all duration-500">
-              <CoreVideoIcon className="h-10 w-10 text-blue-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">Sessões Humanizadas</h3>
-            <p className="text-slate-500 text-lg leading-relaxed font-light">
-              Vídeo-chamadas de altíssima qualidade direto do seu navegador, construídas com foco no
-              seu acolhimento.
-            </p>
-          </motion.div>
+                {/* Icon + Title */}
+                <div className="md:col-span-4 flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-slate-900 group-hover:border-slate-900 transition-all duration-300">
+                    <feature.icon className="h-5 w-5 text-slate-600 group-hover:text-white transition-colors duration-300" />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900">{feature.title}</h3>
+                </div>
 
-          <motion.div
-            variants={fadeIn}
-            className="group bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] transition-all duration-500"
-          >
-            <div className="h-20 w-20 rounded-[2rem] bg-emerald-50 flex items-center justify-center mb-8 group-hover:rotate-6 group-hover:scale-110 transition-all duration-500">
-              <CoreShieldIcon className="h-10 w-10 text-emerald-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">Seu Espaço Seguro</h3>
-            <p className="text-slate-500 text-lg leading-relaxed font-light">
-              Respeito absoluto à sua intimidade. Criptografia de ponta a ponta e anonimato
-              garantido em cada sessão.
-            </p>
+                {/* Description */}
+                <div className="md:col-span-7">
+                  <p className="text-slate-500 text-lg leading-relaxed max-w-md">
+                    {feature.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
         </motion.div>
       </div>

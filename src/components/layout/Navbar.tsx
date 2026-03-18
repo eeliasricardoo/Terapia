@@ -143,18 +143,20 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link href={isLoggedIn ? '/dashboard' : '/'} className="flex items-center space-x-2">
-            <span className="text-xl font-bold tracking-tight font-heading">Terapia</span>
+    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-xl border-b border-slate-100">
+      <div className="container flex h-20 items-center justify-between">
+        <div className="flex items-center gap-10">
+          <Link href={isLoggedIn ? '/dashboard' : '/'} className="flex items-center">
+            <span className="text-xl font-bold tracking-tight font-heading text-slate-900">
+              Terapia
+            </span>
           </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="transition-colors hover:text-foreground/80 text-foreground/60"
+                className="text-slate-500 hover:text-slate-900 transition-colors"
               >
                 {link.label}
               </Link>
@@ -163,13 +165,22 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
             {!isLoggedIn ? (
               <>
-                <Button variant="ghost" onClick={() => setLoginOpen(true)}>
+                <Button
+                  variant="ghost"
+                  onClick={() => setLoginOpen(true)}
+                  className="text-slate-600 hover:text-slate-900 font-medium rounded-full"
+                >
                   Entrar
                 </Button>
-                <Button onClick={() => setRegisterOpen(true)}>Começar Agora</Button>
+                <Button
+                  onClick={() => setRegisterOpen(true)}
+                  className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6 font-medium shadow-sm"
+                >
+                  Começar Agora
+                </Button>
               </>
             ) : (
               <DropdownMenu>
