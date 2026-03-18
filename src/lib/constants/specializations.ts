@@ -1,0 +1,27 @@
+export const SPECIALIZATIONS = [
+  'Ansiedade',
+  'Depressão',
+  'Terapia de Casal',
+  'Terapia Familiar',
+  'TDAH',
+  'Autoestima',
+  'Carreira',
+  'Burnout',
+  'Luto',
+  'Transtornos Alimentares',
+  'TOC',
+  'Fobias',
+  'Estresse Pós-Traumático',
+  'Terapia Cognitivo-Comportamental',
+  'Psicologia Infantil',
+  'Neuropsicologia',
+  'Psicologia Clínica',
+  'Relacionamentos',
+  'Estresse',
+  'Sexualidade',
+  'Trauma',
+  'Dependência Química',
+  'Infância e Adolescência',
+] as const
+
+export type Specialization = (typeof SPECIALIZATIONS)[number]

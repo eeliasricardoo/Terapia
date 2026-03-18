@@ -8,20 +8,14 @@ interface SearchFiltersProps {
   onFilterChange: (filters: PsychologistSearchFilters) => void
 }
 
-const specialtiesList = [
-  'Ansiedade',
-  'Depressão',
-  'Terapia de Casal',
-  'TDAH',
-  'Autoestima',
-  'Carreira',
-  'Burnout',
-  'Luto',
-  'Transtornos Alimentares',
-  'TOC',
-  'Fobias',
-  'Estresse Pós-Traumático',
-]
+import { SPECIALIZATIONS } from '@/lib/constants/specializations'
+
+interface SearchFiltersProps {
+  filters: PsychologistSearchFilters
+  onFilterChange: (filters: PsychologistSearchFilters) => void
+}
+
+const specialtiesList = Array.from(SPECIALIZATIONS)
 
 export function SearchFilters({ filters, onFilterChange }: SearchFiltersProps) {
   const handleSpecialtyToggle = (specialty: string, checked: boolean) => {

@@ -18,11 +18,11 @@ export const SPECIALTIES = [
   { id: 'relationships', label: 'Relacionamentos', icon: Heart },
   { id: 'career', label: 'Carreira', icon: Briefcase },
   { id: 'self_esteem', label: 'Autoestima', icon: Sparkles },
-  { id: 'trauma', label: 'Trauma', icon: ShieldCheck }, // Changed from ShieldAlert to ShieldCheck as it is more positive
+  { id: 'trauma', label: 'Trauma', icon: ShieldCheck },
   { id: 'grief', label: 'Luto', icon: Feather },
-  { id: 'family', label: 'Família', icon: Users },
+  { id: 'family', label: 'Terapia Familiar', icon: Users },
   { id: 'eating_disorders', label: 'Transtornos Alimentares', icon: Utensils },
-  { id: 'addiction', label: 'Dependência Química', icon: CigaretteOff }, // Keeping it direct but professional
+  { id: 'addiction', label: 'Dependência Química', icon: CigaretteOff },
   { id: 'sexual_health', label: 'Sexualidade', icon: Flame },
   { id: 'child_adolescent', label: 'Infância e Adolescência', icon: Baby },
 ]

@@ -14,21 +14,14 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
+import { SPECIALIZATIONS } from '@/lib/constants/specializations'
+
 interface SpecializationTagsProps {
   value?: string[]
   onChange?: (tags: string[]) => void
 }
 
-const defaultSpecializations = [
-  'Terapia Cognitivo-Comportamental',
-  'Ansiedad',
-  'Depresión',
-  'Terapia de Pareja',
-  'Terapia Familiar',
-  'Psicología Infantil',
-  'Neuropsicología',
-  'Psicología Clínica',
-]
+const defaultSpecializations = Array.from(SPECIALIZATIONS)
 
 export function SpecializationTags({ value = [], onChange }: SpecializationTagsProps) {
   const [open, setOpen] = useState(false)
@@ -61,7 +54,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">Áreas de Especialización</label>
+      <label className="text-sm font-medium">Áreas de Especialização</label>
       <div className="flex flex-wrap items-center gap-2 p-3 border rounded-md bg-muted/30 min-h-[44px]">
         {value.map((tag) => (
           <div
@@ -86,7 +79,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
               className="h-8 px-2 text-muted-foreground hover:text-foreground"
             >
               <Plus className="h-4 w-4 mr-1" />
-              Agregar especialización
+              Adicionar especialização
             </Button>
           </PopoverTrigger>
           <PopoverContent
@@ -96,7 +89,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
           >
             <Command shouldFilter={false}>
               <CommandInput
-                placeholder="Buscar o agregar especialización..."
+                placeholder="Buscar ou adicionar especialização..."
                 value={inputValue}
                 onValueChange={setInputValue}
               />
@@ -114,7 +107,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
                         }}
                       >
                         <Plus className="mr-2 h-4 w-4" />
-                        Agregar &quot;{inputValue}&quot;
+                        Adicionar &quot;{inputValue}&quot;
                       </Button>
                     </div>
                   )}
@@ -155,7 +148,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
                         }}
                       >
                         <Plus className="mr-2 h-4 w-4" />
-                        Agregar &quot;{inputValue}&quot;
+                        Adicionar &quot;{inputValue}&quot;
                       </div>
                     )}
                 </CommandGroup>

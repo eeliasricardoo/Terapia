@@ -46,9 +46,9 @@ const focusAreas = [
   { name: 'Autoestima', icon: Heart },
   { name: 'Estresse', icon: Brain },
   { name: 'Luto', icon: Coffee },
-  { name: 'Família', icon: Home },
+  { name: 'Terapia Familiar', icon: Home },
   { name: 'Sexualidade', icon: Smile },
-  { name: 'Casais', icon: Users },
+  { name: 'Terapia de Casal', icon: Users },
 ]
 
 export function OnboardingWizard() {
