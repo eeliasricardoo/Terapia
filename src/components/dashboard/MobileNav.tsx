@@ -43,7 +43,7 @@ export function MobileNav() {
       </Link>
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label="Abrir menu de navegação">
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
@@ -69,6 +69,7 @@ export function MobileNav() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    aria-current={isActive ? 'page' : undefined}
                     className={cn(
                       'flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors',
                       isActive
@@ -77,7 +78,8 @@ export function MobileNav() {
                     )}
                   >
                     <item.icon
-                      className={cn('h-5 w-5', isActive ? 'text-primary' : 'text-slate-400')}
+                      className={cn('h-5 w-5', isActive ? 'text-primary' : 'text-slate-500')}
+                      aria-hidden="true"
                     />
                     {item.label}
                   </Link>
