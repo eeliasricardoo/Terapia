@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Users, Star, Clock } from 'lucide-react'
 import { motion, Variants } from 'framer-motion'
 
 const fadeIn: Variants = {
@@ -22,26 +22,36 @@ interface SearchHighlightProps {
 export function SearchHighlight({ totalPsychologists = 500 }: SearchHighlightProps) {
   const stats = [
     {
+      icon: Users,
       value: `${totalPsychologists}+`,
       label: 'Especialistas verificados',
       description: 'Profissionais acolhedores prontos para te ajudar',
+      accent: 'bg-blue-50 text-blue-600',
     },
     {
+      icon: Star,
       value: '4.9/5',
       label: 'Avaliação média',
       description: 'Baseada em cuidado real e feedback genuíno',
+      accent: 'bg-amber-50 text-amber-600',
     },
     {
+      icon: Clock,
       value: '24/7',
       label: 'Disponibilidade',
       description: 'Sessões online no seu ritmo e espaço',
+      accent: 'bg-emerald-50 text-emerald-600',
     },
   ]
 
   return (
     <section className="w-full py-32 md:py-40 bg-slate-50 relative overflow-hidden">
-      {/* Subtle grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[length:64px_64px] pointer-events-none" />
+      {/* Subtle grid pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.015)_1px,transparent_1px)] bg-[length:64px_64px] pointer-events-none" />
+
+      {/* Organic dots */}
+      <div className="absolute top-24 left-[12%] w-2.5 h-2.5 rounded-full bg-blue-200/50" />
+      <div className="absolute bottom-20 right-[18%] w-2 h-2 rounded-full bg-indigo-200/60" />
 
       <div className="container px-6 relative z-10 mx-auto max-w-5xl">
         <motion.div
@@ -75,24 +85,28 @@ export function SearchHighlight({ totalPsychologists = 500 }: SearchHighlightPro
             </motion.p>
           </div>
 
-          {/* Stats grid */}
-          <motion.div
-            variants={stagger}
-            className="grid md:grid-cols-3 gap-px bg-slate-200 rounded-3xl overflow-hidden shadow-sm"
-          >
+          {/* Stats grid with icons */}
+          <motion.div variants={stagger} className="grid md:grid-cols-3 gap-6">
             {stats.map((stat, i) => (
               <motion.div
                 key={i}
                 variants={fadeIn}
-                className="bg-white p-10 md:p-12 flex flex-col gap-3 group hover:bg-slate-50/50 transition-colors"
+                className="bg-white border border-slate-100 rounded-3xl p-10 flex flex-col gap-5 group hover:shadow-lg hover:shadow-slate-100/80 hover:-translate-y-1 transition-all duration-500"
               >
-                <span className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight font-outfit">
-                  {stat.value}
-                </span>
-                <span className="text-sm font-semibold text-slate-900 uppercase tracking-wide">
-                  {stat.label}
-                </span>
-                <span className="text-sm text-slate-500 leading-relaxed">{stat.description}</span>
+                <div
+                  className={`h-12 w-12 rounded-2xl ${stat.accent} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
+                >
+                  <stat.icon className="h-5 w-5" />
+                </div>
+                <div className="space-y-2">
+                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight font-outfit">
+                    {stat.value}
+                  </span>
+                  <p className="text-sm font-semibold text-slate-900 uppercase tracking-wide">
+                    {stat.label}
+                  </p>
+                  <p className="text-sm text-slate-500 leading-relaxed">{stat.description}</p>
+                </div>
               </motion.div>
             ))}
           </motion.div>

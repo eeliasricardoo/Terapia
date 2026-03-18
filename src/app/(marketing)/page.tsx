@@ -3,8 +3,11 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 
 import { Hero } from '@/components/landing/Hero'
+import { Marquee } from '@/components/landing/Marquee'
 import { SearchHighlight } from '@/components/landing/SearchHighlight'
+import { HowItWorks } from '@/components/landing/HowItWorks'
 import { Features } from '@/components/landing/Features'
+import { Testimonials } from '@/components/landing/Testimonials'
 import { CTA } from '@/components/landing/CTA'
 
 export default async function Home() {
@@ -22,15 +25,16 @@ export default async function Home() {
     where: { isVerified: true },
   })
 
-  // Start with a base number (e.g. 100) and add real verified ones
-  // Or just use the real number if there are many. We'll use Math.max to avoid '0+' if DB is empty
   const displayCount = Math.max(500, totalVerifiedPsychologists + 500)
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between overflow-x-hidden">
+    <main className="flex min-h-screen flex-col overflow-x-hidden">
       <Hero />
+      <Marquee />
       <SearchHighlight totalPsychologists={displayCount} />
+      <HowItWorks />
       <Features />
+      <Testimonials />
       <CTA />
     </main>
   )
