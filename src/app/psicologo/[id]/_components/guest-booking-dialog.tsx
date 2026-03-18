@@ -51,7 +51,7 @@ export function GuestBookingDialog({
             <DialogTitle className="text-2xl font-black tracking-tight text-white mb-2">
               Quase lá! Vamos garantir seu horário.
             </DialogTitle>
-            <DialogDescription className="text-blue-100 text-base font-medium leading-relaxed">
+            <DialogDescription className="text-white/80 text-base font-medium leading-relaxed">
               Você selecionou um horário excelente com {psychologistName}. Crie sua conta para
               confirmar e seguir para o pagamento.
             </DialogDescription>
@@ -66,7 +66,7 @@ export function GuestBookingDialog({
                 <Calendar className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest leading-none mb-1">
+                <p className="text-[10px] uppercase font-black text-slate-500 tracking-widest leading-none mb-1">
                   Data
                 </p>
                 <p className="text-sm font-bold">{selectedDate}</p>
@@ -78,7 +78,7 @@ export function GuestBookingDialog({
                 <Clock className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest leading-none mb-1">
+                <p className="text-[10px] uppercase font-black text-slate-500 tracking-widest leading-none mb-1">
                   Horário
                 </p>
                 <p className="text-sm font-bold">{selectedTime}</p>
@@ -103,7 +103,7 @@ export function GuestBookingDialog({
             </Button>
           </div>
 
-          <div className="pt-2 flex items-center justify-center gap-2 text-xs text-slate-400 font-medium">
+          <div className="pt-2 flex items-center justify-center gap-2 text-xs text-slate-500 font-medium">
             <ShieldCheck className="h-4 w-4 text-emerald-500" />
             Seus dados são protegidos e o sigilo é garantido
           </div>
