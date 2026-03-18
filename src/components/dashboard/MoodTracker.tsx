@@ -76,13 +76,20 @@ export function MoodTracker({ monthlyProgress }: MoodTrackerProps) {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
             <div>
               <h4 className="text-xl font-black text-slate-900">Como você está agora?</h4>
-              <p className="text-sm font-medium text-slate-400">
+              <p className="text-sm font-medium text-slate-500">
                 Um registro rápido do seu bem-estar.
               </p>
             </div>
-            <div className="flex gap-2 relative">
+            <div
+              className="flex gap-2 relative"
+              role="group"
+              aria-label="Selecione como você está se sentindo"
+            >
               {isSaving && (
-                <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center rounded-xl">
+                <div
+                  className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center rounded-xl"
+                  aria-hidden="true"
+                >
                   <Loader2 className="h-4 w-4 animate-spin text-slate-900" />
                 </div>
               )}
@@ -91,7 +98,9 @@ export function MoodTracker({ monthlyProgress }: MoodTrackerProps) {
                   key={mood.value}
                   onClick={() => handleMoodSelect(mood.value, mood.emoji)}
                   disabled={isSaving}
-                  className={`h-12 w-12 rounded-full flex items-center justify-center text-xl transition-all ${
+                  aria-label={mood.label}
+                  aria-pressed={selectedMood === mood.value}
+                  className={`h-12 w-12 rounded-full flex items-center justify-center text-xl transition-all focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 ${
                     selectedMood === mood.value
                       ? 'bg-slate-900 scale-110 shadow-lg'
                       : 'hover:bg-slate-100'
@@ -115,7 +124,7 @@ export function MoodTracker({ monthlyProgress }: MoodTrackerProps) {
           <div className="pt-8 border-t border-slate-50">
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-bold text-slate-900 italic">Sua jornada este mês</span>
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
                 {monthlyProgress.completedSessions} de {monthlyProgress.totalSessions} SESSÕES
               </span>
             </div>

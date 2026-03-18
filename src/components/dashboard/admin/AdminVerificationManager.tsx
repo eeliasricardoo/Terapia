@@ -51,7 +51,8 @@ export function AdminVerificationManager() {
     return (
       <Card className="border-none shadow-sm">
         <CardContent className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" aria-label="Carregando" />
+          <span className="sr-only">Carregando psicólogos pendentes...</span>
         </CardContent>
       </Card>
     )
@@ -71,7 +72,7 @@ export function AdminVerificationManager() {
       <CardContent>
         {pending.length === 0 ? (
           <div className="text-center py-12 bg-slate-50 rounded-lg border-2 border-dashed">
-            <UserCheck className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+            <UserCheck className="h-12 w-12 text-slate-400 mx-auto mb-3" aria-hidden="true" />
             <p className="text-slate-500 font-medium">
               Não há profissionais pendentes de verificação.
             </p>
@@ -110,7 +111,7 @@ export function AdminVerificationManager() {
                         </Badge>
                       ))}
                       {p.specialties?.length > 3 && (
-                        <span className="text-[9px] text-slate-400 font-medium ml-1">
+                        <span className="text-[10px] text-slate-500 font-medium ml-1">
                           +{p.specialties.length - 3} mais
                         </span>
                       )}
@@ -122,6 +123,7 @@ export function AdminVerificationManager() {
                   disabled={verifyingId === p.id}
                   className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
                   size="sm"
+                  aria-label={`Verificar ${p.fullName}`}
                 >
                   {verifyingId === p.id ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

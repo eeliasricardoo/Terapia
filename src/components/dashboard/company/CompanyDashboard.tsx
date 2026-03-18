@@ -122,7 +122,7 @@ export function CompanyDashboard({ userProfile, dashboardData }: CompanyDashboar
               </span>
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-500 mb-1">{stat.label}</p>
+              <p className="text-sm font-medium text-slate-600 mb-1">{stat.label}</p>
               <h3 className="text-3xl font-bold text-slate-900">{stat.value}</h3>
             </div>
           </div>
@@ -160,7 +160,7 @@ export function CompanyDashboard({ userProfile, dashboardData }: CompanyDashboar
                       </div>
                       <div>
                         <p className="text-sm font-bold text-slate-900">{act.user}</p>
-                        <p className="text-xs text-slate-400 font-medium">
+                        <p className="text-xs text-slate-500 font-medium">
                           {act.department} • {act.type}
                         </p>
                       </div>
@@ -198,7 +198,7 @@ export function CompanyDashboard({ userProfile, dashboardData }: CompanyDashboar
                 <Activity className="h-6 w-6 text-blue-400" />
               </div>
               <h3 className="text-2xl font-bold mb-3">Relatório de Impacto</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-light">
+              <p className="text-slate-300 text-sm leading-relaxed font-light">
                 Visualize como o investimento na saúde mental do seu time está impactando a
                 produtividade e retenção.
               </p>

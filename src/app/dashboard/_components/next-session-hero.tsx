@@ -44,7 +44,7 @@ export function NextSessionHero({ session }: Props) {
     return (
       <Card className="border-none shadow-md overflow-hidden relative p-8 flex flex-col items-center justify-center text-center bg-white min-h-[300px]">
         <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-          <CalendarIcon className="h-8 w-8 text-slate-300" />
+          <CalendarIcon className="h-8 w-8 text-slate-400" />
         </div>
         <h2 className="text-xl font-bold text-slate-900 mb-2">Sem sessões agendadas</h2>
         <p className="text-slate-500 mb-6">
@@ -79,7 +79,7 @@ export function NextSessionHero({ session }: Props) {
             <span className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
               {dateStr}
             </span>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
               {timeRange}
             </span>
           </div>
@@ -97,7 +97,7 @@ export function NextSessionHero({ session }: Props) {
             </Avatar>
             <div>
               <p className="text-base font-bold text-slate-900">{session.psychologist.name}</p>
-              <p className="text-xs font-medium text-slate-400">{session.psychologist.specialty}</p>
+              <p className="text-xs font-medium text-slate-500">{session.psychologist.specialty}</p>
             </div>
           </div>
 
@@ -112,7 +112,7 @@ export function NextSessionHero({ session }: Props) {
               <SessionDetailsDialog session={session}>
                 <Button
                   variant="ghost"
-                  className="h-10 rounded-full px-4 text-xs font-bold text-slate-400 hover:text-slate-900 transition-colors"
+                  className="h-10 rounded-full px-4 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors"
                 >
                   Detalhes
                 </Button>
@@ -135,7 +135,7 @@ export function NextSessionHero({ session }: Props) {
               >
                 <Button
                   variant="ghost"
-                  className="h-10 rounded-full px-4 text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors"
+                  className="h-10 rounded-full px-4 text-xs font-bold text-slate-500 hover:text-rose-500 transition-colors"
                 >
                   Reagendar
                 </Button>

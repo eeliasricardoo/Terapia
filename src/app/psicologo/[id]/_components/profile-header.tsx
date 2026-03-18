@@ -27,6 +27,8 @@ export function ProfileHeader({ psychologist, displayName, firstSpecialty }: Pro
         <div
           className="absolute bottom-2 right-2 bg-green-500 border-4 border-white rounded-full p-1.5"
           title="Verificado"
+          role="img"
+          aria-label="Profissional verificado"
         ></div>
       </div>
 
@@ -45,7 +47,7 @@ export function ProfileHeader({ psychologist, displayName, firstSpecialty }: Pro
             )}
           </div>
           <p className="text-lg text-slate-600 font-medium">{firstSpecialty}</p>
-          <p className="text-sm text-slate-400 font-mono mt-1">
+          <p className="text-sm text-slate-500 font-mono mt-1">
             CRP: {psychologist.crp || 'Não informado'}
           </p>
         </div>
@@ -54,7 +56,7 @@ export function ProfileHeader({ psychologist, displayName, firstSpecialty }: Pro
           <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
             <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
             <span className="font-bold text-slate-900">5.0</span>
-            <span className="text-slate-400">(42 avaliações)</span>
+            <span className="text-slate-500">(42 avaliações)</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
             <Briefcase className="h-4 w-4 text-blue-500" />

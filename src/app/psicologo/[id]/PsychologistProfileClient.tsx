@@ -70,7 +70,7 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <main className="flex-1 py-8 px-4 md:px-8 max-w-7xl mx-auto w-full pb-32 lg:pb-8">
-        <div className="mb-6">
+        <nav aria-label="Navegação estrutural" className="mb-6">
           <div className="flex items-center text-sm text-slate-500 gap-2">
             <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
               Home
@@ -82,7 +82,7 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
             <ChevronRight className="h-4 w-4" />
             <span className="text-slate-700 font-medium">{displayName}</span>
           </div>
-        </div>
+        </nav>
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content Column */}

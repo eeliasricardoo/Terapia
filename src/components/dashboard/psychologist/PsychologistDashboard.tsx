@@ -84,7 +84,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
               <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
                 Olá, {userName}.
               </h1>
-              <p className="text-slate-500 mt-2 font-medium">
+              <p className="text-slate-600 mt-2 font-medium">
                 Você tem {stats.sessionsToday}{' '}
                 {stats.sessionsToday === 1 ? 'atendimento agendado' : 'atendimentos agendados'} para
                 hoje.
@@ -93,7 +93,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             <div className="flex items-center gap-2">
               <Link
                 href="/dashboard/ajustes"
-                className="opacity-60 hover:opacity-100 transition-opacity"
+                className="opacity-70 hover:opacity-100 transition-opacity"
               >
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Settings className="h-5 w-5" />
@@ -102,10 +102,15 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full relative opacity-60 hover:opacity-100 transition-opacity"
+                className="rounded-full relative opacity-70 hover:opacity-100 transition-opacity"
+                aria-label="Notificações"
               >
                 <Bell className="h-5 w-5" />
-                <span className="absolute top-2 right-2 h-2 w-2 bg-rose-500 rounded-full border-2 border-slate-50" />
+                <span
+                  className="absolute top-2 right-2 h-2 w-2 bg-rose-500 rounded-full border-2 border-slate-50"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">Você tem novas notificações</span>
               </Button>
               <Button className="ml-2 gap-2 bg-slate-900 text-white hover:bg-slate-800 rounded-full px-6 transition-all hover:translate-y-[-1px] shadow-lg shadow-slate-200">
                 <Video className="h-4 w-4" />
@@ -117,7 +122,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
           {/* Stats Overview */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
                 Sessões
               </p>
               <div className="flex items-baseline gap-2">
@@ -129,19 +134,19 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             </div>
 
             <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
                 Pacientes Ativos
               </p>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-black text-slate-900">{stats.activePatients}</span>
-                <span className="text-[10px] text-slate-400 font-bold">
+                <span className="text-[10px] text-slate-500 font-bold">
                   TOTAL {stats.totalPatients}
                 </span>
               </div>
             </div>
 
             <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
                 Receita
               </p>
               <div className="flex items-baseline gap-2">
@@ -156,7 +161,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             </div>
 
             <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
                 Desempenho
               </p>
               <div className="flex items-baseline gap-2">
@@ -228,7 +233,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                               >
                                 {startTimeStr}
                               </span>
-                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">
                                 {session.duration} MIN
                               </span>
                             </div>
@@ -251,7 +256,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                 {session.patientName}
                               </h4>
                               <div className="flex items-center gap-2">
-                                <span className="text-xs font-medium text-slate-400">
+                                <span className="text-xs font-medium text-slate-500">
                                   {session.type}
                                 </span>
                                 {session.status === 'completed' && (
@@ -341,7 +346,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 {upcomingSessions.length === 0 && (
                   <div className="p-12 text-center bg-slate-50/50">
                     <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm mb-4">
-                      <CalendarIcon className="h-6 w-6 text-slate-300" />
+                      <CalendarIcon className="h-6 w-6 text-slate-400" />
                     </div>
                     <h3 className="text-sm font-medium text-slate-900">Agenda livre</h3>
                     <p className="text-slate-500 text-xs mt-1">Nenhum atendimento para hoje.</p>
@@ -354,7 +359,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             <div className="space-y-6">
               <Card className="border-none shadow-sm bg-white">
                 <CardHeader className="pb-2 border-b border-slate-50 pt-4 px-4">
-                  <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                  <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                     <Settings className="h-3 w-3" />
                     Acesso Rápido
                   </CardTitle>
@@ -391,7 +396,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
 
               <Card className="border-none shadow-sm bg-white">
                 <CardHeader className="pb-2 border-b border-slate-50 pt-4 px-4">
-                  <CardTitle className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                  <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                     <Clock className="h-3 w-3" />
                     Histórico Recente
                   </CardTitle>

@@ -237,6 +237,8 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
         'hidden lg:flex w-64 flex-col fixed inset-y-0 z-50 bg-white border-r',
         className
       )}
+      role="navigation"
+      aria-label="Menu principal"
     >
       {/* User Profile */}
       <div className="flex items-center gap-3 h-20 px-6 border-b border-slate-100">
@@ -250,18 +252,19 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
           <p className="font-semibold text-sm text-slate-900 truncate" title={user?.name}>
             {user?.name || 'Carregando...'}
           </p>
-          <p className="text-xs text-slate-500 font-medium">{user?.role || ''}</p>
+          <p className="text-xs text-slate-600 font-medium">{user?.role || ''}</p>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-4">
+      <nav className="flex-1 space-y-1 p-4" aria-label="Navegação do dashboard">
         {menuItems.map((item) => {
           const isActive = pathname === item.href
           return (
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive ? 'page' : undefined}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group',
                 isActive
@@ -272,8 +275,11 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
               <item.icon
                 className={cn(
                   'h-4 w-4 transition-colors',
-                  isActive ? 'text-slate-300' : 'text-slate-400 group-hover:text-slate-600'
+                  isActive
+                    ? 'text-primary-foreground/80'
+                    : 'text-slate-500 group-hover:text-slate-600'
                 )}
+                aria-hidden="true"
               />
               {item.label}
             </Link>

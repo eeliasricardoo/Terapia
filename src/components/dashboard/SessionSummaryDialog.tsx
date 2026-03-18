@@ -49,9 +49,12 @@ export function SessionSummaryDialog({ session, children }: SessionSummaryDialog
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px]" aria-describedby="session-summary-description">
         <DialogHeader>
           <DialogTitle className="text-2xl">Resumo da Sessão</DialogTitle>
+          <p id="session-summary-description" className="sr-only">
+            Resumo completo da sessão realizada
+          </p>
         </DialogHeader>
 
         {isLoading ? (

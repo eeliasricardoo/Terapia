@@ -75,7 +75,7 @@ export default async function DashboardPage() {
 
       <div className="flex flex-col gap-2">
         <h1 className="text-4xl font-black tracking-tight text-slate-900">Olá, {userName}.</h1>
-        <p className="text-slate-500 font-medium">
+        <p className="text-slate-600 font-medium">
           Bem-vindo ao seu espaço de cuidado e autoconhecimento.
         </p>
       </div>
@@ -89,25 +89,25 @@ export default async function DashboardPage() {
           )}
 
           <div className="pt-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">
               Seu Progresso
-            </h3>
+            </h2>
             <MoodTracker monthlyProgress={patientData.monthlyProgress} />
           </div>
         </div>
 
         <div className="lg:col-span-4 space-y-10">
           <div>
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">
               Ações Rápidas
-            </h3>
+            </h2>
             <QuickActions />
           </div>
 
           <div>
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">
               Histórico
-            </h3>
+            </h2>
             <RecentHistory history={patientData.recentSessions} />
           </div>
         </div>
