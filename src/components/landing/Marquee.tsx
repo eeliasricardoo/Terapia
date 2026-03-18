@@ -1,44 +1,35 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { Heart } from 'lucide-react'
 
 const words = [
   'Acolhimento',
-  '✦',
   'Empatia',
-  '✦',
   'Privacidade',
-  '✦',
   'Autoconhecimento',
-  '✦',
   'Bem-estar',
-  '✦',
   'Saúde Mental',
-  '✦',
   'Equilíbrio',
-  '✦',
   'Cuidado',
-  '✦',
 ]
 
 export function Marquee() {
   return (
-    <section className="w-full py-6 bg-slate-900 overflow-hidden relative">
+    <section className="w-full py-8 bg-white overflow-hidden relative border-y border-slate-100">
       <div className="flex whitespace-nowrap">
         <motion.div
           animate={{ x: ['0%', '-50%'] }}
-          transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-          className="flex items-center gap-8 shrink-0"
+          transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+          className="flex items-center gap-16 shrink-0"
         >
           {[...words, ...words].map((word, i) => (
-            <span
-              key={i}
-              className={`text-sm font-medium tracking-widest uppercase ${
-                word === '✦' ? 'text-blue-400 text-xs' : 'text-white/60'
-              }`}
-            >
-              {word}
-            </span>
+            <div key={i} className="flex items-center gap-16">
+              <span className="text-xs font-bold tracking-[0.3em] uppercase text-slate-400">
+                {word}
+              </span>
+              <Heart className="w-4 h-4 text-rose-400 fill-rose-100" />
+            </div>
           ))}
         </motion.div>
       </div>
