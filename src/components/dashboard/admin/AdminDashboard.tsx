@@ -99,7 +99,7 @@ export function AdminDashboard({ userProfile, dashboardData }: Props) {
           <Card className="border-none shadow-sm bg-primary text-primary-foreground">
             <CardContent className="p-6">
               <h4 className="font-bold mb-2">Dica do Sistema</h4>
-              <p className="text-blue-100 text-sm leading-relaxed">
+              <p className="text-primary-foreground/80 text-sm leading-relaxed">
                 Psicólogos verificados aparecem instantaneamente na página de busca pública para
                 todos os pacientes.
               </p>
@@ -123,9 +123,10 @@ function StatCard({ title, value, icon: Icon, color }: any) {
     <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-sm font-medium text-slate-500">{title}</span>
+          <span className="text-sm font-medium text-slate-600">{title}</span>
           <div
             className={`h-8 w-8 rounded-full flex items-center justify-center ${colors[color as keyof typeof colors]}`}
+            aria-hidden="true"
           >
             <Icon className="h-4 w-4" />
           </div>
