@@ -8,6 +8,7 @@ import { RescheduleDialog } from '@/components/dashboard/RescheduleDialog'
 import { getCurrentUserProfile } from '@/lib/actions/profile'
 import { getUserSessions } from '@/lib/actions/sessions'
 import { format } from 'date-fns'
+import { toZonedTime } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
@@ -34,7 +35,13 @@ export default async function SessionsPage() {
     psychologistIds.length > 0
       ? await prisma.psychologistProfile.findMany({
           where: { userId: { in: psychologistIds } },
-          select: { userId: true, crp: true, specialties: true, pricePerSession: true },
+          select: {
+            userId: true,
+            crp: true,
+            specialties: true,
+            pricePerSession: true,
+            timezone: true,
+          },
         })
       : []
   const psychMap = new Map(psychProfiles.map((p) => [p.userId, p]))
@@ -66,8 +73,18 @@ export default async function SessionsPage() {
           sessions.map((session) => {
             const isPsychologist = profile.role === 'PSYCHOLOGIST'
             const otherParty = isPsychologist ? session.patient : session.psychologist
-            const scheduledDate = new Date(session.scheduled_at)
-            const isUpcoming = scheduledDate > new Date() && session.status === 'scheduled'
+            const timezone = psychMap.get(session.psychologist_id)?.timezone || 'America/Sao_Paulo'
+            const scheduledDate = toZonedTime(new Date(session.scheduled_at), timezone)
+            const now = new Date()
+
+            // A session is "upcoming" if it's in the future and scheduled
+            const isUpcoming = scheduledDate > now && session.status === 'scheduled'
+
+            // We allow rescheduling if it's upcoming OR if it's a past scheduled session (missed)
+            // especially useful for psychologists to manage their agenda
+            const canReschedule =
+              session.status === 'scheduled' &&
+              (isUpcoming || isPsychologist || scheduledDate < now)
 
             return (
               <Card key={session.id}>
@@ -128,6 +145,9 @@ export default async function SessionsPage() {
                             ),
                             'HH:mm'
                           )}
+                          <span className="ml-2 text-[10px] bg-slate-100 px-1 py-0.5 rounded font-bold uppercase">
+                            {timezone.split('/').pop()}
+                          </span>
                         </span>
                         <span className="flex items-center gap-1">
                           <Video className="h-4 w-4" /> Online
@@ -137,7 +157,7 @@ export default async function SessionsPage() {
 
                     {/* Actions */}
                     <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-                      {isUpcoming ? (
+                      {canReschedule ? (
                         <>
                           <RescheduleDialog
                             session={{
@@ -155,16 +175,18 @@ export default async function SessionsPage() {
                                 : undefined,
                             }}
                           >
-                            <Button variant="outline" className="w-full md:w-auto">
+                            <Button variant="outline" className="w-full md:w-auto h-9">
                               Reagendar
                             </Button>
                           </RescheduleDialog>
-                          <Button asChild className="w-full md:w-auto gap-2">
-                            <Link href={`/dashboard/sessoes/${session.id}`}>
-                              <Video className="h-4 w-4" />
-                              Entrar
-                            </Link>
-                          </Button>
+                          {isUpcoming && (
+                            <Button asChild className="w-full md:w-auto gap-2 h-9">
+                              <Link href={`/dashboard/sessoes/${session.id}`}>
+                                <Video className="h-4 w-4" />
+                                Entrar
+                              </Link>
+                            </Button>
+                          )}
                         </>
                       ) : (
                         <>

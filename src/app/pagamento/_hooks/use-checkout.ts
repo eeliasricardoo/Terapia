@@ -122,7 +122,7 @@ export function useCheckout() {
       // Normalizar hora (H:mm -> HH:mm)
       const normalizedTime = time.padStart(5, '0')
 
-      const localDateTimeString = `${normalizedDate}T${normalizedTime}:00`
+      const localDateTimeString = `${normalizedDate} ${normalizedTime}:00`
       const utcDate = fromZonedTime(localDateTimeString, psychTimezone)
       const scheduledAt = utcDate.toISOString()
 

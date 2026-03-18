@@ -54,8 +54,7 @@ export async function getPsychologistById(userId: string): Promise<PsychologistW
   const { data: psych, error } = await supabase
     .from('psychologist_profiles')
     .select('*')
-    .eq('userId', userId)
-    .eq('is_verified', true)
+    .or(`id.eq.${userId},userId.eq.${userId}`)
     .single()
 
   if (error || !psych) {

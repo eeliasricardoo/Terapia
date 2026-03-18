@@ -14,10 +14,13 @@ export type PsychologistDashboardData = {
     revenueChange: number // % vs last month
   }
   isVerified: boolean
+  timezone: string
   upcomingSessions: {
     id: string
     patientName: string
     time: string
+    scheduledAt: string
+    psychologistId: string
     type: string
     status: string
     image?: string
@@ -39,9 +42,11 @@ export type PatientDashboardData = {
     scheduledAt: string
     durationMinutes: number
     psychologist: {
+      userId: string
       name: string
       specialty: string
       image?: string
+      timezone: string
     }
   } | null
   recentSessions: {
@@ -101,6 +106,7 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
           revenueChange: 0,
         },
         isVerified: false,
+        timezone: 'America/Sao_Paulo',
         upcomingSessions: [],
         recentPatients: [],
       }
@@ -254,10 +260,13 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
         revenueChange: Math.round(revenueChange),
       },
       isVerified: psychProfile.isVerified,
+      timezone: psychProfile.timezone || 'America/Sao_Paulo',
       upcomingSessions: sessionsToday.map((s) => ({
         id: s.id,
         patientName: s.patient.profiles?.fullName || s.patient.name || 'Paciente',
         time: formatTime(s.scheduledAt),
+        scheduledAt: s.scheduledAt.toISOString(),
+        psychologistId: s.psychologistId,
         type: s.sessionType,
         status: s.status.toLowerCase(),
         image: s.patient.profiles?.avatarUrl || undefined,
@@ -309,9 +318,11 @@ export async function getPatientDashboardData(): Promise<PatientDashboardData> {
         scheduledAt: nextSessionAppt.scheduledAt.toISOString(),
         durationMinutes: nextSessionAppt.durationMinutes,
         psychologist: {
+          userId: nextSessionAppt.psychologist.userId,
           name: pProfile?.fullName || nextSessionAppt.psychologist.user.name || 'Psicólogo',
           specialty: nextSessionAppt.psychologist.specialties[0] || 'Psicólogo Clínico',
           image: pProfile?.avatarUrl || undefined,
+          timezone: nextSessionAppt.psychologist.timezone || 'America/Sao_Paulo',
         },
       }
     }

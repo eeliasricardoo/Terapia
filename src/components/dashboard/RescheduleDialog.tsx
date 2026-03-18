@@ -1,15 +1,26 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getAvailableTimeSlots } from '@/lib/actions/availability'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
-import { addDays, format, startOfToday, startOfWeek } from 'date-fns'
+import { ChevronLeft, ChevronRight, Loader2, Clock, ArrowRight } from 'lucide-react'
+import { format } from 'date-fns'
+import { fromZonedTime } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import { getPsychologistAvailability, PsychologistAvailability } from '@/lib/actions/availability'
+import { getPsychologistById } from '@/lib/actions/psychologists'
+import { rescheduleSession } from '@/lib/actions/sessions'
+import { PsychologistWithProfile } from '@/lib/supabase/types'
+import { usePsychologistProfile } from '@/app/psicologo/[id]/_hooks/use-psychologist-profile'
+import { cn } from '@/lib/utils'
 
 interface RescheduleDialogProps {
   children: React.ReactNode
@@ -28,204 +39,282 @@ interface RescheduleDialogProps {
 }
 
 export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
-  const today = startOfToday()
   const [open, setOpen] = useState(false)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(today)
-  const [selectedTime, setSelectedTime] = useState<string | null>(null)
-  const [startIndex, setStartIndex] = useState(0)
-  const [timeSlots, setTimeSlots] = useState<string[]>([])
-  const [isLoadingSlots, setIsLoadingSlots] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [isRescheduling, setIsRescheduling] = useState(false)
+  const [psychologist, setPsychologist] = useState<PsychologistWithProfile | null>(null)
+  const [availability, setAvailability] = useState<PsychologistAvailability | null>(null)
 
-  const startDate = startOfWeek(today, { weekStartsOn: 0 }) // Sunday
-  const visibleDates = Array.from({ length: 7 }).map((_, i) => addDays(startDate, startIndex + i))
+  const router = useRouter()
+
+  const isPsychologistView = session.role === 'Paciente'
 
   useEffect(() => {
-    async function fetchSlots() {
-      if (!selectedDate || !session.psychologistId) {
-        setTimeSlots([])
-        return
+    if (open && !psychologist && session.psychologistId) {
+      const loadInfo = async () => {
+        setLoading(true)
+        try {
+          const [pData, aData] = await Promise.all([
+            getPsychologistById(session.psychologistId!),
+            getPsychologistAvailability(session.psychologistId!),
+          ])
+
+          setPsychologist(pData)
+          setAvailability(aData)
+        } catch (error) {
+          console.error(error)
+          toast.error('Erro ao carregar disponibilidade')
+        } finally {
+          setLoading(false)
+        }
       }
-      setIsLoadingSlots(true)
-      try {
-        const dateStr = format(selectedDate, 'yyyy-MM-dd')
-        const slots = await getAvailableTimeSlots(session.psychologistId, dateStr)
-        setTimeSlots(slots)
-      } catch (error) {
-        console.error('Failed to fetch slots:', error)
-        setTimeSlots([])
-      } finally {
-        setIsLoadingSlots(false)
-      }
+      loadInfo()
     }
-    fetchSlots()
-  }, [selectedDate, session.psychologistId])
-
-  const handlePrevDate = () => {
-    if (startIndex > 0) {
-      setStartIndex((prev) => Math.max(0, prev - 7))
-    }
-  }
-
-  const handleNextDate = () => {
-    setStartIndex((prev) => prev + 7)
-  }
-
-  const formatDate = (date: Date, formatStr: string) => {
-    return format(date, formatStr, { locale: ptBR })
-  }
-
-  const handleConfirmReschedule = () => {
-    if (selectedDate && selectedTime) {
-      const formattedDate = format(selectedDate, "dd 'de' MMMM", { locale: ptBR })
-      toast.success('Sessão reagendada com sucesso!', {
-        description: `Nova data: ${formattedDate} às ${selectedTime}`,
-        duration: 4000,
-      })
-      setOpen(false)
-      // Reset selections
-      setSelectedTime(null)
-      setSelectedDate(today)
-    }
-  }
-
-  const specialties = session.specialties || []
-  const formattedPrice =
-    session.price !== undefined
-      ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(session.price)
-      : null
+  }, [open, session.psychologistId, psychologist, session.id])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[900px] p-0 overflow-hidden gap-0">
-        <div className="flex flex-col md:flex-row h-[80vh] md:h-[550px]">
-          {/* Left Side - Profile Info */}
-          <div className="w-full md:w-1/3 bg-slate-50 p-6 flex flex-col border-r">
-            <div className="flex items-start gap-4 mb-4">
-              <Avatar className="h-16 w-16 border-2 border-white shadow-sm">
-                <AvatarImage src={session.image} />
-                <AvatarFallback>{session.doctor.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="font-bold text-lg leading-tight">{session.doctor}</h3>
-                <p className="text-sm text-muted-foreground">{session.role}</p>
-                {session.crp && (
-                  <p className="text-xs text-muted-foreground mt-1">CRP: {session.crp}</p>
-                )}
-              </div>
-            </div>
-
-            {specialties.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-6">
-                {specialties.map((spec) => (
-                  <Badge key={spec} variant="secondary" className="font-normal text-xs">
-                    {spec}
-                  </Badge>
-                ))}
-              </div>
-            )}
-
-            <div className="mt-auto space-y-4">
-              {formattedPrice && (
-                <div className="pt-4 border-t">
-                  <div className="flex justify-between items-end">
-                    <span className="text-sm text-muted-foreground">Sessão 50 min</span>
-                    <span className="text-xl font-bold text-slate-900">{formattedPrice}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Side - Calendar & Time */}
-          <div className="flex-1 p-6 flex flex-col bg-white">
-            {/* Date Carousel */}
-            <div className="flex items-center justify-between mb-6">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={handlePrevDate}
-                disabled={startIndex === 0}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="flex gap-2 overflow-x-auto no-scrollbar flex-1 justify-center px-1">
-                {visibleDates.map((date) => {
-                  const isSelected =
-                    selectedDate &&
-                    format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
-                  return (
-                    <button
-                      key={date.toISOString()}
-                      onClick={() => setSelectedDate(date)}
-                      className={`flex flex-col items-center justify-center min-w-[60px] p-2 rounded-lg border transition-all ${
-                        isSelected
-                          ? 'bg-primary text-primary-foreground border-primary shadow-md'
-                          : 'bg-white hover:bg-slate-50 border-transparent hover:border-slate-200'
-                      }`}
-                    >
-                      <span className="text-[10px] font-medium uppercase text-muted-foreground/80">
-                        {formatDate(date, 'EEE').replace('.', '')}
-                      </span>
-                      <span className="text-xl font-bold">{format(date, 'dd')}</span>
-                      <span className="text-[10px] uppercase text-muted-foreground/80">
-                        {formatDate(date, 'MMM').replace('.', '')}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleNextDate}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* Time Slots */}
-            <div className="flex-1 overflow-y-auto pr-2">
-              {isLoadingSlots ? (
-                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground gap-2">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  <span className="text-sm">Carregando horários...</span>
-                </div>
-              ) : timeSlots.length === 0 ? (
-                <div className="flex justify-center py-8 text-muted-foreground">
-                  <span className="text-sm">Nenhum horário disponível</span>
-                </div>
-              ) : (
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                  {timeSlots.map((time) => (
-                    <Button
-                      key={time}
-                      variant={selectedTime === time ? 'default' : 'outline'}
-                      className={`w-full ${selectedTime === time ? 'bg-primary text-primary-foreground' : 'hover:border-primary hover:text-primary'}`}
-                      onClick={() => setSelectedTime(time)}
-                    >
-                      {time}
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Footer Action */}
-            <div className="mt-6 flex justify-end items-center gap-4 pt-4 border-t">
-              <span className="text-sm text-muted-foreground hidden sm:inline-block">
-                {selectedDate && selectedTime
-                  ? `Selecionado: ${format(selectedDate, 'dd/MM')} às ${selectedTime}`
-                  : 'Selecione um horário'}
-              </span>
-              <Button
-                disabled={!selectedTime || !selectedDate}
-                onClick={handleConfirmReschedule}
-                className="w-full sm:w-auto"
-              >
-                Confirmar Reagendamento
-              </Button>
-            </div>
-          </div>
+      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl bg-white max-h-[90vh] flex flex-col">
+        <div className="bg-gradient-to-br from-indigo-600 to-blue-700 p-6 text-white relative flex-shrink-0">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <DialogHeader className="relative z-10 text-left">
+            <DialogTitle className="text-2xl font-black tracking-tight text-white mb-2">
+              Reagendar Sessão
+            </DialogTitle>
+            <p className="text-blue-100 text-sm font-medium">
+              {isPsychologistView
+                ? `Escolha uma nova data para sua sessão com ${session.doctor}.`
+                : `Escolha uma nova data para seu atendimento com ${session.doctor}.`}
+            </p>
+          </DialogHeader>
         </div>
+
+        {loading ? (
+          <div className="h-[400px] flex flex-col items-center justify-center gap-4 bg-white">
+            <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+            <p className="text-sm text-slate-500 font-medium">Carregando agenda...</p>
+          </div>
+        ) : psychologist && availability ? (
+          <RescheduleForm
+            psychologist={psychologist}
+            availability={availability}
+            sessionId={String(session.id)}
+            isPsychologistView={isPsychologistView}
+            onSuccess={() => {
+              setOpen(false)
+              router.refresh()
+            }}
+            isRescheduling={isRescheduling}
+            setIsRescheduling={setIsRescheduling}
+            initialTime={session.time}
+          />
+        ) : (
+          <div className="p-12 text-center bg-white">
+            <p className="text-slate-500 font-medium">
+              Não foi possível carregar a agenda. Tente novamente.
+            </p>
+            <Button variant="outline" className="mt-4" onClick={() => setOpen(false)}>
+              Voltar
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
+  )
+}
+
+function RescheduleForm({
+  psychologist,
+  availability,
+  sessionId,
+  isPsychologistView,
+  onSuccess,
+  isRescheduling,
+  setIsRescheduling,
+  initialTime,
+}: {
+  psychologist: PsychologistWithProfile
+  availability: PsychologistAvailability
+  sessionId: string
+  isPsychologistView: boolean
+  onSuccess: () => void
+  isRescheduling: boolean
+  setIsRescheduling: (v: boolean) => void
+  initialTime: string
+}) {
+  const {
+    selectedDay,
+    setSelectedDay,
+    currentDate,
+    selectedTime,
+    setSelectedTime,
+    calendar,
+    timezone,
+  } = usePsychologistProfile(psychologist, availability, initialTime)
+
+  const handleReschedule = async () => {
+    if (!selectedDay || !selectedTime) return
+
+    setIsRescheduling(true)
+    try {
+      const paddedMonth = String(currentDate.getMonth() + 1).padStart(2, '0')
+      const paddedDay = String(selectedDay).padStart(2, '0')
+      const dateStr = `${currentDate.getFullYear()}-${paddedMonth}-${paddedDay}`
+
+      // Criar a string de data/hora e converter para UTC considerando o timezone do psicólogo
+      // Usar formato "YYYY-MM-DD HH:mm:ss" para o fromZonedTime interpretar corretamente
+      const localDateTimeString = `${dateStr} ${selectedTime}:00`
+      const utcDate = fromZonedTime(localDateTimeString, timezone)
+      const newScheduledAt = utcDate.toISOString()
+
+      const result = await rescheduleSession({
+        sessionId,
+        newScheduledAt,
+      })
+
+      if (result.success) {
+        toast.success('Sessão reagendada!', {
+          description: `Sua sessão foi movida para o dia ${paddedDay} de ${format(currentDate, 'MMMM', { locale: ptBR })} às ${selectedTime}.`,
+        })
+        onSuccess()
+      } else {
+        toast.error('Erro ao reagendar', { description: result.error })
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error('Erro inesperado ao reagendar')
+    } finally {
+      setIsRescheduling(false)
+    }
+  }
+
+  return (
+    <div className="bg-white p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
+      {/* Date Selection */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">
+            {calendar.currentMonthName} {calendar.currentYear}
+          </h4>
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-xl hover:bg-slate-100"
+              onClick={calendar.handlePrevMonth}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-xl hover:bg-slate-100"
+              onClick={calendar.handleNextMonth}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-7 gap-1">
+          {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
+            <span
+              key={i}
+              className="text-[10px] font-black text-slate-400 py-1 text-center opacity-60"
+            >
+              {d}
+            </span>
+          ))}
+          {Array.from({ length: (calendar as any).firstDayOfMonth }).map((_, i) => (
+            <div key={`empty-${i}`} className="h-10 w-10 md:h-11 md:w-11" />
+          ))}
+          {Array.from({ length: calendar.daysInMonth }, (_, i) => i + 1).map((day) => {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+            const available = calendar.isDayAvailable(date)
+            const isSelected = day === selectedDay
+
+            return (
+              <button
+                key={day}
+                disabled={!available}
+                onClick={() => {
+                  setSelectedDay(day)
+                  setSelectedTime(null)
+                }}
+                className={cn(
+                  'h-10 w-10 md:h-11 md:w-11 rounded-2xl flex items-center justify-center text-sm transition-all relative overflow-hidden',
+                  isSelected
+                    ? 'bg-blue-600 text-white font-black shadow-lg shadow-blue-600/30'
+                    : available
+                      ? 'bg-blue-50 text-blue-600 font-bold hover:bg-blue-100'
+                      : 'text-slate-300 cursor-not-allowed opacity-40'
+                )}
+              >
+                {day}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Time Selection */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+          <Clock className="h-4 w-4 text-blue-600" /> Horários Disponíveis
+        </h4>
+
+        {selectedDay ? (
+          <div className="grid grid-cols-3 gap-2 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
+            {calendar.availableSlotsForSelectedDay.length > 0 ? (
+              calendar.availableSlotsForSelectedDay.map((time) => (
+                <Button
+                  key={time}
+                  variant="outline"
+                  className={cn(
+                    'h-12 text-sm font-bold border-slate-200 transition-all rounded-xl',
+                    selectedTime === time
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/20'
+                      : 'text-slate-600 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50'
+                  )}
+                  onClick={() => setSelectedTime(time)}
+                >
+                  {time}
+                </Button>
+              ))
+            ) : (
+              <div className="col-span-3 py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                <p className="text-xs text-slate-500 font-medium italic">
+                  Nenhum horário disponível para este dia.
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="p-8 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+            <p className="text-sm text-slate-400 font-bold italic opacity-60">
+              Selecione uma data acima
+            </p>
+          </div>
+        )}
+      </div>
+
+      <Button
+        className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-black text-lg rounded-2xl shadow-xl shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+        disabled={!selectedTime || isRescheduling}
+        onClick={handleReschedule}
+      >
+        {isRescheduling ? (
+          <>
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            Reagendando...
+          </>
+        ) : (
+          <>
+            Confirmar Reagendamento <ArrowRight className="ml-2 h-5 w-5" />
+          </>
+        )}
+      </Button>
+    </div>
   )
 }

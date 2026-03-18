@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { prisma } from '@/lib/prisma'
 
 export type ScheduleItem = {
   id: string
@@ -206,33 +207,38 @@ export type PsychologistAvailability = {
   timezone: string
   weeklySchedule: WeeklyScheduleData | null
   overrides: Record<string, { type: 'blocked' | 'custom'; slots: TimeSlot[] }>
-  appointments: { scheduled_at: string; duration_minutes: number }[]
+  appointments: { id: string; scheduled_at: string; duration_minutes: number }[]
 }
 
 export async function getPsychologistAvailability(
-  psychologistId: string
+  userId: string
 ): Promise<PsychologistAvailability | null> {
   const supabase = await createClient()
 
   // 1. O perfil do psicólogo que contém o weekly_schedule e timezone
+  // Tentamos buscar por ID (UUID do perfil) ou userId (UUID do usuário)
   const { data: profile, error: profileError } = await supabase
     .from('psychologist_profiles')
-    .select('weekly_schedule, timezone')
-    .eq('id', psychologistId)
+    .select('id, weekly_schedule, timezone, userId')
+    .or(`id.eq.${userId},userId.eq.${userId}`)
     .single()
 
   if (profileError || !profile) {
-    console.error('Error fetching psychologist availability:', profileError)
+    if (profileError?.code !== 'PGRST116') {
+      console.error('Error fetching psychologist availability:', profileError)
+    }
     return null
   }
 
-  // Pegamos overrides de alguns dias atrás até o futuro para evitar perder datas por questões de fuso horário do servidor (UTC x Local)
+  const psychologistProfileId = profile.id
+
+  // Pegamos overrides de alguns dias atrás até o futuro
   const recentPastDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
   const { data: overridesList, error: overridesError } = await supabase
     .from('schedule_overrides')
     .select('date, type, slots')
-    .eq('psychologist_id', psychologistId)
+    .eq('psychologist_id', psychologistProfileId) // Usa o ID interno da tabela psychologist_profiles
     .gte('date', recentPastDate)
 
   const overridesMap: Record<string, { type: 'blocked' | 'custom'; slots: TimeSlot[] }> = {}
@@ -247,17 +253,25 @@ export async function getPsychologistAvailability(
   }
 
   // 3. Os agendamentos futuros para evitar conflitos
-  const { data: appointmentList, error: apptError } = await supabase
-    .from('appointments')
-    .select('scheduled_at, duration_minutes')
-    .eq('psychologist_id', psychologistId)
-    .gte('scheduled_at', new Date().toISOString())
-    .neq('status', 'cancelled')
+  // Bypass RLS here so patients see blocked slots correctly
+  const appointmentList = await prisma.appointment.findMany({
+    where: {
+      psychologistId: psychologistProfileId,
+      status: { notIn: ['CANCELED'] },
+      scheduledAt: { gte: new Date(recentPastDate) },
+    },
+    select: {
+      id: true,
+      scheduledAt: true,
+      durationMinutes: true,
+    },
+  })
 
   const appointmentsMap = appointmentList
-    ? appointmentList.map((a) => ({
-        scheduled_at: a.scheduled_at,
-        duration_minutes: a.duration_minutes,
+    ? appointmentList.map((a: any) => ({
+        id: a.id,
+        scheduled_at: a.scheduledAt.toISOString(),
+        duration_minutes: a.durationMinutes,
       }))
     : []
 
@@ -273,10 +287,10 @@ import { format, isBefore, startOfDay, addMinutes } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 
 export async function getAvailableTimeSlots(
-  psychologistId: string,
+  userId: string,
   dateStr: string // YYYY-MM-DD
 ): Promise<string[]> {
-  const availability = await getPsychologistAvailability(psychologistId)
+  const availability = await getPsychologistAvailability(userId)
   if (!availability) return []
 
   const date = new Date(dateStr)

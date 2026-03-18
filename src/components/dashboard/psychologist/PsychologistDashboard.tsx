@@ -22,6 +22,10 @@ import Link from 'next/link'
 import { Profile } from '@/lib/supabase/types'
 
 import { PsychologistDashboardData } from '@/lib/actions/dashboard'
+import { RescheduleDialog } from '@/components/dashboard/RescheduleDialog'
+import { format } from 'date-fns'
+import { formatInTimeZone } from 'date-fns-tz'
+import { ptBR } from 'date-fns/locale'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
@@ -218,6 +222,12 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 <div className="flex flex-col">
                   {upcomingSessions.map((session, index) => {
                     const isNext = index === 0 && session.status === 'scheduled'
+                    const scheduledDate = new Date(session.scheduledAt)
+                    const startTimeStr = formatInTimeZone(
+                      scheduledDate,
+                      dashboardData.timezone,
+                      'HH:mm'
+                    )
                     return (
                       <div
                         key={session.id}
@@ -232,7 +242,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                           <span
                             className={`text-lg font-bold ${isNext ? 'text-primary' : 'text-slate-700'}`}
                           >
-                            {session.time}
+                            {startTimeStr}
                           </span>
                           <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-1 bg-slate-100 px-1.5 py-0.5 rounded text-center min-w-[3rem]">
                             {session.duration} MIN
@@ -289,13 +299,29 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                 </Button>
                               </Link>
                             ) : (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-slate-400 hover:text-slate-900 h-8 w-8 hover:bg-slate-100 rounded-full"
+                              <RescheduleDialog
+                                session={{
+                                  id: session.id,
+                                  doctor: session.patientName,
+                                  role: 'Paciente',
+                                  image: session.image || '/avatars/01.png',
+                                  date: format(
+                                    new Date(session.scheduledAt),
+                                    "dd 'de' MMMM, yyyy",
+                                    { locale: ptBR }
+                                  ),
+                                  time: session.time,
+                                  psychologistId: session.psychologistId,
+                                }}
                               >
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-primary hover:text-primary/90 hover:bg-primary/5 font-bold text-xs"
+                                >
+                                  Reagendar
+                                </Button>
+                              </RescheduleDialog>
                             )}
                           </div>
                         </div>

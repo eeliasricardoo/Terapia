@@ -5,8 +5,10 @@ import { Card } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { SessionDetailsDialog } from '@/components/dashboard/SessionDetailsDialog'
+import { RescheduleDialog } from '@/components/dashboard/RescheduleDialog'
 
 import { format } from 'date-fns'
+import { formatInTimeZone } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
 
@@ -28,9 +30,11 @@ interface Props {
     scheduledAt: string
     durationMinutes: number
     psychologist: {
+      userId: string
       name: string
       specialty: string
       image?: string
+      timezone: string
     }
   } | null
 }
@@ -55,9 +59,17 @@ export function NextSessionHero({ session }: Props) {
     )
   }
 
+  const timezone = session.psychologist.timezone || 'America/Sao_Paulo'
   const scheduledDate = new Date(session.scheduledAt)
-  const dateStr = format(scheduledDate, "EEEE, dd 'de' MMMM", { locale: ptBR })
-  const timeRange = `${format(scheduledDate, 'HH:mm')} - ${format(new Date(scheduledDate.getTime() + session.durationMinutes * 60000), 'HH:mm')}`
+  const dateStr = formatInTimeZone(scheduledDate, timezone, "EEEE, dd 'de' MMMM", { locale: ptBR })
+
+  const finishTime = new Date(scheduledDate.getTime() + session.durationMinutes * 60000)
+  const startTimeStr = formatInTimeZone(scheduledDate, timezone, 'HH:mm')
+  const finishTimeStr = formatInTimeZone(finishTime, timezone, 'HH:mm')
+  const timeRange = `${startTimeStr} - ${finishTimeStr}`
+
+  // Detect if user zone is different to show a subtle warning?
+  // For now let's just show the session time as agreed (psychologist's clock).
 
   return (
     <Card className="border-none shadow-md overflow-hidden relative">
@@ -72,6 +84,9 @@ export function NextSessionHero({ session }: Props) {
           <h2 className="text-2xl font-bold text-slate-900 mb-1">{session.type}</h2>
           <p className="text-slate-500 mb-6 flex items-center gap-2">
             <Clock className="h-4 w-4" /> {timeRange}
+            <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold uppercase">
+              {timezone.replace('_', ' ').split('/').pop()}
+            </span>
           </p>
 
           <div className="flex items-center gap-4 mb-8">
@@ -85,15 +100,33 @@ export function NextSessionHero({ session }: Props) {
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             <SessionDetailsDialog session={session}>
               <Button
                 variant="outline"
-                className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
+                className="border-slate-200 text-slate-600 hover:bg-slate-50"
               >
                 Detalhes
               </Button>
             </SessionDetailsDialog>
+            <RescheduleDialog
+              session={{
+                id: session.id,
+                doctor: session.psychologist.name,
+                role: 'Psicóloga Clínica', // Patient view
+                image: session.psychologist.image || '/avatars/01.png',
+                date: format(new Date(session.scheduledAt), "dd 'de' MMMM, yyyy", { locale: ptBR }),
+                time: format(new Date(session.scheduledAt), 'HH:mm'),
+                psychologistId: session.psychologist.userId,
+              }}
+            >
+              <Button
+                variant="outline"
+                className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
+              >
+                Reagendar
+              </Button>
+            </RescheduleDialog>
             <Link href={`/sala/${session.id}`}>
               <Button className="bg-blue-600 text-white hover:bg-blue-700 shadow-md">
                 Entrar na Sala

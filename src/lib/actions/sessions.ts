@@ -1,7 +1,9 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import type { Database } from '@/lib/supabase/types'
+import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { isValidUUID } from '@/lib/security'
 
@@ -131,45 +133,41 @@ export async function createSession(data: {
     return { success: false, error: 'Acesso negado. Você não pode agendar para terceiros.' }
   }
 
-  // 3. Security: Fetch price securely from the backend to prevent tampering
+  // 3. Security: Fetch profile and price securely from the backend
   const { data: psychData, error: psychError } = await supabase
     .from('psychologist_profiles')
-    .select('price_per_session')
+    .select('id, price_per_session')
     .eq('userId', data.psychologistId)
     .single()
 
   if (psychError || !psychData) {
-    logger.error('Error fetching psychologist price:', psychError)
-    return { success: false, error: 'Psicólogo não encontrado ou erro ao obter o preço.' }
+    logger.error('Error fetching psychologist data:', psychError)
+    return { success: false, error: 'Psicólogo não encontrado ou erro ao obter dados.' }
   }
 
+  const psychologistProfileId = psychData.id
   const securePrice = psychData.price_per_session || 0
 
   // 4. Backend validation: Prevent double booking (Race condition protection)
   const newSessionStart = new Date(data.scheduledAt)
   const newSessionEnd = new Date(newSessionStart.getTime() + data.durationMinutes * 60 * 1000)
 
-  // Consider appointments within a +/- 24h window for timezone safety
-  const windowStart = new Date(newSessionStart.getTime() - 24 * 60 * 60 * 1000).toISOString()
-  const windowEnd = new Date(newSessionStart.getTime() + 24 * 60 * 60 * 1000).toISOString()
-
-  const { data: existingAppts, error: fetchApptsError } = await supabase
-    .from('appointments')
-    .select('scheduled_at, duration_minutes')
-    .eq('psychologist_id', data.psychologistId)
-    .gte('scheduled_at', windowStart)
-    .lte('scheduled_at', windowEnd)
-    .neq('status', 'cancelled')
-
-  if (fetchApptsError) {
-    logger.error('Error checking for double bookings:', fetchApptsError)
-    return { success: false, error: 'Erro ao verificar disponibilidade de horários.' }
-  }
+  // Consider appointments within a +/- 2h window for performance, but Prisma handles it well
+  const existingAppts = await prisma.appointment.findMany({
+    where: {
+      psychologistId: psychologistProfileId,
+      status: { notIn: ['CANCELED'] },
+      scheduledAt: {
+        gte: new Date(newSessionStart.getTime() - 120 * 60000),
+        lte: new Date(newSessionStart.getTime() + 120 * 60000),
+      },
+    },
+  })
 
   if (existingAppts) {
     const hasConflict = existingAppts.some((appt) => {
-      const apptStart = new Date(appt.scheduled_at)
-      const apptEnd = new Date(apptStart.getTime() + appt.duration_minutes * 60 * 1000)
+      const apptStart = new Date(appt.scheduledAt)
+      const apptEnd = new Date(apptStart.getTime() + appt.durationMinutes * 60 * 1000)
 
       // Check for overlap: (StartA < EndB) and (EndA > StartB)
       return newSessionStart < apptEnd && newSessionEnd > apptStart
@@ -188,11 +186,11 @@ export async function createSession(data: {
     .from('appointments')
     .insert({
       patient_id: data.patientId,
-      psychologist_id: data.psychologistId,
+      psychologist_id: psychologistProfileId,
       scheduled_at: data.scheduledAt,
       duration_minutes: data.durationMinutes,
-      price: securePrice, // PREVINE QUE O PACIENTE MUDE O PREÇO PARA 0 NO NAVEGADOR!
-      status: 'scheduled',
+      price: securePrice,
+      status: 'SCHEDULED', // Use uppercase for enum consistency
     })
     .select()
     .single()
@@ -201,6 +199,9 @@ export async function createSession(data: {
     logger.error('Error creating session:', error)
     return { success: false, error: error.message }
   }
+
+  revalidateTag('appointments')
+  revalidatePath('/', 'layout')
 
   return { success: true, data: newSession }
 }
@@ -247,7 +248,7 @@ export async function cancelSession(sessionId: string) {
   // 3. Execute cancellation
   const { error } = await supabase
     .from('appointments')
-    .update({ status: 'cancelled' })
+    .update({ status: 'CANCELED' })
     .eq('id', sessionId)
 
   if (error) {
@@ -255,7 +256,129 @@ export async function cancelSession(sessionId: string) {
     return { success: false, error: error.message }
   }
 
+  revalidateTag('appointments')
+  revalidatePath('/', 'layout')
+
   return { success: true }
+}
+
+/**
+ * Reschedule a session
+ */
+export async function rescheduleSession(data: { sessionId: string; newScheduledAt: string }) {
+  if (!isValidUUID(data.sessionId)) {
+    return { success: false, error: 'ID de sessão inválido' }
+  }
+
+  const supabase = await createClient()
+
+  // 1. Verify Authentication
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return { success: false, error: 'Usuário não autenticado' }
+  }
+
+  // 2. Security: Verify Ownership & Session Info
+  const { data: appointment, error: fetchError } = await supabase
+    .from('appointments')
+    .select('*')
+    .eq('id', data.sessionId)
+    .single()
+
+  if (fetchError || !appointment) {
+    return { success: false, error: 'Sessão não encontrada' }
+  }
+
+  if (user.id !== appointment.patient_id && user.id !== appointment.psychologist_id) {
+    return {
+      success: false,
+      error: 'Acesso negado. Você não tem permissão para reagendar esta sessão.',
+    }
+  }
+
+  // 3. Prevent rescheduling past sessions
+  if (new Date(appointment.scheduled_at) < new Date()) {
+    // Optional: Allow psychologists to reschedule past sessions if needed?
+    // Usually patients can't reschedule after the time has passed.
+    if (user.id === appointment.patient_id) {
+      return {
+        success: false,
+        error: 'Não é possível reagendar uma sessão que já ocorreu ou está em andamento.',
+      }
+    }
+  }
+
+  // 4. Backend validation: Prevent double booking
+  const newSessionStart = new Date(data.newScheduledAt)
+  const newSessionEnd = new Date(
+    newSessionStart.getTime() + appointment.duration_minutes * 60 * 1000
+  )
+
+  try {
+    // USE PRISMA to bypass RLS and see all conflicts for this psychologist
+    // We check for any appointment that starts before our end AND ends after our start
+    const existingConflicts = await prisma.appointment.findMany({
+      where: {
+        psychologistId: appointment.psychologist_id,
+        id: { not: data.sessionId },
+        status: { notIn: ['CANCELED'] },
+        // (StartA < EndB) AND (EndA > StartB)
+        // Since we don't know the exact end time of all existing sessions easily in a single query
+        // we'll fetch sessions within our +/- 2h window and check in memory
+        scheduledAt: {
+          gte: new Date(newSessionStart.getTime() - 120 * 60000),
+          lte: new Date(newSessionStart.getTime() + 120 * 60000),
+        },
+      },
+    })
+
+    const hasConflict = existingConflicts.some((appt: any) => {
+      const apptStart = new Date(appt.scheduledAt)
+      const apptEnd = new Date(apptStart.getTime() + appt.durationMinutes * 60000)
+      return newSessionStart < apptEnd && newSessionEnd > apptStart
+    })
+
+    if (hasConflict) {
+      return {
+        success: false,
+        error: 'Este horário já foi reservado ou entra em conflito com outra sessão.',
+      }
+    }
+  } catch (error: any) {
+    logger.error('Reschedule conflict check error:', {
+      psychId: appointment.psychologist_id,
+      sessionId: data.sessionId,
+      error: error.message || error,
+      stack: error.stack,
+    })
+    return {
+      success: false,
+      error: `Erro ao verificar disponibilidade: ${error.message || 'Erro desconhecido'}`,
+    }
+  }
+
+  // 5. Update the appointment
+  const { data: updatedSession, error: updateError } = await supabase
+    .from('appointments')
+    .update({
+      scheduled_at: data.newScheduledAt,
+      status: 'SCHEDULED',
+    })
+    .eq('id', data.sessionId)
+    .select()
+    .single()
+
+  if (updateError) {
+    logger.error('Error rescheduling session:', updateError)
+    return { success: false, error: updateError.message }
+  }
+
+  revalidateTag('appointments')
+  revalidatePath('/', 'layout')
+
+  return { success: true, data: updatedSession }
 }
 
 /**
