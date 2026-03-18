@@ -14,7 +14,9 @@ import {
   GraduationCap,
   Quote,
   Loader2,
+  AlertCircle,
 } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import {
   Sheet,
@@ -249,6 +251,24 @@ export function ApprovalList({ initialPending }: { initialPending: PendingPsycho
                   </Button>
                 </div>
               </div>
+              {/* Motivo da Rejeição */}
+              <div className="space-y-3 pt-4">
+                <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest pl-1">
+                  Rejeitar Cadastro
+                </h4>
+                <div className="space-y-2">
+                  <Textarea
+                    placeholder="Informe o motivo da rejeição (será enviado por e-mail ao profissional)..."
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    className="min-h-[100px] rounded-xl border-slate-200 focus:ring-red-500 focus:border-red-500"
+                  />
+                  <p className="text-[11px] text-slate-400">
+                    Atenção: Ao rejeitar, o psicólogo voltará para o status de &apos;Paciente&apos;
+                    e precisará recriar o perfil profissional.
+                  </p>
+                </div>
+              </div>
             </div>
           </ScrollArea>
 
@@ -268,11 +288,14 @@ export function ApprovalList({ initialPending }: { initialPending: PendingPsycho
               <Button
                 variant="ghost"
                 className="text-red-600 hover:bg-red-50 font-bold rounded-xl px-4"
-                onClick={() => {
-                  toast.info('Funcionalidade de rejeição em desenvolvimento')
-                }}
+                disabled={loadingId === selectedPsicologo?.id || !rejectReason.trim()}
+                onClick={() => handleReject(selectedPsicologo?.id!, selectedPsicologo?.fullName!)}
               >
-                Reprovar
+                {loadingId === selectedPsicologo?.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  'Reprovar'
+                )}
               </Button>
               <Button
                 variant="outline"

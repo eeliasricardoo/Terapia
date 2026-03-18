@@ -265,10 +265,17 @@ export async function rejectPsychologist(psychologistId: string, reason: string)
       where: { id: psychologistId },
     })
 
-    // Deleta o tipo PSYCHOLOGIST para o User se não houver Profile
+    // Atualiza o papel para PATIENT tanto no User quanto no Profile
     await prisma.user.update({
       where: { id: psychologist.userId },
-      data: { role: 'PATIENT' }, // Volta para paciente
+      data: {
+        role: 'PATIENT',
+        profiles: {
+          update: {
+            role: 'PATIENT',
+          },
+        },
+      },
     })
 
     // Send Rejection Email

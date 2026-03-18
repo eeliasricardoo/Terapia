@@ -1,7 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getPendingPsychologists, verifyPsychologist } from '@/lib/actions/admin'
+import {
+  getPendingPsychologists,
+  verifyPsychologist,
+  rejectPsychologist,
+} from '@/lib/actions/admin'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -9,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Loader2, CheckCircle, ShieldCheck, UserCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Sheet,
   SheetContent,
@@ -36,6 +41,7 @@ export function AdminVerificationManager() {
   const [verifyingId, setVerifyingId] = useState<string | null>(null)
   const [selectedPsychologist, setSelectedPsychologist] = useState<any | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
 
   useEffect(() => {
     loadPending()
@@ -63,6 +69,30 @@ export function AdminVerificationManager() {
         setIsDialogOpen(false)
       } else {
         toast.error(result.error || 'Erro ao verificar psicólogo')
+      }
+    } catch (error) {
+      toast.error('Ocorreu um erro inesperado')
+    } finally {
+      setVerifyingId(null)
+    }
+  }
+
+  async function handleReject(id: string, name: string) {
+    if (!rejectReason.trim()) {
+      toast.error('Informe um motivo para a rejeição.')
+      return
+    }
+
+    setVerifyingId(id)
+    try {
+      const result = await rejectPsychologist(id, rejectReason)
+      if (result.success) {
+        toast.success(`Cadastro de ${name} rejeitado.`)
+        setPending((prev) => prev.filter((p) => p.id !== id))
+        setRejectReason('')
+        setIsDialogOpen(false)
+      } else {
+        toast.error(result.error || 'Erro ao rejeitar psicólogo')
       }
     } catch (error) {
       toast.error('Ocorreu um erro inesperado')
@@ -283,6 +313,24 @@ export function AdminVerificationManager() {
                   ))}
                 </div>
               </div>
+
+              {/* Motivo da Rejeição */}
+              <div className="space-y-3 pt-4">
+                <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest pl-1">
+                  Rejeitar Cadastro
+                </h4>
+                <div className="space-y-2">
+                  <Textarea
+                    placeholder="Informe o motivo da rejeição (será enviado por e-mail ao profissional)..."
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    className="min-h-[100px] rounded-xl border-slate-200 focus:ring-red-500 focus:border-red-500"
+                  />
+                  <p className="text-[11px] text-slate-400">
+                    Atenção: Ao rejeitar, o psicólogo voltará para o status de &apos;Paciente&apos;.
+                  </p>
+                </div>
+              </div>
             </div>
           </ScrollArea>
 
@@ -302,11 +350,16 @@ export function AdminVerificationManager() {
               <Button
                 variant="ghost"
                 className="text-red-600 hover:bg-red-50 font-bold rounded-xl px-4"
-                onClick={() => {
-                  toast.info('Funcionalidade de rejeição em desenvolvimento')
-                }}
+                disabled={verifyingId === selectedPsychologist?.id || !rejectReason.trim()}
+                onClick={() =>
+                  handleReject(selectedPsychologist?.id, selectedPsychologist?.fullName)
+                }
               >
-                Reprovar
+                {verifyingId === selectedPsychologist?.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  'Reprovar'
+                )}
               </Button>
               <Button
                 variant="outline"
