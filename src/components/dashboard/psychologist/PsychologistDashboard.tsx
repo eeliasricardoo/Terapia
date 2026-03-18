@@ -79,116 +79,98 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
       ) : (
         <>
           {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 mt-2">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 leading-tight">
-                Painel do Profissional
+              <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
+                Olá, {userName}.
               </h1>
-              <p className="text-slate-500 mt-2">
-                Bem-vindo(a), {userName}. Você tem {stats.sessionsToday}{' '}
-                {stats.sessionsToday === 1 ? 'atendimento' : 'atendimentos'} hoje.
+              <p className="text-slate-500 mt-2 font-medium">
+                Você tem {stats.sessionsToday}{' '}
+                {stats.sessionsToday === 1 ? 'atendimento agendado' : 'atendimentos agendados'} para
+                hoje.
               </p>
             </div>
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <Button
-                variant="outline"
-                size="icon"
-                className="relative border-slate-200 text-slate-600 hover:text-slate-900"
+            <div className="flex items-center gap-2">
+              <Link
+                href="/dashboard/ajustes"
+                className="opacity-60 hover:opacity-100 transition-opacity"
               >
-                <Bell className="h-4 w-4" />
-              </Button>
-              <Link href="/dashboard/ajustes">
-                <Button
-                  variant="outline"
-                  className="gap-2 text-slate-700 border-slate-200 hover:bg-slate-50"
-                >
-                  <Settings className="h-4 w-4" />
-                  Ajustes
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Settings className="h-5 w-5" />
                 </Button>
               </Link>
-              <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm shadow-primary/20 border border-transparent transition-all">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full relative opacity-60 hover:opacity-100 transition-opacity"
+              >
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-2 right-2 h-2 w-2 bg-rose-500 rounded-full border-2 border-slate-50" />
+              </Button>
+              <Button className="ml-2 gap-2 bg-slate-900 text-white hover:bg-slate-800 rounded-full px-6 transition-all hover:translate-y-[-1px] shadow-lg shadow-slate-200">
                 <Video className="h-4 w-4" />
-                Sala Virtual
+                <span>Sala Virtual</span>
               </Button>
             </div>
           </div>
 
           {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-none shadow-sm bg-white hover:shadow-md transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-medium text-slate-500">Sessões (Hoje)</span>
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <CalendarIcon className="h-4 w-4 text-primary" />
-                  </div>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-3xl font-bold text-slate-900 tracking-tight">
-                    {stats.sessionsToday}
-                  </h3>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+                Sessões
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-slate-900">{stats.sessionsToday}</span>
+                <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full font-bold">
+                  HOJE
+                </span>
+              </div>
+            </div>
 
-            <Card className="border-none shadow-sm bg-white hover:shadow-md transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-medium text-slate-500">Pacientes Ativos</span>
-                  <div className="h-8 w-8 rounded-full bg-indigo-50 flex items-center justify-center">
-                    <Users className="h-4 w-4 text-indigo-600" />
-                  </div>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-3xl font-bold text-slate-900 tracking-tight">
-                    {stats.activePatients}
-                  </h3>
-                  <span className="text-xs text-slate-400">Total {stats.totalPatients}</span>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+                Pacientes Ativos
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-slate-900">{stats.activePatients}</span>
+                <span className="text-[10px] text-slate-400 font-bold">
+                  TOTAL {stats.totalPatients}
+                </span>
+              </div>
+            </div>
 
-            <Card className="border-none shadow-sm bg-white hover:shadow-md transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-medium text-slate-500">Receita Estimada (Mês)</span>
-                  <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center">
-                    <CreditCard className="h-4 w-4 text-emerald-600" />
-                  </div>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-3xl font-bold text-slate-900 tracking-tight">
-                    {new Intl.NumberFormat('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                      maximumFractionDigits: 0,
-                    }).format(stats.monthlyRevenue)}
-                  </h3>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+                Receita
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-slate-900">
+                  {new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                    maximumFractionDigits: 0,
+                  }).format(stats.monthlyRevenue)}
+                </span>
+              </div>
+            </div>
 
-            <Card className="border-none shadow-sm bg-white hover:shadow-md transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-medium text-slate-500">Variação Receita</span>
-                  <div className="h-8 w-8 rounded-full bg-amber-50 flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4 text-amber-600" />
-                  </div>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-3xl font-bold text-slate-900 tracking-tight">
-                    {stats.revenueChange >= 0 ? '+' : ''}
-                    {stats.revenueChange}%
-                  </h3>
-                  <span
-                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${stats.revenueChange >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50'}`}
-                  >
-                    {stats.revenueChange >= 0 ? 'vs. mês anterior' : 'vs. mês anterior'}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+                Desempenho
+              </p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-slate-900">
+                  {stats.revenueChange >= 0 ? '+' : ''}
+                  {stats.revenueChange}%
+                </span>
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${stats.revenueChange >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'}`}
+                >
+                  MENSAL
+                </span>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -237,51 +219,53 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                             border-b border-slate-100 last:border-0 transition-colors
                                         `}
                       >
-                        {/* Time Column */}
-                        <div className="w-24 relative flex flex-col items-center justify-center py-6 border-r border-slate-100/50">
-                          <span
-                            className={`text-lg font-bold ${isNext ? 'text-primary' : 'text-slate-700'}`}
-                          >
-                            {startTimeStr}
-                          </span>
-                          <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-1 bg-slate-100 px-1.5 py-0.5 rounded text-center min-w-[3rem]">
-                            {session.duration} MIN
-                          </span>
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 flex items-center justify-between p-6">
+                        {/* Time & Session Info */}
+                        <div className="flex-1 flex items-center justify-between px-6 py-5">
                           <div className="flex items-center gap-4">
+                            <div className="flex flex-col items-center justify-center min-w-[3.5rem]">
+                              <span
+                                className={`text-xl font-black ${isNext ? 'text-slate-900' : 'text-slate-500'}`}
+                              >
+                                {startTimeStr}
+                              </span>
+                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                                {session.duration} MIN
+                              </span>
+                            </div>
+
+                            <div className="h-8 w-[1px] bg-slate-100 hidden md:block mx-2" />
+
                             <Avatar
-                              className={`h-12 w-12 border-2 ${isNext ? 'border-primary/20' : 'border-slate-100'}`}
+                              className={`h-12 w-12 grayscale hover:grayscale-0 transition-all ${isNext ? 'grayscale-0 ring-2 ring-primary ring-offset-2' : ''}`}
                             >
                               <AvatarImage src={session.image} />
-                              <AvatarFallback
-                                className={`${isNext ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-600'}`}
-                              >
+                              <AvatarFallback className="bg-slate-100 text-slate-600 font-bold">
                                 {session.patientName.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
 
                             <div>
                               <h4
-                                className={`font-semibold text-base ${isNext ? 'text-primary/90' : 'text-slate-900'}`}
+                                className={`font-bold text-base ${isNext ? 'text-slate-900' : 'text-slate-700'}`}
                               >
                                 {session.patientName}
                               </h4>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs text-slate-500">{session.type}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-slate-400">
+                                  {session.type}
+                                </span>
                                 {session.status === 'completed' && (
-                                  <div className="flex items-center text-[10px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded font-medium">
-                                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                                  <Badge
+                                    variant="secondary"
+                                    className="bg-emerald-50 text-emerald-600 border-none text-[9px] h-4 font-black uppercase tracking-tighter"
+                                  >
                                     Concluída
-                                  </div>
+                                  </Badge>
                                 )}
-                                {session.status === 'scheduled' && (
-                                  <div className="flex items-center text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded font-medium">
-                                    <Clock className="h-3 w-3 mr-1" />
-                                    Agendada
-                                  </div>
+                                {session.status === 'scheduled' && isNext && (
+                                  <Badge className="bg-slate-900 text-white border-none text-[9px] h-4 font-black uppercase tracking-tighter">
+                                    Próxima
+                                  </Badge>
                                 )}
                               </div>
                             </div>
@@ -289,15 +273,40 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
 
                           <div className="flex items-center gap-3">
                             {isNext ? (
-                              <Link href={`/sala/${session.id}`} className="w-full">
-                                <Button
-                                  size="sm"
-                                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-4 h-9 shadow-md shadow-primary/20 text-xs font-semibold transition-all hover:scale-105 w-full"
+                              <div className="flex items-center gap-2 w-full md:w-auto">
+                                <Link href={`/sala/${session.id}`} className="flex-1">
+                                  <Button
+                                    size="sm"
+                                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg px-4 h-9 shadow-md shadow-slate-200 text-xs font-black uppercase tracking-tighter transition-all hover:scale-105 w-full"
+                                  >
+                                    <Video className="w-3 h-3 mr-2" />
+                                    Iniciar
+                                  </Button>
+                                </Link>
+                                <RescheduleDialog
+                                  session={{
+                                    id: session.id,
+                                    doctor: session.patientName,
+                                    role: 'Paciente',
+                                    image: session.image || '/avatars/01.png',
+                                    date: format(
+                                      new Date(session.scheduledAt),
+                                      "dd 'de' MMMM, yyyy",
+                                      { locale: ptBR }
+                                    ),
+                                    time: session.time,
+                                    psychologistId: session.psychologistId,
+                                  }}
                                 >
-                                  <Video className="w-3 h-3 mr-2" />
-                                  Iniciar Atendimento
-                                </Button>
-                              </Link>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 font-bold text-xs h-9 px-3"
+                                  >
+                                    Reagendar
+                                  </Button>
+                                </RescheduleDialog>
+                              </div>
                             ) : (
                               <RescheduleDialog
                                 session={{

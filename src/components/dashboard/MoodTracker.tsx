@@ -70,62 +70,59 @@ export function MoodTracker({ monthlyProgress }: MoodTrackerProps) {
   }
 
   return (
-    <Card className="border-none shadow-md bg-white">
-      <CardHeader>
-        <CardTitle className="text-lg">Como você está hoje?</CardTitle>
-        <CardDescription>Registre seu humor diário</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-5 gap-2 relative">
-          {isSaving && (
-            <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center rounded-xl">
-              <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+    <Card className="border-none shadow-none bg-transparent">
+      <CardContent className="p-0">
+        <div className="bg-white border border-slate-100 rounded-[2rem] p-8 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+            <div>
+              <h4 className="text-xl font-black text-slate-900">Como você está agora?</h4>
+              <p className="text-sm font-medium text-slate-400">
+                Um registro rápido do seu bem-estar.
+              </p>
             </div>
-          )}
-          {MOODS.map((mood) => (
-            <button
-              key={mood.value}
-              onClick={() => handleMoodSelect(mood.value, mood.emoji)}
-              disabled={isSaving}
-              className={`aspect-square rounded-xl flex flex-col items-center justify-center text-2xl transition-all ${
-                selectedMood === mood.value
-                  ? 'bg-blue-100 border-2 border-blue-500 scale-110 shadow-md'
-                  : 'hover:bg-slate-100 border-2 border-transparent hover:scale-105'
-              } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={mood.label}
-            >
-              <span className="text-3xl">{mood.emoji}</span>
-              <span className="text-[9px] mt-1 text-slate-600 font-medium">{mood.label}</span>
-            </button>
-          ))}
-        </div>
-        {selectedMood && (
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200 animate-in fade-in slide-in-from-top-2 duration-300">
-            <p className="text-sm text-blue-800">
-              ✓ Humor registrado! Acesse o{' '}
-              <Link
-                href="/dashboard/diario"
-                className="font-semibold underline hover:text-blue-900"
-              >
-                Diário Emocional
-              </Link>{' '}
-              para adicionar mais detalhes.
-            </p>
+            <div className="flex gap-2 relative">
+              {isSaving && (
+                <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center rounded-xl">
+                  <Loader2 className="h-4 w-4 animate-spin text-slate-900" />
+                </div>
+              )}
+              {MOODS.map((mood) => (
+                <button
+                  key={mood.value}
+                  onClick={() => handleMoodSelect(mood.value, mood.emoji)}
+                  disabled={isSaving}
+                  className={`h-12 w-12 rounded-full flex items-center justify-center text-xl transition-all ${
+                    selectedMood === mood.value
+                      ? 'bg-slate-900 scale-110 shadow-lg'
+                      : 'hover:bg-slate-100'
+                  } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title={mood.label}
+                >
+                  <span
+                    className={
+                      selectedMood === mood.value
+                        ? 'grayscale-0'
+                        : 'grayscale opacity-60 hover:grayscale-0 hover:opacity-100'
+                    }
+                  >
+                    {mood.emoji}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
-        )}
-        <div className="mt-8 pt-6 border-t border-slate-100">
-          <h4 className="text-sm font-semibold text-slate-900 mb-4">Seu progresso</h4>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600">Sessões este mês</span>
-              <span className="font-bold text-slate-900">
-                {monthlyProgress.completedSessions}/{monthlyProgress.totalSessions}
+
+          <div className="pt-8 border-t border-slate-50">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-bold text-slate-900 italic">Sua jornada este mês</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                {monthlyProgress.completedSessions} de {monthlyProgress.totalSessions} SESSÕES
               </span>
             </div>
             <Progress
               value={(monthlyProgress.completedSessions / monthlyProgress.totalSessions) * 100}
-              className="h-2 bg-slate-100"
-              indicatorClassName="bg-blue-500"
+              className="h-1.5 bg-slate-100"
+              indicatorClassName="bg-slate-900"
             />
           </div>
         </div>

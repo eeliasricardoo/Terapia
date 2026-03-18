@@ -68,22 +68,48 @@ export default async function DashboardPage() {
   const patientData = await getPatientDashboardData()
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-12 animate-in fade-in duration-700 max-w-6xl mx-auto px-4 sm:px-6">
       <Suspense>
         <PaymentStatusToast />
       </Suspense>
-      <PatientDashboardHeader userName={userName} nextSession={patientData.nextSession} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div className="col-span-1 md:col-span-2 lg:col-span-2 space-y-8">
-          <FindPsychologistCTA />
-          <NextSessionHero session={patientData.nextSession} />
-          <MoodTracker monthlyProgress={patientData.monthlyProgress} />
+      <div className="flex flex-col gap-2">
+        <h1 className="text-4xl font-black tracking-tight text-slate-900">Olá, {userName}.</h1>
+        <p className="text-slate-500 font-medium">
+          Bem-vindo ao seu espaço de cuidado e autoconhecimento.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="lg:col-span-8 space-y-10">
+          {patientData.nextSession ? (
+            <NextSessionHero session={patientData.nextSession} />
+          ) : (
+            <FindPsychologistCTA />
+          )}
+
+          <div className="pt-4">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
+              Seu Progresso
+            </h3>
+            <MoodTracker monthlyProgress={patientData.monthlyProgress} />
+          </div>
         </div>
 
-        <div className="col-span-1 space-y-8">
-          <QuickActions />
-          <RecentHistory history={patientData.recentSessions} />
+        <div className="lg:col-span-4 space-y-10">
+          <div>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
+              Ações Rápidas
+            </h3>
+            <QuickActions />
+          </div>
+
+          <div>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
+              Histórico
+            </h3>
+            <RecentHistory history={patientData.recentSessions} />
+          </div>
         </div>
       </div>
     </div>
