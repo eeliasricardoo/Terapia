@@ -38,25 +38,25 @@ export function AdminDashboard({ userProfile, dashboardData }: Props) {
           title="Total Usuários"
           value={dashboardData.totalUsers}
           icon={Users}
-          color="blue"
+          color="slate"
         />
         <StatCard
           title="Psicólogos Verificados"
           value={dashboardData.verifiedPsychologists}
           icon={ShieldCheck}
-          color="emerald"
+          color="slate"
         />
         <StatCard
           title="Sessões Ativas"
           value={dashboardData.activeSessions}
           icon={Activity}
-          color="indigo"
+          color="slate"
         />
         <StatCard
           title="Total Agendamentos"
           value={dashboardData.totalAppointments}
           icon={Calendar}
-          color="amber"
+          color="slate"
         />
       </div>
 
@@ -96,10 +96,13 @@ export function AdminDashboard({ userProfile, dashboardData }: Props) {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm bg-primary text-primary-foreground">
+          <Card className="border-none shadow-sm bg-slate-50 text-slate-900 ring-1 ring-slate-100">
             <CardContent className="p-6">
-              <h4 className="font-bold mb-2">Dica do Sistema</h4>
-              <p className="text-primary-foreground/80 text-sm leading-relaxed">
+              <h4 className="font-bold mb-2 flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Dica do Sistema
+              </h4>
+              <p className="text-slate-600 text-sm leading-relaxed">
                 Psicólogos verificados aparecem instantaneamente na página de busca pública para
                 todos os pacientes.
               </p>
@@ -113,10 +116,8 @@ export function AdminDashboard({ userProfile, dashboardData }: Props) {
 
 function StatCard({ title, value, icon: Icon, color }: any) {
   const colors = {
-    blue: 'bg-blue-50 text-blue-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
-    amber: 'bg-amber-50 text-amber-600',
+    slate: 'bg-slate-50 text-slate-500 ring-1 ring-slate-100',
+    primary: 'bg-primary/5 text-primary',
   }
 
   return (

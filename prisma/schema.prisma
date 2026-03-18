@@ -102,6 +102,8 @@ model PsychologistProfile {
   title                String?
   university           String?
   yearsOfExperience    Int?
+  diplomaUrl           String?            @map("diploma_url")
+  licenseUrl           String?            @map("license_url")
   sessionDuration      Int                @default(50) @map("session_duration")
   suspensionReason     String?            @map("suspension_reason")
   appointments         Appointment[]

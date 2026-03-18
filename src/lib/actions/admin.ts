@@ -36,16 +36,44 @@ export async function getPendingPsychologists() {
       orderBy: { createdAt: 'desc' },
     })
 
-    return pending.map((p) => ({
-      id: p.id,
-      userId: p.userId,
-      fullName: p.user.profiles?.fullName || p.user.name || 'Psicólogo',
-      email: p.user.email,
-      crp: p.crp,
-      specialties: p.specialties,
-      createdAt: p.createdAt.toISOString(),
-      avatarUrl: p.user.profiles?.avatarUrl,
-    }))
+    return await Promise.all(
+      pending.map(async (p) => {
+        let diplomaSignedUrl = null
+        let licenseSignedUrl = null
+
+        if (p.diplomaUrl) {
+          const { data: signData } = await supabase.storage
+            .from('documents')
+            .createSignedUrl(p.diplomaUrl, 3600)
+          diplomaSignedUrl = signData?.signedUrl
+        }
+
+        if (p.licenseUrl) {
+          const { data: signData } = await supabase.storage
+            .from('documents')
+            .createSignedUrl(p.licenseUrl, 3600)
+          licenseSignedUrl = signData?.signedUrl
+        }
+
+        return {
+          id: p.id,
+          userId: p.userId,
+          fullName: p.user.profiles?.fullName || p.user.name || 'Psicólogo',
+          email: p.user.email,
+          crp: p.crp,
+          specialties: p.specialties,
+          bio: p.bio,
+          pricePerSession: Number(p.pricePerSession || 0),
+          yearsOfExperience: p.yearsOfExperience,
+          university: p.university,
+          academicLevel: p.academicLevel,
+          diplomaUrl: diplomaSignedUrl,
+          licenseUrl: licenseSignedUrl,
+          createdAt: p.createdAt.toISOString(),
+          avatarUrl: p.user.profiles?.avatarUrl,
+        }
+      })
+    )
   } catch (error) {
     logger.error('Error fetching pending psychologists:', error)
     return []
@@ -91,7 +119,8 @@ export async function verifyPsychologist(psychologistId: string) {
       `,
     })
 
-    revalidatePath('/admin-sistema')
+    revalidatePath('/dashboard')
+    revalidatePath('/dashboard/admin/aprovacoes')
     return { success: true }
   } catch (error) {
     logger.error('Error verifying psychologist:', error)
@@ -257,7 +286,8 @@ export async function rejectPsychologist(psychologistId: string, reason: string)
       `,
     })
 
-    revalidatePath('/admin-sistema')
+    revalidatePath('/dashboard')
+    revalidatePath('/dashboard/admin/aprovacoes')
     return { success: true }
   } catch (error) {
     logger.error('Error rejecting psychologist:', error)

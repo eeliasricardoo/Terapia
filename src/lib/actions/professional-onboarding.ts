@@ -3,15 +3,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function saveProfessionalData(data: {
-  university: string
-  academicLevel: string
-  title: string
-  registrationNumber: string
-  expirationDate?: Date
-  specializations: string[]
-  yearsOfExperience: string
-}) {
+export async function saveProfessionalData(formData: FormData) {
+  const university = formData.get('university') as string
+  const academicLevel = formData.get('academicLevel') as string
+  const title = formData.get('title') as string
+  const registrationNumber = formData.get('registrationNumber') as string
+  const expirationDate = formData.get('expirationDate') as string | null
+  const specializations = JSON.parse((formData.get('specializations') as string) || '[]')
+  const yearsOfExperience = formData.get('yearsOfExperience') as string
+  const diplomaFile = formData.get('diploma') as File | null
+  const licenseFile = formData.get('license') as File | null
   const supabase = await createClient()
 
   const {
@@ -42,17 +43,37 @@ export async function saveProfessionalData(data: {
       return { success: false, error: 'Erro ao atualizar perfil básico' }
     }
 
-    // 2. Create or Update Psychologist Profile
+    // 3. Handle File Uploads
+    let diplomaUrl = null
+    let licenseUrl = null
+
+    if (diplomaFile) {
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(`${user.id}/diploma_${Date.now()}`, diplomaFile)
+      if (uploadData) diplomaUrl = uploadData.path
+    }
+
+    if (licenseFile) {
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(`${user.id}/license_${Date.now()}`, licenseFile)
+      if (uploadData) licenseUrl = uploadData.path
+    }
+
+    // 4. Create or Update Psychologist Profile
     const { error: psychError } = await supabase.from('psychologist_profiles').upsert(
       {
         userId: user.id,
-        crp: data.registrationNumber,
-        specialties: data.specializations,
-        university: data.university,
-        academicLevel: data.academicLevel,
-        title: data.title,
-        crpExpiration: data.expirationDate ? new Date(data.expirationDate).toISOString() : null,
-        yearsOfExperience: parseInt(data.yearsOfExperience) || 0,
+        crp: registrationNumber,
+        specialties: specializations,
+        university,
+        academicLevel,
+        title,
+        crpExpiration: expirationDate ? new Date(expirationDate).toISOString() : null,
+        yearsOfExperience: parseInt(yearsOfExperience) || 0,
+        diploma_url: diplomaUrl,
+        license_url: licenseUrl,
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'userId' }

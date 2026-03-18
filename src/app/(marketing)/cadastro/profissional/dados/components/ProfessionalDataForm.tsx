@@ -64,16 +64,25 @@ export function ProfessionalDataForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
+    const formData = new FormData()
+    formData.append('university', values.university)
+    formData.append('academicLevel', values.academicLevel)
+    formData.append('title', values.title)
+    formData.append('registrationNumber', values.registrationNumber)
+    if (values.expirationDate) {
+      formData.append('expirationDate', values.expirationDate.toISOString())
+    }
+    formData.append('specializations', JSON.stringify(values.specializations))
+    formData.append('yearsOfExperience', values.yearsOfExperience)
+    if (values.diploma) {
+      formData.append('diploma', values.diploma)
+    }
+    if (values.license) {
+      formData.append('license', values.license)
+    }
+
     try {
-      const result = await saveProfessionalData({
-        university: values.university,
-        academicLevel: values.academicLevel,
-        title: values.title,
-        registrationNumber: values.registrationNumber,
-        expirationDate: values.expirationDate,
-        specializations: values.specializations,
-        yearsOfExperience: values.yearsOfExperience,
-      })
+      const result = await saveProfessionalData(formData)
 
       if (!result.success) {
         toast.error(result.error)
