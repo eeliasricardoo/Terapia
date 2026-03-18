@@ -24,7 +24,7 @@ export function RecentHistory({ history }: Props) {
           <Button
             variant="ghost"
             size="sm"
-            className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 px-0"
+            className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 px-0"
           >
             Ver tudo &rarr;
           </Button>
@@ -38,14 +38,17 @@ export function RecentHistory({ history }: Props) {
               className="px-8 py-5 flex items-center justify-between hover:bg-slate-50 transition-colors group cursor-pointer"
             >
               <div className="flex items-center gap-4 min-w-0 flex-1">
-                <div className="h-10 w-10 shrink-0 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all">
+                <div
+                  className="h-10 w-10 shrink-0 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 group-hover:bg-slate-900 group-hover:text-white transition-all"
+                  aria-hidden="true"
+                >
                   <CalendarIcon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
                   <p className="font-bold text-slate-900 text-sm truncate">
                     {session.psychologistName}
                   </p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mt-0.5">
                     {session.date}
                   </p>
                 </div>
@@ -54,7 +57,7 @@ export function RecentHistory({ history }: Props) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 rounded-full p-0 flex items-center justify-center text-slate-300 group-hover:text-slate-900"
+                  className="h-8 w-8 rounded-full p-0 flex items-center justify-center text-slate-500 group-hover:text-slate-900"
                 >
                   <ArrowRight className="h-4 w-4" />
                 </Button>
