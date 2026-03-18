@@ -75,14 +75,17 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl bg-white max-h-[90vh] flex flex-col">
+      <DialogContent
+        className="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl bg-white max-h-[90vh] flex flex-col"
+        aria-describedby="reschedule-description"
+      >
         <div className="bg-gradient-to-br from-indigo-600 to-blue-700 p-6 text-white relative flex-shrink-0">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
           <DialogHeader className="relative z-10 text-left">
             <DialogTitle className="text-2xl font-black tracking-tight text-white mb-2">
               Reagendar Sessão
             </DialogTitle>
-            <p className="text-blue-100 text-sm font-medium">
+            <p className="text-white/80 text-sm font-medium" id="reschedule-description">
               {isPsychologistView
                 ? `Escolha uma nova data para sua sessão com ${session.doctor}.`
                 : `Escolha uma nova data para seu atendimento com ${session.doctor}.`}
@@ -203,6 +206,7 @@ function RescheduleForm({
               size="icon"
               className="h-8 w-8 rounded-xl hover:bg-slate-100"
               onClick={calendar.handlePrevMonth}
+              aria-label="Mês anterior"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -211,6 +215,7 @@ function RescheduleForm({
               size="icon"
               className="h-8 w-8 rounded-xl hover:bg-slate-100"
               onClick={calendar.handleNextMonth}
+              aria-label="Próximo mês"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -219,10 +224,7 @@ function RescheduleForm({
 
         <div className="grid grid-cols-7 gap-1">
           {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
-            <span
-              key={i}
-              className="text-[10px] font-black text-slate-400 py-1 text-center opacity-60"
-            >
+            <span key={i} className="text-[10px] font-black text-slate-500 py-1 text-center">
               {d}
             </span>
           ))}
@@ -248,7 +250,7 @@ function RescheduleForm({
                     ? 'bg-blue-600 text-white font-black shadow-lg shadow-blue-600/30'
                     : available
                       ? 'bg-blue-50 text-blue-600 font-bold hover:bg-blue-100'
-                      : 'text-slate-300 cursor-not-allowed opacity-40'
+                      : 'text-slate-400 cursor-not-allowed opacity-40'
                 )}
               >
                 {day}
@@ -292,9 +294,7 @@ function RescheduleForm({
           </div>
         ) : (
           <div className="p-8 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
-            <p className="text-sm text-slate-400 font-bold italic opacity-60">
-              Selecione uma data acima
-            </p>
+            <p className="text-sm text-slate-500 font-bold italic">Selecione uma data acima</p>
           </div>
         )}
       </div>

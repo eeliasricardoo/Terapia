@@ -79,9 +79,12 @@ export function SessionDetailsDialog({ children, session }: SessionDetailsDialog
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px]" aria-describedby="session-details-description">
         <DialogHeader>
           <DialogTitle className="text-2xl">Detalhes da Sessão</DialogTitle>
+          <p id="session-details-description" className="sr-only">
+            Informações completas sobre a sessão agendada
+          </p>
         </DialogHeader>
 
         <div className="space-y-6 py-4">

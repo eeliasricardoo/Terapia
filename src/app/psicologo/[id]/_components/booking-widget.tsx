@@ -123,7 +123,10 @@ export function BookingWidget({
 
         <CardContent className="p-6 md:p-8">
           <h3 className="font-bold text-slate-900 mb-1 flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+            <div
+              className="h-2 w-2 rounded-full bg-green-500 animate-pulse"
+              aria-hidden="true"
+            ></div>
             Selecione um horário
           </h3>
           <p className="text-xs text-slate-500 mb-4 ml-4">
@@ -137,6 +140,7 @@ export function BookingWidget({
                 size="icon"
                 className="h-8 w-8 hover:bg-white hover:shadow-sm"
                 onClick={handlePrevMonth}
+                aria-label="Mês anterior"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -148,6 +152,7 @@ export function BookingWidget({
                 size="icon"
                 className="h-8 w-8 hover:bg-white hover:shadow-sm"
                 onClick={handleNextMonth}
+                aria-label="Próximo mês"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -155,7 +160,7 @@ export function BookingWidget({
 
             <div className="grid grid-cols-7 gap-1 text-center mb-2">
               {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
-                <span key={i} className="text-[10px] font-bold text-slate-400 py-1">
+                <span key={i} className="text-[10px] font-bold text-slate-500 py-1">
                   {d}
                 </span>
               ))}
@@ -181,7 +186,7 @@ export function BookingWidget({
                                                 ? 'bg-blue-600 text-white font-bold shadow-md scale-100 z-10'
                                                 : available
                                                   ? 'bg-blue-50 text-blue-600 font-semibold hover:bg-blue-100 hover:scale-110 cursor-pointer'
-                                                  : 'text-slate-300 cursor-not-allowed'
+                                                  : 'text-slate-400 cursor-not-allowed'
                                             }
                                         `}
                   >
