@@ -1,5 +1,6 @@
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
+import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
@@ -11,7 +12,7 @@ export async function POST(req: Request) {
   const body = await req.text()
   const sig = headers().get('stripe-signature') as string
 
-  let event
+  let event: Stripe.Event
 
   try {
     if (!sig || !endpointSecret) {
@@ -25,10 +26,27 @@ export async function POST(req: Request) {
 
   // Handle the event
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as any
+    const session = event.data.object as Stripe.Checkout.Session
     const metadata = session.metadata
 
+    if (!metadata) {
+      logger.error(`Missing metadata in session ${session.id}`)
+      return NextResponse.json({ error: 'Missing session metadata' }, { status: 400 })
+    }
+
     try {
+      // Idempotency check: verify if appointment already exists for this session
+      const existingAppointment = await prisma.appointment.findUnique({
+        where: { stripeSessionId: session.id },
+      })
+
+      if (existingAppointment) {
+        logger.info(
+          `Appointment already exists for session ${session.id}, skipping duplicate creation`
+        )
+        return NextResponse.json({ received: true, duplicate: true })
+      }
+
       // Fulfill the purchase
       await prisma.appointment.create({
         data: {
@@ -38,7 +56,8 @@ export async function POST(req: Request) {
           durationMinutes: parseInt(metadata.durationMinutes),
           price: metadata.price,
           paymentMethod: 'Stripe',
-          status: 'SCHEDULED', // Now it's paid and scheduled
+          status: 'SCHEDULED',
+          stripeSessionId: session.id,
         },
       })
 

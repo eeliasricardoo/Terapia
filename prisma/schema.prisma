@@ -44,6 +44,7 @@ model Appointment {
   sessionType           String              @default("Terapia Individual") @map("session_type")
   healthInsurancePlanId String?             @map("health_insurance_plan_id")
   healthInsurancePolicy String?             @map("health_insurance_policy")
+  stripeSessionId       String?             @unique @map("stripe_session_id")
   healthInsurance       HealthInsurance?    @relation(fields: [healthInsurancePlanId], references: [id])
   patient               User                @relation("PatientAppointments", fields: [patientId], references: [id])
   psychologist          PsychologistProfile @relation(fields: [psychologistId], references: [id])
