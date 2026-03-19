@@ -117,6 +117,15 @@ export async function createStripeCheckoutSession(data: {
         originalPrice: price.toString(),
         couponCode: data.couponCode || '',
       },
+      payment_intent_data: psych.stripeAccountId
+        ? {
+            transfer_data: {
+              destination: psych.stripeAccountId,
+            },
+            // Assuming 20% commission for the platform
+            application_fee_amount: Math.round(stripeAmount * 0.2),
+          }
+        : undefined,
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pagamento?payment=cancelled`,
     })
