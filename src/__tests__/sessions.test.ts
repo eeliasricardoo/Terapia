@@ -24,12 +24,22 @@ jest.mock('@/lib/security', () => ({
   isValidUUID: jest.fn(() => true),
 }))
 
+const mockPrismaAppointmentFindMany = jest.fn()
+jest.mock('@/lib/prisma', () => ({
+  prisma: {
+    appointment: {
+      findMany: (...args: any[]) => mockPrismaAppointmentFindMany(...args),
+    },
+  },
+}))
+
 import {
   getUserSessions,
   getNextSession,
   getSessionHistory,
   createSession,
   cancelSession,
+  rescheduleSession,
 } from '@/lib/actions/sessions'
 
 const MOCK_USER = { id: 'user-1', email: 'test@test.com' }
@@ -137,6 +147,31 @@ describe('sessions actions', () => {
 
       expect(result.success).toBe(false)
     })
+
+    it('should return error if there is a booking conflict', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
+      mockSupabaseQuery({ id: 'psych-profile-1', price_per_session: 150 })
+
+      // Mock conflict
+      const now = new Date()
+      mockPrismaAppointmentFindMany.mockResolvedValue([
+        {
+          id: 'existing-session',
+          scheduledAt: now,
+          durationMinutes: 50,
+        },
+      ])
+
+      const result = await createSession({
+        patientId: MOCK_USER.id,
+        psychologistId: 'psych-1',
+        scheduledAt: now.toISOString(),
+        durationMinutes: 50,
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('horário já foi reservado')
+    })
   })
 
   describe('cancelSession', () => {
@@ -167,6 +202,79 @@ describe('sessions actions', () => {
 
       expect(result.success).toBe(false)
       expect(result.error).toContain('Acesso negado')
+    })
+  })
+
+  describe('rescheduleSession', () => {
+    it('should return error if user is not authenticated', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null } })
+      const result = await rescheduleSession({
+        sessionId: 'session-1',
+        newScheduledAt: new Date().toISOString(),
+      })
+      expect(result).toEqual({ success: false, error: 'Usuário não autenticado' })
+    })
+
+    it('should return error if session is not found', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
+      const chain = mockSupabaseQuery(null, { message: 'Not found' })
+
+      const result = await rescheduleSession({
+        sessionId: 'session-nonexistent',
+        newScheduledAt: new Date().toISOString(),
+      })
+
+      expect(result).toEqual({ success: false, error: 'Sessão não encontrada' })
+    })
+
+    it('should reject rescheduling by unauthorized user', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
+      const chain = mockSupabaseQuery()
+      chain.single.mockResolvedValue({
+        data: { patient_id: 'other-user', psychologist_id: 'other-psych' },
+        error: null,
+      })
+
+      const result = await rescheduleSession({
+        sessionId: 'session-1',
+        newScheduledAt: new Date().toISOString(),
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('Acesso negado')
+    })
+
+    it('should return error if there is a booking conflict on reschedule', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
+      const chain = mockSupabaseQuery()
+      chain.single.mockResolvedValue({
+        data: {
+          id: 'session-1',
+          patient_id: MOCK_USER.id,
+          psychologist_id: 'psych-1',
+          duration_minutes: 50,
+          scheduled_at: new Date().toISOString(),
+        },
+        error: null,
+      })
+
+      // Mock conflict
+      const now = new Date()
+      mockPrismaAppointmentFindMany.mockResolvedValue([
+        {
+          id: 'existing-session',
+          scheduledAt: now,
+          durationMinutes: 50,
+        },
+      ])
+
+      const result = await rescheduleSession({
+        sessionId: 'session-1',
+        newScheduledAt: now.toISOString(),
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('horário já foi reservado')
     })
   })
 })

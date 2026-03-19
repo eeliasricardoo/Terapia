@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { maskCPF, cleanCPF, isValidCPF } from '@/lib/utils/cpf'
+import { registerPatientSupabase } from '@/lib/actions/auth'
 import { auth } from '@/lib/supabase/auth'
 
 export function RegistrationForm() {
@@ -75,25 +76,23 @@ export function RegistrationForm() {
   async function onSubmit(values: RegistrationInput) {
     startTransition(async () => {
       try {
-        const { error } = await auth.signUp(values.email, values.password, {
-          role: 'PATIENT',
-          full_name: values.name,
-          phone: values.phone,
-          birth_date: values.birthDate,
-          document: cleanCPF(values.document),
-          health_insurance_id: values.healthInsuranceId || undefined,
-          health_insurance_policy: values.healthInsurancePolicy || undefined,
-        })
+        const formData = new FormData()
+        formData.append('name', values.name)
+        formData.append('email', values.email)
+        formData.append('document', cleanCPF(values.document))
+        formData.append('phone', values.phone || '')
+        formData.append('birthDate', values.birthDate)
+        formData.append('password', values.password)
+        formData.append('confirmPassword', values.confirmPassword)
+        formData.append('terms', String(values.terms))
+        if (values.healthInsuranceId) formData.append('healthInsuranceId', values.healthInsuranceId)
+        if (values.healthInsurancePolicy)
+          formData.append('healthInsurancePolicy', values.healthInsurancePolicy)
 
-        if (error) {
-          if (
-            error.message.includes('already registered') ||
-            error.message.includes('User already registered')
-          ) {
-            toast.error('E-mail já cadastrado. Tente fazer login ou recuperar sua senha.')
-          } else {
-            toast.error(error.message || 'Erro ao criar conta. Tente novamente.')
-          }
+        const result = await registerPatientSupabase(formData)
+
+        if (!result.success) {
+          toast.error(result.error || 'Erro ao criar conta. Verifique os dados.')
         } else {
           toast.success(
             'Conta criada com sucesso! Enviamos um código de confirmação para seu e-mail.'

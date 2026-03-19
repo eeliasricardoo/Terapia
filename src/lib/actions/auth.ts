@@ -12,6 +12,7 @@ export type ActionResult = {
   success: boolean
   error?: string
   fieldErrors?: Record<string, string[]>
+  data?: any
 }
 
 export async function registerPatientSupabase(formData: FormData): Promise<ActionResult> {
@@ -116,6 +117,22 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
       if (profileError) {
         console.error('Profile creation error:', profileError)
       }
+
+      // 4. Send Welcome Email via Resend (Parallel, don't block registration)
+      const { sendEmail } = await import('@/lib/utils/email')
+      sendEmail({
+        to: data.email,
+        subject: 'Bem-vindo à Terapia! 🌊',
+        html: `
+          <h1>Olá, ${safeName}!</h1>
+          <p>Sua conta na Terapia foi criada com sucesso.</p>
+          <p>Estamos muito felizes em ter você conosco em sua jornada de autocuidado.</p>
+          <p>Se você precisar de ajuda, estamos à disposição.</p>
+          <br/>
+          <p>Atenciosamente,</p>
+          <p>Equipe Terapia</p>
+        `,
+      }).catch((e) => console.error('Failed to send welcome email:', e))
     }
 
     revalidatePath('/')
