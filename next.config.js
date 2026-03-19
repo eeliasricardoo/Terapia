@@ -49,7 +49,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com https://i.pravatar.cc https://images.unsplash.com",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.daily.co wss://*.daily.co https://*.upstash.io",
+              "connect-src 'self' http://localhost:* https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.daily.co wss://*.daily.co https://*.upstash.io",
               "frame-src 'self' https://js.stripe.com https://*.daily.co",
               "object-src 'none'",
               "base-uri 'self'",
@@ -62,6 +62,9 @@ const nextConfig = {
   },
   experimental: {
     serverComponentsExternalPackages: ['isomorphic-dompurify'],
+    serverActions: {
+      allowedOrigins: ['localhost:3000', 'localhost', '127.0.0.1:3000'],
+    },
   },
 }
 
