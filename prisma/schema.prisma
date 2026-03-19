@@ -112,6 +112,7 @@ model PsychologistProfile {
   suspensionReason     String?                 @map("suspension_reason")
   diplomaUrl           String?                 @map("diploma_url")
   licenseUrl           String?                 @map("license_url")
+  stripeAccountId      String?                 @map("stripe_account_id")
   appointments         Appointment[]
   coupons              Coupon[]
   acceptedInsurances   PsychologistInsurance[]
