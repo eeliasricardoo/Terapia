@@ -414,3 +414,76 @@ export async function suspendPsychologistAccess(
     return { success: false, error: 'Falha ao suspender acesso' }
   }
 }
+
+async function ensureAdmin() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) throw new Error('Não autenticado')
+
+  const profile = await prisma.profile.findUnique({
+    where: { user_id: user.id },
+  })
+
+  if (!profile || profile.role !== 'ADMIN') {
+    throw new Error('Não autorizado')
+  }
+  return user
+}
+
+export async function getHealthInsurances() {
+  try {
+    await ensureAdmin()
+    return await prisma.healthInsurance.findMany({
+      orderBy: { name: 'asc' },
+    })
+  } catch (error) {
+    logger.error('Error fetching health insurances:', error)
+    return []
+  }
+}
+
+export async function createHealthInsurance(name: string) {
+  try {
+    await ensureAdmin()
+    const insurance = await prisma.healthInsurance.create({
+      data: { name },
+    })
+    revalidatePath('/dashboard/admin/planos')
+    return { success: true, data: insurance }
+  } catch (error) {
+    logger.error('Error creating health insurance:', error)
+    return { success: false, error: 'Falha ao criar plano de saúde' }
+  }
+}
+
+export async function updateHealthInsurance(id: string, name: string) {
+  try {
+    await ensureAdmin()
+    const insurance = await prisma.healthInsurance.update({
+      where: { id },
+      data: { name },
+    })
+    revalidatePath('/dashboard/admin/planos')
+    return { success: true, data: insurance }
+  } catch (error) {
+    logger.error('Error updating health insurance:', error)
+    return { success: false, error: 'Falha ao atualizar plano de saúde' }
+  }
+}
+
+export async function deleteHealthInsurance(id: string) {
+  try {
+    await ensureAdmin()
+    await prisma.healthInsurance.delete({
+      where: { id },
+    })
+    revalidatePath('/dashboard/admin/planos')
+    return { success: true }
+  } catch (error) {
+    logger.error('Error deleting health insurance:', error)
+    return { success: false, error: 'Falha ao excluir plano de saúde' }
+  }
+}

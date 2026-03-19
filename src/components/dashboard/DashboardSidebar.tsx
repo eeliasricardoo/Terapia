@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Building2,
   LifeBuoy,
+  HeartPulse,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -56,6 +57,7 @@ const ADMIN_MENU = [
   { href: '/dashboard', label: 'Visão Geral', icon: LayoutGrid },
   { href: '/dashboard/admin/aprovacoes', label: 'Aprovações', icon: ShieldCheck },
   { href: '/dashboard/admin/psicologos', label: 'Psicólogos', icon: Users },
+  { href: '/dashboard/admin/planos', label: 'Planos de Saúde', icon: HeartPulse },
   { href: '/dashboard/perfil', label: 'Meu Perfil', icon: User },
 ]
 

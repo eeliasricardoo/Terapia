@@ -30,23 +30,23 @@ model User {
 }
 
 model Appointment {
-  id              String              @id @default(uuid())
-  patientId       String              @map("patient_id")
-  psychologistId  String              @map("psychologist_id")
-  scheduledAt     DateTime            @map("scheduled_at")
-  durationMinutes Int                 @default(50) @map("duration_minutes")
-  status          AppointmentStatus   @default(SCHEDULED)
-  price           Decimal             @db.Decimal(10, 2)
-  meetingUrl      String?             @map("meeting_url")
-  createdAt       DateTime            @default(now()) @map("created_at")
-  updatedAt       DateTime            @updatedAt @map("updated_at")
-  paymentMethod   String?             @map("payment_method")
-  sessionType     String              @default("Terapia Individual") @map("session_type")
-  patient         User                @relation("PatientAppointments", fields: [patientId], references: [id])
-  psychologist    PsychologistProfile @relation(fields: [psychologistId], references: [id])
-  healthInsurancePlanId String? @map("health_insurance_plan_id")
-  healthInsurancePolicy String? @map("health_insurance_policy")
-  healthInsurance      HealthInsurance? @relation(fields: [healthInsurancePlanId], references: [id])
+  id                    String              @id @default(uuid())
+  patientId             String              @map("patient_id")
+  psychologistId        String              @map("psychologist_id")
+  scheduledAt           DateTime            @map("scheduled_at")
+  durationMinutes       Int                 @default(50) @map("duration_minutes")
+  status                AppointmentStatus   @default(SCHEDULED)
+  price                 Decimal             @db.Decimal(10, 2)
+  meetingUrl            String?             @map("meeting_url")
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+  paymentMethod         String?             @map("payment_method")
+  sessionType           String              @default("Terapia Individual") @map("session_type")
+  healthInsurancePlanId String?             @map("health_insurance_plan_id")
+  healthInsurancePolicy String?             @map("health_insurance_policy")
+  healthInsurance       HealthInsurance?    @relation(fields: [healthInsurancePlanId], references: [id])
+  patient               User                @relation("PatientAppointments", fields: [patientId], references: [id])
+  psychologist          PsychologistProfile @relation(fields: [psychologistId], references: [id])
 
   @@index([patientId])
   @@index([psychologistId])
@@ -55,49 +55,49 @@ model Appointment {
 }
 
 model Profile {
-  id                String                    @id @default(uuid())
-  fullName          String?                   @map("full_name")
-  avatarUrl         String?                   @map("avatar_url")
-  createdAt         DateTime                  @default(now()) @map("created_at")
-  updatedAt         DateTime                  @updatedAt @map("updated_at")
-  birth_date        DateTime?                 @db.Date
-  document          String?
-  phone             String?
-  gender            String?
-  profession        String?
-  addressLine       String?                   @map("address_line")
-  city              String?
-  state             String?
-  zipCode           String?                   @map("zip_code")
-  role              UserRole                  @default(PATIENT)
-  user_id           String                    @unique
-  onboardingData    Json?                     @map("onboarding_data")
-  anamnesis         Anamnesis?
-  companyMembers    CompanyMember[]
-  evolutions        Evolution[]
-  psychologistLinks PatientPsychologistLink[] @relation("PatientLinks")
-  patientLinks      PatientPsychologistLink[] @relation("PsychologistLinks")
-  users             User                      @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  healthInsuranceId String? @map("health_insurance_id")
-  healthInsurancePolicy String? @map("health_insurance_policy")
-  healthInsurance HealthInsurance? @relation("PatientInsurance", fields: [healthInsuranceId], references: [id])
+  id                    String                    @id @default(uuid())
+  fullName              String?                   @map("full_name")
+  avatarUrl             String?                   @map("avatar_url")
+  createdAt             DateTime                  @default(now()) @map("created_at")
+  updatedAt             DateTime                  @updatedAt @map("updated_at")
+  birth_date            DateTime?                 @db.Date
+  document              String?
+  phone                 String?
+  gender                String?
+  profession            String?
+  addressLine           String?                   @map("address_line")
+  city                  String?
+  state                 String?
+  zipCode               String?                   @map("zip_code")
+  role                  UserRole                  @default(PATIENT)
+  user_id               String                    @unique
+  onboardingData        Json?                     @map("onboarding_data")
+  healthInsuranceId     String?                   @map("health_insurance_id")
+  healthInsurancePolicy String?                   @map("health_insurance_policy")
+  anamnesis             Anamnesis?
+  companyMembers        CompanyMember[]
+  evolutions            Evolution[]
+  psychologistLinks     PatientPsychologistLink[] @relation("PatientLinks")
+  patientLinks          PatientPsychologistLink[] @relation("PsychologistLinks")
+  healthInsurance       HealthInsurance?          @relation("PatientInsurance", fields: [healthInsuranceId], references: [id])
+  users                 User                      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("profiles")
 }
 
 model PsychologistProfile {
-  id                   String             @id @default(uuid())
-  userId               String             @unique
-  crp                  String?            @unique
+  id                   String                  @id @default(uuid())
+  userId               String                  @unique
+  crp                  String?                 @unique
   bio                  String?
-  specialties          String[]           @default([])
-  pricePerSession      Decimal?           @map("price_per_session") @db.Decimal(10, 2)
-  videoPresentationUrl String?            @map("video_presentation_url")
-  isVerified           Boolean            @default(false) @map("is_verified")
-  createdAt            DateTime           @default(now()) @map("created_at")
-  updatedAt            DateTime           @updatedAt @map("updated_at")
-  weeklySchedule       Json?              @map("weekly_schedule")
-  timezone             String             @default("America/Sao_Paulo")
+  specialties          String[]                @default([])
+  pricePerSession      Decimal?                @map("price_per_session") @db.Decimal(10, 2)
+  videoPresentationUrl String?                 @map("video_presentation_url")
+  isVerified           Boolean                 @default(false) @map("is_verified")
+  createdAt            DateTime                @default(now()) @map("created_at")
+  updatedAt            DateTime                @updatedAt @map("updated_at")
+  weeklySchedule       Json?                   @map("weekly_schedule")
+  timezone             String                  @default("America/Sao_Paulo")
   academicLevel        String?
   accountNumber        String?
   accountType          String?
@@ -108,15 +108,15 @@ model PsychologistProfile {
   title                String?
   university           String?
   yearsOfExperience    Int?
-  diplomaUrl           String?            @map("diploma_url")
-  licenseUrl           String?            @map("license_url")
-  sessionDuration      Int                @default(50) @map("session_duration")
-  suspensionReason     String?            @map("suspension_reason")
+  sessionDuration      Int                     @default(50) @map("session_duration")
+  suspensionReason     String?                 @map("suspension_reason")
+  diplomaUrl           String?                 @map("diploma_url")
+  licenseUrl           String?                 @map("license_url")
   appointments         Appointment[]
   coupons              Coupon[]
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  scheduleOverrides    ScheduleOverride[]
   acceptedInsurances   PsychologistInsurance[]
+  user                 User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scheduleOverrides    ScheduleOverride[]
 
   @@map("psychologist_profiles")
 }
@@ -281,6 +281,30 @@ model CompanyMember {
   @@map("company_members")
 }
 
+model HealthInsurance {
+  id            String                  @id @default(uuid())
+  name          String                  @unique
+  logoUrl       String?                 @map("logo_url")
+  createdAt     DateTime                @default(now()) @map("created_at")
+  updatedAt     DateTime                @updatedAt @map("updated_at")
+  appointments  Appointment[]
+  profiles      Profile[]               @relation("PatientInsurance")
+  psychologists PsychologistInsurance[]
+
+  @@map("health_insurances")
+}
+
+model PsychologistInsurance {
+  id                  String              @id @default(uuid())
+  psychologistId      String              @map("psychologist_id")
+  healthInsuranceId   String              @map("health_insurance_id")
+  healthInsurance     HealthInsurance     @relation(fields: [healthInsuranceId], references: [id], onDelete: Cascade)
+  psychologistProfile PsychologistProfile @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+
+  @@unique([psychologistId, healthInsuranceId])
+  @@map("psychologist_insurances")
+}
+
 enum AppointmentStatus {
   SCHEDULED
   COMPLETED
@@ -294,28 +318,4 @@ enum UserRole {
   PSYCHOLOGIST
   COMPANY
   ADMIN
-}
-
-model HealthInsurance {
-  id          String                 @id @default(uuid())
-  name        String                 @unique
-  logoUrl     String?                @map("logo_url")
-  profiles    Profile[]              @relation("PatientInsurance")
-  psychologists PsychologistInsurance[]
-  appointments Appointment[]
-  createdAt   DateTime               @default(now()) @map("created_at")
-  updatedAt   DateTime               @updatedAt @map("updated_at")
-
-  @@map("health_insurances")
-}
-
-model PsychologistInsurance {
-  id                   String              @id @default(uuid())
-  psychologistId       String              @map("psychologist_id")
-  healthInsuranceId    String              @map("health_insurance_id")
-  psychologistProfile PsychologistProfile @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
-  healthInsurance     HealthInsurance     @relation(fields: [healthInsuranceId], references: [id], onDelete: Cascade)
-
-  @@unique([psychologistId, healthInsuranceId])
-  @@map("psychologist_insurances")
 }
