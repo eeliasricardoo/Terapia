@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { Profile } from '@/lib/supabase/types'
 import type { UserRole } from '@prisma/client'
 import { cache } from 'react'
+import { logger } from '@/lib/utils/logger'
 
 /**
  * Get the current logged-in user's profile
@@ -18,7 +19,7 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    console.error('Error getting user:', authError)
+    logger.error('Error getting user:', authError)
     return null
   }
 
@@ -54,10 +55,10 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
         data = newProfile as unknown as typeof data // Cast to match the Supabase return type
       }
     } catch (err) {
-      console.error('Error auto-syncing profile (Prisma/General):', err)
+      logger.error('Error auto-syncing profile (Prisma/General):', err)
     }
   } else if (error) {
-    console.error('Error fetching user profile:', error)
+    logger.error('Error fetching user profile:', error)
     return null
   }
 
@@ -77,12 +78,12 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
       }
     } else {
       // Log exactly what is missing for debugging
-      if (!data && !userInDb) console.log('DEBUG: Both profile data and userInDb are null')
-      else if (!data) console.log('DEBUG: Profile data is null')
-      else if (!userInDb) console.log('DEBUG: userInDb is null for ID:', user.id)
+      if (!data && !userInDb) logger.debug('Both profile data and userInDb are null')
+      else if (!data) logger.debug('Profile data is null')
+      else if (!userInDb) logger.debug('userInDb is null', { userId: user.id })
     }
   } catch (err) {
-    console.error('Error syncing user role:', err)
+    logger.error('Error syncing user role:', err)
   }
 
   return data as Profile
@@ -115,7 +116,7 @@ export async function updateUserProfile(updates: {
     .eq('user_id', user.id)
 
   if (error) {
-    console.error('Error updating profile:', error)
+    logger.error('Error updating profile:', error)
     return { success: false, error: error.message }
   }
 

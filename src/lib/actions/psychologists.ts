@@ -1,8 +1,13 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import type { PsychologistWithProfile, PsychologistSearchFilters } from '@/lib/supabase/types'
+import type {
+  PsychologistWithProfile,
+  PsychologistSearchFilters,
+  Profile,
+} from '@/lib/supabase/types'
 import { prisma } from '@/lib/prisma'
+import { logger } from '@/lib/utils/logger'
 
 /**
  * Get all verified psychologists
@@ -17,27 +22,29 @@ export async function getPsychologists(): Promise<PsychologistWithProfile[]> {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching psychologists:', error)
+    logger.error('Error fetching psychologists:', error)
     return []
   }
 
   if (!psychologists || psychologists.length === 0) return []
 
   // Fetch related profiles
-  const userIds = psychologists.map((p: any) => p.userId)
+  const userIds = psychologists.map((p) => p.userId)
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
     .select('*')
     .in('user_id', userIds)
 
   if (profilesError) {
-    console.error('Error fetching psychologist profiles:', profilesError)
+    logger.error('Error fetching psychologist profiles:', profilesError)
     return []
   }
 
   // Merge manual join
-  return psychologists.map((psych: any) => {
-    const profileInfo = profiles?.find((profile: any) => profile.user_id === psych.userId)
+  return psychologists.map((psych) => {
+    const profileInfo = profiles?.find(
+      (profile) => profile.user_id === psych.userId
+    ) as Profile | null
     return {
       ...psych,
       profile: profileInfo || null,
@@ -58,7 +65,7 @@ export async function getPsychologistById(userId: string): Promise<PsychologistW
     .single()
 
   if (error || !psych) {
-    if (error) console.error('Error fetching psychologist:', error)
+    if (error) logger.error('Error fetching psychologist:', error)
     return null
   }
 
@@ -69,7 +76,7 @@ export async function getPsychologistById(userId: string): Promise<PsychologistW
     .single()
 
   if (profileError) {
-    console.error('Error fetching psychologist profile:', profileError)
+    logger.error('Error fetching psychologist profile:', profileError)
     return null
   }
 
@@ -79,7 +86,7 @@ export async function getPsychologistById(userId: string): Promise<PsychologistW
     .eq('psychologist_id', psych.id)
 
   const acceptedInsurances = insurancesRes
-    ? insurancesRes.map((item: any) => item.health_insurance)
+    ? insurancesRes.map((item) => (item as any).health_insurance)
     : []
 
   return {
@@ -116,11 +123,11 @@ export async function searchPsychologists(
       .in('health_insurance_id', filters.healthInsurances)
 
     if (insuranceError) {
-      console.error('Error fetching linked psychologists by insurance:', insuranceError)
+      logger.error('Error fetching linked psychologists by insurance:', insuranceError)
     }
 
     if (linkedPsychs && linkedPsychs.length > 0) {
-      const psychIds = Array.from(new Set(linkedPsychs.map((hp: any) => hp.psychologist_id)))
+      const psychIds = Array.from(new Set(linkedPsychs.map((hp) => (hp as any).psychologist_id)))
       query = query.in('id', psychIds)
     } else {
       // If no psychologists match the insurance filter, return empty
@@ -144,13 +151,13 @@ export async function searchPsychologists(
   const { data: psychologists, error } = await query.order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error searching psychologists:', error)
+    logger.error('Error searching psychologists:', error)
     return []
   }
 
   if (!psychologists || psychologists.length === 0) return []
 
-  const userIds = psychologists.map((p: any) => p.userId)
+  const userIds = psychologists.map((p) => p.userId)
 
   // Fetch profiles
   let profilesQuery = supabase.from('profiles').select('*').in('user_id', userIds)
@@ -163,13 +170,15 @@ export async function searchPsychologists(
   const { data: profiles, error: profilesError } = await profilesQuery
 
   if (profilesError) {
-    console.error('Error fetching psychologist profiles in search:', profilesError)
+    logger.error('Error fetching psychologist profiles in search:', profilesError)
     return []
   }
 
   // Merge manual join and optionally filter if searchQuery was used
-  let merged = psychologists.map((psych: any) => {
-    const profileInfo = profiles?.find((profile: any) => profile.user_id === psych.userId)
+  let merged = psychologists.map((psych) => {
+    const profileInfo = profiles?.find(
+      (profile) => profile.user_id === psych.userId
+    ) as Profile | null
     return {
       ...psych,
       profile: profileInfo || null,
@@ -177,7 +186,7 @@ export async function searchPsychologists(
   })
 
   if (filters.searchQuery) {
-    merged = merged.filter((item: any) => item.profile !== null)
+    merged = merged.filter((item) => item.profile !== null)
     // Manually paginate the filtered results if searchQuery was used
     merged = merged.slice(from, to + 1)
   }
@@ -208,7 +217,7 @@ export async function getPsychologistStats(userId: string) {
 
     return { totalSessions }
   } catch (error) {
-    console.error('Error fetching psychologist stats:', error)
+    logger.error('Error fetching psychologist stats:', error)
     return { totalSessions: 0 }
   }
 }

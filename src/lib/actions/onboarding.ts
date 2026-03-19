@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { sanitizeText, sanitizeHtml } from '@/lib/security'
+import { logger } from '@/lib/utils/logger'
 
 export type PsychologistOnboardingData = {
   fullName: string
@@ -32,7 +33,7 @@ export async function savePsychologistProfile(data: PsychologistOnboardingData) 
 
   if (authError || !user) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Simulated success for savePsychologistProfile (unauthenticated)')
+      logger.warn('Simulated success for savePsychologistProfile (unauthenticated)')
       return { success: true }
     }
     return { success: false, error: 'Usuário não autenticado' }
@@ -60,7 +61,7 @@ export async function savePsychologistProfile(data: PsychologistOnboardingData) 
       .eq('user_id', user.id)
 
     if (profileError) {
-      console.error('Error updating profile:', profileError)
+      logger.error('Error updating profile:', profileError)
       return { success: false, error: 'Erro ao atualizar perfil básico' }
     }
 
@@ -83,7 +84,7 @@ export async function savePsychologistProfile(data: PsychologistOnboardingData) 
     )
 
     if (psychError) {
-      console.error('Error creating psychologist profile:', psychError)
+      logger.error('Error creating psychologist profile:', psychError)
       // It might fail if column name is wrong.
       return { success: false, error: 'Erro ao criar perfil de psicólogo.' + psychError.message }
     }
@@ -93,7 +94,7 @@ export async function savePsychologistProfile(data: PsychologistOnboardingData) 
 
     return { success: true }
   } catch (error) {
-    console.error('Unexpected error:', error)
+    logger.error('Unexpected error:', error)
     return { success: false, error: 'Erro interno no servidor' }
   }
 }

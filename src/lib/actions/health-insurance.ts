@@ -1,6 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
+import { logger } from '@/lib/utils/logger'
 
 export async function getHealthInsurances() {
   try {
@@ -11,7 +12,7 @@ export async function getHealthInsurances() {
     })
     return { success: true, data: insurances }
   } catch (error) {
-    console.error('Error fetching health insurances:', error)
+    logger.error('Error fetching health insurances:', error)
     return { success: false, error: 'Erro ao buscar planos de saúde' }
   }
 }

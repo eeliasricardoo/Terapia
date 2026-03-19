@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { sanitizeText, checkRateLimit } from '@/lib/security'
 import { headers } from 'next/headers'
+import { logger } from '@/lib/utils/logger'
 
 export type ActionResult = {
   success: boolean
@@ -103,7 +104,7 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
           },
         })
       } catch (err) {
-        console.error('Error syncing user to Prisma during registration:', err)
+        logger.error('Error syncing user to Prisma during registration:', err)
         // Não falhamos o registro se o Prisma falhar, mas logamos
       }
 
@@ -114,7 +115,7 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
       })
 
       if (profileError) {
-        console.error('Profile creation error:', profileError)
+        logger.error('Profile creation error:', profileError)
       }
     }
 
@@ -124,7 +125,7 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
       success: true,
     }
   } catch (error) {
-    console.error('Registration error:', error)
+    logger.error('Registration error:', error)
     return {
       success: false,
       error: 'Erro ao criar conta. Tente novamente mais tarde.',
@@ -185,7 +186,7 @@ export async function loginSupabase(formData: FormData): Promise<ActionResult> {
       success: true,
     }
   } catch (error) {
-    console.error('Login error:', error)
+    logger.error('Login error:', error)
     return {
       success: false,
       error: 'Erro ao fazer login. Tente novamente mais tarde.',
@@ -303,7 +304,7 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
     revalidatePath('/dashboard/admin/aprovacoes')
     return { success: true }
   } catch (error) {
-    console.error('Psychologist registration error:', error)
+    logger.error('Psychologist registration error:', error)
     return { success: false, error: 'Erro ao criar conta. Tente novamente mais tarde.' }
   }
 }

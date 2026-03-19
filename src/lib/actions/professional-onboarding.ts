@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { logger } from '@/lib/utils/logger'
 
 export async function saveProfessionalData(formData: FormData) {
   const university = formData.get('university') as string
@@ -23,7 +24,7 @@ export async function saveProfessionalData(formData: FormData) {
 
   if (authError || !user) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Simulated success for saveProfessionalData (unauthenticated)')
+      logger.warn('Simulated success for saveProfessionalData (unauthenticated)')
       return { success: true }
     }
     return { success: false, error: 'Usuário não autenticado' }
@@ -40,7 +41,7 @@ export async function saveProfessionalData(formData: FormData) {
       .eq('user_id', user.id)
 
     if (profileError) {
-      console.error('Error updating profile:', profileError)
+      logger.error('Error updating profile:', profileError)
       return { success: false, error: 'Erro ao atualizar perfil básico' }
     }
 
@@ -85,7 +86,7 @@ export async function saveProfessionalData(formData: FormData) {
       .single()
 
     if (psychError) {
-      console.error('Error creating psychologist profile:', psychError)
+      logger.error('Error creating psychologist profile:', psychError)
       return { success: false, error: 'Erro ao salvar dados profissionais.' }
     }
 
@@ -105,18 +106,18 @@ export async function saveProfessionalData(formData: FormData) {
           .insert(insuranceLinks)
 
         if (linkError) {
-          console.error('Error linking health insurances:', linkError)
+          logger.error('Error linking health insurances:', linkError)
           // We don't return error here because the main profile was saved,
           // but we should probably log it.
         }
       } catch (linkCatchError) {
-        console.error('Unexpected error linking health insurances:', linkCatchError)
+        logger.error('Unexpected error linking health insurances:', linkCatchError)
       }
     }
 
     return { success: true }
   } catch (error) {
-    console.error('Unexpected error:', error)
+    logger.error('Unexpected error:', error)
     return { success: false, error: 'Erro interno no servidor' }
   }
 }
@@ -137,7 +138,7 @@ export async function savePaymentConfig(data: {
 
   if (authError || !user) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Simulated success for savePaymentConfig (unauthenticated)')
+      logger.warn('Simulated success for savePaymentConfig (unauthenticated)')
       return { success: true }
     }
     return { success: false, error: 'Usuário não autenticado' }
@@ -159,13 +160,13 @@ export async function savePaymentConfig(data: {
       .eq('userId', user.id)
 
     if (psychError) {
-      console.error('Error updating payment config:', psychError)
+      logger.error('Error updating payment config:', psychError)
       return { success: false, error: 'Erro ao salvar configurações de pagamento.' }
     }
 
     return { success: true }
   } catch (error) {
-    console.error('Unexpected error:', error)
+    logger.error('Unexpected error:', error)
     return { success: false, error: 'Erro interno no servidor' }
   }
 }
@@ -185,7 +186,7 @@ export async function savePatientPreferences(data: {
 
   if (authError || !user) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Simulated success for savePatientPreferences (unauthenticated)')
+      logger.warn('Simulated success for savePatientPreferences (unauthenticated)')
       return { success: true }
     }
     return { success: false, error: 'Usuário não autenticado' }
@@ -201,14 +202,14 @@ export async function savePatientPreferences(data: {
       .eq('user_id', user.id)
 
     if (profileError) {
-      console.error('Error updating patient preferences:', profileError)
+      logger.error('Error updating patient preferences:', profileError)
       return { success: false, error: 'Erro ao salvar preferências.' }
     }
 
     revalidatePath('/busca')
     return { success: true }
   } catch (error) {
-    console.error('Unexpected error:', error)
+    logger.error('Unexpected error:', error)
     return { success: false, error: 'Erro interno no servidor' }
   }
 }
