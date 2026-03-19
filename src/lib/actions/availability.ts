@@ -5,6 +5,7 @@ import { logger } from '@/lib/utils/logger'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { logger } from '@/lib/utils/logger'
 
 export type ScheduleItem = {
   id: string
@@ -84,7 +85,7 @@ export async function saveAvailability(
       return `${hour.toString().padStart(2, '0')}:${minutes}`
     }
 
-    const formattedWeeklySchedule: any = {
+    const formattedWeeklySchedule: WeeklyScheduleData = {
       sessionDuration,
       monday: { enabled: false, slots: [] },
       tuesday: { enabled: false, slots: [] },
@@ -97,8 +98,8 @@ export async function saveAvailability(
 
     // Apply schedules
     recurringSchedules.forEach((schedule) => {
-      const dayKey = dayMap[schedule.day]
-      if (dayKey) {
+      const dayKey = dayMap[schedule.day] as keyof WeeklyScheduleData
+      if (dayKey && dayKey !== 'sessionDuration') {
         formattedWeeklySchedule[dayKey].enabled = true
         formattedWeeklySchedule[dayKey].slots.push({
           start: parseTimeTo24h(schedule.startTime),
@@ -270,7 +271,7 @@ export async function getPsychologistAvailability(
   })
 
   const appointmentsMap = appointmentList
-    ? appointmentList.map((a: any) => ({
+    ? appointmentList.map((a) => ({
         id: a.id,
         scheduled_at: a.scheduledAt.toISOString(),
         duration_minutes: a.durationMinutes,

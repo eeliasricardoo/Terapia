@@ -3,8 +3,14 @@
 import { logger } from '@/lib/utils/logger'
 
 import { createClient } from '@/lib/supabase/server'
-import type { PsychologistWithProfile, PsychologistSearchFilters } from '@/lib/supabase/types'
+import type {
+  PsychologistWithProfile,
+  PsychologistSearchFilters,
+  PsychologistProfile,
+  Profile,
+} from '@/lib/supabase/types'
 import { prisma } from '@/lib/prisma'
+import { logger } from '@/lib/utils/logger'
 
 /**
  * Get all verified psychologists
@@ -26,7 +32,7 @@ export async function getPsychologists(): Promise<PsychologistWithProfile[]> {
   if (!psychologists || psychologists.length === 0) return []
 
   // Fetch related profiles
-  const userIds = psychologists.map((p: any) => p.userId)
+  const userIds = psychologists.map((p: PsychologistProfile) => p.userId)
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
     .select('*')
@@ -38,8 +44,8 @@ export async function getPsychologists(): Promise<PsychologistWithProfile[]> {
   }
 
   // Merge manual join
-  return psychologists.map((psych: any) => {
-    const profileInfo = profiles?.find((profile: any) => profile.user_id === psych.userId)
+  return psychologists.map((psych: PsychologistProfile) => {
+    const profileInfo = (profiles as Profile[])?.find((profile) => profile.user_id === psych.userId)
     return {
       ...psych,
       profile: profileInfo || null,
@@ -80,8 +86,12 @@ export async function getPsychologistById(userId: string): Promise<PsychologistW
     .select('health_insurance:health_insurances(id, name)')
     .eq('psychologist_id', psych.id)
 
-  const acceptedInsurances = insurancesRes
-    ? insurancesRes.map((item: any) => item.health_insurance)
+  const acceptedInsurances = (insurancesRes as unknown as any[])
+    ? (insurancesRes as any[])
+        .map((item) =>
+          Array.isArray(item.health_insurance) ? item.health_insurance[0] : item.health_insurance
+        )
+        .filter(Boolean)
     : []
 
   return {
@@ -122,7 +132,9 @@ export async function searchPsychologists(
     }
 
     if (linkedPsychs && linkedPsychs.length > 0) {
-      const psychIds = Array.from(new Set(linkedPsychs.map((hp: any) => hp.psychologist_id)))
+      const psychIds = Array.from(
+        new Set(linkedPsychs.map((hp: { psychologist_id: string }) => hp.psychologist_id))
+      )
       query = query.in('id', psychIds)
     } else {
       // If no psychologists match the insurance filter, return empty
@@ -152,7 +164,7 @@ export async function searchPsychologists(
 
   if (!psychologists || psychologists.length === 0) return []
 
-  const userIds = psychologists.map((p: any) => p.userId)
+  const userIds = psychologists.map((p: PsychologistProfile) => p.userId)
 
   // Fetch profiles
   let profilesQuery = supabase.from('profiles').select('*').in('user_id', userIds)
@@ -170,8 +182,8 @@ export async function searchPsychologists(
   }
 
   // Merge manual join and optionally filter if searchQuery was used
-  let merged = psychologists.map((psych: any) => {
-    const profileInfo = profiles?.find((profile: any) => profile.user_id === psych.userId)
+  let merged = psychologists.map((psych: PsychologistProfile) => {
+    const profileInfo = (profiles as Profile[]).find((profile) => profile.user_id === psych.userId)
     return {
       ...psych,
       profile: profileInfo || null,
@@ -179,7 +191,7 @@ export async function searchPsychologists(
   })
 
   if (filters.searchQuery) {
-    merged = merged.filter((item: any) => item.profile !== null)
+    merged = merged.filter((item) => item.profile !== null)
     // Manually paginate the filtered results if searchQuery was used
     merged = merged.slice(from, to + 1)
   }

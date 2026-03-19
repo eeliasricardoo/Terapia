@@ -486,19 +486,19 @@ export async function getCompanyDashboardData(): Promise<CompanyDashboardData> {
     const now = new Date()
     const monthStart = startOfMonth(now)
 
-    const allMembersAppts = company.members.flatMap((m: any) =>
-      m.profile.users.patientAppointments.filter((a: any) => a.scheduledAt >= monthStart)
+    const allMembersAppts = company.members.flatMap((m) =>
+      m.profile.users.patientAppointments.filter((a) => a.scheduledAt >= monthStart)
     )
 
     const activeSessions = allMembersAppts.length
     const monthlyInvestment = activeSessions * 199
 
     const recentActivity = allMembersAppts
-      .sort((a: any, b: any) => b.scheduledAt.getTime() - a.scheduledAt.getTime())
+      .sort((a, b) => b.scheduledAt.getTime() - a.scheduledAt.getTime())
       .slice(0, 5)
-      .map((a: any) => ({
+      .map((a) => ({
         user:
-          company.members.find((m: any) => m.profile.user_id === a.patientId)?.profile.fullName ||
+          company.members.find((m) => m.profile.user_id === a.patientId)?.profile.fullName ||
           'Colaborador',
         department: 'Time',
         date: new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(

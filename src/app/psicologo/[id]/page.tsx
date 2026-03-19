@@ -2,8 +2,10 @@ import { notFound } from 'next/navigation'
 import { PsychologistProfileClient } from './PsychologistProfileClient'
 import { unstable_cache } from 'next/cache'
 import { createClient } from '@supabase/supabase-js'
-import { PsychologistWithProfile } from '@/lib/supabase/types'
+import { PsychologistWithProfile, PsychologistProfile } from '@/lib/supabase/types'
 import { prisma } from '@/lib/prisma'
+import { logger } from '@/lib/utils/logger'
+import { PsychologistAvailability, TimeSlot } from '@/lib/actions/availability'
 
 async function getPsychologistDataInternal(userId: string) {
   try {
@@ -20,7 +22,7 @@ async function getPsychologistDataInternal(userId: string) {
       .single()
 
     if (psychError || !psych) {
-      console.error('Error fetching psychologist:', psychError)
+      if (psychError) logger.error('Error fetching psychologist:', psychError)
       return null
     }
 
@@ -58,24 +60,25 @@ async function getPsychologistDataInternal(userId: string) {
       })),
     }
 
-    const overridesMap: any = {}
+    const overridesMap: Record<string, { type: 'blocked' | 'custom'; slots: TimeSlot[] }> = {}
     if (overridesRes.data) {
       overridesRes.data.forEach((o) => {
         overridesMap[o.date] = {
-          type: o.type,
-          slots: o.slots,
+          type: o.type as 'blocked' | 'custom',
+          slots: o.slots as unknown as TimeSlot[],
         }
       })
     }
 
     const appointmentsMap = apptsRes.data
-      ? apptsRes.data.map((a: any) => ({
+      ? apptsRes.data.map((a) => ({
+          id: a.id,
           scheduled_at: a.scheduled_at,
           duration_minutes: a.duration_minutes,
         }))
       : []
 
-    const availability = {
+    const availability: PsychologistAvailability = {
       timezone: psych.timezone || 'America/Sao_Paulo',
       weeklySchedule: psych.weekly_schedule || null,
       overrides: overridesMap,
@@ -89,7 +92,7 @@ async function getPsychologistDataInternal(userId: string) {
       .eq('psychologist_id', psych.id)
 
     const acceptedInsurances = insurancesRes
-      ? insurancesRes.map((item: any) => item.health_insurance)
+      ? insurancesRes.map((item) => (item as any).health_insurance)
       : []
 
     // Return combined payload
@@ -101,7 +104,7 @@ async function getPsychologistDataInternal(userId: string) {
       availability,
     }
   } catch (error) {
-    console.error('Failed to load psychologist data:', error)
+    logger.error('Failed to load psychologist data:', error)
     return null
   }
 }
@@ -127,9 +130,6 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
   }
 
   return (
-    <PsychologistProfileClient
-      psychologist={data.psychologist}
-      availability={data.availability as any}
-    />
+    <PsychologistProfileClient psychologist={data.psychologist} availability={data.availability} />
   )
 }

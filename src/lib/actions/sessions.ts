@@ -334,7 +334,7 @@ export async function rescheduleSession(data: { sessionId: string; newScheduledA
       },
     })
 
-    const hasConflict = existingConflicts.some((appt: any) => {
+    const hasConflict = existingConflicts.some((appt) => {
       const apptStart = new Date(appt.scheduledAt)
       const apptEnd = new Date(apptStart.getTime() + appt.durationMinutes * 60000)
       return newSessionStart < apptEnd && newSessionEnd > apptStart

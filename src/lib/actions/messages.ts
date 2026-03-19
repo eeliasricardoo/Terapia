@@ -5,6 +5,7 @@ import { logger } from '@/lib/utils/logger'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserProfile } from './profile'
 import { revalidatePath } from 'next/cache'
+import { logger } from '@/lib/utils/logger'
 import { encryptData, decryptData, isValidUUID } from '@/lib/security'
 import {
   Conversation,
@@ -123,7 +124,7 @@ export async function getMessages(conversationId: string, limit: number = 100) {
   })
 
   // Reverse to show oldest first (chronological order)
-  return messages.reverse().map((m: any) => ({
+  return messages.reverse().map((m) => ({
     id: m.id,
     content: decryptData(m.content),
     senderId: m.senderId,

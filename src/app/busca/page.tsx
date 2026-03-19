@@ -20,8 +20,13 @@ import { Footer } from '@/components/layout/Footer'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { unstable_cache } from 'next/cache'
-import { PsychologistWithProfile } from '@/lib/supabase/types'
+import {
+  PsychologistWithProfile,
+  PsychologistProfile,
+  Profile as UserProfile,
+} from '@/lib/supabase/types'
 import { createClient } from '@supabase/supabase-js'
+import { logger } from '@/lib/utils/logger'
 
 // Use a pure client for caching to bypass cookies() dynamically blowing up unstable_cache
 const getCachedPsychologists = unstable_cache(
@@ -40,19 +45,20 @@ const getCachedPsychologists = unstable_cache(
         .limit(100)
 
       if (error || !psychologists || psychologists.length === 0) {
-        if (error) console.error('Error fetching psychologists:', error)
+        if (error) logger.error('Error fetching psychologists:', error)
         return []
       }
 
-      const userIds = psychologists.map((p: any) => p.userId)
+      const userIds = psychologists.map((p: PsychologistProfile) => p.userId)
       const { data: profiles } = await supabase.from('profiles').select('*').in('user_id', userIds)
 
-      return psychologists.map((psych: any) => ({
+      return psychologists.map((psych: PsychologistProfile) => ({
         ...psych,
-        profile: profiles?.find((profile: any) => profile.user_id === psych.userId) || null,
+        profile:
+          (profiles as UserProfile[])?.find((profile) => profile.user_id === psych.userId) || null,
       })) as PsychologistWithProfile[]
     } catch (error) {
-      console.error('Failed to load psychologists Server-Side:', error)
+      logger.error('Failed to load psychologists Server-Side:', error)
       return []
     }
   },
