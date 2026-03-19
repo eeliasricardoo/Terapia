@@ -5,12 +5,15 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Star, MapPin, Video, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import { memo } from 'react'
 
 interface PsychologistCardProps {
   psychologist: any
 }
 
-export function PsychologistCard({ psychologist }: PsychologistCardProps) {
+export const PsychologistCard = memo(function PsychologistCard({
+  psychologist,
+}: PsychologistCardProps) {
   const profile = psychologist.profile
   const displayName = profile?.full_name || 'Psicólogo'
   const specialties = psychologist.specialties || []
@@ -113,4 +116,4 @@ export function PsychologistCard({ psychologist }: PsychologistCardProps) {
       </CardFooter>
     </Card>
   )
-}
+})

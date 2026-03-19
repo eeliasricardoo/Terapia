@@ -1,19 +1,26 @@
-import { getPsychologists } from '@/lib/actions/psychologists'
 import { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 
 export const metadata: Metadata = {
   title: 'Encontrar Psicólogos',
   description:
     'Explore nossa lista de profissionais qualificados e encontre o terapeuta ideal para o seu perfil e necessidades.',
 }
-import SearchClient from './SearchClient'
-import { Navbar } from '@/components/layout/Navbar'
+
+const SearchClient = dynamic(() => import('./SearchClient'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center py-20">
+      <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  ),
+})
+
 import { Footer } from '@/components/layout/Footer'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { unstable_cache } from 'next/cache'
 import { PsychologistWithProfile } from '@/lib/supabase/types'
-
 import { createClient } from '@supabase/supabase-js'
 
 // Use a pure client for caching to bypass cookies() dynamically blowing up unstable_cache
@@ -30,8 +37,12 @@ const getCachedPsychologists = unstable_cache(
         .select('*')
         .eq('is_verified', true)
         .order('created_at', { ascending: false })
+        .limit(100)
 
-      if (error || !psychologists || psychologists.length === 0) return []
+      if (error || !psychologists || psychologists.length === 0) {
+        if (error) console.error('Error fetching psychologists:', error)
+        return []
+      }
 
       const userIds = psychologists.map((p: any) => p.userId)
       const { data: profiles } = await supabase.from('profiles').select('*').in('user_id', userIds)
@@ -45,7 +56,7 @@ const getCachedPsychologists = unstable_cache(
       return []
     }
   },
-  ['psychologists-search-list-v4'],
+  ['psychologists-search-list-v5'],
   { revalidate: 60, tags: ['psychologists'] }
 )
 
@@ -54,9 +65,8 @@ export default async function SearchPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <Navbar />
-      <main className="flex-1 container mx-auto px-4 py-12 max-w-7xl">
-        <div className="mb-10">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
+        <div className="mb-8">
           <div className="flex items-center text-sm text-slate-500 gap-2 px-1">
             <Link href="/" className="hover:text-orange-600 transition-colors">
               Home

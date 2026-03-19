@@ -81,7 +81,7 @@ export function OrderSummary({
             </div>
             <div className="flex justify-between items-center py-3 border-b border-slate-50">
               <span className="text-slate-500 font-medium font-outfit text-sm">Local:</span>
-              <span className="font-bold text-blue-600 text-sm">Google Meet (Online)</span>
+              <span className="font-bold text-blue-600 text-sm">Plataforma (Online)</span>
             </div>
             <div className="flex justify-between items-center py-3">
               <span className="text-slate-500 font-medium font-outfit text-sm">Duração:</span>

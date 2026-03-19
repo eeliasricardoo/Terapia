@@ -137,8 +137,6 @@ export async function searchPsychologists(
   }
 
   // Apply pagination only if searchQuery is NOT provided
-  // If searchQuery is provided, we fetch everything and filter in memory for now
-  // (Note: This is suboptimal but matches existing logic structure)
   if (!filters.searchQuery) {
     query = query.range(from, to)
   }
@@ -154,7 +152,7 @@ export async function searchPsychologists(
 
   const userIds = psychologists.map((p: any) => p.userId)
 
-  // We fetch profiles
+  // Fetch profiles
   let profilesQuery = supabase.from('profiles').select('*').in('user_id', userIds)
 
   // Filter by search query (name) here since it's in the profiles table

@@ -2,14 +2,8 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Slider } from '@/components/ui/slider'
 import { Separator } from '@/components/ui/separator'
 import { PsychologistSearchFilters } from '@/lib/supabase/types'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo, useCallback } from 'react'
 import { getHealthInsurances } from '@/lib/actions/health-insurance'
-
-interface SearchFiltersProps {
-  filters: PsychologistSearchFilters
-  onFilterChange: (filters: PsychologistSearchFilters) => void
-}
-
 import { SPECIALIZATIONS } from '@/lib/constants/specializations'
 
 interface SearchFiltersProps {
@@ -19,7 +13,10 @@ interface SearchFiltersProps {
 
 const specialtiesList = Array.from(SPECIALIZATIONS)
 
-export function SearchFilters({ filters, onFilterChange }: SearchFiltersProps) {
+export const SearchFilters = memo(function SearchFilters({
+  filters,
+  onFilterChange,
+}: SearchFiltersProps) {
   const [insurances, setInsurances] = useState<{ id: string; name: string }[]>([])
 
   useEffect(() => {
@@ -32,27 +29,36 @@ export function SearchFilters({ filters, onFilterChange }: SearchFiltersProps) {
     fetchInsurances()
   }, [])
 
-  const handleSpecialtyToggle = (specialty: string, checked: boolean) => {
-    const currentSpecialties = filters.specialties || []
-    const nextSpecialties = checked
-      ? [...currentSpecialties, specialty]
-      : currentSpecialties.filter((s) => s !== specialty)
+  const handleSpecialtyToggle = useCallback(
+    (specialty: string, checked: boolean) => {
+      const currentSpecialties = filters.specialties || []
+      const nextSpecialties = checked
+        ? [...currentSpecialties, specialty]
+        : currentSpecialties.filter((s) => s !== specialty)
 
-    onFilterChange({ ...filters, specialties: nextSpecialties })
-  }
+      onFilterChange({ ...filters, specialties: nextSpecialties })
+    },
+    [filters, onFilterChange]
+  )
 
-  const handleInsuranceToggle = (id: string, checked: boolean) => {
-    const currentInsurances = filters.healthInsurances || []
-    const nextInsurances = checked
-      ? [...currentInsurances, id]
-      : currentInsurances.filter((i) => i !== id)
+  const handleInsuranceToggle = useCallback(
+    (id: string, checked: boolean) => {
+      const currentInsurances = filters.healthInsurances || []
+      const nextInsurances = checked
+        ? [...currentInsurances, id]
+        : currentInsurances.filter((i) => i !== id)
 
-    onFilterChange({ ...filters, healthInsurances: nextInsurances })
-  }
+      onFilterChange({ ...filters, healthInsurances: nextInsurances })
+    },
+    [filters, onFilterChange]
+  )
 
-  const handlePriceChange = (value: number[]) => {
-    onFilterChange({ ...filters, maxPrice: value[0] })
-  }
+  const handlePriceChange = useCallback(
+    (value: number[]) => {
+      onFilterChange({ ...filters, maxPrice: value[0] })
+    },
+    [filters, onFilterChange]
+  )
 
   return (
     <div className="space-y-5">
@@ -133,4 +139,4 @@ export function SearchFilters({ filters, onFilterChange }: SearchFiltersProps) {
       </div>
     </div>
   )
-}
+})

@@ -26,21 +26,22 @@ import { PsychologistSearchFilters, PsychologistWithProfile } from '@/lib/supaba
 
 import { PsychologistCard } from './_components/psychologist-card'
 import { SearchFilters } from './_components/search-filters'
+import { PsychologistCardSkeleton } from './_components/psychologist-card-skeleton'
 
 const containerVars: Variants = {
   initial: { opacity: 0 },
   animate: {
     opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.03, delayChildren: 0 },
   },
 }
 
 const itemVars: Variants = {
-  initial: { opacity: 0, y: 30 },
+  initial: { opacity: 0, y: 10 },
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+    transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
   },
 }
 
@@ -60,13 +61,15 @@ export default function SearchClient({
     searchQuery: '',
   })
   const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(true)
-  const [isInitialLoading, setIsInitialLoading] = useState(true)
+  const [hasMore, setHasMore] = useState(initialPsychologists.length >= 12)
+  const [hasInteracted, setHasInteracted] = useState(false)
   const loaderRef = useRef<HTMLDivElement>(null)
   const pageSize = 12
 
-  // Trigger search when filters change
+  // Trigger search only when filters actually change (not on mount)
   useEffect(() => {
+    if (!hasInteracted) return // Skip initial mount
+
     const delayDebounceFn = setTimeout(() => {
       setPage(1)
       setHasMore(true)
@@ -74,7 +77,7 @@ export default function SearchClient({
     }, 400)
 
     return () => clearTimeout(delayDebounceFn)
-  }, [filters])
+  }, [filters, hasInteracted])
 
   const handleSearch = async (
     currentFilters: PsychologistSearchFilters,
@@ -92,7 +95,6 @@ export default function SearchClient({
         setPsychologists((prev) => [...prev, ...results])
       } else {
         setPsychologists(results)
-        setIsInitialLoading(false)
       }
 
       if (results.length < pageSize) {
@@ -126,17 +128,19 @@ export default function SearchClient({
     return () => observer.disconnect()
   }, [loadMore, hasMore, isPending])
 
-  const handleFilterChange = (newFilters: PsychologistSearchFilters) => {
+  const handleFilterChange = useCallback((newFilters: PsychologistSearchFilters) => {
+    setHasInteracted(true)
     setFilters(newFilters)
-  }
+  }, [])
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
+    setHasInteracted(true)
     setFilters({
       specialties: [],
       maxPrice: 500,
       searchQuery: '',
     })
-  }
+  }, [])
 
   return (
     <motion.div variants={containerVars} initial="initial" animate="animate" className="space-y-8">
@@ -164,7 +168,10 @@ export default function SearchClient({
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400 group-hover:text-blue-500 transition-colors duration-300 z-10" />
             <Input
               value={filters.searchQuery}
-              onChange={(e) => setFilters({ ...filters, searchQuery: e.target.value })}
+              onChange={(e) => {
+                setHasInteracted(true)
+                setFilters({ ...filters, searchQuery: e.target.value })
+              }}
               placeholder="Busque por nome do especialista..."
               className="pl-16 pr-6 h-16 text-lg shadow-sm w-full rounded-full border-2 border-slate-200 focus:border-blue-500 hover:border-slate-300 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 relative z-0 bg-white/80 backdrop-blur-sm"
             />
@@ -251,12 +258,10 @@ export default function SearchClient({
             </div>
           </div>
 
-          {isInitialLoading && isPending ? (
-            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6 opacity-60 grayscale-[0.5] transition-all">
-              {psychologists.map((psychologist) => (
-                <div key={psychologist.id} className="h-full">
-                  <PsychologistCard psychologist={psychologist} />
-                </div>
+          {isPending && psychologists.length === 0 ? (
+            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <PsychologistCardSkeleton key={i} />
               ))}
             </div>
           ) : psychologists.length === 0 && !isPending ? (
