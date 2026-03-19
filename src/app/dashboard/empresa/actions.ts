@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { logger } from '@/lib/utils/logger'
 
 export async function getCompanyProfile() {
   const supabase = await createClient()
@@ -18,7 +19,7 @@ export async function getCompanyProfile() {
     .single()
 
   if (error) {
-    console.error('Error fetching company profile:', error)
+    logger.error('Error fetching company profile:', error)
     return null
   }
 
@@ -60,14 +61,14 @@ export async function getCompanyMembers() {
     .eq('company_id', company.id)
 
   if (error) {
-    console.error('Error fetching company members:', error)
+    logger.error('Error fetching company members:', error)
     return []
   }
 
   return members
 }
 
-export async function updateCompanyBenefit(config: any) {
+export async function updateCompanyBenefit(config: Record<string, unknown>) {
   const supabase = await createClient()
   const {
     data: { user },

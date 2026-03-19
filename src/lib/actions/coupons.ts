@@ -35,8 +35,7 @@ export async function getCoupons(): Promise<
 
     return {
       success: true,
-      // @ts-ignore
-      data: profile.coupons.map((c: any) => ({
+      data: profile.coupons.map((c) => ({
         id: c.id,
         code: c.code,
         type: c.type as 'percentage' | 'fixed',
@@ -72,7 +71,6 @@ export async function createCoupon(data: {
 
     if (!profile) return { success: false, error: 'Perfil não encontrado' }
 
-    // @ts-ignore
     await prisma.coupon.create({
       data: {
         psychologistId: profile.id,
@@ -104,7 +102,6 @@ export async function toggleCoupon(
 
     if (!user) return { success: false, error: 'Não autenticado' }
 
-    // @ts-ignore
     await prisma.coupon.update({
       where: { id },
       data: { active },
@@ -128,7 +125,6 @@ export async function deleteCoupon(
 
     if (!user) return { success: false, error: 'Não autenticado' }
 
-    // @ts-ignore
     await prisma.coupon.delete({
       where: { id },
     })
@@ -145,7 +141,6 @@ export async function validateCoupon(
   psychologistId: string
 ): Promise<{ success: true; data: CouponData } | { success: false; error: string }> {
   try {
-    // @ts-ignore
     const coupon = await prisma.coupon.findFirst({
       where: {
         code: code.toUpperCase(),

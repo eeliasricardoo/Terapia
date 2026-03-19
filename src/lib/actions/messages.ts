@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserProfile } from './profile'
 import { revalidatePath } from 'next/cache'
+import { logger } from '@/lib/utils/logger'
 import { encryptData, decryptData, isValidUUID } from '@/lib/security'
 import {
   Conversation,
@@ -121,7 +122,7 @@ export async function getMessages(conversationId: string, limit: number = 100) {
   })
 
   // Reverse to show oldest first (chronological order)
-  return messages.reverse().map((m: any) => ({
+  return messages.reverse().map((m) => ({
     id: m.id,
     content: decryptData(m.content),
     senderId: m.senderId,
@@ -154,7 +155,7 @@ export async function sendMessage(conversationId: string, content: string) {
     revalidatePath('/dashboard/mensagens')
     return { success: true, messageId: message.id }
   } catch (error) {
-    console.error('Error sending message:', error)
+    logger.error('Error sending message:', error)
     return { success: false, error: 'Erro ao enviar mensagem' }
   }
 }
