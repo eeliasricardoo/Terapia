@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { createStripeConnectAccountLink, getStripeDashboardLink } from '@/lib/actions/stripe'
+import { toast } from 'sonner'
+import { AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -36,6 +39,39 @@ import { getFinancialStats, type FinancialStats } from '@/lib/actions/financial'
 export function FinancialManager() {
   const [stats, setStats] = useState<FinancialStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isConnecting, setIsConnecting] = useState(false)
+
+  const handleConnectStripe = async () => {
+    setIsConnecting(true)
+    try {
+      const result = await createStripeConnectAccountLink()
+      if (result.error) {
+        toast.error(result.error)
+      } else if (result.url) {
+        window.location.href = result.url
+      }
+    } catch (error) {
+      toast.error('Erro ao iniciar conexão com Stripe')
+    } finally {
+      setIsConnecting(false)
+    }
+  }
+
+  const handleOpenStripeDashboard = async () => {
+    setIsConnecting(true)
+    try {
+      const result = await getStripeDashboardLink()
+      if (result.error) {
+        toast.error(result.error)
+      } else if (result.url) {
+        window.open(result.url, '_blank')
+      }
+    } catch (error) {
+      toast.error('Erro ao acessar painel financeiro')
+    } finally {
+      setIsConnecting(false)
+    }
+  }
 
   useEffect(() => {
     async function loadStats() {
@@ -82,6 +118,22 @@ export function FinancialManager() {
               <SelectItem value="this-year">Este Ano</SelectItem>
             </SelectContent>
           </Select>
+
+          {stats.isStripeConnected && (
+            <Button
+              onClick={handleOpenStripeDashboard}
+              disabled={isConnecting}
+              className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white border-none"
+            >
+              {isConnecting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard className="h-4 w-4" />
+              )}
+              Ver Painel Stripe
+            </Button>
+          )}
+
           <Button
             variant="outline"
             className="gap-2 bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -91,6 +143,38 @@ export function FinancialManager() {
           </Button>
         </div>
       </div>
+
+      {!stats.isStripeConnected && (
+        <Card className="border-none bg-blue-50/50 ring-1 ring-blue-100 shadow-sm overflow-hidden rounded-3xl">
+          <CardContent className="p-8 flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+            <div className="h-16 w-16 rounded-2xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-600/20">
+              <AlertCircle className="h-8 w-8" />
+            </div>
+            <div className="flex-1 space-y-2">
+              <h3 className="text-xl font-bold text-slate-900">Configure seus recebimentos</h3>
+              <p className="text-slate-600 max-w-2xl leading-relaxed">
+                Para receber os pagamentos das suas sessões de forma automática e segura, você
+                precisa conectar sua conta à nossa plataforma financeira via <strong>Stripe</strong>
+                .
+              </p>
+            </div>
+            <Button
+              onClick={handleConnectStripe}
+              disabled={isConnecting}
+              className="h-14 px-8 text-lg font-bold bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20 rounded-2xl shrink-0"
+            >
+              {isConnecting ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Conectando...
+                </>
+              ) : (
+                'Conectar Stripe'
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

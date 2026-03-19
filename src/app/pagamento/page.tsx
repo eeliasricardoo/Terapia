@@ -72,6 +72,7 @@ function PaymentContent() {
                 discountAmount={discountAmount}
                 finalPrice={finalPrice}
                 matchedInsurance={matchedInsurance}
+                isFetchingInfo={isFetchingInfo}
               />
 
               <PaymentMethods

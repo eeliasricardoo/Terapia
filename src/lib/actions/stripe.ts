@@ -93,7 +93,7 @@ export async function createStripeCheckoutSession(data: {
     // 3. Create the Checkout Session
     const stripeAmount = Math.round(finalPrice * 100)
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: ['card', 'pix'],
       line_items: [
         {
           price_data: {
@@ -134,5 +134,88 @@ export async function createStripeCheckoutSession(data: {
   } catch (error: any) {
     logger.error('Error creating Stripe session:', error)
     return { error: error.message || 'Erro ao processar pagamento' }
+  }
+}
+
+export async function createStripeConnectAccountLink() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) throw new Error('Não autenticado')
+
+    const psych = await prisma.psychologistProfile.findUnique({
+      where: { userId: user.id },
+    })
+
+    if (!psych) throw new Error('Perfil de psicólogo não encontrado')
+
+    let accountId = psych.stripeAccountId
+
+    // 1. Create a Stripe Express account if it doesn't exist
+    if (!accountId) {
+      const account = await stripe.accounts.create({
+        type: 'express',
+        country: 'BR',
+        email: user.email,
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+        business_type: 'individual',
+        metadata: {
+          userId: user.id,
+          profileId: psych.id,
+        },
+      })
+
+      accountId = account.id
+
+      // Update DB with the new account ID
+      await prisma.psychologistProfile.update({
+        where: { id: psych.id },
+        data: { stripeAccountId: accountId },
+      })
+    }
+
+    // 2. Create the Account Link for onboarding
+    const accountLink = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/financeiro?stripe=refresh`,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/financeiro?stripe=success`,
+      type: 'account_onboarding',
+    })
+
+    return { url: accountLink.url }
+  } catch (error: any) {
+    logger.error('Error creating Stripe Connect link:', error)
+    return { error: error.message || 'Erro ao conectar-se ao Stripe' }
+  }
+}
+
+export async function getStripeDashboardLink() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) throw new Error('Não autenticado')
+
+    const psych = await prisma.psychologistProfile.findUnique({
+      where: { userId: user.id },
+    })
+
+    if (!psych || !psych.stripeAccountId) {
+      throw new Error('Conta Stripe não configurada')
+    }
+
+    const loginLink = await stripe.accounts.createLoginLink(psych.stripeAccountId)
+    return { url: loginLink.url }
+  } catch (error: any) {
+    logger.error('Error getting Stripe Dashboard link:', error)
+    return { error: error.message || 'Erro ao acessar painel do Stripe' }
   }
 }

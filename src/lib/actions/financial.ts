@@ -13,6 +13,7 @@ export type FinancialStats = {
   revenueChange: number
   monthlyData: { month: string; value: number }[]
   paymentMethods: { method: string; percentage: number }[]
+  isStripeConnected: boolean
   recentTransactions: {
     id: string
     patient: string
@@ -174,6 +175,7 @@ export async function getFinancialStats(): Promise<FinancialStats> {
       monthlyData,
       paymentMethods,
       recentTransactions,
+      isStripeConnected: !!psychologistProfile.stripeAccountId,
     }
   } catch (error) {
     logger.error('Error fetching financial stats:', error)
@@ -185,6 +187,7 @@ export async function getFinancialStats(): Promise<FinancialStats> {
       monthlyData: [],
       paymentMethods: [],
       recentTransactions: [],
+      isStripeConnected: false,
     }
   }
 }
