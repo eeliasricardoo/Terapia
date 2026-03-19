@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { revalidatePath } from 'next/cache'
 import { sendEmail } from '@/lib/utils/email'
+import { getApprovalEmailTemplate, getRejectionEmailTemplate } from '@/lib/utils/email-templates'
 
 export async function getPendingPsychologists() {
   try {
@@ -162,14 +163,10 @@ export async function verifyPsychologist(psychologistId: string) {
     await sendEmail({
       to: psychologist.user.email,
       subject: 'Bem-vindo à Terapia! Seu perfil foi aprovado',
-      html: `
-        <h2>Excelente notícia, ${psychologist.user.profiles?.fullName || 'Psicólogo'}!</h2>
-        <p>A equipe da Terapia verificou e aprovou seu cadastro (CRP: ${psychologist.crp}).</p>
-        <p>A partir de agora, você já aparece nos resultados de busca da plataforma para que pacientes possam agendar sessões com você.</p>
-        <br/>
-        <p>Atenciosamente,</p>
-        <p>Equipe Terapia</p>
-      `,
+      html: getApprovalEmailTemplate(
+        psychologist.user.profiles?.fullName || 'Psicólogo',
+        psychologist.crp || ''
+      ),
     })
 
     revalidatePath('/dashboard')
@@ -335,15 +332,7 @@ export async function rejectPsychologist(psychologistId: string, reason: string)
     await sendEmail({
       to: psychologist.user.email,
       subject: 'Atualização do seu cadastro na Terapia',
-      html: `
-        <h2>Olá, ${psychologist.user.profiles?.fullName || 'Psicólogo'}!</h2>
-        <p>Infelizmente não pudemos aprovar o seu cadastro neste momento.</p>
-        <p><strong>Motivo:</strong> ${reason}</p>
-        <p>Você pode tentar se cadastrar novamente após corrigir os apontamentos acima.</p>
-        <br/>
-        <p>Atenciosamente,</p>
-        <p>Equipe Terapia</p>
-      `,
+      html: getRejectionEmailTemplate(psychologist.user.profiles?.fullName || 'Psicólogo', reason),
     })
 
     revalidatePath('/dashboard')

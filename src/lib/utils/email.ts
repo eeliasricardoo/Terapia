@@ -26,12 +26,13 @@ export async function sendEmail({
       return { success: true }
     }
 
-    // Com a chave configurada, envia de fato pelo Resend
+    // Default to 'onboarding@resend.dev' if no official from e-mail is configured.
+    // NOTE: 'onboarding@resend.dev' works only for sends to the resend account owner.
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
+    const fromName = process.env.RESEND_FROM_NAME || 'Terapia Plataforma'
+
     const { data, error } = await resend.emails.send({
-      // NOTA: 'onboarding@resend.dev' permite envio de testes apenas para o e-mail
-      // do criador da conta Resend. Para enviar para qualquer e-mail real
-      // (ex: carlos@exemplo.com), você precisará registrar seu próprio domínio na Resend
-      from: 'Terapia Plataforma <onboarding@resend.dev>',
+      from: `${fromName} <${fromEmail}>`,
       to: [to],
       subject,
       html,
