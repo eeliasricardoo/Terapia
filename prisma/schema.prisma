@@ -61,7 +61,7 @@ model Profile {
   createdAt             DateTime                  @default(now()) @map("created_at")
   updatedAt             DateTime                  @updatedAt @map("updated_at")
   birth_date            DateTime?                 @db.Date
-  document              String?
+  document              String?                   @unique
   phone                 String?
   gender                String?
   profession            String?
@@ -255,7 +255,7 @@ model CompanyProfile {
   id               String          @id @default(uuid())
   userId           String          @unique @map("user_id")
   name             String
-  cnpj             String?
+  cnpj             String?         @unique
   logoUrl          String?         @map("logo_url")
   organizationCode String          @unique @map("organization_code")
   active           Boolean         @default(true)

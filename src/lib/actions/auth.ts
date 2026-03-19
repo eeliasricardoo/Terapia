@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { registrationSchema } from '@/lib/validations/registration'
+import { cleanCPF } from '@/lib/utils/cpf'
+import { cleanCRP } from '@/lib/utils/crp'
 import { loginSchema } from '@/lib/validations/auth'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -59,6 +61,20 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
 
     // Anti-XSS nas informações que serão visíveis em perfis/telas
     const safeName = sanitizeText(data.name) || 'Anônimo'
+    const cleanedDocument = cleanCPF(data.document)
+
+    // 1. Check if document already exists locally (Prisma)
+    const { prisma } = await import('@/lib/prisma')
+    const existingProfile = await prisma.profile.findUnique({
+      where: { document: cleanedDocument },
+    })
+
+    if (existingProfile) {
+      return {
+        success: false,
+        error: 'Este CPF já está cadastrado no sistema.',
+      }
+    }
 
     // Sign up with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -70,7 +86,7 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
           full_name: safeName,
           phone: data.phone,
           birth_date: data.birthDate,
-          document: data.document,
+          document: cleanedDocument,
         },
       },
     })
@@ -254,6 +270,20 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
     const supabase = await createClient()
 
     const safeName = sanitizeText(data.name) || 'Psicólogo'
+    const cleanedCRP = cleanCRP(data.professionalCard)
+
+    // 1. Check if CRP already exists
+    const { prisma } = await import('@/lib/prisma')
+    const existingPsych = await prisma.psychologistProfile.findUnique({
+      where: { crp: cleanedCRP },
+    })
+
+    if (existingPsych) {
+      return {
+        success: false,
+        error: 'Este CRP já está cadastrado no sistema.',
+      }
+    }
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
@@ -307,11 +337,11 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
       await prisma.psychologistProfile.upsert({
         where: { userId: authData.user.id },
         update: {
-          crp: data.professionalCard,
+          crp: cleanedCRP,
         },
         create: {
           userId: authData.user.id,
-          crp: data.professionalCard,
+          crp: cleanedCRP,
           isVerified: false,
         },
       })
