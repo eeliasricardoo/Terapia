@@ -1,5 +1,7 @@
 'use server'
 
+import { logger } from '@/lib/utils/logger'
+
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
@@ -34,7 +36,7 @@ export async function saveAvailability(
 
   if (authError || !user) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('Simulated success for saveAvailability (unauthenticated)')
+      logger.warn('Simulated success for saveAvailability (unauthenticated)')
       return { success: true }
     }
     return { success: false, error: 'Usuário não autenticado' }
@@ -49,7 +51,7 @@ export async function saveAvailability(
       .single()
 
     if (fetchErr || !profileObj) {
-      console.error('Error fetching psychologist profile:', fetchErr)
+      logger.error('Error fetching psychologist profile:', fetchErr)
       return { success: false, error: 'Perfil de psicólogo não encontrado' }
     }
 
@@ -114,7 +116,7 @@ export async function saveAvailability(
       .eq('userId', user.id)
 
     if (profileError) {
-      console.error('Error updating psychologist profile schedule:', profileError)
+      logger.error('Error updating psychologist profile schedule:', profileError)
       return { success: false, error: 'Erro ao salvar horários regulares' }
     }
 
@@ -127,7 +129,7 @@ export async function saveAvailability(
       .gte('date', todayStr)
 
     if (deleteErr) {
-      console.error('Error deleting old overrides:', deleteErr)
+      logger.error('Error deleting old overrides:', deleteErr)
       // Não vamos falhar, pode ser que seja apenas na dev ou algo menor
     }
 
@@ -165,7 +167,7 @@ export async function saveAvailability(
         .insert(allOverrides)
 
       if (overrideError) {
-        console.error('Error inserting schedule overrides:', overrideError)
+        logger.error('Error inserting schedule overrides:', overrideError)
         return { success: false, error: 'Erro ao salvar datas específicas' }
       }
     }
@@ -177,7 +179,7 @@ export async function saveAvailability(
 
     return { success: true }
   } catch (error) {
-    console.error('Unexpected error:', error)
+    logger.error('Unexpected error:', error)
     return { success: false, error: 'Erro interno no servidor' }
   }
 }
@@ -225,7 +227,7 @@ export async function getPsychologistAvailability(
 
   if (profileError || !profile) {
     if (profileError?.code !== 'PGRST116') {
-      console.error('Error fetching psychologist availability:', profileError)
+      logger.error('Error fetching psychologist availability:', profileError)
     }
     return null
   }

@@ -1,5 +1,7 @@
 'use server'
 
+import { logger } from '@/lib/utils/logger'
+
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserProfile } from './profile'
 import { revalidatePath } from 'next/cache'
@@ -154,7 +156,7 @@ export async function sendMessage(conversationId: string, content: string) {
     revalidatePath('/dashboard/mensagens')
     return { success: true, messageId: message.id }
   } catch (error) {
-    console.error('Error sending message:', error)
+    logger.error('Error sending message:', error)
     return { success: false, error: 'Erro ao enviar mensagem' }
   }
 }

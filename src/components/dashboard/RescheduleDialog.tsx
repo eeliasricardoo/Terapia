@@ -1,4 +1,5 @@
 'use client'
+import { logger } from '@/lib/utils/logger'
 
 import { useState, useEffect } from 'react'
 import {
@@ -62,7 +63,7 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
           setPsychologist(pData)
           setAvailability(aData)
         } catch (error) {
-          console.error(error)
+          logger.error(error)
           toast.error('Erro ao carregar disponibilidade')
         } finally {
           setLoading(false)
@@ -185,7 +186,7 @@ function RescheduleForm({
         toast.error('Erro ao reagendar', { description: result.error })
       }
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       toast.error('Erro inesperado ao reagendar')
     } finally {
       setIsRescheduling(false)

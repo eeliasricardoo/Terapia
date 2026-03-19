@@ -1,4 +1,5 @@
 'use client'
+import { logger } from '@/lib/utils/logger'
 
 import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
@@ -467,7 +468,7 @@ export function ScheduleManager() {
 
       toast.success('Alterações salvas!', { description: 'Sua disponibilidade foi atualizada.' })
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       toast.error('Erro ao salvar', { description: 'Tente novamente mais tarde.' })
     } finally {
       setIsLoading(false)
@@ -488,7 +489,7 @@ export function ScheduleManager() {
 
       toast.success(`Sessão marcada como ${newStatus.toLowerCase()}`)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       toast.error('Erro ao atualizar status')
     }
   }

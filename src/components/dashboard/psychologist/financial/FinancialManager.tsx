@@ -1,4 +1,5 @@
 'use client'
+import { logger } from '@/lib/utils/logger'
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
@@ -79,7 +80,7 @@ export function FinancialManager() {
         const data = await getFinancialStats()
         setStats(data)
       } catch (error) {
-        console.error('Error loading financial stats:', error)
+        logger.error('Error loading financial stats:', error)
       } finally {
         setIsLoading(false)
       }

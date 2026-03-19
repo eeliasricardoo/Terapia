@@ -1,4 +1,5 @@
 'use client'
+import { logger } from '@/lib/utils/logger'
 
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -80,7 +81,7 @@ export function EmailVerificationForm() {
           )
         }
       } catch (error) {
-        console.error('Verification error:', error)
+        logger.error('Verification error:', error)
         toast.error('Erro ao verificar código. Tente novamente.')
       }
     })

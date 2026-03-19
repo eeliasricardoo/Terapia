@@ -1,4 +1,5 @@
 'use client'
+import { logger } from '@/lib/utils/logger'
 
 import { useDaily, useLocalParticipant, useMediaTrack } from '@daily-co/daily-react'
 import { useEffect, useRef, useState } from 'react'
@@ -24,9 +25,9 @@ export function PreJoinLobby() {
   useEffect(() => {
     if (!daily || hasStartedCamera.current) return
     hasStartedCamera.current = true
-    console.log('Starting Local Preview...')
+    logger.debug('Starting Local Preview...')
     daily.startCamera({ audioSource: true, videoSource: true }).catch((err) => {
-      console.error('Failed to start camera preview', err)
+      logger.error('Failed to start camera preview', err)
       hasStartedCamera.current = false
     })
 

@@ -1,4 +1,5 @@
 'use client'
+import { logger } from '@/lib/utils/logger'
 
 import { useState, useEffect } from 'react'
 import DailyIframe, { DailyCall } from '@daily-co/daily-js'
@@ -76,7 +77,7 @@ export function useRoomConnection(appointmentId: string) {
 
     return () => {
       if (co) {
-        co.destroy().catch((e: any) => console.error('Error destroying daily', e))
+        co.destroy().catch((e: any) => logger.error('Error destroying daily', e))
       }
     }
   }, [roomUrl, token])

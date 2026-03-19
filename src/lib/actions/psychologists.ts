@@ -1,5 +1,7 @@
 'use server'
 
+import { logger } from '@/lib/utils/logger'
+
 import { createClient } from '@/lib/supabase/server'
 import type { PsychologistWithProfile, PsychologistSearchFilters } from '@/lib/supabase/types'
 import { prisma } from '@/lib/prisma'
@@ -17,7 +19,7 @@ export async function getPsychologists(): Promise<PsychologistWithProfile[]> {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching psychologists:', error)
+    logger.error('Error fetching psychologists:', error)
     return []
   }
 
@@ -31,7 +33,7 @@ export async function getPsychologists(): Promise<PsychologistWithProfile[]> {
     .in('user_id', userIds)
 
   if (profilesError) {
-    console.error('Error fetching psychologist profiles:', profilesError)
+    logger.error('Error fetching psychologist profiles:', profilesError)
     return []
   }
 
@@ -58,7 +60,7 @@ export async function getPsychologistById(userId: string): Promise<PsychologistW
     .single()
 
   if (error || !psych) {
-    if (error) console.error('Error fetching psychologist:', error)
+    if (error) logger.error('Error fetching psychologist:', error)
     return null
   }
 
@@ -69,7 +71,7 @@ export async function getPsychologistById(userId: string): Promise<PsychologistW
     .single()
 
   if (profileError) {
-    console.error('Error fetching psychologist profile:', profileError)
+    logger.error('Error fetching psychologist profile:', profileError)
     return null
   }
 
@@ -116,7 +118,7 @@ export async function searchPsychologists(
       .in('health_insurance_id', filters.healthInsurances)
 
     if (insuranceError) {
-      console.error('Error fetching linked psychologists by insurance:', insuranceError)
+      logger.error('Error fetching linked psychologists by insurance:', insuranceError)
     }
 
     if (linkedPsychs && linkedPsychs.length > 0) {
@@ -144,7 +146,7 @@ export async function searchPsychologists(
   const { data: psychologists, error } = await query.order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error searching psychologists:', error)
+    logger.error('Error searching psychologists:', error)
     return []
   }
 
@@ -163,7 +165,7 @@ export async function searchPsychologists(
   const { data: profiles, error: profilesError } = await profilesQuery
 
   if (profilesError) {
-    console.error('Error fetching psychologist profiles in search:', profilesError)
+    logger.error('Error fetching psychologist profiles in search:', profilesError)
     return []
   }
 
@@ -208,7 +210,7 @@ export async function getPsychologistStats(userId: string) {
 
     return { totalSessions }
   } catch (error) {
-    console.error('Error fetching psychologist stats:', error)
+    logger.error('Error fetching psychologist stats:', error)
     return { totalSessions: 0 }
   }
 }

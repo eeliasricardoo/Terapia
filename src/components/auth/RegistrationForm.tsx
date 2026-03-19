@@ -1,4 +1,5 @@
 'use client'
+import { logger } from '@/lib/utils/logger'
 
 import { useState, useTransition } from 'react'
 import { cn } from '@/lib/utils'
@@ -103,7 +104,7 @@ export function RegistrationForm() {
           )
         }
       } catch (error) {
-        console.error('Registration error:', error)
+        logger.error('Registration error:', error)
         toast.error('Erro ao criar conta. Tente novamente mais tarde.')
       }
     })

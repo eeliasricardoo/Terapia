@@ -1,4 +1,5 @@
 'use client'
+import { logger } from '@/lib/utils/logger'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -172,7 +173,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
             .subscribe()
         }
       } catch (error) {
-        console.error('Error loading user:', error)
+        logger.error('Error loading user:', error)
       } finally {
         setLoading(false)
       }

@@ -1,4 +1,5 @@
 'use client'
+import { logger } from '@/lib/utils/logger'
 
 import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
@@ -156,7 +157,7 @@ export function PsychologistOnboardingWizard() {
         })
       }
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       toast.error('Erro inesperado', {
         description: 'Ocorreu um erro ao salvar seus dados.',
       })
