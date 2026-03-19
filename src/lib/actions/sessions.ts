@@ -437,7 +437,8 @@ export async function getSessionSummary(sessionId: string) {
     durationMinutes: appointment.duration_minutes,
     scheduledAt: appointment.scheduled_at,
     status: appointment.status,
-    psychologistName: (appointment.psychologist as any)?.full_name || 'Especialista',
+    psychologistName:
+      (appointment.psychologist as { full_name?: string | null })?.full_name || 'Especialista',
     specialty: psychProfile?.specialties?.[0] || 'Psicologia',
     publicSummary: evolution?.public_summary || null,
     mood: evolution?.mood || null,

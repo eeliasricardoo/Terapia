@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { Profile } from '@/lib/supabase/types'
+import type { UserRole } from '@prisma/client'
 import { cache } from 'react'
 
 /**
@@ -36,7 +37,7 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
       await prisma.user.upsert({
         where: { id: user.id },
         update: { email: user.email!, name: fullName },
-        create: { id: user.id, email: user.email!, name: fullName, role: role as any },
+        create: { id: user.id, email: user.email!, name: fullName, role: role as UserRole },
       })
 
       // Create in Supabase profiles table using Prisma to ensure defaults (like ID) are handled
@@ -44,13 +45,13 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
         data: {
           user_id: user.id,
           fullName: fullName,
-          role: role as any,
+          role: role as UserRole,
           avatarUrl: null,
         },
       })
 
       if (newProfile) {
-        data = newProfile as any // Cast to any to match the Supabase return type expectation in the rest of the function
+        data = newProfile as unknown as typeof data // Cast to match the Supabase return type
       }
     } catch (err) {
       console.error('Error auto-syncing profile (Prisma/General):', err)
@@ -71,7 +72,7 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
       if (userInDb.role !== (data as Profile).role) {
         await prisma.user.update({
           where: { id: user.id },
-          data: { role: (data as Profile).role as any },
+          data: { role: (data as Profile).role as UserRole },
         })
       }
     } else {

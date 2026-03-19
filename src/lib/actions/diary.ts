@@ -68,7 +68,9 @@ export async function saveDiaryEntry(data: { mood: number; emotions: string[]; c
         id: user.id,
         email: user.email || '',
         name: (user.user_metadata?.full_name as string) || 'Paciente',
-        role: (user.user_metadata?.role as any) || 'PATIENT',
+        role:
+          (user.user_metadata?.role as 'PATIENT' | 'PSYCHOLOGIST' | 'COMPANY' | 'ADMIN') ||
+          'PATIENT',
       },
     })
 
