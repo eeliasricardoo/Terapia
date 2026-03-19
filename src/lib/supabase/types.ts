@@ -207,6 +207,7 @@ export type Database = {
           video_presentation_url: string | null
           weekly_schedule: Json | null
           timezone: string
+          external_scheduling_url: string | null
         }
         Insert: {
           bio?: string | null
@@ -221,6 +222,7 @@ export type Database = {
           video_presentation_url?: string | null
           weekly_schedule?: Json | null
           timezone?: string
+          external_scheduling_url?: string | null
         }
         Update: {
           bio?: string | null
@@ -235,6 +237,7 @@ export type Database = {
           video_presentation_url?: string | null
           weekly_schedule?: Json | null
           timezone?: string
+          external_scheduling_url?: string | null
         }
         Relationships: [
           {

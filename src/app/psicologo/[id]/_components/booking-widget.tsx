@@ -28,6 +28,7 @@ interface BookingWidgetProps {
   selectedTime: string | null
   onSubmit: () => void
   currentMonth: number
+  externalSchedulingUrl?: string | null
 }
 
 export function BookingWidget({
@@ -50,7 +51,55 @@ export function BookingWidget({
   selectedTime,
   onSubmit,
   currentMonth,
+  externalSchedulingUrl,
 }: BookingWidgetProps) {
+  if (externalSchedulingUrl) {
+    return (
+      <Card className="border-none shadow-xl shadow-blue-900/5 bg-white overflow-hidden ring-1 ring-slate-100 flex flex-col">
+        <div className="p-8 text-center space-y-6">
+          <div
+            className={cn(
+              'p-8 rounded-3xl text-white text-center transition-all duration-500 relative overflow-hidden bg-gradient-to-br from-indigo-600 to-blue-700 shadow-indigo-600/20 shadow-xl'
+            )}
+          >
+            <div className="relative z-10">
+              <p className="text-sm font-medium text-blue-50 mb-1 opacity-90 whitespace-nowrap">
+                Valor da Sessão (50 min)
+              </p>
+              <p className="text-4xl font-extrabold tracking-tight">
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                  displayPrice
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="font-bold text-slate-900 text-xl">Agendamento Externo</h3>
+            <p className="text-slate-500 text-sm leading-relaxed">
+              Este profissional utiliza uma plataforma externa para gerenciar sua agenda. Clique no
+              botão abaixo para escolher seu horário e realizar o agendamento.
+            </p>
+          </div>
+
+          <Button
+            asChild
+            className="w-full h-16 text-lg font-bold bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20 rounded-2xl"
+          >
+            <a href={externalSchedulingUrl} target="_blank" rel="noopener noreferrer">
+              Agendar agora <ArrowRight className="h-5 w-5 ml-2" />
+            </a>
+          </Button>
+
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <CheckCircle2 className="h-3 w-3 text-green-500" />
+            <span>Você será redirecionado para uma página segura</span>
+          </div>
+        </div>
+      </Card>
+    )
+  }
+
   return (
     <Card className="border-none shadow-xl shadow-blue-900/5 bg-white overflow-hidden ring-1 ring-slate-100 flex flex-col max-h-[calc(100vh-6.5rem)]">
       <div className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full pb-4">

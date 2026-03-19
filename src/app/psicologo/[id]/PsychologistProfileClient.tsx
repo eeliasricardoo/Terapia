@@ -126,6 +126,7 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
                 selectedTime={selectedTime}
                 onSubmit={handleBooking}
                 currentMonth={currentDate.getMonth()}
+                externalSchedulingUrl={psychologist.external_scheduling_url}
               />
             </div>
           </div>
