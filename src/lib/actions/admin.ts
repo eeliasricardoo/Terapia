@@ -24,6 +24,59 @@ export async function getPendingPsychologists() {
       throw new Error('Não autorizado')
     }
 
+    // Self-healing: Check for psychologists in profiles table that are not yet in Users/PsychologistProfile
+    // This happens because some signup flows were missing the Prisma sync
+    const orphanPsychologists = await prisma.profile.findMany({
+      where: { role: 'PSYCHOLOGIST' },
+      include: {
+        users: {
+          include: {
+            psychologistProfile: true,
+          },
+        },
+      },
+    })
+
+    for (const op of orphanPsychologists) {
+      if (!op.users) {
+        // Sync User table (public) from Profile/Auth metadata
+        // We know they exist in auth.users because profile exists (FK user_id)
+        try {
+          await prisma.user.upsert({
+            where: { id: op.user_id },
+            update: {
+              name: op.fullName,
+              role: 'PSYCHOLOGIST',
+            },
+            create: {
+              id: op.user_id,
+              name: op.fullName,
+              email: `user_${op.user_id}@terapia.com`, // Fallback email; it will be corrected on their next login or next step
+              role: 'PSYCHOLOGIST',
+            },
+          })
+        } catch (e) {
+          logger.error(`Error healing user record for ${op.user_id}:`, e)
+        }
+      }
+
+      // Ensure they have a PsychologistProfile record if they don't yet
+      if (!op.users?.psychologistProfile) {
+        try {
+          await prisma.psychologistProfile.upsert({
+            where: { userId: op.user_id },
+            update: {},
+            create: {
+              userId: op.user_id,
+              isVerified: false,
+            },
+          })
+        } catch (e) {
+          logger.error(`Error healing psychologist profile for ${op.user_id}:`, e)
+        }
+      }
+    }
+
     const pending = await prisma.psychologistProfile.findMany({
       where: { isVerified: false },
       include: {

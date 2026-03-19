@@ -158,7 +158,7 @@ export function ApprovalList({ initialPending }: { initialPending: PendingPsycho
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent side="right" className="sm:max-w-2xl p-0 border-none shadow-2xl">
           <ScrollArea className="h-full">
-            <div className="p-8 space-y-8 pb-32">
+            <div className="p-8 space-y-8 pb-60">
               <SheetHeader className="space-y-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">

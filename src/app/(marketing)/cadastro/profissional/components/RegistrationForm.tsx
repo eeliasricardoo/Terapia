@@ -28,7 +28,7 @@ import {
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 import { maskCRP } from '@/lib/utils/crp'
-import { auth } from '@/lib/supabase/auth'
+import { registerPsychologistSupabase } from '@/lib/actions/auth'
 
 export function RegistrationForm() {
   const router = useRouter()
@@ -50,23 +50,21 @@ export function RegistrationForm() {
   } = form
 
   async function onSubmit(values: ProfessionalRegistrationInput) {
+    if (isPending) return
+
     startTransition(async () => {
       try {
-        const { error } = await auth.signUp(values.email, values.password, {
-          role: 'PSYCHOLOGIST',
-          full_name: values.name,
-          // CRP será armazenado no perfil de psicólogo posteriormente
-        })
+        const formData = new FormData()
+        formData.append('name', values.name)
+        formData.append('email', values.email)
+        formData.append('password', values.password)
+        formData.append('professionalCard', values.professionalCard)
+        formData.append('terms', 'true')
 
-        if (error) {
-          if (
-            error.message.includes('already registered') ||
-            error.message.includes('User already registered')
-          ) {
-            toast.error('E-mail já cadastrado. Tente fazer login ou recuperar sua senha.')
-          } else {
-            toast.error(error.message || 'Erro ao criar conta. Tente novamente.')
-          }
+        const result = await registerPsychologistSupabase(formData)
+
+        if (!result.success) {
+          toast.error(result.error || 'Erro ao criar conta. Tente novamente.')
         } else {
           toast.success('Conta criada com sucesso!')
           // Redirecionar para completar dados profissionais

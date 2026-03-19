@@ -199,3 +199,111 @@ export async function signOutSupabase() {
   revalidatePath('/')
   redirect('/login/paciente')
 }
+
+export async function registerPsychologistSupabase(formData: FormData): Promise<ActionResult> {
+  try {
+    const ip = headers().get('x-forwarded-for') || 'unknown_ip'
+    const rateLimit = await checkRateLimit(`register_psych_${ip}`)
+    if (!rateLimit.success) {
+      return {
+        success: false,
+        error: 'Muitas tentativas de cadastro. Tente novamente mais tarde.',
+      }
+    }
+
+    const rawData = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+      professionalCard: formData.get('professionalCard') as string,
+      terms: formData.get('terms') === 'true',
+    }
+
+    const { professionalRegistrationSchema } =
+      await import('@/lib/validations/professional-registration')
+    const validation = professionalRegistrationSchema.safeParse(rawData)
+
+    if (!validation.success) {
+      const fieldErrors: Record<string, string[]> = {}
+      validation.error.errors.forEach((error) => {
+        const field = error.path[0] as string
+        if (!fieldErrors[field]) fieldErrors[field] = []
+        fieldErrors[field].push(error.message)
+      })
+      return { success: false, fieldErrors }
+    }
+
+    const data = validation.data
+    const supabase = await createClient()
+
+    const safeName = sanitizeText(data.name) || 'Psicólogo'
+
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          role: 'PSYCHOLOGIST',
+          full_name: safeName,
+        },
+      },
+    })
+
+    if (authError) {
+      return {
+        success: false,
+        error:
+          authError.message === 'User already registered'
+            ? 'E-mail já cadastrado. Tente fazer login.'
+            : authError.message,
+      }
+    }
+
+    if (authData.user) {
+      const { prisma } = await import('@/lib/prisma')
+
+      // 1. Sync User to Prisma (CRITICAL for Admin views)
+      await prisma.user.upsert({
+        where: { id: authData.user.id },
+        update: {
+          email: data.email,
+          name: safeName,
+          role: 'PSYCHOLOGIST',
+        },
+        create: {
+          id: authData.user.id,
+          email: data.email,
+          name: safeName,
+          role: 'PSYCHOLOGIST',
+        },
+      })
+
+      // 2. Initialize profiles entry (handled by trigger but we ensure it's correct)
+      await supabase.from('profiles').upsert({
+        user_id: authData.user.id,
+        full_name: safeName,
+        role: 'PSYCHOLOGIST',
+        updated_at: new Date().toISOString(),
+      })
+
+      // 3. Initialize PsychologistProfile (Enables visibility in Admin)
+      await prisma.psychologistProfile.upsert({
+        where: { userId: authData.user.id },
+        update: {
+          crp: data.professionalCard,
+        },
+        create: {
+          userId: authData.user.id,
+          crp: data.professionalCard,
+          isVerified: false,
+        },
+      })
+    }
+
+    revalidatePath('/dashboard/admin/aprovacoes')
+    return { success: true }
+  } catch (error) {
+    console.error('Psychologist registration error:', error)
+    return { success: false, error: 'Erro ao criar conta. Tente novamente mais tarde.' }
+  }
+}
