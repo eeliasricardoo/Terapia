@@ -1,6 +1,7 @@
 'use server'
 
 import { stripe } from '@/lib/stripe'
+import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
@@ -93,7 +94,7 @@ export async function createStripeCheckoutSession(data: {
     // 3. Create the Checkout Session
     const stripeAmount = Math.round(finalPrice * 100)
 
-    const sessionConfig: any = {
+    const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       // Using explicit payment_method_types because automatic_payment_methods
       // returned "unknown parameter" for this account/legacy configuration.
       payment_method_types: ['card'],
