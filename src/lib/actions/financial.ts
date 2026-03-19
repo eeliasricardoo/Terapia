@@ -146,13 +146,16 @@ export async function getFinancialStats(): Promise<FinancialStats> {
       method: appt.paymentMethod || 'Stripe',
     }))
 
-    // Calculate payment method breakdown from all completed appointments
+    // Calculate payment method breakdown from recent completed appointments
+    // Using last 500 appointments for representative statistics without performance impact
     const allCompletedAppts = await prisma.appointment.findMany({
       where: {
         psychologistId: psychologistProfile.id,
         status: 'COMPLETED',
       },
       select: { paymentMethod: true },
+      orderBy: { scheduledAt: 'desc' },
+      take: 500,
     })
 
     const methodCounts: Record<string, number> = {}

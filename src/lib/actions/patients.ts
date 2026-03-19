@@ -49,7 +49,8 @@ export async function getPsychologistPatients(): Promise<PatientData[]> {
       return []
     }
 
-    // Get all appointments where this user is the psychologist
+    // Get recent appointments (limit to prevent performance issues with large datasets)
+    // This captures the most recent 200 appointments to build the patient list
     const appointments = await prisma.appointment.findMany({
       where: {
         psychologistId: psychologistProfile.id,
@@ -64,6 +65,7 @@ export async function getPsychologistPatients(): Promise<PatientData[]> {
       orderBy: {
         scheduledAt: 'desc',
       },
+      take: 200,
     })
 
     // Also get explicit links (if they were created directly without appointments)

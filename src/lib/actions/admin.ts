@@ -238,7 +238,7 @@ export async function getAdminStats() {
   }
 }
 
-export async function getAllPsychologists() {
+export async function getAllPsychologists(page: number = 1, pageSize: number = 50) {
   try {
     const supabase = await createClient()
     const {
@@ -255,6 +255,8 @@ export async function getAllPsychologists() {
       throw new Error('Não autorizado')
     }
 
+    // Pagination with reasonable default (50 per page)
+    const skip = (page - 1) * pageSize
     const psychologists = await prisma.psychologistProfile.findMany({
       include: {
         user: {
@@ -264,6 +266,8 @@ export async function getAllPsychologists() {
         },
       },
       orderBy: { createdAt: 'desc' },
+      take: pageSize,
+      skip: skip,
     })
 
     return psychologists.map((p) => ({

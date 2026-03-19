@@ -102,15 +102,17 @@ export async function getConversations() {
   })
 }
 
-export async function getMessages(conversationId: string) {
+export async function getMessages(conversationId: string, limit: number = 100) {
   if (!isValidUUID(conversationId)) return []
 
   const profile = await getCurrentUserProfile()
   if (!profile) return []
 
+  // Load last N messages (most recent first, then reverse for chronological display)
   const messages = await prisma.message.findMany({
     where: { conversationId },
-    orderBy: { createdAt: 'asc' },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
     include: {
       sender: {
         include: { profiles: true },
@@ -118,7 +120,8 @@ export async function getMessages(conversationId: string) {
     },
   })
 
-  return messages.map((m: any) => ({
+  // Reverse to show oldest first (chronological order)
+  return messages.reverse().map((m: any) => ({
     id: m.id,
     content: decryptData(m.content),
     senderId: m.senderId,
