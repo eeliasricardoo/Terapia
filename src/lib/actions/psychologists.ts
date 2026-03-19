@@ -1,7 +1,5 @@
 'use server'
 
-import { logger } from '@/lib/utils/logger'
-
 import { createClient } from '@/lib/supabase/server'
 import type {
   PsychologistWithProfile,
@@ -86,11 +84,12 @@ export async function getPsychologistById(userId: string): Promise<PsychologistW
     .select('health_insurance:health_insurances(id, name)')
     .eq('psychologist_id', psych.id)
 
-  const acceptedInsurances = (insurancesRes as unknown as any[])
-    ? (insurancesRes as any[])
-        .map((item) =>
-          Array.isArray(item.health_insurance) ? item.health_insurance[0] : item.health_insurance
-        )
+  const acceptedInsurances = insurancesRes
+    ? insurancesRes
+        .map((item) => {
+          const hi = (item as any).health_insurance
+          return Array.isArray(hi) ? hi[0] : hi
+        })
         .filter(Boolean)
     : []
 

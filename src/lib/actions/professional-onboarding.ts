@@ -4,6 +4,7 @@ import { logger } from '@/lib/utils/logger'
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { logger } from '@/lib/utils/logger'
 
 export async function saveProfessionalData(formData: FormData) {
   const university = formData.get('university') as string

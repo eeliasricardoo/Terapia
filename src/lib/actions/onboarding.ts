@@ -5,6 +5,7 @@ import { logger } from '@/lib/utils/logger'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { sanitizeText, sanitizeHtml } from '@/lib/security'
+import { logger } from '@/lib/utils/logger'
 
 export type PsychologistOnboardingData = {
   fullName: string

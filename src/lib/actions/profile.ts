@@ -78,9 +78,9 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
       }
     } else {
       // Log exactly what is missing for debugging
-      if (!data && !userInDb) logger.debug('DEBUG: Both profile data and userInDb are null')
-      else if (!data) logger.debug('DEBUG: Profile data is null')
-      else if (!userInDb) logger.debug('DEBUG: userInDb is null for ID:', user.id)
+      if (!data && !userInDb) logger.debug('Both profile data and userInDb are null')
+      else if (!data) logger.debug('Profile data is null')
+      else if (!userInDb) logger.debug('userInDb is null', { userId: user.id })
     }
   } catch (err) {
     logger.error('Error syncing user role:', err)

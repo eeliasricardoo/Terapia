@@ -7,6 +7,7 @@ import { getCurrentUserProfile } from './profile'
 import { revalidatePath } from 'next/cache'
 import { logger } from '@/lib/utils/logger'
 import { encryptData, decryptData, isValidUUID } from '@/lib/security'
+import { logger } from '@/lib/utils/logger'
 import {
   Conversation,
   Message,
