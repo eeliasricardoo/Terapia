@@ -1,4 +1,11 @@
 import { getPsychologists } from '@/lib/actions/psychologists'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Encontrar Psicólogos',
+  description:
+    'Explore nossa lista de profissionais qualificados e encontre o terapeuta ideal para o seu perfil e necessidades.',
+}
 import SearchClient from './SearchClient'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'

@@ -9,6 +9,12 @@ import { HowItWorks } from '@/components/landing/HowItWorks'
 import { Features } from '@/components/landing/Features'
 import { Testimonials } from '@/components/landing/Testimonials'
 import { CTA } from '@/components/landing/CTA'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Início',
+  description: 'A terapia que se adapta à sua vida. Encontre o psicólogo ideal em minutos.',
+}
 
 export default async function Home() {
   const supabase = await createClient()
