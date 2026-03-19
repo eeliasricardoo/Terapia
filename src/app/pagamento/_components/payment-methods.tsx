@@ -12,6 +12,7 @@ interface PaymentMethodsProps {
   isProcessing: boolean
   isFetchingInfo: boolean
   price: string
+  matchedInsurance?: { id: string; name: string } | null
 }
 
 export function PaymentMethods({
@@ -19,32 +20,36 @@ export function PaymentMethods({
   isProcessing,
   isFetchingInfo,
   price,
+  matchedInsurance,
 }: PaymentMethodsProps) {
+  const defaultTab = matchedInsurance ? 'insurance' : 'card'
   return (
     <div>
       <h2 className="text-xl font-semibold mb-6 text-slate-900">Escolha seu método de pagamento</h2>
 
       <Card className="border-slate-200 shadow-sm">
         <CardContent className="p-6">
-          <Tabs defaultValue="card" className="w-full">
+          <Tabs defaultValue={defaultTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-8 bg-slate-100 p-1 h-12">
               <TabsTrigger
                 value="card"
+                disabled={!!matchedInsurance}
                 className="data-[state=active]:bg-white data-[state=active]:shadow-sm h-10 font-medium"
               >
                 Cartão
               </TabsTrigger>
               <TabsTrigger
                 value="pix"
+                disabled={!!matchedInsurance}
                 className="data-[state=active]:bg-white data-[state=active]:shadow-sm h-10 font-medium"
               >
                 Pix
               </TabsTrigger>
               <TabsTrigger
-                value="bill"
+                value={matchedInsurance ? 'insurance' : 'bill'}
                 className="data-[state=active]:bg-white data-[state=active]:shadow-sm h-10 font-medium"
               >
-                Plano
+                {matchedInsurance ? 'Plano de Saúde' : 'Plano Corporativo'}
               </TabsTrigger>
             </TabsList>
 
@@ -118,6 +123,32 @@ export function PaymentMethods({
                 disabled={isProcessing || isFetchingInfo}
               >
                 {isProcessing ? 'Processando...' : 'Confirmar e Usar Saldo'}
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="insurance" className="space-y-6 mt-6">
+              <div className="bg-blue-50 p-6 rounded-xl border border-blue-200 flex items-start gap-4">
+                <div className="h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 text-white shadow-lg shadow-blue-600/20">
+                  <Lock className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg text-slate-900">Vinculado ao Plano</h3>
+                  <p className="text-slate-600 mt-1 mb-4">
+                    Seu plano <strong>{matchedInsurance?.name}</strong> cobre este atendimento
+                    integralmente.
+                  </p>
+                  <p className="text-[11px] text-slate-500 font-medium uppercase tracking-tight">
+                    Agendamento Direto via Parceria
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                className="w-full h-[52px] bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg shadow-xl shadow-blue-600/20 transition-all hover:-translate-y-0.5"
+                onClick={handlePayment}
+                disabled={isProcessing || isFetchingInfo}
+              >
+                {isProcessing ? 'Confirmando...' : 'Confirmar Agendamento pelo Plano'}
               </Button>
             </TabsContent>
           </Tabs>

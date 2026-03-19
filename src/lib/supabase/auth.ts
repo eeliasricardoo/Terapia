@@ -9,6 +9,8 @@ export interface UserMetadata {
   phone?: string
   birth_date?: string
   document?: string
+  health_insurance_id?: string
+  health_insurance_policy?: string
 }
 
 // Client-side auth functions

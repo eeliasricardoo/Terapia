@@ -82,9 +82,22 @@ async function getPsychologistDataInternal(userId: string) {
       appointments: appointmentsMap,
     }
 
+    // 3. Fetch health insurances
+    const { data: insurancesRes } = await supabase
+      .from('psychologist_insurances')
+      .select('health_insurance:health_insurances(id, name)')
+      .eq('psychologist_id', psych.id)
+
+    const acceptedInsurances = insurancesRes
+      ? insurancesRes.map((item: any) => item.health_insurance)
+      : []
+
     // Return combined payload
     return {
-      psychologist: fullPsychologist,
+      psychologist: {
+        ...fullPsychologist,
+        acceptedInsurances,
+      },
       availability,
     }
   } catch (error) {

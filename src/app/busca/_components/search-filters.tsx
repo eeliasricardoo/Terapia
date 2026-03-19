@@ -2,6 +2,8 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Slider } from '@/components/ui/slider'
 import { Separator } from '@/components/ui/separator'
 import { PsychologistSearchFilters } from '@/lib/supabase/types'
+import { useEffect, useState } from 'react'
+import { getHealthInsurances } from '@/lib/actions/health-insurance'
 
 interface SearchFiltersProps {
   filters: PsychologistSearchFilters
@@ -18,6 +20,18 @@ interface SearchFiltersProps {
 const specialtiesList = Array.from(SPECIALIZATIONS)
 
 export function SearchFilters({ filters, onFilterChange }: SearchFiltersProps) {
+  const [insurances, setInsurances] = useState<{ id: string; name: string }[]>([])
+
+  useEffect(() => {
+    async function fetchInsurances() {
+      const result = await getHealthInsurances()
+      if (result.success && result.data) {
+        setInsurances(result.data)
+      }
+    }
+    fetchInsurances()
+  }, [])
+
   const handleSpecialtyToggle = (specialty: string, checked: boolean) => {
     const currentSpecialties = filters.specialties || []
     const nextSpecialties = checked
@@ -25,6 +39,15 @@ export function SearchFilters({ filters, onFilterChange }: SearchFiltersProps) {
       : currentSpecialties.filter((s) => s !== specialty)
 
     onFilterChange({ ...filters, specialties: nextSpecialties })
+  }
+
+  const handleInsuranceToggle = (id: string, checked: boolean) => {
+    const currentInsurances = filters.healthInsurances || []
+    const nextInsurances = checked
+      ? [...currentInsurances, id]
+      : currentInsurances.filter((i) => i !== id)
+
+    onFilterChange({ ...filters, healthInsurances: nextInsurances })
   }
 
   const handlePriceChange = (value: number[]) => {
@@ -51,6 +74,32 @@ export function SearchFilters({ filters, onFilterChange }: SearchFiltersProps) {
               </label>
             </div>
           ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-2.5">
+        <h4 className="text-sm font-medium leading-none text-slate-900">Planos de Saúde</h4>
+        <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-2">
+          {insurances.map((ins) => (
+            <div key={ins.id} className="flex items-center space-x-2">
+              <Checkbox
+                id={`filter-ins-${ins.id}`}
+                checked={filters.healthInsurances?.includes(ins.id)}
+                onCheckedChange={(checked) => handleInsuranceToggle(ins.id, !!checked)}
+              />
+              <label
+                htmlFor={`filter-ins-${ins.id}`}
+                className="text-sm font-normal leading-none cursor-pointer text-slate-600 hover:text-slate-900"
+              >
+                {ins.name}
+              </label>
+            </div>
+          ))}
+          {insurances.length === 0 && (
+            <p className="text-xs text-slate-400 italic">Nenhum plano disponível.</p>
+          )}
         </div>
       </div>
 

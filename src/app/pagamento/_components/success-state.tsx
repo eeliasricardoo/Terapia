@@ -10,10 +10,19 @@ interface SuccessStateProps {
   date: string | null
   time: string | null
   psychTimezone: string
+  matchedInsuranceName?: string | null
 }
 
-export function SuccessState({ doctorName, date, time, psychTimezone }: SuccessStateProps) {
-  const transactionId = `PAY-${Math.floor(Math.random() * 1000000)}`
+export function SuccessState({
+  doctorName,
+  date,
+  time,
+  psychTimezone,
+  matchedInsuranceName,
+}: SuccessStateProps) {
+  const transactionId = matchedInsuranceName
+    ? `INS-${matchedInsuranceName.substring(0, 3).toUpperCase()}-${Math.floor(Math.random() * 1000000)}`
+    : `PAY-${Math.floor(Math.random() * 1000000)}`
 
   const formattedDate = date
     ? (() => {
@@ -31,7 +40,9 @@ export function SuccessState({ doctorName, date, time, psychTimezone }: SuccessS
         <Check className="h-12 w-12 text-blue-600" />
       </div>
       <h1 className="text-3xl font-bold text-slate-900 mb-4">
-        Pagamento confirmado e sessão agendada!
+        {matchedInsuranceName
+          ? 'Sessão agendada pelo seu plano!'
+          : 'Pagamento confirmado e sessão agendada!'}
       </h1>
       <p className="text-slate-600 mb-8">
         Te enviamos um e-mail com todos os detalhes da sua sessão.
@@ -64,7 +75,7 @@ export function SuccessState({ doctorName, date, time, psychTimezone }: SuccessS
             </div>
             <div>
               <p className="text-xs text-slate-500 uppercase font-semibold tracking-wider mb-1">
-                ID da Transação
+                {matchedInsuranceName ? 'Protocolo' : 'ID da Transação'}
               </p>
               <p className="font-font-mono text-slate-700 bg-slate-100 px-2 py-1 rounded w-fit text-sm">
                 {transactionId}

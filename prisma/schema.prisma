@@ -44,6 +44,9 @@ model Appointment {
   sessionType     String              @default("Terapia Individual") @map("session_type")
   patient         User                @relation("PatientAppointments", fields: [patientId], references: [id])
   psychologist    PsychologistProfile @relation(fields: [psychologistId], references: [id])
+  healthInsurancePlanId String? @map("health_insurance_plan_id")
+  healthInsurancePolicy String? @map("health_insurance_policy")
+  healthInsurance      HealthInsurance? @relation(fields: [healthInsurancePlanId], references: [id])
 
   @@index([patientId])
   @@index([psychologistId])
@@ -75,6 +78,9 @@ model Profile {
   psychologistLinks PatientPsychologistLink[] @relation("PatientLinks")
   patientLinks      PatientPsychologistLink[] @relation("PsychologistLinks")
   users             User                      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  healthInsuranceId String? @map("health_insurance_id")
+  healthInsurancePolicy String? @map("health_insurance_policy")
+  healthInsurance HealthInsurance? @relation("PatientInsurance", fields: [healthInsuranceId], references: [id])
 
   @@map("profiles")
 }
@@ -110,6 +116,7 @@ model PsychologistProfile {
   coupons              Coupon[]
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   scheduleOverrides    ScheduleOverride[]
+  acceptedInsurances   PsychologistInsurance[]
 
   @@map("psychologist_profiles")
 }
@@ -287,4 +294,28 @@ enum UserRole {
   PSYCHOLOGIST
   COMPANY
   ADMIN
+}
+
+model HealthInsurance {
+  id          String                 @id @default(uuid())
+  name        String                 @unique
+  logoUrl     String?                @map("logo_url")
+  profiles    Profile[]              @relation("PatientInsurance")
+  psychologists PsychologistInsurance[]
+  appointments Appointment[]
+  createdAt   DateTime               @default(now()) @map("created_at")
+  updatedAt   DateTime               @updatedAt @map("updated_at")
+
+  @@map("health_insurances")
+}
+
+model PsychologistInsurance {
+  id                   String              @id @default(uuid())
+  psychologistId       String              @map("psychologist_id")
+  healthInsuranceId    String              @map("health_insurance_id")
+  psychologistProfile PsychologistProfile @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  healthInsurance     HealthInsurance     @relation(fields: [healthInsuranceId], references: [id], onDelete: Cascade)
+
+  @@unique([psychologistId, healthInsuranceId])
+  @@map("psychologist_insurances")
 }

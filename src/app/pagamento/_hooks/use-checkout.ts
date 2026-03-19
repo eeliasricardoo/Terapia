@@ -25,6 +25,10 @@ export function useCheckout() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [psychTimezone, setPsychTimezone] = useState('America/Sao_Paulo')
+  const [patientProfile, setPatientProfile] = useState<any>(null)
+  const [matchedInsurance, setMatchedInsurance] = useState<{ id: string; name: string } | null>(
+    null
+  )
 
   // Coupon States
   const [couponCode, setCouponCode] = useState('')
@@ -44,7 +48,15 @@ export function useCheckout() {
       const {
         data: { user },
       } = await supabase.auth.getUser()
-      if (user) setUserId(user.id)
+      if (user) {
+        setUserId(user.id)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single()
+        setPatientProfile(profile)
+      }
 
       if (doctorId) {
         const psych = await getPsychologistById(doctorId)
@@ -61,12 +73,22 @@ export function useCheckout() {
           if (psych.timezone) {
             setPsychTimezone(psych.timezone)
           }
+
+          // Check for insurance match
+          if (patientProfile?.healthInsuranceId && (psych as any).acceptedInsurances) {
+            const match = (psych as any).acceptedInsurances.find(
+              (ins: any) => ins.id === patientProfile.healthInsuranceId
+            )
+            if (match) {
+              setMatchedInsurance(match)
+            }
+          }
         }
       }
       setIsFetchingInfo(false)
     }
     loadCheckoutInfo()
-  }, [doctorId])
+  }, [doctorId, patientProfile?.id])
 
   useEffect(() => {
     let discount = 0
@@ -126,6 +148,27 @@ export function useCheckout() {
       const utcDate = fromZonedTime(localDateTimeString, psychTimezone)
       const scheduledAt = utcDate.toISOString()
 
+      // 🏆 INSURANCE FLOW
+      if (matchedInsurance) {
+        // Here we would likely call a different action to create insurance-backed appointment
+        // For now, we'll try to find a way to mark it or just bypass Stripe
+        const { createInsuranceAppointment } = await import('@/lib/actions/appointments')
+        const result = await createInsuranceAppointment({
+          psychologistId: doctorId,
+          scheduledAt,
+          durationMinutes: 50,
+          healthInsuranceId: matchedInsurance.id,
+          healthInsurancePolicy: patientProfile?.healthInsurancePolicy || '',
+        })
+
+        if (result.success) {
+          setIsSuccess(true)
+        } else {
+          throw new Error(result.error || 'Erro ao agendar pelo plano.')
+        }
+        return
+      }
+
       // 🚀 STRIPE FLOW
       const result = await createStripeCheckoutSession({
         psychologistId: doctorId,
@@ -167,7 +210,10 @@ export function useCheckout() {
     isValidatingCoupon,
     appliedCoupon,
     discountAmount,
-    finalPrice: `R$ ${finalPrice.toFixed(2).replace('.', ',')}`,
+    finalPrice: matchedInsurance
+      ? `Cobrado pelo plano (${matchedInsurance.name})`
+      : `R$ ${finalPrice.toFixed(2).replace('.', ',')}`,
+    matchedInsurance,
 
     handlePayment,
     applyCoupon,

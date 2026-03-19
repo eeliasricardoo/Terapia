@@ -16,6 +16,7 @@ interface OrderSummaryProps {
   appliedCoupon: { code: string; type: string; value: number } | null
   discountAmount: number
   finalPrice: string
+  matchedInsurance?: { id: string; name: string } | null
 }
 
 export function OrderSummary({
@@ -31,6 +32,7 @@ export function OrderSummary({
   appliedCoupon,
   discountAmount,
   finalPrice,
+  matchedInsurance,
 }: OrderSummaryProps) {
   return (
     <div>
@@ -88,22 +90,63 @@ export function OrderSummary({
                 {isValidatingCoupon ? 'Validando...' : 'Aplicar'}
               </Button>
             </div>
-
-            {appliedCoupon && (
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100 text-xs text-green-700 animate-in fade-in slide-in-from-top-1">
-                <span className="font-medium flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                  Cupom {appliedCoupon.code} aplicado!
-                </span>
-                <span className="font-bold">
-                  -
-                  {appliedCoupon.type === 'percentage'
-                    ? `${appliedCoupon.value}%`
-                    : `R$ ${appliedCoupon.value.toFixed(2)}`}
-                </span>
-              </div>
-            )}
           </div>
+
+          {matchedInsurance && (
+            <div className="mt-8 p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-3 animate-in fade-in zoom-in-95 duration-500">
+              <div className="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-blue-600/20">
+                <span className="text-xs">PLANO</span>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-blue-800 uppercase tracking-wider">
+                  Coberto pelo plano
+                </p>
+                <p className="text-sm font-medium text-blue-600">{matchedInsurance.name}</p>
+              </div>
+            </div>
+          )}
+
+          {!matchedInsurance && (
+            <div className="mt-8 space-y-4">
+              <h4 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                <span className="w-1 h-4 bg-blue-600 rounded-full" />
+                Possui um cupom?
+              </h4>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Ex: TERAPIA20"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  disabled={!!appliedCoupon || isValidatingCoupon}
+                />
+                <Button
+                  onClick={onApplyCoupon}
+                  disabled={!couponCode || !!appliedCoupon || isValidatingCoupon}
+                  size="sm"
+                  className="bg-slate-900 hover:bg-slate-800"
+                >
+                  {isValidatingCoupon ? 'Validando...' : 'Aplicar'}
+                </Button>
+              </div>
+
+              {appliedCoupon && (
+                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100 text-xs text-green-700 animate-in fade-in slide-in-from-top-1">
+                  <span className="font-medium flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                    Cupom {appliedCoupon.code} aplicado!
+                  </span>
+                  <span className="font-bold">
+                    -
+                    {appliedCoupon.type === 'percentage'
+                      ? `${appliedCoupon.value}%`
+                      : `R$ ${appliedCoupon.value.toFixed(2)}`}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2 mt-8 pt-4 border-t border-slate-100">
             {appliedCoupon && (

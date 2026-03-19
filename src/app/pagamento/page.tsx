@@ -26,6 +26,7 @@ function PaymentContent() {
     appliedCoupon,
     discountAmount,
     finalPrice,
+    matchedInsurance,
 
     handlePayment,
     applyCoupon,
@@ -42,6 +43,7 @@ function PaymentContent() {
             date={date}
             time={time}
             psychTimezone={psychTimezone}
+            matchedInsuranceName={matchedInsurance?.name}
           />
         ) : (
           <>
@@ -69,6 +71,7 @@ function PaymentContent() {
                 appliedCoupon={appliedCoupon}
                 discountAmount={discountAmount}
                 finalPrice={finalPrice}
+                matchedInsurance={matchedInsurance}
               />
 
               <PaymentMethods
@@ -76,6 +79,7 @@ function PaymentContent() {
                 isProcessing={isProcessing}
                 isFetchingInfo={isFetchingInfo}
                 price={finalPrice}
+                matchedInsurance={matchedInsurance}
               />
             </div>
           </>

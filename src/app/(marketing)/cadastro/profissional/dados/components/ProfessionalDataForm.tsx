@@ -25,6 +25,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileUpload } from './FileUpload'
 import { SpecializationTags } from './SpecializationTags'
+import { HealthInsuranceSelection } from './HealthInsuranceSelection'
 import { Calendar as CalendarIcon } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -44,6 +45,7 @@ const formSchema = z.object({
   license: z.instanceof(File).optional(),
   specializations: z.array(z.string()).min(1, 'Adicione pelo menos uma especialização'),
   yearsOfExperience: z.string().min(1, 'Os anos de experiência são obrigatórios'),
+  healthInsurances: z.array(z.string()).optional(),
 })
 
 export function ProfessionalDataForm() {
@@ -59,6 +61,7 @@ export function ProfessionalDataForm() {
       registrationNumber: '',
       specializations: [],
       yearsOfExperience: '',
+      healthInsurances: [],
     },
   })
 
@@ -74,6 +77,7 @@ export function ProfessionalDataForm() {
     }
     formData.append('specializations', JSON.stringify(values.specializations))
     formData.append('yearsOfExperience', values.yearsOfExperience)
+    formData.append('healthInsurances', JSON.stringify(values.healthInsurances || []))
     if (values.diploma) {
       formData.append('diploma', values.diploma)
     }
@@ -304,6 +308,19 @@ export function ProfessionalDataForm() {
                     <FormLabel>Anos de Experiência</FormLabel>
                     <FormControl>
                       <Input className="h-[44px]" type="number" placeholder="ex. 5" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="healthInsurances"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <HealthInsuranceSelection value={field.value} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

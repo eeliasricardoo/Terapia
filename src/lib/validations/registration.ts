@@ -54,6 +54,8 @@ export const registrationSchema = z
     terms: z.boolean().refine((value) => value === true, {
       message: 'Você deve aceitar os termos de uso.',
     }),
+    healthInsuranceId: z.string().optional(),
+    healthInsurancePolicy: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'As senhas não coincidem.',

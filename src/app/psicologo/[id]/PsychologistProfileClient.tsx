@@ -14,6 +14,7 @@ import { AboutSection } from './_components/about-section'
 import { PresentationVideo } from './_components/presentation-video'
 import { ReviewsSection } from './_components/reviews-section'
 import { BookingWidget } from './_components/booking-widget'
+import { InsuranceSection } from './_components/insurance-section'
 import { useAuth } from '@/components/providers/auth-provider'
 import { GuestBookingDialog } from './_components/guest-booking-dialog'
 import { useState } from 'react'
@@ -96,6 +97,8 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
             <AboutSection psychologist={psychologist} />
 
             <PresentationVideo videoUrl={psychologist.video_presentation_url} />
+
+            <InsuranceSection insurances={(psychologist as any).acceptedInsurances} />
 
             <ReviewsSection />
           </div>

@@ -73,10 +73,20 @@ export async function getPsychologistById(userId: string): Promise<PsychologistW
     return null
   }
 
+  const { data: insurancesRes } = await supabase
+    .from('psychologist_insurances')
+    .select('health_insurance:health_insurances(id, name)')
+    .eq('psychologist_id', psych.id)
+
+  const acceptedInsurances = insurancesRes
+    ? insurancesRes.map((item: any) => item.health_insurance)
+    : []
+
   return {
     ...psych,
     profile: profileData || null,
-  } as PsychologistWithProfile
+    acceptedInsurances,
+  } as PsychologistWithProfile & { acceptedInsurances: { id: string; name: string }[] }
 }
 
 /**
@@ -96,6 +106,26 @@ export async function searchPsychologists(
   // Filter by specialties
   if (filters.specialties && filters.specialties.length > 0) {
     query = query.overlaps('specialties', filters.specialties)
+  }
+
+  // Filter by health insurances
+  if (filters.healthInsurances && filters.healthInsurances.length > 0) {
+    const { data: linkedPsychs, error: insuranceError } = await supabase
+      .from('psychologist_insurances')
+      .select('psychologist_id')
+      .in('health_insurance_id', filters.healthInsurances)
+
+    if (insuranceError) {
+      console.error('Error fetching linked psychologists by insurance:', insuranceError)
+    }
+
+    if (linkedPsychs && linkedPsychs.length > 0) {
+      const psychIds = Array.from(new Set(linkedPsychs.map((hp: any) => hp.psychologist_id)))
+      query = query.in('id', psychIds)
+    } else {
+      // If no psychologists match the insurance filter, return empty
+      return []
+    }
   }
 
   // Filter by price range

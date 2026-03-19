@@ -527,6 +527,7 @@ export type SessionWithDetails = Appointment & {
 
 export type PsychologistSearchFilters = {
   specialties?: string[]
+  healthInsurances?: string[]
   minPrice?: number
   maxPrice?: number
   searchQuery?: string

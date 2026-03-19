@@ -11,6 +11,7 @@ export async function saveProfessionalData(formData: FormData) {
   const expirationDate = formData.get('expirationDate') as string | null
   const specializations = JSON.parse((formData.get('specializations') as string) || '[]')
   const yearsOfExperience = formData.get('yearsOfExperience') as string
+  const healthInsurances = JSON.parse((formData.get('healthInsurances') as string) || '[]')
   const diplomaFile = formData.get('diploma') as File | null
   const licenseFile = formData.get('license') as File | null
   const supabase = await createClient()
@@ -62,26 +63,55 @@ export async function saveProfessionalData(formData: FormData) {
     }
 
     // 4. Create or Update Psychologist Profile
-    const { error: psychError } = await supabase.from('psychologist_profiles').upsert(
-      {
-        userId: user.id,
-        crp: registrationNumber,
-        specialties: specializations,
-        university,
-        academicLevel,
-        title,
-        crpExpiration: expirationDate ? new Date(expirationDate).toISOString() : null,
-        yearsOfExperience: parseInt(yearsOfExperience) || 0,
-        diploma_url: diplomaUrl,
-        license_url: licenseUrl,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'userId' }
-    )
+    const { data: psychData, error: psychError } = await supabase
+      .from('psychologist_profiles')
+      .upsert(
+        {
+          userId: user.id,
+          crp: registrationNumber,
+          specialties: specializations,
+          university,
+          academicLevel,
+          title,
+          crpExpiration: expirationDate ? new Date(expirationDate).toISOString() : null,
+          yearsOfExperience: parseInt(yearsOfExperience) || 0,
+          diploma_url: diplomaUrl,
+          license_url: licenseUrl,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'userId' }
+      )
+      .select('id')
+      .single()
 
     if (psychError) {
       console.error('Error creating psychologist profile:', psychError)
       return { success: false, error: 'Erro ao salvar dados profissionais.' }
+    }
+
+    // 5. Link Health Insurances
+    if (healthInsurances && healthInsurances.length > 0) {
+      try {
+        // Delete existing links first to avoid duplicates or outdated info
+        await supabase.from('psychologist_insurances').delete().eq('psychologist_id', psychData.id)
+
+        const insuranceLinks = healthInsurances.map((insuranceId: string) => ({
+          psychologist_id: psychData.id,
+          health_insurance_id: insuranceId,
+        }))
+
+        const { error: linkError } = await supabase
+          .from('psychologist_insurances')
+          .insert(insuranceLinks)
+
+        if (linkError) {
+          console.error('Error linking health insurances:', linkError)
+          // We don't return error here because the main profile was saved,
+          // but we should probably log it.
+        }
+      } catch (linkCatchError) {
+        console.error('Unexpected error linking health insurances:', linkCatchError)
+      }
     }
 
     return { success: true }

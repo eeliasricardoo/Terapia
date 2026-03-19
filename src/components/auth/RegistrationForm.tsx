@@ -23,6 +23,14 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react'
 import { registrationSchema, type RegistrationInput } from '@/lib/validations/registration'
 import { toast } from 'sonner'
+import { getHealthInsurances } from '@/lib/actions/health-insurance'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { maskCPF, cleanCPF, isValidCPF } from '@/lib/utils/cpf'
 import { auth } from '@/lib/supabase/auth'
 
@@ -32,6 +40,17 @@ export function RegistrationForm() {
   const returnTo = searchParams.get('returnTo')
   const [step, setStep] = useState(1)
   const [isPending, startTransition] = useTransition()
+  const [insurances, setInsurances] = useState<{ id: string; name: string }[]>([])
+
+  useState(() => {
+    async function fetchInsurances() {
+      const result = await getHealthInsurances()
+      if (result.success && result.data) {
+        setInsurances(result.data)
+      }
+    }
+    fetchInsurances()
+  })
   const form = useForm<RegistrationInput>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
@@ -43,6 +62,8 @@ export function RegistrationForm() {
       password: '',
       confirmPassword: '',
       terms: false,
+      healthInsuranceId: '',
+      healthInsurancePolicy: '',
     },
     mode: 'onChange', // Validação em tempo real
   })
@@ -60,6 +81,8 @@ export function RegistrationForm() {
           phone: values.phone,
           birth_date: values.birthDate,
           document: cleanCPF(values.document),
+          health_insurance_id: values.healthInsuranceId || undefined,
+          health_insurance_policy: values.healthInsurancePolicy || undefined,
         })
 
         if (error) {
@@ -94,8 +117,22 @@ export function RegistrationForm() {
     }
   }
 
+  const nextToStep3 = async () => {
+    const isStep2FieldsValid = await form.trigger([
+      'document',
+      'phone',
+      'birthDate',
+      'password',
+      'confirmPassword',
+      'terms',
+    ])
+    if (isStep2FieldsValid) {
+      setStep(3)
+    }
+  }
+
   const prevStep = () => {
-    setStep(1)
+    setStep(step - 1)
   }
 
   // Máscara de CPF
@@ -107,17 +144,23 @@ export function RegistrationForm() {
     <Card
       className={cn(
         'w-full mx-auto transition-all duration-300',
-        step === 1 ? 'max-w-md' : 'max-w-2xl'
+        step === 1 ? 'max-w-md' : step === 2 ? 'max-w-2xl' : 'max-w-md'
       )}
     >
       <CardHeader>
         <CardTitle className="text-xl">
-          {step === 1 ? 'Crie sua conta' : 'Dados Necessários'}
+          {step === 1
+            ? 'Crie sua conta'
+            : step === 2
+              ? 'Dados Necessários'
+              : 'Plano de Saúde (Opcional)'}
         </CardTitle>
         <CardDescription>
           {step === 1
             ? 'Comece informando seus dados básicos.'
-            : 'Preencha as informações restantes para sua segurança.'}
+            : step === 2
+              ? 'Preencha as informações restantes para sua segurança.'
+              : 'Se você possui um plano de saúde, informe os dados abaixo.'}
         </CardDescription>
       </CardHeader>
       {step === 1 && (
@@ -333,6 +376,62 @@ export function RegistrationForm() {
                         </FormDescription>
                         <FormMessage />
                       </div>
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Button type="button" variant="outline" onClick={prevStep} className="w-full">
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+                  </Button>
+                  <Button type="button" onClick={nextToStep3} className="w-full">
+                    Continuar <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="healthInsuranceId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Plano de Saúde</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione seu plano" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">Nenhum / Prefiro não informar</SelectItem>
+                          {insurances.map((ins) => (
+                            <SelectItem key={ins.id} value={ins.id}>
+                              {ins.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Isso nos ajuda a encontrar profissionais que aceitam seu plano.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="healthInsurancePolicy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Número da Carteirinha / Apólice</FormLabel>
+                      <FormControl>
+                        <Input placeholder="0000 0000 0000 0000" {...field} />
+                      </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
