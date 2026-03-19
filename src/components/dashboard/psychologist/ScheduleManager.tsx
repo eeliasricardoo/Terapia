@@ -467,8 +467,9 @@ export function ScheduleManager() {
       }
 
       toast.success('Alterações salvas!', { description: 'Sua disponibilidade foi atualizada.' })
+      toast.error('Erro ao salvar', { description: 'Tente novamente mais tarde.' })
     } catch (error) {
-      logger.error(error)
+      logger.error('Error saving schedule changes:', error)
       toast.error('Erro ao salvar', { description: 'Tente novamente mais tarde.' })
     } finally {
       setIsLoading(false)
@@ -488,8 +489,9 @@ export function ScheduleManager() {
       setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a)))
 
       toast.success(`Sessão marcada como ${newStatus.toLowerCase()}`)
+      toast.success(`Sessão marcada como ${newStatus.toLowerCase()}`)
     } catch (error) {
-      logger.error(error)
+      logger.error('Error updating appointment status:', error)
       toast.error('Erro ao atualizar status')
     }
   }

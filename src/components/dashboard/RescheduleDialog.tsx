@@ -63,7 +63,7 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
           setPsychologist(pData)
           setAvailability(aData)
         } catch (error) {
-          logger.error(error)
+          logger.error('Error loading psychologist availability:', error)
           toast.error('Erro ao carregar disponibilidade')
         } finally {
           setLoading(false)
@@ -186,7 +186,7 @@ function RescheduleForm({
         toast.error('Erro ao reagendar', { description: result.error })
       }
     } catch (error) {
-      logger.error(error)
+      logger.error('Error rescheduling session:', error)
       toast.error('Erro inesperado ao reagendar')
     } finally {
       setIsRescheduling(false)

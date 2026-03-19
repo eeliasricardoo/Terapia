@@ -157,7 +157,7 @@ export function PsychologistOnboardingWizard() {
         })
       }
     } catch (error) {
-      logger.error(error)
+      logger.error('Error submitting psychologist onboarding:', error)
       toast.error('Erro inesperado', {
         description: 'Ocorreu um erro ao salvar seus dados.',
       })

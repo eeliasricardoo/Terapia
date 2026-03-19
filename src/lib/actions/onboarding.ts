@@ -1,7 +1,5 @@
 'use server'
 
-import { logger } from '@/lib/utils/logger'
-
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { sanitizeText, sanitizeHtml } from '@/lib/security'

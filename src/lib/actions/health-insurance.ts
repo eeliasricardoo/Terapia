@@ -1,7 +1,5 @@
 'use server'
 
-import { logger } from '@/lib/utils/logger'
-
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 
