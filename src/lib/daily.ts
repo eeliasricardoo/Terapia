@@ -1,8 +1,6 @@
-const DAILY_API_KEY = process.env.DAILY_API_KEY
+import { env } from './env'
 
-if (!DAILY_API_KEY) {
-  console.warn('DAILY_API_KEY is missing from environment variables.')
-}
+const DAILY_API_KEY = env.DAILY_API_KEY
 
 const DAILY_API_URL = 'https://api.daily.co/v1'
 

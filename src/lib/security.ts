@@ -1,6 +1,7 @@
 import sanitizeHtmlModule from 'sanitize-html'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
+import { env, isRedisConfigured } from './env'
 
 // ==========================================
 // 1. Sanitização de Input (Prevenção XSS)
@@ -40,10 +41,10 @@ export function sanitizeHtml(input: string | undefined | null): string {
 let ratelimitInstance: Ratelimit | null = null
 
 // Só instanciamos se as chaves estiverem presentes
-if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+if (isRedisConfigured) {
   const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    url: env.UPSTASH_REDIS_REST_URL!,
+    token: env.UPSTASH_REDIS_REST_TOKEN!,
   })
 
   ratelimitInstance = new Ratelimit({
@@ -85,10 +86,10 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'crypto'
 
 /**
  * Obtem a chave de criptografia de forma segura.
- * Lê de process.env a cada chamada para compatibilidade com testes e serverless.
+ * Lê de env para garantir validação prévia.
  */
-function getEncryptionKey(): string | undefined {
-  return process.env.ENCRYPTION_KEY
+function getEncryptionKey(): string {
+  return env.ENCRYPTION_KEY
 }
 const IV_LENGTH = 16
 
