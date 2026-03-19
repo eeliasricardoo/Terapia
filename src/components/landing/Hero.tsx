@@ -44,8 +44,7 @@ export function Hero() {
               className="space-y-6"
             >
               <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[0.95] text-slate-900 font-outfit">
-                Encontre seu
-                <br />
+                Encontre seu <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 relative">
                   equilíbrio.
                   {/* Decorative underline */}

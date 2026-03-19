@@ -21,6 +21,7 @@ describe('availability actions', () => {
     from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
+    or: jest.fn().mockReturnThis(),
     single: jest.fn().mockResolvedValue({ data: mockProfile, error: null }),
     update: jest.fn().mockReturnThis(),
     delete: jest.fn().mockReturnThis(),

@@ -25,10 +25,10 @@ describe('Landing Page', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Encontre seu equilíbrio/i)
   })
 
-  it('renders the "Quero fazer terapia" CTA', async () => {
+  it('renders the "Começar agora" CTA', async () => {
     const ResolvedHome = await Home()
     render(ResolvedHome)
-    const link = screen.getByRole('link', { name: /Quero fazer terapia/i })
+    const link = screen.getByRole('link', { name: /Começar agora/i })
     expect(link).toBeInTheDocument()
   })
 

@@ -7,6 +7,10 @@ jest.mock('@/lib/supabase/server', () => ({
     auth: { getUser: jest.fn() },
   })),
 }))
+jest.mock('next/cache', () => ({
+  revalidatePath: jest.fn(),
+  revalidateTag: jest.fn(),
+}))
 
 jest.mock('@/lib/stripe', () => ({
   stripe: {
@@ -77,20 +81,24 @@ describe('stripe actions', () => {
       expect(result).toEqual({ error: 'Psicólogo não encontrado' })
     })
 
-    it('should return error if price is zero or invalid', async () => {
+    it('should create appointment directly if price is zero (100% discount)', async () => {
       mockAuth(MOCK_USER)
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue({
+        id: 'psych-1',
         pricePerSession: 0,
         user: { name: 'Dr. Zero', profiles: { fullName: 'Dr. Zero' } },
       })
+      // @ts-ignore
+      prisma.appointment = { create: jest.fn().mockResolvedValue({}) }
 
       const result = await createStripeCheckoutSession(validData)
-      expect(result).toEqual({ error: 'Preço inválido para pagamento via Stripe' })
+      expect(result).toEqual({ url: expect.stringContaining('/dashboard?payment=success') })
     })
 
     it('should create Stripe checkout session with correct amount', async () => {
       mockAuth(MOCK_USER)
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue({
+        id: 'psych-1',
         pricePerSession: 150,
         user: { name: 'Dra. Ana Silva', profiles: { fullName: 'Dra. Ana Silva' } },
       })
@@ -130,6 +138,7 @@ describe('stripe actions', () => {
     it('should include correct success and cancel URLs', async () => {
       mockAuth(MOCK_USER)
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue({
+        id: 'psych-1',
         pricePerSession: 100,
         user: { name: 'Dr. Test', profiles: { fullName: 'Dr. Test' } },
       })
@@ -150,6 +159,7 @@ describe('stripe actions', () => {
     it('should handle Stripe API errors gracefully', async () => {
       mockAuth(MOCK_USER)
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue({
+        id: 'psych-1',
         pricePerSession: 100,
         user: { name: 'Dr. Test', profiles: { fullName: 'Dr. Test' } },
       })
