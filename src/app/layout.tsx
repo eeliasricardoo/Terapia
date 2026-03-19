@@ -3,6 +3,7 @@ import { Inter, Outfit } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/components/providers/auth-provider'
 import { Toaster } from 'sonner'
+import { headers } from 'next/headers'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -67,8 +68,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const nonce = headers().get('x-nonce') ?? undefined
+
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" nonce={nonce}>
       <body className={`${inter.variable} ${outfit.variable} antialiased font-sans`}>
         <AuthProvider>
           <Toaster position="top-center" richColors />
