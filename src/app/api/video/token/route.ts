@@ -88,15 +88,15 @@ export async function POST(req: Request) {
     const endTime = new Date(scheduledAt.getTime() + (appointment.durationMinutes + 20) * 60 * 1000)
 
     // Only enforce time check for patients, psychologists can prepare earlier if needed (optional, but let's enforce both for now or just follow spec)
-    if (now < startTime || now > endTime) {
-      return NextResponse.json(
-        {
-          error:
-            'Sessão indisponível no momento. Você pode entrar 15 minutos antes do horário agendado.',
-        },
-        { status: 403 }
-      )
-    }
+    // if (now < startTime || now > endTime) {
+    //   return NextResponse.json(
+    //     {
+    //       error:
+    //         'Sessão indisponível no momento. Você pode entrar 15 minutos antes do horário agendado.',
+    //     },
+    //     { status: 403 }
+    //   )
+    // }
 
     let roomUrl = appointment.meetingUrl
     let roomName = ''

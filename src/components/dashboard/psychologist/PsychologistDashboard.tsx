@@ -1,3 +1,6 @@
+'use client'
+
+import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -23,12 +26,14 @@ import { Profile } from '@/lib/supabase/types'
 
 import { PsychologistDashboardData } from '@/lib/actions/dashboard'
 import { RescheduleDialog } from '@/components/dashboard/RescheduleDialog'
-import { format } from 'date-fns'
+import { format, isSameDay, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
+import { createClient } from '@/lib/supabase/client'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
+import { DashboardCalendar } from './DashboardCalendar'
 
 interface Props {
   userProfile: Profile
@@ -36,9 +41,114 @@ interface Props {
 }
 
 export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
-  const userName = userProfile?.full_name?.split(' ')[0] || 'Doutor(a)'
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
+  const [allAppointments, setAllAppointments] = useState<any[]>([])
+  const [overrides, setOverrides] = useState<any>({})
+  const [weeklySchedule, setWeeklySchedule] = useState<any>({
+    monday: { enabled: true, slots: [] },
+    tuesday: { enabled: true, slots: [] },
+    wednesday: { enabled: true, slots: [] },
+    thursday: { enabled: true, slots: [] },
+    friday: { enabled: true, slots: [] },
+    saturday: { enabled: false, slots: [] },
+    sunday: { enabled: false, slots: [] },
+  })
+  const [isLoadingAgenda, setIsLoadingAgenda] = useState(false)
+
+  const userName = userProfile?.full_name || 'Doutor(a)'
 
   const { stats, upcomingSessions, recentPatients } = dashboardData
+
+  // Fetch all appointments for the calendar and selection
+  useEffect(() => {
+    const fetchAllData = async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: profile } = await supabase
+        .from('psychologist_profiles')
+        .select('id, working_hours')
+        .eq('userId', user.id)
+        .single()
+
+      if (profile) {
+        // Fetch all appointments (e.g. 1 month before/after)
+        const { data: appts } = await supabase
+          .from('appointments')
+          .select(
+            `
+            id,
+            scheduled_at,
+            duration_minutes,
+            status,
+            session_type,
+            patient:patient_id (
+              id,
+              full_name,
+              avatar_url
+            )
+          `
+          )
+          .eq('psychologist_id', profile.id)
+
+        if (appts) {
+          const mappedAppts = appts.map((a: any) => ({
+            id: a.id,
+            patientName: a.patient?.full_name || 'Paciente',
+            time: format(new Date(a.scheduled_at), 'HH:mm'),
+            scheduledAt: a.scheduled_at,
+            psychologistId: profile.id,
+            type: a.session_type || 'Sessão',
+            status: a.status.toLowerCase(),
+            image: a.patient?.avatar_url || undefined,
+            duration: a.duration_minutes,
+          }))
+          setAllAppointments(mappedAppts)
+        }
+
+        // Fetch overrides
+        const { data: ovr } = await supabase
+          .from('schedule_overrides')
+          .select('*')
+          .eq('psychologist_id', profile.id)
+
+        if (ovr) {
+          const ovrMap: any = {}
+          ovr.forEach((o: any) => {
+            ovrMap[o.date] = o
+          })
+          setOverrides(ovrMap)
+        }
+
+        // Set working hours (routine)
+        if (profile.working_hours) {
+          setWeeklySchedule(profile.working_hours)
+        }
+      }
+    }
+    fetchAllData()
+  }, [])
+
+  const displaySessions = useMemo(() => {
+    if (!selectedDate) return []
+    const dateStr = format(selectedDate, 'yyyy-MM-dd')
+
+    // If it's today and we don't have all data yet, use server-side sessions
+    if (isSameDay(selectedDate, new Date()) && allAppointments.length === 0) {
+      return upcomingSessions
+    }
+
+    return allAppointments.filter((a) => a.scheduledAt.startsWith(dateStr))
+  }, [selectedDate, allAppointments, upcomingSessions])
+
+  const agendaTitle = useMemo(() => {
+    if (!selectedDate) return 'Agenda de Hoje'
+    if (isSameDay(selectedDate, new Date())) return 'Agenda de Hoje'
+    return `Agenda de ${format(selectedDate, "eeee, d 'de' MMMM", { locale: ptBR })}`
+  }, [selectedDate])
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
@@ -184,21 +294,19 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
               <CardHeader className="border-b border-slate-100 bg-white pb-5 pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-lg font-semibold text-slate-900">
-                      Agenda de Hoje
+                    <CardTitle className="text-lg font-semibold text-slate-900 capitalize">
+                      {agendaTitle}
                     </CardTitle>
                     <CardDescription>
-                      {new Intl.DateTimeFormat('pt-BR', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                      }).format(new Date())}
+                      {selectedDate
+                        ? format(selectedDate, "eeee, d 'de' MMMM", { locale: ptBR })
+                        : 'Selecione uma data'}
                     </CardDescription>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-primary hover:text-primary/90 hover:bg-primary/10 font-medium text-xs"
+                    className="text-slate-400 hover:text-primary hover:bg-transparent font-semibold text-xs transition-colors"
                     asChild
                   >
                     <Link href="/dashboard/agenda">VER AGENDA &rarr;</Link>
@@ -207,7 +315,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
               </CardHeader>
               <CardContent className="p-0 flex-1">
                 <div className="flex flex-col">
-                  {upcomingSessions.map((session, index) => {
+                  {displaySessions.map((session, index) => {
                     const isNext = index === 0 && session.status === 'scheduled'
                     const scheduledDate = new Date(session.scheduledAt)
                     const startTimeStr = formatInTimeZone(
@@ -220,8 +328,8 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                         key={session.id}
                         className={`
                                             flex items-stretch 
-                                            ${isNext ? 'bg-primary/5' : 'bg-white'} 
-                                            border-b border-slate-100 last:border-0 transition-colors
+                                            ${isNext ? 'bg-slate-50/50' : 'bg-white'} 
+                                            border-b border-slate-50 last:border-0 transition-colors
                                         `}
                       >
                         {/* Time & Session Info */}
@@ -229,36 +337,32 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                           <div className="flex items-center gap-4">
                             <div className="flex flex-col items-center justify-center min-w-[3.5rem]">
                               <span
-                                className={`text-xl font-black ${isNext ? 'text-slate-900' : 'text-slate-500'}`}
+                                className={`text-lg font-bold ${isNext ? 'text-slate-900' : 'text-slate-500'}`}
                               >
                                 {startTimeStr}
                               </span>
-                              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">
-                                {session.duration} MIN
+                              <span className="text-[10px] font-medium text-slate-400">
+                                {session.duration}m
                               </span>
                             </div>
 
-                            <div className="h-8 w-[1px] bg-slate-100 hidden md:block mx-2" />
-
                             <Avatar
-                              className={`h-12 w-12 grayscale hover:grayscale-0 transition-all ${isNext ? 'grayscale-0 ring-2 ring-primary ring-offset-2' : ''}`}
+                              className={`h-10 w-10 transition-all ${isNext ? 'ring-2 ring-primary/20 ring-offset-2' : ''}`}
                             >
                               <AvatarImage src={session.image} />
-                              <AvatarFallback className="bg-slate-100 text-slate-600 font-bold">
+                              <AvatarFallback className="bg-slate-50 text-slate-400 text-xs font-semibold">
                                 {session.patientName.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
 
                             <div>
                               <h4
-                                className={`font-bold text-base ${isNext ? 'text-slate-900' : 'text-slate-700'}`}
+                                className={`font-semibold text-sm ${isNext ? 'text-slate-900' : 'text-slate-700'}`}
                               >
                                 {session.patientName}
                               </h4>
                               <div className="flex items-center gap-2">
-                                <span className="text-xs font-medium text-slate-500">
-                                  {session.type}
-                                </span>
+                                <span className="text-[11px] text-slate-400">{session.type}</span>
                                 {session.status === 'completed' && (
                                   <Badge
                                     variant="secondary"
@@ -268,7 +372,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                   </Badge>
                                 )}
                                 {session.status === 'scheduled' && isNext && (
-                                  <Badge className="bg-slate-900 text-white border-none text-[9px] h-4 font-black uppercase tracking-tighter">
+                                  <Badge className="bg-primary/10 text-primary border-none text-[9px] h-4 font-bold uppercase tracking-wider">
                                     Próxima
                                   </Badge>
                                 )}
@@ -282,9 +386,9 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                 <Link href={`/sala/${session.id}`} className="flex-1">
                                   <Button
                                     size="sm"
-                                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg px-4 h-9 shadow-md shadow-slate-200 text-xs font-black uppercase tracking-tighter transition-all hover:scale-105 w-full"
+                                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-5 h-8 text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-105 shadow-sm shadow-slate-200 w-full"
                                   >
-                                    <Video className="w-3 h-3 mr-2" />
+                                    <Video className="w-3.5 h-3.5 mr-2" />
                                     Iniciar
                                   </Button>
                                 </Link>
@@ -306,7 +410,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 font-bold text-xs h-9 px-3"
+                                    className="text-slate-300 hover:text-primary transition-colors font-medium text-[11px] h-8 px-2"
                                   >
                                     Reagendar
                                   </Button>
@@ -331,7 +435,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="text-primary hover:text-primary/90 hover:bg-primary/5 font-bold text-xs"
+                                  className="text-slate-300 hover:text-primary transition-colors font-medium text-[11px] h-8 px-2"
                                 >
                                   Reagendar
                                 </Button>
@@ -343,7 +447,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                     )
                   })}
                 </div>
-                {upcomingSessions.length === 0 && (
+                {displaySessions.length === 0 && (
                   <div className="p-12 text-center bg-slate-50/50">
                     <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm mb-4">
                       <CalendarIcon className="h-6 w-6 text-slate-400" />
@@ -357,6 +461,13 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
 
             {/* Quick Actions / Recent Patients */}
             <div className="space-y-6">
+              <DashboardCalendar
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                appointments={allAppointments}
+                overrides={overrides}
+                weeklySchedule={weeklySchedule}
+              />
               <Card className="border-none shadow-sm bg-white">
                 <CardHeader className="pb-2 border-b border-slate-50 pt-4 px-4">
                   <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
