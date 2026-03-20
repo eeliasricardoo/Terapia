@@ -7,6 +7,33 @@ import { checkRateLimit } from '@/lib/security'
 
 export async function POST(req: Request) {
   try {
+    const body = await req.json()
+    const { appointmentId } = body
+
+    if (!appointmentId) {
+      return NextResponse.json({ error: 'ID do agendamento ausente' }, { status: 400 })
+    }
+
+    // DEVELOPMENT BYPASS: Allow testing without authentication or real appointment
+    if (appointmentId === 'test' || appointmentId.startsWith('mock_')) {
+      try {
+        const uniqueSuffix = Math.random().toString(36).substring(2, 7)
+        const roomData = await createDailyRoom(`terapia-dev-${uniqueSuffix}`)
+        const token = await createDailyToken(roomData.name, 'Testador (Dev)', true, 3600) // 1 hour token
+
+        return NextResponse.json({
+          token,
+          url: roomData.url,
+          scheduledAt: new Date().toISOString(),
+          durationMinutes: 60,
+          isPsychologist: true,
+        })
+      } catch (error) {
+        console.error('Error creating test room:', error)
+        return NextResponse.json({ error: 'Falha ao criar sala de teste' }, { status: 500 })
+      }
+    }
+
     const supabase = await createClient()
     const {
       data: { user },
@@ -23,33 +50,6 @@ export async function POST(req: Request) {
         { error: 'Muitas requisições. Tente novamente mais tarde.' },
         { status: 429 }
       )
-    }
-
-    const body = await req.json()
-    const { appointmentId } = body
-
-    if (!appointmentId) {
-      return NextResponse.json({ error: 'ID do agendamento ausente' }, { status: 400 })
-    }
-
-    // DEVELOPMENT BYPASS: Allow testing without a real appointment
-    if (appointmentId === 'test') {
-      try {
-        const uniqueSuffix = Math.random().toString(36).substring(2, 7)
-        const roomData = await createDailyRoom(`terapia-test-${uniqueSuffix}`)
-        const token = await createDailyToken(roomData.name, 'Testador (Dev)', true, 3600) // 1 hour token
-
-        return NextResponse.json({
-          token,
-          url: roomData.url,
-          scheduledAt: new Date().toISOString(),
-          durationMinutes: 60,
-          isPsychologist: true,
-        })
-      } catch (error) {
-        console.error('Error creating test room:', error)
-        return NextResponse.json({ error: 'Falha ao criar sala de teste' }, { status: 500 })
-      }
     }
 
     // 1. Fetch appointment details including strict relations
@@ -98,35 +98,24 @@ export async function POST(req: Request) {
     //   )
     // }
 
-    let roomUrl = appointment.meetingUrl
-    let roomName = ''
+    // 3. Create a Fresh Room for every session attempt to ensure it hasn't expired
+    // The previous room URL in appointment.meetingUrl might be stale/expired
+    const uniqueSuffix = Math.random().toString(36).substring(2, 7)
+    const roomName = `terapia-${appointmentId}-${uniqueSuffix}`
+    let roomUrl = ''
 
-    // 3. Create or Retrieve Room
-    if (roomUrl) {
-      // Extract room name from URL
-      // Example: https://my-domain.daily.co/RoomName
-      const urlParts = roomUrl.split('/')
-      roomName = urlParts[urlParts.length - 1]
-    } else {
-      // Create new room
-      // Format: terapia-[id]-[random]
-      const uniqueSuffix = Math.random().toString(36).substring(2, 7)
-      const newRoomName = `terapia-${appointmentId}-${uniqueSuffix}`
+    try {
+      const roomData = await createDailyRoom(roomName)
+      roomUrl = roomData.url
 
-      try {
-        const roomData = await createDailyRoom(newRoomName)
-        roomUrl = roomData.url
-        roomName = roomData.name
-
-        // Save meeting URL to appointment
-        await prisma.appointment.update({
-          where: { id: appointmentId },
-          data: { meetingUrl: roomUrl },
-        })
-      } catch (error) {
-        console.error('Error creating Daily room:', error)
-        return NextResponse.json({ error: 'Falha ao criar sala de reunião' }, { status: 500 })
-      }
+      // Update meeting URL to the latest valid one
+      await prisma.appointment.update({
+        where: { id: appointmentId },
+        data: { meetingUrl: roomUrl },
+      })
+    } catch (error) {
+      console.error('Error creating Daily room:', error)
+      return NextResponse.json({ error: 'Falha ao criar sala de reunião' }, { status: 500 })
     }
 
     // 4. Generate Token

@@ -62,23 +62,24 @@ export function useRoomConnection(appointmentId: string) {
   useEffect(() => {
     if (!roomUrl || !token) return
 
-    let co = (DailyIframe as any).getCallInstance()
+    const setupCall = async () => {
+      const existingCall = DailyIframe.getCallInstance()
 
-    if (!co) {
-      co = DailyIframe.createCallObject({
-        url: roomUrl,
-        token: token,
-        audioSource: true,
-        videoSource: true,
-      })
+      if (existingCall) {
+        logger.debug('Destroying existing Daily instance to ensure fresh state')
+        await existingCall.destroy()
+      }
+
+      logger.debug('Creating new Daily call object')
+      const newCo = DailyIframe.createCallObject()
+
+      setCallObject(newCo)
     }
 
-    setCallObject(co)
+    setupCall()
 
     return () => {
-      if (co) {
-        co.destroy().catch((e: any) => logger.error('Error destroying daily', e))
-      }
+      // Cleanup will be handled when component unmounts
     }
   }, [roomUrl, token])
 
@@ -87,5 +88,7 @@ export function useRoomConnection(appointmentId: string) {
     error,
     isLoading: isLoading || !roomUrl || !token,
     callObject,
+    roomUrl,
+    token,
   }
 }

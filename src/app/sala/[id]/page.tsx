@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   useDaily,
@@ -8,6 +8,8 @@ import {
   DailyAudio,
   useParticipantIds,
   useMeetingState,
+  useLocalParticipant,
+  useAudioLevel,
 } from '@daily-co/daily-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -23,7 +25,9 @@ import { useRoomTimer } from '@/hooks/useRoomTimer'
 import { useRoomConnection, AppointmentInfo } from '@/hooks/useRoomConnection'
 
 export default function VideoRoomPage({ params }: { params: { id: string } }) {
-  const { appointmentInfo, error, isLoading, callObject } = useRoomConnection(params.id)
+  const { appointmentInfo, error, isLoading, callObject, roomUrl, token } = useRoomConnection(
+    params.id
+  )
 
   if (error) {
     return (
@@ -71,7 +75,13 @@ export default function VideoRoomPage({ params }: { params: { id: string } }) {
 
   return (
     <DailyProvider callObject={callObject}>
-      <RoomManager appointmentId={params.id} appointmentInfo={appointmentInfo!} />
+      <RoomManager
+        appointmentId={params.id}
+        appointmentInfo={appointmentInfo!}
+        roomUrl={roomUrl!}
+        token={token!}
+      />
+      <DailyAudio />
     </DailyProvider>
   )
 }
@@ -79,18 +89,41 @@ export default function VideoRoomPage({ params }: { params: { id: string } }) {
 function RoomManager({
   appointmentId,
   appointmentInfo,
+  roomUrl,
+  token,
 }: {
   appointmentId: string
   appointmentInfo: AppointmentInfo
+  roomUrl: string
+  token: string
 }) {
   const meetingState = useMeetingState()
+
+  // Transition states
+  if (meetingState === 'joining-meeting') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
+        <p className="text-slate-400">Entrando na sala...</p>
+      </div>
+    )
+  }
+
+  if (meetingState === 'error') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 p-4">
+        <p className="text-red-500 font-semibold mb-2">Erro na conexão de vídeo</p>
+        <Button onClick={() => window.location.reload()}>Recarregar Página</Button>
+      </div>
+    )
+  }
 
   // Only show Active Room if fully joined
   if (meetingState === 'joined-meeting') {
     return <ActiveRoomInterface appointmentId={appointmentId} appointmentInfo={appointmentInfo} />
   }
 
-  return <PreJoinLobby />
+  return <PreJoinLobby roomUrl={roomUrl} token={token} />
 }
 
 function ActiveRoomInterface({
@@ -103,9 +136,17 @@ function ActiveRoomInterface({
   const daily = useDaily()
   const router = useRouter()
   const remoteParticipantIds = useParticipantIds({ filter: 'remote' })
+  const localParticipant = useLocalParticipant()
+  const [isMicOn, setIsMicOn] = useState(localParticipant?.audio ?? true)
+  const [isCamOn, setIsCamOn] = useState(localParticipant?.video ?? true)
 
-  const [isMicOn, setIsMicOn] = useState(true)
-  const [isCamOn, setIsCamOn] = useState(true)
+  // Sync state if it changed in lobby or via Daily events
+  useEffect(() => {
+    if (localParticipant) {
+      if (localParticipant.audio !== isMicOn) setIsMicOn(localParticipant.audio)
+      if (localParticipant.video !== isCamOn) setIsCamOn(localParticipant.video)
+    }
+  }, [localParticipant?.audio, localParticipant?.video])
 
   const remainingSeconds = useRoomTimer(
     appointmentInfo.scheduledAt,
@@ -160,8 +201,7 @@ function ActiveRoomInterface({
         <RoomSidebar isPsychologist={appointmentInfo?.isPsychologist} />
       </div>
 
-      {/* Invisible Handles for Daily Audio */}
-      <DailyAudio />
+      {/* Invisible Handles for Daily Audio handled globally */}
     </div>
   )
 }

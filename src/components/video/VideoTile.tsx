@@ -42,12 +42,18 @@ export function VideoTile({ sessionId, isLocal, className }: VideoTileProps) {
 
       {/* Fallback / Loading State */}
       {(isLoading || isOff) && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-800 z-0">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800 z-0 gap-4">
           <Avatar className="h-20 w-20 border-4 border-slate-700">
             <AvatarFallback className="text-2xl font-bold bg-slate-600 text-slate-200">
               {userName ? String(userName).slice(0, 2).toUpperCase() : '??'}
             </AvatarFallback>
           </Avatar>
+          {videoState.state === 'blocked' && (
+            <p className="text-xs text-red-400 bg-red-950/50 px-2 py-1 rounded">Câmera Bloqueada</p>
+          )}
+          {isLoading && !isOff && (
+            <p className="text-xs text-slate-400 animate-pulse">Iniciando vídeo...</p>
+          )}
         </div>
       )}
 
