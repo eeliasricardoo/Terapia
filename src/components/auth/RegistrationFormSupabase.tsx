@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { auth } from '@/lib/supabase/auth'
+import { registerPatientSupabase } from '@/lib/actions/auth'
 import { toast } from 'sonner'
 
 export function RegistrationFormSupabase() {
@@ -45,21 +46,23 @@ export function RegistrationFormSupabase() {
     }
 
     try {
-      const { error } = await auth.signUp(formData.email, formData.password, {
-        role: 'PATIENT',
-        full_name: formData.name,
-        avatar_url: undefined,
-      })
+      const submissionData = new FormData()
+      submissionData.append('name', formData.name)
+      submissionData.append('email', formData.email)
+      submissionData.append('phone', formData.phone)
+      submissionData.append('birthDate', formData.birthDate)
+      submissionData.append('document', formData.document)
+      submissionData.append('password', formData.password)
+      submissionData.append('confirmPassword', formData.confirmPassword)
+      submissionData.append('terms', String(formData.terms))
 
-      if (error) {
-        if (error.message.includes('already registered')) {
-          toast.error('E-mail já cadastrado. Tente fazer login.')
-        } else {
-          toast.error(error.message)
-        }
+      const result = await registerPatientSupabase(submissionData)
+
+      if (!result.success) {
+        toast.error(result.error || 'Erro ao criar conta. Verifique os dados.')
       } else {
         toast.success('Conta criada com sucesso! Verifique seu email.')
-        router.push('/login/paciente')
+        router.push('/cadastro/confirmar-email?email=' + encodeURIComponent(formData.email))
       }
     } catch (error) {
       toast.error('Erro ao criar conta')

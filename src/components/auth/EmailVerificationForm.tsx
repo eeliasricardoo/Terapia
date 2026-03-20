@@ -24,10 +24,7 @@ import * as z from 'zod'
 import Link from 'next/link'
 
 const verificationSchema = z.object({
-  code: z
-    .string()
-    .min(8, 'O código deve ter pelo menos 8 dígitos')
-    .max(8, 'O código deve ter 8 dígitos'),
+  code: z.string().min(6, 'O código deve ter 6 dígitos').max(6, 'O código deve ter 6 dígitos'),
 })
 
 type VerificationInput = z.infer<typeof verificationSchema>
@@ -115,7 +112,7 @@ export function EmailVerificationForm() {
         </div>
         <CardTitle className="text-2xl">Verifique seu e-mail</CardTitle>
         <CardDescription>
-          Enviamos um código de 8 dígitos para{' '}
+          Enviamos um código de 6 dígitos para{' '}
           <span className="font-semibold text-foreground">{displayEmail}</span>. Digite-o abaixo
           para confirmar sua conta.
         </CardDescription>
@@ -131,9 +128,9 @@ export function EmailVerificationForm() {
                   <FormLabel>Código de Verificação</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="00000000"
-                      className="text-center text-2xl tracking-[0.3em] font-mono h-14"
-                      maxLength={8}
+                      placeholder="000000"
+                      className="text-center text-3xl tracking-[0.5em] font-mono h-14"
+                      maxLength={6}
                       {...field}
                     />
                   </FormControl>
