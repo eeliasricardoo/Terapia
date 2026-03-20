@@ -707,10 +707,10 @@ export function ScheduleManager() {
                       <span className="text-sm font-medium">{date.getDate()}</span>
                       <div className="flex gap-0.5 mt-1">
                         {isBlocked && <div className="h-1.5 w-1.5 rounded-full bg-red-400" />}
-                        {isCustom && <div className="h-1.5 w-1.5 rounded-full bg-primary" />}
-                        {hasRoutine && <div className="h-1.5 w-1.5 rounded-full bg-slate-300" />}
+                        {isCustom && <div className="h-1.5 w-1.5 rounded-full bg-blue-900" />}
+                        {hasRoutine && <div className="h-1.5 w-1.5 rounded-full bg-blue-600" />}
                         {!hasRoutine && !isBlocked && !isCustom && (
-                          <div className="h-1.5 w-1.5 rounded-full border border-slate-200" />
+                          <div className="h-1.5 w-1.5 rounded-full bg-slate-300" />
                         )}
                         {hasAppt && <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
                       </div>
@@ -722,13 +722,16 @@ export function ScheduleManager() {
           </div>
           <CardFooter className="border-t border-slate-50 bg-slate-50/30 p-4 text-xs text-slate-500 flex justify-center gap-6">
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-slate-300" /> Padrão
+              <div className="h-2 w-2 rounded-full bg-blue-600" /> Padrão
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-primary" /> Personalizado
+              <div className="h-2 w-2 rounded-full bg-blue-900" /> Personalizado
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-red-400" /> Bloqueado
+              <div className="h-2 w-2 rounded-full bg-slate-300" /> Dia Livre
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-red-400" /> Folga
             </div>
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-emerald-500" /> Agendamento
@@ -737,329 +740,435 @@ export function ScheduleManager() {
         </Card>
 
         {/* Day Editor Panel */}
-        <Card className="lg:col-span-4 border border-slate-200 shadow-lg bg-white flex flex-col overflow-hidden h-full relative">
+        <Card className="lg:col-span-4 border border-slate-200 shadow-xl bg-white flex flex-col overflow-hidden h-full relative">
           {!selectedDate ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8 text-center">
-              <CalendarIcon className="h-12 w-12 mb-4 opacity-20" />
-              <p className="font-medium text-slate-500">Nenhum dia selecionado</p>
-              <p className="text-sm mt-1">
-                Clique em uma data no calendário para editar seus horários.
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8 text-center bg-slate-50/10">
+              <div className="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mb-6 opacity-40">
+                <CalendarIcon className="h-10 w-10 text-slate-400" />
+              </div>
+              <p className="font-bold text-slate-500 text-lg">Selecione um dia</p>
+              <p className="text-sm mt-2 max-w-[200px] leading-relaxed">
+                Clique em uma data no calendário para gerenciar seus horários.
               </p>
             </div>
           ) : (
             <>
               {/* Card Header with Date Info */}
               <div
-                className={`p-6 border-b transition-colors ${effective?.type === 'blocked' ? 'bg-red-50 border-red-100' : effective?.type === 'custom' ? 'bg-primary/10 border-primary/20' : 'bg-slate-50 border-slate-100'}`}
+                className={cn(
+                  'p-8 border-b transition-all duration-500',
+                  effective?.type === 'blocked'
+                    ? 'bg-red-50/50 border-red-100'
+                    : effective?.type === 'custom'
+                      ? 'bg-slate-900 border-slate-800 shadow-inner' // Dark elegant mode for custom
+                      : 'bg-white border-slate-100'
+                )}
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-6">
                   <Badge
                     variant="outline"
-                    className={`bg-white uppercase tracking-wide text-[10px] font-bold h-5 ${effective?.type === 'blocked' ? 'text-red-700 border-red-200' : effective?.type === 'custom' ? 'text-primary border-primary/20' : 'text-slate-600 border-slate-200'}`}
+                    className={cn(
+                      'uppercase tracking-[0.2em] text-[10px] font-black px-3 py-1 border-2 transition-all',
+                      effective?.type === 'blocked'
+                        ? 'text-red-700 border-red-200 bg-white'
+                        : effective?.type === 'custom'
+                          ? 'text-white border-white/20 bg-white/10'
+                          : 'text-blue-600 border-blue-100 bg-blue-50/50'
+                    )}
                   >
                     {effective?.type === 'blocked'
-                      ? 'Bloqueado'
+                      ? 'DIA BLOQUEADO'
                       : effective?.type === 'custom'
-                        ? 'Personalizado'
-                        : 'Rotina Padrão'}
+                        ? 'HORÁRIO ESPECIAL'
+                        : 'ROTINA SEMANAL'}
                   </Badge>
+
                   {effective?.source === 'override' && (
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-slate-400 hover:text-slate-900 bg-white/50 hover:bg-white rounded-full"
+                      size="sm"
+                      className={cn(
+                        'h-8 px-3 text-[10px] font-black uppercase tracking-widest transition-all',
+                        effective?.type === 'custom'
+                          ? 'text-slate-400 hover:text-white hover:bg-white/10'
+                          : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                      )}
                       onClick={handleResetOverride}
-                      title="Restaurar padrão"
                     >
-                      <RotateCcw className="h-3.5 w-3.5" />
+                      <RotateCcw className="h-3 w-3 mr-2" />
+                      RESTAURAR PADRÃO
                     </Button>
                   )}
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900">
-                  {format(selectedDate, 'dd', { locale: ptBR })}
-                </h3>
-                <p
-                  className={`text-sm font-medium uppercase tracking-wide ${effective?.type === 'blocked' ? 'text-red-600' : effective?.type === 'custom' ? 'text-primary' : 'text-slate-500'}`}
-                >
-                  {format(selectedDate, 'MMMM, EEEE', { locale: ptBR })}
-                </p>
+
+                <div className="flex items-baseline gap-3">
+                  <span
+                    className={cn(
+                      'text-5xl font-black tracking-tighter',
+                      effective?.type === 'custom' ? 'text-white' : 'text-slate-900'
+                    )}
+                  >
+                    {format(selectedDate, 'dd', { locale: ptBR })}
+                  </span>
+                  <div className="flex flex-col">
+                    <span
+                      className={cn(
+                        'text-sm font-black uppercase tracking-[0.1em]',
+                        effective?.type === 'custom' ? 'text-slate-200' : 'text-slate-600'
+                      )}
+                    >
+                      {format(selectedDate, 'MMMM', { locale: ptBR })}
+                    </span>
+                    <span
+                      className={cn(
+                        'text-[10px] font-bold uppercase tracking-widest opacity-60',
+                        effective?.type === 'custom' ? 'text-white' : 'text-slate-400'
+                      )}
+                    >
+                      {format(selectedDate, 'EEEE', { locale: ptBR })}
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              {/* Card Body with Actions/Content */}
-              <div className="flex-1 p-6 overflow-y-auto">
-                {effective?.type === 'blocked' ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
-                    <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center">
-                      <Ban className="h-8 w-8 text-red-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-slate-900">Dia de Folga</h4>
-                      <p className="text-sm text-slate-500 mt-1 max-w-[200px] mx-auto">
-                        Você marcou este dia como indisponível para atendimentos.
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="mt-4 border-slate-200 text-slate-600"
-                      onClick={handleResetOverride}
-                    >
-                      Desbloquear Dia
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {effective?.slots.length === 0 ? (
-                      <div className="text-center py-8 bg-slate-50 rounded-lg border border-slate-100 border-dashed">
-                        <Info className="h-6 w-6 text-slate-400 mx-auto mb-2" />
-                        <p className="text-sm font-medium text-slate-600">Sem horários definidos</p>
-                        <p className="text-xs text-slate-400 mt-1">
-                          Adicione horários ou libere este dia.
+              {/* Card Body - Scrollable Area */}
+              <div className="flex-1 overflow-y-auto bg-slate-50/20 custom-scrollbar">
+                <div className="p-8">
+                  {effective?.type === 'blocked' ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center space-y-6">
+                      <div className="h-24 w-24 bg-red-50 rounded-3xl flex items-center justify-center border-2 border-red-100 shadow-md rotate-3">
+                        <Ban className="h-12 w-12 text-red-400" />
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="font-black text-slate-900 text-xl tracking-tight">
+                          Dia de Folga
+                        </h4>
+                        <p className="text-sm text-slate-500 max-w-[260px] mx-auto leading-relaxed">
+                          Este dia foi marcado como indisponível. Nenhum horário aparecerá para seus
+                          pacientes.
                         </p>
                       </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {effective?.slots.map((slot, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-300"
-                            style={{ animationDelay: `${idx * 50}ms` }}
-                          >
-                            <div className="flex-1 flex items-center justify-between p-3 rounded-lg border bg-white shadow-sm border-slate-100">
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-slate-400" />
-                                {effective.source === 'override' ? (
-                                  // Editable Slots (Custom Mode)
-                                  <div className="flex items-center gap-1">
-                                    <Select
-                                      value={slot.start}
-                                      onValueChange={(v) => handleCustomSlotChange(idx, 'start', v)}
-                                    >
-                                      <SelectTrigger className="h-7 w-[75px] border-none px-0 text-sm font-semibold text-slate-900 bg-transparent focus:ring-0 shadow-none">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {HOURS.map((h) => (
-                                          <SelectItem key={h} value={h}>
-                                            {h}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                    <span className="text-slate-300">-</span>
-                                    <Select
-                                      value={slot.end}
-                                      onValueChange={(v) => handleCustomSlotChange(idx, 'end', v)}
-                                    >
-                                      <SelectTrigger className="h-7 w-[75px] border-none px-0 text-sm font-semibold text-slate-900 bg-transparent focus:ring-0 shadow-none">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {HOURS.map((h) => (
-                                          <SelectItem key={h} value={h}>
-                                            {h}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-                                ) : (
-                                  // Read-only Slots (Routine Mode)
-                                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                                    <span>{slot.start}</span>
-                                    <span className="text-slate-300">-</span>
-                                    <span>{slot.end}</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              {effective.source === 'override' && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 text-slate-400 hover:text-red-500"
-                                  onClick={() => handleRemoveCustomSlot(idx)}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {effective?.source === 'weekly' ? (
-                      <div className="pt-4 space-y-3">
-                        <Button
-                          className="w-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-sm transition-all text-xs"
-                          onClick={() => handleOverride('custom')}
-                        >
-                          Customizar Horários do Dia
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 text-xs"
-                          onClick={() => handleOverride('blocked')}
-                        >
-                          <Ban className="h-4 w-4 mr-2" /> Marcar como Folga
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="pt-4">
-                        <Button
-                          variant="outline"
-                          className="w-full border-dashed border-slate-300 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 text-xs"
-                          onClick={handleAddCustomSlot}
-                        >
-                          <Plus className="h-4 w-4 mr-2" /> Adicionar Intervalo
-                        </Button>
-                      </div>
-                    )}
-
-                    {/* View Generated Slots Tooltip/info */}
-                    <div className="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
-                        Slots Visíveis para Pacientes
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedDate &&
-                          getGeneratedSlots(selectedDate).map((time) => {
-                            const isBooked = appointments.some(
-                              (a) =>
-                                a.scheduled_at.startsWith(format(selectedDate, 'yyyy-MM-dd')) &&
-                                format(new Date(a.scheduled_at), 'HH:mm') === time &&
-                                a.status !== 'cancelled'
-                            )
-                            return (
-                              <Badge
-                                key={time}
-                                variant="outline"
-                                className={cn(
-                                  'bg-white text-[11px] font-medium h-7 px-2.5',
-                                  isBooked
-                                    ? 'border-emerald-200 text-emerald-700 bg-emerald-50'
-                                    : 'border-slate-200 text-slate-600'
-                                )}
-                              >
-                                {time}
-                                {isBooked && (
-                                  <div className="ml-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                )}
-                              </Badge>
-                            )
-                          })}
-                        {selectedDate && getGeneratedSlots(selectedDate).length === 0 && (
-                          <p className="text-[10px] text-slate-400 italic">Nenhum slot gerado.</p>
-                        )}
-                      </div>
+                      <Button
+                        variant="outline"
+                        className="mt-6 border-2 border-slate-200 text-slate-700 bg-white hover:border-red-500 hover:text-red-500 transition-all font-black px-10 h-12 rounded-xl"
+                        onClick={handleResetOverride}
+                      >
+                        ATIVAR DIA
+                      </Button>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="space-y-12">
+                      {/* Attendance Periods Section */}
+                      <div>
+                        <div className="flex items-center justify-between mb-6">
+                          <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] inline-flex items-center">
+                            <Clock className="h-3 w-3 mr-2 text-indigo-400" />
+                            Janelas de Atendimento
+                          </h4>
+                          {effective?.slots?.length > 0 && (
+                            <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">
+                              {effective?.slots?.length || 0} BLOCO
+                              {(effective?.slots?.length || 0) === 1 ? '' : 'S'}
+                            </span>
+                          )}
+                        </div>
 
-                {/* Appointments List for Selected Day */}
-                {effective?.type !== 'blocked' && (
-                  <div className="pt-6 border-t border-slate-100 mt-6 md:pb-6">
-                    <h4 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-                      <Users className="h-4 w-4 text-slate-500" />
-                      Agendamentos do Dia
-                    </h4>
-
-                    {appointments.filter((a) =>
-                      a.scheduled_at.startsWith(format(selectedDate, 'yyyy-MM-dd'))
-                    ).length === 0 ? (
-                      <p className="text-xs text-slate-400 italic">
-                        Nenhum agendamento para este dia.
-                      </p>
-                    ) : (
-                      <div className="space-y-3">
-                        {appointments
-                          .filter((a) =>
-                            a.scheduled_at.startsWith(format(selectedDate, 'yyyy-MM-dd'))
-                          )
-                          .sort(
-                            (a, b) =>
-                              new Date(a.scheduled_at).getTime() -
-                              new Date(b.scheduled_at).getTime()
-                          )
-                          .map((appt) => (
-                            <div
-                              key={appt.id}
-                              className={cn(
-                                'flex items-start justify-between p-3 rounded-xl border transition-all',
-                                appt.status === 'COMPLETED'
-                                  ? 'bg-slate-50 border-slate-100 opacity-60'
-                                  : appt.status === 'cancelled'
-                                    ? 'bg-red-50 border-red-100 opacity-60'
-                                    : 'bg-emerald-50 border-emerald-100 shadow-sm'
-                              )}
-                            >
-                              <div className="flex items-start gap-3">
+                        {(effective?.slots?.length || 0) === 0 ? (
+                          <div className="text-center py-12 bg-white rounded-3xl border-2 border-dashed border-slate-200 shadow-inner">
+                            <p className="text-xs font-bold text-slate-400">
+                              Sem horários definidos.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {effective?.slots.map((slot, idx) => (
+                              <div
+                                key={idx}
+                                className="group relative animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
+                                style={{ animationDelay: `${idx * 100}ms` }}
+                              >
                                 <div
                                   className={cn(
-                                    'h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs border',
-                                    appt.status === 'COMPLETED'
-                                      ? 'bg-slate-200 text-slate-500 border-slate-300'
-                                      : 'bg-white text-emerald-600 border-emerald-100'
+                                    'flex items-center justify-between p-5 rounded-3xl border-2 transition-all duration-300',
+                                    effective.source === 'override'
+                                      ? 'bg-white border-slate-100 shadow-sm hover:border-blue-500 hover:shadow-xl hover:-translate-y-1'
+                                      : 'bg-blue-50/50 border-blue-100/50'
                                   )}
                                 >
-                                  {appt.patient_name.charAt(0)}
-                                </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-slate-900">
-                                    {appt.patient_name}
-                                  </p>
-                                  <p
-                                    className={cn(
-                                      'text-xs flex items-center gap-1.5 mt-0.5',
-                                      appt.status === 'COMPLETED'
-                                        ? 'text-slate-500'
-                                        : 'text-emerald-700'
+                                  <div className="flex items-center gap-6">
+                                    {effective.source === 'override' ? (
+                                      <>
+                                        <div className="space-y-2">
+                                          <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest pl-1">
+                                            Início
+                                          </span>
+                                          <Select
+                                            value={slot.start}
+                                            onValueChange={(v) =>
+                                              handleCustomSlotChange(idx, 'start', v)
+                                            }
+                                          >
+                                            <SelectTrigger className="h-12 w-[100px] bg-slate-50 border-2 border-slate-100 hover:border-blue-400 font-bold text-slate-900 rounded-2xl transition-all outline-none ring-0 shadow-none focus:ring-0">
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <div className="grid grid-cols-2">
+                                                {HOURS.map((h) => (
+                                                  <SelectItem
+                                                    key={h}
+                                                    value={h}
+                                                    className="text-xs font-bold"
+                                                  >
+                                                    {h}
+                                                  </SelectItem>
+                                                ))}
+                                              </div>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div className="h-8 w-1 bg-slate-100 self-end mb-2 rounded-full hidden sm:block" />
+                                        <div className="space-y-2">
+                                          <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest pl-1">
+                                            Fim
+                                          </span>
+                                          <Select
+                                            value={slot.end}
+                                            onValueChange={(v) =>
+                                              handleCustomSlotChange(idx, 'end', v)
+                                            }
+                                          >
+                                            <SelectTrigger className="h-12 w-[100px] bg-slate-50 border-2 border-slate-100 hover:border-blue-400 font-bold text-slate-900 rounded-2xl transition-all outline-none ring-0 shadow-none focus:ring-0">
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <div className="grid grid-cols-2">
+                                                {HOURS.map((h) => (
+                                                  <SelectItem
+                                                    key={h}
+                                                    value={h}
+                                                    className="text-xs font-bold"
+                                                  >
+                                                    {h}
+                                                  </SelectItem>
+                                                ))}
+                                              </div>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <div className="py-2 pl-4">
+                                        <p className="text-xl font-black text-slate-800 tracking-tight">
+                                          {slot.start} — {slot.end}
+                                        </p>
+                                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-1">
+                                          Horário Regular
+                                        </p>
+                                      </div>
                                     )}
-                                  >
-                                    <Clock className="h-3 w-3" />
-                                    {format(new Date(appt.scheduled_at), 'HH:mm')}
-                                    <span className="opacity-50">•</span>
-                                    {appt.duration} min
-                                    <span className="opacity-50">•</span>
-                                    <span className="uppercase text-[9px] font-bold">
-                                      {appt.status}
-                                    </span>
-                                  </p>
+                                  </div>
+
+                                  {effective.source === 'override' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-10 w-10 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all mr-2"
+                                      onClick={() => handleRemoveCustomSlot(idx)}
+                                    >
+                                      <Trash2 className="h-5 w-5" />
+                                    </Button>
+                                  )}
                                 </div>
                               </div>
-
-                              {appt.status === 'scheduled' && (
-                                <div className="flex gap-1">
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100 rounded-full"
-                                    title="Marcar como realizada"
-                                    onClick={() =>
-                                      handleUpdateAppointmentStatus(appt.id, 'COMPLETED')
-                                    }
-                                  >
-                                    <CheckCircle2 className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-100 rounded-full"
-                                    title="Cancelar sessão"
-                                    onClick={() =>
-                                      handleUpdateAppointmentStatus(appt.id, 'cancelled')
-                                    }
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                          ))}
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                )}
+
+                      {/* Logic Buttons / Actions */}
+                      {effective?.source === 'weekly' ? (
+                        <div className="pt-4 space-y-4">
+                          <div className="relative py-4">
+                            <div className="absolute inset-0 flex items-center">
+                              <div className="w-full border-t-2 border-slate-100 border-dashed"></div>
+                            </div>
+                            <div className="relative flex justify-center text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] bg-[#fbfbfb] px-4">
+                              Alternativas
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 gap-4">
+                            <Button
+                              className="bg-white border-2 border-slate-200 text-slate-900 hover:border-blue-600 hover:bg-blue-50/50 hover:text-blue-600 transition-all font-black h-16 rounded-3xl shadow-sm text-sm"
+                              onClick={() => handleOverride('custom')}
+                            >
+                              <Settings2 className="h-5 w-5 mr-3 text-blue-500" />
+                              PERSONALIZAR DIA
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              className="text-red-500 hover:text-red-600 hover:bg-red-50 font-black h-14 rounded-2xl text-[11px] tracking-widest uppercase"
+                              onClick={() => handleOverride('blocked')}
+                            >
+                              <Ban className="h-4 w-4 mr-2" /> MARCAR FOLGA
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="pt-8 border-t-2 border-slate-100 border-dashed">
+                          <Button
+                            variant="outline"
+                            className="w-full border-2 border-dashed border-slate-200 text-slate-400 hover:border-blue-500 hover:text-blue-600 hover:bg-white h-16 rounded-3xl transition-all group"
+                            onClick={handleAddCustomSlot}
+                          >
+                            <Plus className="h-5 w-5 mr-2 group-hover:scale-125 transition-transform" />
+                            <span className="font-black text-xs uppercase tracking-widest">
+                              Adicionar Horário
+                            </span>
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Generated Slots Preview */}
+                      <div className="pt-8 space-y-6">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-emerald-500" />
+                          <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">
+                            Slots de Consulta Gerados
+                          </h4>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm space-y-6">
+                          <div className="flex flex-wrap gap-2">
+                            {getGeneratedSlots(selectedDate!).length === 0 ? (
+                              <p className="text-xs text-slate-400 italic py-2">
+                                Nenhum slot disponível.
+                              </p>
+                            ) : (
+                              getGeneratedSlots(selectedDate!).map((time) => {
+                                const isBooked = appointments.some(
+                                  (a) =>
+                                    a.scheduled_at.startsWith(
+                                      format(selectedDate!, 'yyyy-MM-dd')
+                                    ) &&
+                                    format(new Date(a.scheduled_at), 'HH:mm') === time &&
+                                    a.status !== 'cancelled'
+                                )
+                                return (
+                                  <Badge
+                                    key={time}
+                                    variant="outline"
+                                    className={cn(
+                                      'px-3 py-1 text-[11px] font-black h-8 rounded-xl transition-all',
+                                      isBooked
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-inner'
+                                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-white'
+                                    )}
+                                  >
+                                    {time}
+                                    {isBooked && (
+                                      <CheckCircle2 className="h-3 w-3 ml-2 text-emerald-500" />
+                                    )}
+                                  </Badge>
+                                )
+                              })
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest pt-4 border-t border-slate-100">
+                            <span className="text-slate-400">
+                              Tempo de Sessão: {sessionDuration}m
+                            </span>
+                            <span className="text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
+                              {getGeneratedSlots(selectedDate!).length} VAGAS DISPONÍVEIS
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Appointments list (footer of panel context) */}
+                      {appointments.filter((a) =>
+                        a.scheduled_at.startsWith(format(selectedDate!, 'yyyy-MM-dd'))
+                      ).length > 0 && (
+                        <div className="pt-12 space-y-6">
+                          <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] inline-flex items-center">
+                            <Users className="h-4 w-4 mr-2 text-indigo-400" />
+                            Meus Agendamentos de Hoje
+                          </h4>
+                          <div className="space-y-4">
+                            {appointments
+                              .filter((a) =>
+                                a.scheduled_at.startsWith(format(selectedDate!, 'yyyy-MM-dd'))
+                              )
+                              .sort(
+                                (a, b) =>
+                                  new Date(a.scheduled_at).getTime() -
+                                  new Date(b.scheduled_at).getTime()
+                              )
+                              .map((appt) => (
+                                <div
+                                  key={appt.id}
+                                  className="bg-white border-2 border-slate-100 p-4 rounded-3xl flex items-center justify-between hover:shadow-lg transition-all"
+                                >
+                                  <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-black text-xs border border-indigo-100 uppercase">
+                                      {appt.patient_name.charAt(0)}
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-black text-slate-800">
+                                        {appt.patient_name}
+                                      </p>
+                                      <div className="flex items-center gap-3 mt-1">
+                                        <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                          <Clock className="h-2.5 w-2.5" />
+                                          {format(new Date(appt.scheduled_at), 'HH:mm')}
+                                        </span>
+                                        <Badge
+                                          className={cn(
+                                            'text-[9px] font-black uppercase tracking-tighter px-2 h-5 rounded-md',
+                                            appt.status === 'COMPLETED'
+                                              ? 'bg-slate-100 text-slate-500'
+                                              : 'bg-emerald-500 text-white'
+                                          )}
+                                        >
+                                          {appt.status}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {appt.status === 'scheduled' && (
+                                      <>
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          className="h-10 w-10 rounded-2xl hover:bg-emerald-50 text-emerald-600 transition-all"
+                                          onClick={() =>
+                                            handleUpdateAppointmentStatus(appt.id, 'COMPLETED')
+                                          }
+                                        >
+                                          <CheckCircle2 className="h-5 w-5" />
+                                        </Button>
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          className="h-10 w-10 rounded-2xl hover:bg-red-50 text-red-400 transition-all"
+                                          onClick={() =>
+                                            handleUpdateAppointmentStatus(appt.id, 'cancelled')
+                                          }
+                                        >
+                                          <Trash2 className="h-5 w-5" />
+                                        </Button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </>
           )}

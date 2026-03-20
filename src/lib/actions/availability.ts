@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 
@@ -396,84 +396,101 @@ export type UpdateAvailabilityParams = {
   overrides: Record<string, { type: 'blocked' | 'custom'; slots: TimeSlot[] }>
 }
 
+/**
+ * Atualiza a disponibilidade do psicólogo (rotina, exceções e configurações de sessão).
+ * Usa uma transação Prisma para garantir que todas as mudanças sejam aplicadas juntas.
+ */
 export async function updatePsychologistAvailability(params: UpdateAvailabilityParams) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { success: false, error: 'Não autenticado' }
-  }
-
   try {
-    // 1. Get Profile
-    const { data: profile } = await supabase
-      .from('psychologist_profiles')
-      .select('id')
-      .eq('userId', user.id)
-      .single()
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-    if (!profile) return { success: false, error: 'Perfil não encontrado' }
+    if (!user) {
+      return { success: false, error: 'Usuário não autenticado.' }
+    }
 
-    // 2. Update Psychologist Profile
-    const { error: profileError } = await supabase
-      .from('psychologist_profiles')
-      .update({
-        weekly_schedule: {
-          ...params.weeklySchedule,
-          sessionDuration: params.sessionDuration,
-          breakDuration: params.breakDuration,
+    // 1. Localizar o perfil pelo userId (UUID do Auth)
+    const profile = await prisma.psychologistProfile.findUnique({
+      where: { userId: user.id },
+      select: { id: true, userId: true },
+    })
+
+    if (!profile) {
+      return { success: false, error: 'Perfil profissional não encontrado.' }
+    }
+
+    const durationInt = parseInt(params.sessionDuration) || 50
+
+    // 2. Transação atômica para garantir consistência
+    await prisma.$transaction(async (tx) => {
+      // 2a. Atualizar o perfil e o JSON da agenda
+      await tx.psychologistProfile.update({
+        where: { id: profile.id },
+        data: {
+          sessionDuration: durationInt,
+          timezone: params.timezone,
+          weeklySchedule: {
+            ...params.weeklySchedule,
+            sessionDuration: params.sessionDuration,
+            breakDuration: params.breakDuration,
+          },
         },
-        timezone: params.timezone,
-        session_duration: parseInt(params.sessionDuration),
       })
-      .eq('id', profile.id)
 
-    if (profileError) throw profileError
+      // 2b. Gerenciar Overrides (Exceções)
+      const newStateDates = Object.keys(params.overrides)
 
-    // 3. Update Overrides
-    // Get current overrides to identify deletions
-    const { data: currentOverrides } = await supabase
-      .from('schedule_overrides')
-      .select('date')
-      .eq('psychologist_id', profile.id)
+      // Remover o que não está mais no estado atual enviado pelo frontend
+      await tx.scheduleOverride.deleteMany({
+        where: {
+          psychologistId: profile.id,
+          date: { notIn: newStateDates },
+        },
+      })
 
-    const dbDates = currentOverrides?.map((o) => o.date) || []
-    const newStateDates = Object.keys(params.overrides)
+      // Upsert das exceções atuais
+      for (const date of newStateDates) {
+        const override = params.overrides[date]
+        await tx.scheduleOverride.upsert({
+          where: {
+            psychologistId_date: {
+              psychologistId: profile.id,
+              date: date,
+            },
+          },
+          update: {
+            type: override.type,
+            slots: override.slots as any,
+          },
+          create: {
+            psychologistId: profile.id,
+            date: date,
+            type: override.type,
+            slots: override.slots as any,
+          },
+        })
+      }
+    })
 
-    const datesToDelete = dbDates.filter((d) => !newStateDates.includes(d))
-
-    if (datesToDelete.length > 0) {
-      await supabase
-        .from('schedule_overrides')
-        .delete()
-        .eq('psychologist_id', profile.id)
-        .in('date', datesToDelete)
-    }
-
-    const upserts = newStateDates.map((date) => ({
-      psychologist_id: profile.id,
-      date,
-      type: params.overrides[date].type,
-      slots: params.overrides[date].slots,
-    }))
-
-    if (upserts.length > 0) {
-      const { error: upsertError } = await supabase
-        .from('schedule_overrides')
-        .upsert(upserts, { onConflict: 'psychologist_id,date' })
-      if (upsertError) throw upsertError
-    }
-
-    // 4. Revalidate
+    // 3. Revalidação de Cache
     revalidatePath('/dashboard/agenda')
     revalidatePath(`/psicologo/${user.id}`)
     revalidatePath('/busca')
 
+    // Revalida tags para garantir que a página pública do profissional atualize imediatamente
+    revalidateTag('overrides')
+    revalidateTag('psychologists')
+    revalidateTag('appointments')
+
     return { success: true }
   } catch (error) {
-    logger.error('Error updating availability:', error)
-    return { success: false, error: 'Erro ao salvar alterações' }
+    logger.error('Error in updatePsychologistAvailability:', error)
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : 'Erro interno ao salvar configurações da agenda.',
+    }
   }
 }
