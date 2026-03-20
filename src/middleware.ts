@@ -4,10 +4,11 @@ import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+  const isDevelopment = process.env.NODE_ENV === 'development'
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://js.stripe.com https://vercel.live;
-    style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com https://vercel.live;
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://js.stripe.com https://vercel.live${isDevelopment ? " 'unsafe-eval'" : ''};
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live;
     font-src 'self' https://fonts.gstatic.com data:;
     img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com https://i.pravatar.cc https://images.unsplash.com;
     connect-src 'self' http://localhost:* https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.daily.co wss://*.daily.co https://*.upstash.io https://vercel.live wss://ws-*.pusher.com;

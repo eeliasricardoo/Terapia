@@ -1,11 +1,20 @@
 import { ChevronRight, Home } from 'lucide-react'
 import Link from 'next/link'
 
-export function CheckoutBreadcrumb() {
+interface CheckoutBreadcrumbProps {
+  doctorName: string
+  doctorId: string | null
+}
+
+export function CheckoutBreadcrumb({ doctorName, doctorId }: CheckoutBreadcrumbProps) {
   const breadcrumbs = [
     { name: 'Início', href: '/', current: false },
     { name: 'Buscar Psicólogos', href: '/busca', current: false },
-    { name: 'Perfil do Profissional', href: '#', current: false },
+    {
+      name: doctorName.replace('Dr(a). ', '').replace('Dr. ', '').replace('Dra. ', ''),
+      href: doctorId ? `/psicologo/${doctorId}` : '#',
+      current: false,
+    },
     { name: 'Finalizar Pagamento', href: '#', current: true },
   ]
 

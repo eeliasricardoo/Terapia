@@ -9,9 +9,15 @@ interface ProfileHeaderProps {
   psychologist: PsychologistWithProfile
   displayName: string
   firstSpecialty: string
+  stats?: { totalSessions: number }
 }
 
-export function ProfileHeader({ psychologist, displayName, firstSpecialty }: ProfileHeaderProps) {
+export function ProfileHeader({
+  psychologist,
+  displayName,
+  firstSpecialty,
+  stats,
+}: ProfileHeaderProps) {
   return (
     <div className="bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm flex flex-col md:flex-row gap-6 items-start">
       <div className="relative flex-shrink-0 mx-auto md:mx-0">
@@ -56,16 +62,18 @@ export function ProfileHeader({ psychologist, displayName, firstSpecialty }: Pro
           <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
             <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
             <span className="font-bold text-slate-900">5.0</span>
-            <span className="text-slate-500">(42 avaliações)</span>
+            <span className="text-slate-500">(Novo)</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
             <Briefcase className="h-4 w-4 text-blue-500" />
-            <span className="font-semibold text-slate-900">10+</span>
+            <span className="font-semibold text-slate-900">
+              {psychologist.years_of_experience || 1}+
+            </span>
             <span>anos experiência</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
             <Users className="h-4 w-4 text-blue-500" />
-            <span className="font-bold text-slate-900">500+</span>
+            <span className="font-bold text-slate-900">{stats?.totalSessions || 0}</span>
             <span>sessões</span>
           </div>
         </div>

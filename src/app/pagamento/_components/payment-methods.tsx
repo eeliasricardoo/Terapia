@@ -36,32 +36,32 @@ export function PaymentMethods({
     <div className="animate-in fade-in slide-in-from-right-4 duration-700">
       <h2 className="text-xl font-bold mb-6 text-slate-900 font-outfit">Método de pagamento</h2>
 
-      <Card className="border-none shadow-2xl shadow-blue-900/10 rounded-3xl bg-white overflow-hidden">
+      <Card className="border border-slate-100 shadow-xl shadow-slate-200/50 rounded-3xl bg-white overflow-hidden">
         <CardContent className="p-0">
           <Tabs defaultValue={defaultTab} className="w-full">
-            <TabsList className="flex w-full bg-slate-50 border-b border-slate-100 p-0 h-16 rounded-none">
+            <TabsList className="flex w-full bg-slate-50/50 border-b border-slate-100 p-0 h-14 rounded-none">
               <TabsTrigger
                 value="card"
                 disabled={!!matchedInsurance}
-                className="flex-1 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full font-bold text-sm transition-all flex gap-2"
+                className="flex-1 data-[state=active]:bg-white data-[state=active]:text-blue-600 rounded-none h-full font-bold text-xs transition-all flex gap-2"
               >
-                <CreditCard className="h-4 w-4" />
+                <CreditCard className="h-3.5 w-3.5" />
                 Cartão
               </TabsTrigger>
               <TabsTrigger
                 value="pix"
                 disabled={!!matchedInsurance}
-                className="flex-1 data-[state=active]:bg-white data-[state=active]:text-emerald-600 data-[state=active]:border-b-2 data-[state=active]:border-emerald-600 rounded-none h-full font-bold text-sm transition-all flex gap-2"
+                className="flex-1 data-[state=active]:bg-white data-[state=active]:text-emerald-600 rounded-none h-full font-bold text-xs transition-all flex gap-2"
               >
-                <QrCode className="h-4 w-4" />
+                <QrCode className="h-3.5 w-3.5" />
                 Pix
               </TabsTrigger>
               {matchedInsurance && (
                 <TabsTrigger
                   value="insurance"
-                  className="flex-1 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full font-bold text-sm transition-all flex gap-2"
+                  className="flex-1 data-[state=active]:bg-white data-[state=active]:text-indigo-600 rounded-none h-full font-bold text-xs transition-all flex gap-2"
                 >
-                  <ShieldCheck className="h-4 w-4" />
+                  <ShieldCheck className="h-3.5 w-3.5" />
                   Convênio
                 </TabsTrigger>
               )}
@@ -86,10 +86,10 @@ export function PaymentMethods({
                   <Button
                     onClick={handlePayment}
                     disabled={isProcessing}
-                    className="w-full h-16 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl rounded-2xl shadow-xl shadow-blue-600/20 transition-all hover:-translate-y-0.5"
+                    className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-bold text-lg rounded-2xl transition-all hover:shadow-lg hover:shadow-slate-200"
                   >
                     {isProcessing ? (
-                      <Loader2 className="h-6 w-6 animate-spin" />
+                      <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       `Pagar ${price} com Cartão`
                     )}
@@ -115,10 +115,10 @@ export function PaymentMethods({
                   <Button
                     onClick={handlePayment}
                     disabled={isProcessing}
-                    className="w-full h-16 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xl rounded-2xl shadow-xl shadow-emerald-600/20 transition-all hover:-translate-y-0.5"
+                    className="w-full h-14 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-lg rounded-2xl transition-all hover:shadow-lg hover:shadow-emerald-100"
                   >
                     {isProcessing ? (
-                      <Loader2 className="h-6 w-6 animate-spin" />
+                      <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       `Pagar ${price} com Pix`
                     )}
@@ -144,10 +144,10 @@ export function PaymentMethods({
                   <Button
                     onClick={handlePayment}
                     disabled={isProcessing}
-                    className="w-full h-16 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xl rounded-2xl shadow-xl shadow-indigo-600/20 transition-all hover:-translate-y-0.5"
+                    className="w-full h-14 bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-lg rounded-2xl transition-all hover:shadow-lg hover:shadow-indigo-100"
                   >
                     {isProcessing ? (
-                      <Loader2 className="h-6 w-6 animate-spin" />
+                      <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       'Confirmar via Convênio'
                     )}

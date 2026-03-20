@@ -11,9 +11,13 @@ import { SuccessState } from './_components/success-state'
 
 function PaymentContent() {
   const {
+    doctorId,
     date,
     time,
     doctorName,
+    specialty,
+    duration,
+    avatarUrl,
     price,
     isFetchingInfo,
     isProcessing,
@@ -35,7 +39,7 @@ function PaymentContent() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <main className="flex-1 container py-12 max-w-7xl">
-        <CheckoutBreadcrumb />
+        <CheckoutBreadcrumb doctorName={doctorName} doctorId={doctorId} />
 
         {isSuccess ? (
           <SuccessState
@@ -47,19 +51,22 @@ function PaymentContent() {
           />
         ) : (
           <>
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 mb-2">
-                Finalizar Pagamento Seguro
+            <div className="mb-10 text-center lg:text-left">
+              <h1 className="text-3xl font-black tracking-tight text-slate-900 mb-2 font-outfit">
+                Finalizar Agendamento
               </h1>
-              <p className="text-muted-foreground flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-green-600" />
-                Seu pagamento é 100% seguro. Todos os dados são criptografados.
+              <p className="text-muted-foreground flex items-center gap-2 justify-center lg:justify-start text-sm">
+                <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                Ambiente seguro e criptografado
               </p>
             </div>
 
             <div className="grid lg:grid-cols-2 gap-12">
               <OrderSummary
                 doctorName={doctorName}
+                avatarUrl={avatarUrl}
+                specialty={specialty}
+                duration={duration}
                 date={date}
                 time={time}
                 price={price}

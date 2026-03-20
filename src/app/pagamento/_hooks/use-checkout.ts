@@ -15,12 +15,16 @@ export function useCheckout() {
   const doctorId = searchParams.get('doctor')
   const date = searchParams.get('date')
   const time = searchParams.get('time')
+  const plan = searchParams.get('plan') || 'single'
 
-  // Fetch States
   const [userId, setUserId] = useState<string | null>(null)
   const [doctorName, setDoctorName] = useState('Carregando...')
+  const [specialty, setSpecialty] = useState('Psicologia Clínica')
   const [price, setPrice] = useState('R$ --,--')
   const [priceRaw, setPriceRaw] = useState(0)
+  const [duration, setDuration] = useState(50)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [formattedDate, setFormattedDate] = useState('')
   const [isFetchingInfo, setIsFetchingInfo] = useState(true)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -58,20 +62,41 @@ export function useCheckout() {
         setPatientProfile(profile)
       }
 
+      if (date) {
+        const [year, month, day] = date.split('-').map(Number)
+        const d = new Date(year, month - 1, day)
+        setFormattedDate(
+          d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })
+        )
+      }
+
       if (doctorId) {
         const psych = await getPsychologistById(doctorId)
         if (psych) {
-          setDoctorName(
-            psych.profile?.full_name ? `Dr(a). ${psych.profile.full_name}` : 'Psicólogo(a)'
-          )
+          const name = psych.profile?.full_name || 'Psicólogo(a)'
+          const nameHasDr =
+            name.toLowerCase().includes('dr.') || name.toLowerCase().includes('dra.')
+          setDoctorName(nameHasDr ? name : `Dr(a). ${name}`)
+
+          if (psych.specialties && psych.specialties.length > 0) {
+            setSpecialty(psych.specialties[0])
+          }
+          if (psych.profile?.avatar_url) {
+            setAvatarUrl(psych.profile.avatar_url)
+          }
           if (psych.price_per_session) {
-            setPriceRaw(Number(psych.price_per_session))
-            setPrice(`R$ ${Number(psych.price_per_session).toFixed(2).replace('.', ',')}`)
+            const basePrice = Number(psych.price_per_session)
+            const finalBasePrice = plan === 'monthly' ? basePrice * 0.8 : basePrice
+            setPriceRaw(finalBasePrice)
+            setPrice(`R$ ${finalBasePrice.toFixed(2).replace('.', ',')}`)
           } else {
             setPrice('Gratuito')
           }
           if (psych.timezone) {
             setPsychTimezone(psych.timezone)
+          }
+          if (psych.session_duration) {
+            setDuration(psych.session_duration)
           }
 
           // Check for insurance match
@@ -195,9 +220,12 @@ export function useCheckout() {
 
   return {
     doctorId,
-    date,
+    date: formattedDate || date,
     time,
     doctorName,
+    specialty,
+    duration,
+    avatarUrl,
     price,
     priceRaw,
     isFetchingInfo,

@@ -22,9 +22,10 @@ import { useState } from 'react'
 interface Props {
   psychologist: PsychologistWithProfile
   availability: PsychologistAvailability | null
+  stats?: { totalSessions: number }
 }
 
-export function PsychologistProfileClient({ psychologist, availability }: Props) {
+export function PsychologistProfileClient({ psychologist, availability, stats }: Props) {
   const { isAuthenticated } = useAuth()
   const [isGuestDialogOpen, setIsGuestDialogOpen] = useState(false)
 
@@ -92,6 +93,7 @@ export function PsychologistProfileClient({ psychologist, availability }: Props)
               psychologist={psychologist}
               displayName={displayName}
               firstSpecialty={firstSpecialty}
+              stats={stats}
             />
 
             <AboutSection psychologist={psychologist} />

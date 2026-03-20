@@ -208,6 +208,10 @@ export type Database = {
           weekly_schedule: Json | null
           timezone: string
           external_scheduling_url: string | null
+          years_of_experience: number | null
+          university: string | null
+          academic_level: string | null
+          session_duration: number | null
         }
         Insert: {
           bio?: string | null

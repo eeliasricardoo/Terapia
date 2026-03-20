@@ -36,12 +36,10 @@ export function AboutSection({ psychologist }: AboutSectionProps) {
                 <h3 className="font-semibold text-slate-900">Formação Acadêmica</h3>
                 <ul className="mt-2 space-y-3">
                   <li className="text-sm">
-                    <p className="font-medium text-slate-900">Graduação em Psicologia</p>
-                    <p className="text-slate-500">Universidade Federal (2010 - 2015)</p>
-                  </li>
-                  <li className="text-sm">
-                    <p className="font-medium text-slate-900">Especialização em TCC</p>
-                    <p className="text-slate-500">Instituto de Psicologia (2016 - 2018)</p>
+                    <p className="font-medium text-slate-900">
+                      {psychologist.academic_level || 'Graduação em Psicologia'}
+                    </p>
+                    <p className="text-slate-500">{psychologist.university || 'Não informado'}</p>
                   </li>
                 </ul>
               </div>

@@ -17,7 +17,7 @@ async function getPsychologistDataInternal(userId: string) {
     // 1. Fetch psychologist
     const { data: psych, error: psychError } = await supabase
       .from('psychologist_profiles')
-      .select('*, user:users(*)')
+      .select('*')
       .eq('userId', userId)
       .single()
 
@@ -26,7 +26,17 @@ async function getPsychologistDataInternal(userId: string) {
       return null
     }
 
-    const fullPsychologist = psych as PsychologistWithProfile
+    // Fetch profile (full_name, avatar_url, etc.)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    const fullPsychologist = {
+      ...psych,
+      profile: profile || null,
+    } as PsychologistWithProfile
 
     // 2. Fetch overrides & appointments
     const recentPastDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
@@ -95,6 +105,10 @@ async function getPsychologistDataInternal(userId: string) {
       ? insurancesRes.map((item) => (item as any).health_insurance)
       : []
 
+    // 4. Fetch stats (sessions count)
+    const { getPsychologistStats } = await import('@/lib/actions/psychologists')
+    const stats = await getPsychologistStats(userId)
+
     // Return combined payload
     return {
       psychologist: {
@@ -102,6 +116,7 @@ async function getPsychologistDataInternal(userId: string) {
         acceptedInsurances,
       },
       availability,
+      stats,
     }
   } catch (error) {
     logger.error('Failed to load psychologist data:', error)
@@ -130,6 +145,10 @@ export default async function PsychologistProfilePage({ params }: PageProps) {
   }
 
   return (
-    <PsychologistProfileClient psychologist={data.psychologist} availability={data.availability} />
+    <PsychologistProfileClient
+      psychologist={data.psychologist}
+      availability={data.availability}
+      stats={data.stats}
+    />
   )
 }
