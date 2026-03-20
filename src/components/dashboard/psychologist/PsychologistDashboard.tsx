@@ -222,9 +222,14 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 />
                 <span className="sr-only">Você tem novas notificações</span>
               </Button>
-              <Button className="ml-2 gap-2 bg-slate-900 text-white hover:bg-slate-800 rounded-full px-6 transition-all hover:translate-y-[-1px] shadow-lg shadow-slate-200">
-                <Video className="h-4 w-4" />
-                <span>Sala Virtual</span>
+              <Button
+                asChild
+                className="ml-2 gap-2 bg-slate-900 text-white hover:bg-slate-800 rounded-full px-6 transition-all hover:translate-y-[-1px] shadow-lg shadow-slate-200"
+              >
+                <Link href={upcomingSessions?.[0]?.id ? `/sala/${upcomingSessions[0].id}` : '#'}>
+                  <Video className="h-4 w-4" />
+                  <span>Sala Virtual</span>
+                </Link>
               </Button>
             </div>
           </div>
@@ -468,81 +473,113 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 overrides={overrides}
                 weeklySchedule={weeklySchedule}
               />
-              <Card className="border-none shadow-sm bg-white">
-                <CardHeader className="pb-2 border-b border-slate-50 pt-4 px-4">
-                  <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                    <Settings className="h-3 w-3" />
+              <Card className="border-none shadow-md bg-gradient-to-br from-white to-slate-50/30 overflow-hidden">
+                <CardHeader className="pb-4 border-b border-slate-100 pt-5 px-5 bg-white/50 backdrop-blur-sm">
+                  <CardTitle className="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-sm">
+                      <Settings className="h-3 w-3 text-white" />
+                    </div>
                     Acesso Rápido
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-2 pt-3">
-                  <div className="space-y-1">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start h-10 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 px-3 transition-colors"
-                      asChild
-                    >
-                      <Link href="/dashboard/agenda">
-                        <div className="h-6 w-6 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center mr-3">
-                          <CalendarIcon className="h-3.5 w-3.5" />
-                        </div>
-                        <span className="text-sm font-medium">Gerenciar Horários</span>
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start h-10 text-slate-600 hover:bg-pink-50 hover:text-pink-700 px-3 transition-colors"
-                      asChild
-                    >
-                      <Link href="/dashboard/pacientes">
-                        <div className="h-6 w-6 rounded bg-pink-50 text-pink-600 flex items-center justify-center mr-3">
-                          <FileText className="h-3.5 w-3.5" />
-                        </div>
-                        <span className="text-sm font-medium">Meus Pacientes</span>
-                      </Link>
-                    </Button>
-                  </div>
+                <CardContent className="p-4 space-y-2">
+                  <Link
+                    href="/dashboard/agenda"
+                    className="group block rounded-xl p-4 bg-white border border-slate-100 hover:border-indigo-200 hover:shadow-md transition-all duration-200"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+                        <CalendarIcon className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                          Gerenciar Horários
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5">Configure sua agenda</p>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/dashboard/pacientes"
+                    className="group block rounded-xl p-4 bg-white border border-slate-100 hover:border-pink-200 hover:shadow-md transition-all duration-200"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-pink-50 to-pink-100 text-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900 group-hover:text-pink-600 transition-colors">
+                          Meus Pacientes
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5">Visualize prontuários</p>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-pink-500 group-hover:translate-x-1 transition-all" />
+                    </div>
+                  </Link>
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-sm bg-white">
-                <CardHeader className="pb-2 border-b border-slate-50 pt-4 px-4">
-                  <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                    <Clock className="h-3 w-3" />
+              <Card className="border-none shadow-md bg-gradient-to-br from-white to-slate-50/30 overflow-hidden">
+                <CardHeader className="pb-4 border-b border-slate-100 pt-5 px-5 bg-white/50 backdrop-blur-sm">
+                  <CardTitle className="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm">
+                      <Clock className="h-3 w-3 text-white" />
+                    </div>
                     Histórico Recente
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="divide-y divide-slate-50">
                     {recentPatients.map((patient) => (
-                      <div
+                      <Link
                         key={patient.id}
-                        className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors cursor-pointer group"
+                        href="/dashboard/pacientes"
+                        className="flex items-center justify-between p-4 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-transparent transition-all duration-200 cursor-pointer group"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 border border-slate-200 group-hover:border-blue-200 group-hover:bg-blue-50 group-hover:text-blue-600 transition-all">
-                            {patient.name.charAt(0)}
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className="relative">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-sm font-bold text-blue-700 border-2 border-white shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all">
+                              {patient.name.charAt(0)}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 border-2 border-white flex items-center justify-center">
+                              <CheckCircle2 className="h-2.5 w-2.5 text-white" />
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-900 group-hover:text-blue-700 transition-colors">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition-colors truncate">
                               {patient.name}
                             </p>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
+                            <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
+                              <Clock className="h-3 w-3" />
                               {patient.lastSession}
                             </p>
                           </div>
+                          <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all" />
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
-                  <div className="p-3 border-t border-slate-50">
+                  {recentPatients.length === 0 && (
+                    <div className="p-8 text-center">
+                      <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                        <Users className="h-6 w-6 text-slate-400" />
+                      </div>
+                      <p className="text-sm text-slate-500">Nenhum paciente recente</p>
+                    </div>
+                  )}
+                  <div className="p-3 border-t border-slate-100 bg-white/50">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="w-full text-slate-500 hover:text-slate-900 text-xs font-medium h-8"
+                      className="w-full text-slate-600 hover:text-blue-600 hover:bg-blue-50 text-xs font-semibold h-9 rounded-lg transition-all"
                       asChild
                     >
-                      <Link href="/dashboard/pacientes">Ver todos</Link>
+                      <Link href="/dashboard/pacientes">
+                        Ver todos os pacientes
+                        <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                      </Link>
                     </Button>
                   </div>
                 </CardContent>

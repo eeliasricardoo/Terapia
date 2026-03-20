@@ -865,7 +865,7 @@ export function ScheduleManager() {
                             <Clock className="h-3 w-3 mr-2 text-indigo-400" />
                             Janelas de Atendimento
                           </h4>
-                          {effective?.slots?.length > 0 && (
+                          {(effective?.slots?.length || 0) > 0 && (
                             <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">
                               {effective?.slots?.length || 0} BLOCO
                               {(effective?.slots?.length || 0) === 1 ? '' : 'S'}

@@ -1,13 +1,13 @@
 'use client'
 import { logger } from '@/lib/utils/logger'
 
-import { useDaily, useLocalParticipant, useMediaTrack } from '@daily-co/daily-react'
-import { useEffect, useRef, useState } from 'react'
+import { useDaily, useLocalParticipant, useMediaTrack, useAudioLevel } from '@daily-co/daily-react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { Mic, MicOff, Video, VideoOff, Settings, Sparkles } from 'lucide-react'
+import { Mic, MicOff, Video, VideoOff, Settings, Sparkles, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DeviceSettings } from './DeviceSettings'
 import { VideoTile } from './VideoTile'
@@ -22,6 +22,13 @@ export function PreJoinLobby({ roomUrl, token }: PreJoinLobbyProps) {
   const localParticipant = useLocalParticipant()
   const audioTrack = useMediaTrack(localParticipant?.session_id || '', 'audio')
   const videoTrack = useMediaTrack(localParticipant?.session_id || '', 'video')
+  const [audioLevel, setAudioLevel] = useState(0)
+  useAudioLevel(
+    audioTrack.track,
+    useCallback((level: number) => {
+      setAudioLevel(level)
+    }, [])
+  )
 
   const [isMicOn, setIsMicOn] = useState(true)
   const [isCamOn, setIsCamOn] = useState(true)
@@ -58,16 +65,18 @@ export function PreJoinLobby({ roomUrl, token }: PreJoinLobbyProps) {
           setDebugInfo((prev) => [...prev, 'Camera started!'])
         })
 
-        setDebugInfo((prev) => [
-          ...prev,
-          `Joining room for preview: ${roomUrl.substring(0, 30)}...`,
-        ])
+        setDebugInfo((prev) => [...prev, `Starting preview: ${roomUrl.substring(0, 30)}...`])
 
-        // Join the room directly (this creates the local participant and shows video)
-        await daily.join({ url: roomUrl, token: token })
+        // Load the meeting context (doesn't join yet, but makes devices/state available)
+        setDebugInfo((prev) => [...prev, 'Carregando contexto da sala (load)...'])
+        await daily.load({ url: roomUrl, token: token })
+
+        // Start camera preview
+        setDebugInfo((prev) => [...prev, 'Iniciando câmera (startCamera)...'])
+        await daily.startCamera()
 
         setPreviewError(null)
-        setDebugInfo((prev) => [...prev, 'Joined room successfully - preview ready!'])
+        setDebugInfo((prev) => [...prev, 'Preview pronto!'])
         logger.debug('Camera preview started successfully')
       } catch (err: any) {
         logger.error('Failed to start camera preview', err)
@@ -107,12 +116,16 @@ export function PreJoinLobby({ roomUrl, token }: PreJoinLobbyProps) {
   const handleJoin = async () => {
     if (!daily || isJoining) return
 
-    setIsJoining(true)
-
-    // User is already in the room from preview, so we just need to
-    // signal that they're "officially" joining (no action needed)
-    // The parent component will transition based on meeting state
-    logger.debug('User confirmed join - already in room')
+    try {
+      setIsJoining(true)
+      logger.debug('User confirmed join - joining room')
+      await daily.join({ url: roomUrl, token: token })
+      setPreviewError(null)
+    } catch (err: any) {
+      logger.error('Failed to join room', err)
+      setPreviewError(`Erro ao entrar na sala: ${err.message}`)
+      setIsJoining(false)
+    }
   }
 
   const isCamBlocked = videoTrack.state === 'blocked'
@@ -206,13 +219,33 @@ export function PreJoinLobby({ roomUrl, token }: PreJoinLobbyProps) {
           </div>
 
           {/* Audio Level Meter */}
-          <div className="w-full max-w-md bg-slate-200 rounded-full h-1.5 overflow-hidden">
-            <div
-              className={cn(
-                'h-full bg-green-500 transition-all duration-150',
-                isMicOn ? 'opacity-50 animate-pulse w-1/2' : 'w-0'
+          <div className="w-full max-w-md space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-500 font-medium">Nível de Áudio</span>
+              {isMicOn && audioLevel > 0 && (
+                <span className="text-emerald-600 font-semibold animate-pulse">Detectando...</span>
               )}
-            ></div>
+            </div>
+            <div className="relative w-full bg-slate-200 rounded-full h-2 overflow-hidden shadow-inner">
+              <div
+                className={cn(
+                  'h-full transition-all duration-75 rounded-full',
+                  audioLevel > 0.7
+                    ? 'bg-gradient-to-r from-emerald-500 to-green-500'
+                    : audioLevel > 0.3
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                      : 'bg-gradient-to-r from-slate-400 to-slate-500',
+                  !isMicOn && 'opacity-30'
+                )}
+                style={{ width: isMicOn ? `${Math.max(audioLevel * 100, 2)}%` : '0%' }}
+              />
+              {isMicOn && audioLevel > 0 && (
+                <div
+                  className="absolute top-0 h-full w-1 bg-white/50 animate-pulse"
+                  style={{ left: `${audioLevel * 100}%` }}
+                />
+              )}
+            </div>
           </div>
         </div>
 
@@ -230,14 +263,20 @@ export function PreJoinLobby({ roomUrl, token }: PreJoinLobbyProps) {
           <Separator />
 
           <div className="space-y-4 pt-2">
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-700 text-center">
-                ✓ Conectado! Ajuste seus dispositivos se necessário.
-              </p>
-              <p className="text-xs text-center text-blue-600 mt-2">
-                Você já está na sala. A chamada começará automaticamente.
-              </p>
-            </div>
+            <Button
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 text-lg font-semibold rounded-xl shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+              onClick={handleJoin}
+              disabled={isJoining}
+            >
+              {isJoining ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Entrando...</span>
+                </div>
+              ) : (
+                'Entrar na Sala de Atendimento'
+              )}
+            </Button>
             <p className="text-xs text-center text-slate-400">
               Ao permanecer na sala, você concorda com nossos termos de telemedicina e gravação de
               sessão.
