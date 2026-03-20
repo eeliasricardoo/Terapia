@@ -3,11 +3,37 @@ import type { NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+  const cspHeader = `
+    default-src 'self';
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://js.stripe.com https://vercel.live;
+    style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com https://vercel.live;
+    font-src 'self' https://fonts.gstatic.com data:;
+    img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com https://i.pravatar.cc https://images.unsplash.com;
+    connect-src 'self' http://localhost:* https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.daily.co wss://*.daily.co https://*.upstash.io https://vercel.live wss://ws-*.pusher.com;
+    frame-src 'self' https://js.stripe.com https://*.daily.co https://vercel.live;
+    media-src 'self' blob: https://*.daily.co;
+    worker-src 'self' blob:;
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    frame-ancestors 'none';
+    upgrade-insecure-requests;
+  `
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
+  requestHeaders.set('Content-Security-Policy', cspHeader)
+
   let response = NextResponse.next({
     request: {
-      headers: request.headers,
+      headers: requestHeaders,
     },
   })
+
+  response.headers.set('Content-Security-Policy', cspHeader)
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
