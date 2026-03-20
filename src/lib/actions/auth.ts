@@ -64,8 +64,20 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
     const safeName = sanitizeText(data.name) || 'Anônimo'
     const cleanedDocument = cleanCPF(data.document)
 
-    // 1. Check if document already exists locally (Prisma)
+    // 1. Check if document or email already exists locally (Prisma)
     const { prisma } = await import('@/lib/prisma')
+
+    const existingUserByEmail = await prisma.user.findUnique({
+      where: { email: data.email },
+    })
+
+    if (existingUserByEmail) {
+      return {
+        success: false,
+        error: 'Este e-mail já está cadastrado no sistema.',
+      }
+    }
+
     const existingProfile = await prisma.profile.findUnique({
       where: { document: cleanedDocument },
     })
@@ -77,8 +89,11 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
       }
     }
 
+    let authData: any = null
+    let authError: any = null
+
     // Sign up with Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    const signupResult = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
@@ -92,13 +107,49 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
       },
     })
 
+    authData = signupResult.data
+    authError = signupResult.error
+
+    // Fallback if SMTP fails (Common in Supabase development/free tier)
+    if (authError && authError.message.includes('Error sending confirmation email')) {
+      logger.info(
+        '[AUTH] SMTP failure detected for patient, attempting fallback with Admin Client...'
+      )
+      try {
+        const { createAdminClient } = await import('@/lib/supabase/admin')
+        const adminClient = createAdminClient()
+        const adminResult = await adminClient.auth.admin.createUser({
+          email: data.email,
+          password: data.password,
+          email_confirm: true,
+          user_metadata: {
+            role: 'PATIENT',
+            full_name: safeName,
+            phone: data.phone,
+            birth_date: data.birthDate,
+            document: cleanedDocument,
+          },
+        })
+
+        if (!adminResult.error) {
+          authData = adminResult.data
+          authError = null
+          logger.info('[AUTH] Successfully registered patient using Admin Client (bypassed SMTP)')
+        } else {
+          authError = adminResult.error
+        }
+      } catch (err) {
+        logger.error('[AUTH] Fallback to Admin Client failed for patient:', err)
+      }
+    }
+
     if (authError) {
       return {
         success: false,
         error:
           authError.message === 'User already registered'
             ? 'E-mail já cadastrado. Tente fazer login ou recuperar sua senha.'
-            : 'Erro ao criar conta. Tente novamente mais tarde.',
+            : authError.message,
       }
     }
 
@@ -157,11 +208,11 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
     return {
       success: true,
     }
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Registration error:', error)
     return {
       success: false,
-      error: 'Erro ao criar conta. Tente novamente mais tarde.',
+      error: error.message || 'Erro ao criar conta. Tente novamente mais tarde.',
     }
   }
 }
@@ -273,8 +324,20 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
     const safeName = sanitizeText(data.name) || 'Psicólogo'
     const cleanedCRP = cleanCRP(data.professionalCard)
 
-    // 1. Check if CRP already exists
+    // 1. Check if CRP or email already exists
     const { prisma } = await import('@/lib/prisma')
+
+    const existingUserByEmail = await prisma.user.findUnique({
+      where: { email: data.email },
+    })
+
+    if (existingUserByEmail) {
+      return {
+        success: false,
+        error: 'Este e-mail já está cadastrado no sistema.',
+      }
+    }
+
     const existingPsych = await prisma.psychologistProfile.findUnique({
       where: { crp: cleanedCRP },
     })
@@ -286,7 +349,11 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
       }
     }
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    let authData: any = null
+    let authError: any = null
+
+    // Attempt normal signup first
+    const signupResult = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
@@ -297,13 +364,43 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
       },
     })
 
+    authData = signupResult.data
+    authError = signupResult.error
+
+    // Fallback if SMTP fails (Common in Supabase development/free tier)
+    if (authError && authError.message.includes('Error sending confirmation email')) {
+      logger.info('[AUTH] SMTP failure detected, attempting fallback with Admin Client...')
+      try {
+        const { createAdminClient } = await import('@/lib/supabase/admin')
+        const adminClient = createAdminClient()
+        const adminResult = await adminClient.auth.admin.createUser({
+          email: data.email,
+          password: data.password,
+          email_confirm: true,
+          user_metadata: {
+            role: 'PSYCHOLOGIST',
+            full_name: safeName,
+          },
+        })
+
+        if (!adminResult.error) {
+          authData = adminResult.data
+          authError = null
+          logger.info('[AUTH] Successfully registered using Admin Client (bypassed SMTP)')
+        } else {
+          authError = adminResult.error
+        }
+      } catch (err) {
+        logger.error('[AUTH] Fallback to Admin Client failed:', err)
+      }
+    }
+
     if (authError) {
       return {
         success: false,
-        error:
-          authError.message === 'User already registered'
-            ? 'E-mail já cadastrado. Tente fazer login.'
-            : authError.message,
+        error: authError.message.toLowerCase().includes('already registered')
+          ? 'E-mail já cadastrado. Tente fazer login.'
+          : authError.message,
       }
     }
 
@@ -348,10 +445,29 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
       })
     }
 
+    // 4. Send Welcome Email via Resend (Parallel)
+    const { sendEmail } = await import('@/lib/utils/email')
+    sendEmail({
+      to: data.email,
+      subject: 'Bem-vindo à Terapia! 🌊',
+      html: `
+        <h1>Olá, Prof. ${safeName}!</h1>
+        <p>Sua conta de profissional na Terapia foi criada com sucesso.</p>
+        <p>Agora você pode completar seu perfil e configurar sua agenda para começar a atender.</p>
+        <p>Nosso time revisará seus documentos em breve para ativar sua visibilidade na busca.</p>
+        <br/>
+        <p>Atenciosamente,</p>
+        <p>Equipe Terapia</p>
+      `,
+    }).catch((e) => logger.error('Failed to send psychologist welcome email:', e))
+
     revalidatePath('/dashboard/admin/aprovacoes')
     return { success: true }
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Psychologist registration error:', error)
-    return { success: false, error: 'Erro ao criar conta. Tente novamente mais tarde.' }
+    return {
+      success: false,
+      error: error.message || 'Erro ao criar conta. Tente novamente mais tarde.',
+    }
   }
 }

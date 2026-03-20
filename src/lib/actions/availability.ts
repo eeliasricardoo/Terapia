@@ -388,3 +388,92 @@ export async function getAvailableTimeSlots(
 
   return generatedSlots
 }
+export type UpdateAvailabilityParams = {
+  weeklySchedule: any
+  sessionDuration: string
+  breakDuration: string
+  timezone: string
+  overrides: Record<string, { type: 'blocked' | 'custom'; slots: TimeSlot[] }>
+}
+
+export async function updatePsychologistAvailability(params: UpdateAvailabilityParams) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { success: false, error: 'Não autenticado' }
+  }
+
+  try {
+    // 1. Get Profile
+    const { data: profile } = await supabase
+      .from('psychologist_profiles')
+      .select('id')
+      .eq('userId', user.id)
+      .single()
+
+    if (!profile) return { success: false, error: 'Perfil não encontrado' }
+
+    // 2. Update Psychologist Profile
+    const { error: profileError } = await supabase
+      .from('psychologist_profiles')
+      .update({
+        weekly_schedule: {
+          ...params.weeklySchedule,
+          sessionDuration: params.sessionDuration,
+          breakDuration: params.breakDuration,
+        },
+        timezone: params.timezone,
+        session_duration: parseInt(params.sessionDuration),
+      })
+      .eq('id', profile.id)
+
+    if (profileError) throw profileError
+
+    // 3. Update Overrides
+    // Get current overrides to identify deletions
+    const { data: currentOverrides } = await supabase
+      .from('schedule_overrides')
+      .select('date')
+      .eq('psychologist_id', profile.id)
+
+    const dbDates = currentOverrides?.map((o) => o.date) || []
+    const newStateDates = Object.keys(params.overrides)
+
+    const datesToDelete = dbDates.filter((d) => !newStateDates.includes(d))
+
+    if (datesToDelete.length > 0) {
+      await supabase
+        .from('schedule_overrides')
+        .delete()
+        .eq('psychologist_id', profile.id)
+        .in('date', datesToDelete)
+    }
+
+    const upserts = newStateDates.map((date) => ({
+      psychologist_id: profile.id,
+      date,
+      type: params.overrides[date].type,
+      slots: params.overrides[date].slots,
+    }))
+
+    if (upserts.length > 0) {
+      const { error: upsertError } = await supabase
+        .from('schedule_overrides')
+        .upsert(upserts, { onConflict: 'psychologist_id,date' })
+      if (upsertError) throw upsertError
+    }
+
+    // 4. Revalidate
+    revalidatePath('/dashboard/agenda')
+    revalidatePath(`/psicologo/${user.id}`)
+    revalidatePath('/busca')
+
+    return { success: true }
+  } catch (error) {
+    logger.error('Error updating availability:', error)
+    return { success: false, error: 'Erro ao salvar alterações' }
+  }
+}

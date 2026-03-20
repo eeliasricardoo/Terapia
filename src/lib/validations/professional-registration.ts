@@ -23,10 +23,10 @@ export const professionalRegistrationSchema = z.object({
     .refine(
       (value) => {
         const cleaned = cleanCRP(value)
-        return cleaned.length === 7
+        return cleaned.length >= 7 && cleaned.length <= 8
       },
       {
-        message: 'CRP deve ter o formato XX/XXXXX (2 dígitos + / + 5 dígitos).',
+        message: 'CRP deve ter o formato XX/XXXXX ou XX/XXXXXX (2 dígitos + / + 5 ou 6 dígitos).',
       }
     )
     .refine((value) => isValidCRP(value), {

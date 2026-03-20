@@ -6,8 +6,8 @@ export function cleanCRP(crp: string): string {
 }
 
 /**
- * Aplica máscara de CRP (XX/XXXXX)
- * Formato: 2 dígitos + / + 5 dígitos
+ * Aplica máscara de CRP (XX/XXXXX ou XX/XXXXXX)
+ * Formato: 2 dígitos + / + 5-6 dígitos
  */
 export function maskCRP(value: string): string {
   const cleaned = cleanCRP(value)
@@ -15,28 +15,30 @@ export function maskCRP(value: string): string {
   if (cleaned.length <= 2) {
     return cleaned
   } else {
-    return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 7)}`
+    // Permite até 8 dígitos (2 de região + 6 de número)
+    return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 8)}`
   }
 }
 
 /**
- * Valida formato do CRP (XX/XXXXX)
+ * Valida formato do CRP (XX/XXXXX ou XX/XXXXXX)
  */
 export function isValidCRPFormat(crp: string): boolean {
   const cleaned = cleanCRP(crp)
-  return cleaned.length === 7 // 2 dígitos + 5 dígitos
+  // CRPs podem ter 5 ou 6 dígitos após o código da região (2 dígitos)
+  return cleaned.length >= 7 && cleaned.length <= 8
 }
 
 /**
  * Valida CRP completo
- * Formato: XX/XXXXX onde X são números
+ * Formato: XX/XXXXX ou XX/XXXXXX onde X são números
  */
 export function isValidCRP(crp: string): boolean {
   if (!isValidCRPFormat(crp)) {
     return false
   }
 
-  // Verificar formato com regex
-  const crpRegex = /^\d{2}\/\d{5}$/
+  // Verificar formato com regex (2 dígitos + / + 5 a 6 dígitos)
+  const crpRegex = /^\d{2}\/\d{5,6}$/
   return crpRegex.test(maskCRP(crp))
 }

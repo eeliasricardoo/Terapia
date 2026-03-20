@@ -143,8 +143,8 @@ export function RegistrationForm() {
                 <FormControl>
                   <Input
                     className="h-[44px]"
-                    placeholder="XX/XXXXX"
-                    maxLength={8}
+                    placeholder="XX/XXXXX ou XX/XXXXXX"
+                    maxLength={9}
                     {...field}
                     onChange={(e) => {
                       const masked = maskCRP(e.target.value)
@@ -153,7 +153,7 @@ export function RegistrationForm() {
                   />
                 </FormControl>
                 <FormDescription>
-                  Digite seu CRP no formato XX/XXXXX (ex: 06/123456)
+                  Digite seu CRP no formato XX/XXXXX ou XX/XXXXXX (ex: 06/123456)
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -195,7 +195,7 @@ export function RegistrationForm() {
             type="submit"
             className="w-full font-bold"
             size="lg"
-            disabled={!isValid || !isDirty || isPending}
+            disabled={!isValid || isPending}
           >
             {isPending ? (
               <>

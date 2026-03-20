@@ -404,73 +404,26 @@ export function ScheduleManager() {
   const handleSave = async () => {
     setIsLoading(true)
     try {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) return
+      const { updatePsychologistAvailability } = await import('@/lib/actions/availability')
 
-      // 1. Get Profile ID
-      const { data: profile } = await supabase
-        .from('psychologist_profiles')
-        .select('id')
-        .eq('userId', user.id)
-        .single()
+      const result = await updatePsychologistAvailability({
+        weeklySchedule,
+        sessionDuration,
+        breakDuration,
+        timezone,
+        overrides,
+      })
 
-      if (!profile) throw new Error('Perfil não encontrado')
-
-      // 2. Save Weekly Schedule
-      // Using unknown here to satisfy Supabase's Json type constraint while passing our defined type
-      await supabase
-        .from('psychologist_profiles')
-        .update({
-          weekly_schedule: { ...weeklySchedule, sessionDuration, breakDuration } as unknown as {
-            [key: string]: any
-          },
-          timezone: timezone,
-        })
-        .eq('id', profile.id)
-
-      // 3. Save Overrides
-      // 3a. Get existing overrides to know what to delete
-      const { data: dbOverrides } = await supabase
-        .from('schedule_overrides')
-        .select('date')
-        .eq('psychologist_id', profile.id)
-
-      const dbDates = dbOverrides?.map((o) => o.date) || []
-      const stateDates = Object.keys(overrides)
-
-      // Dates to delete: in DB but not in State
-      const datesToDelete = dbDates.filter((d) => !stateDates.includes(d))
-
-      // Dates to upsert: all in State
-      const overridesToUpsert = stateDates.map((date) => ({
-        psychologist_id: profile.id,
-        date: date,
-        type: overrides[date].type,
-        slots: overrides[date].slots as unknown as { [key: string]: any },
-      }))
-
-      if (datesToDelete.length > 0) {
-        await supabase
-          .from('schedule_overrides')
-          .delete()
-          .eq('psychologist_id', profile.id)
-          .in('date', datesToDelete)
+      if (result.success) {
+        toast.success('Alterações salvas!', { description: 'Sua disponibilidade foi atualizada.' })
+      } else {
+        throw new Error(result.error)
       }
-
-      if (overridesToUpsert.length > 0) {
-        await supabase
-          .from('schedule_overrides')
-          .upsert(overridesToUpsert, { onConflict: 'psychologist_id,date' })
-      }
-
-      toast.success('Alterações salvas!', { description: 'Sua disponibilidade foi atualizada.' })
-      toast.error('Erro ao salvar', { description: 'Tente novamente mais tarde.' })
     } catch (error) {
       logger.error('Error saving schedule changes:', error)
-      toast.error('Erro ao salvar', { description: 'Tente novamente mais tarde.' })
+      toast.error('Erro ao salvar', {
+        description: error instanceof Error ? error.message : 'Tente novamente mais tarde.',
+      })
     } finally {
       setIsLoading(false)
     }
