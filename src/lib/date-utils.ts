@@ -1,3 +1,5 @@
+import { logger } from './utils/logger'
+
 export const DEFAULT_TIMEZONE = 'America/Sao_Paulo'
 
 /**
@@ -15,7 +17,7 @@ export function formatInTimeZone(date: Date, timeZone: string = DEFAULT_TIMEZONE
       minute: '2-digit',
     }).format(date)
   } catch (error) {
-    console.error(`Error formatting date in timezone ${timeZone}:`, error)
+    logger.error(`Error formatting date in timezone ${timeZone}:`, error)
     return date.toLocaleString('pt-BR')
   }
 }

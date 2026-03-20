@@ -45,9 +45,10 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              // IMPORTANT: 'unsafe-inline' allows inline scripts which can be exploited via XSS
+              // IMPORTANT: 'unsafe-inline' and 'unsafe-eval' allow inline scripts and eval() which can be exploited via XSS
+              // 'unsafe-eval' is required for next/dynamic to work properly in development
               // TODO: Replace with nonce-based approach for production (see: https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy)
-              "script-src 'self' 'unsafe-inline' https://js.stripe.com https://vercel.live",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://vercel.live",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live",
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com https://i.pravatar.cc https://images.unsplash.com",

@@ -20,15 +20,20 @@ describe('date-utils', () => {
 
     it('should fallback to toLocaleString on error', () => {
       const date = new Date('2024-01-01T12:00:00Z')
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
 
       // Testing behavior with an invalid timezone
       const formatted = formatInTimeZone(date, 'Invalid/Timezone')
 
-      expect(consoleSpy).toHaveBeenCalled()
+      // Logger may call console.error (in dev) or console.log (in prod/test)
+      expect(
+        consoleErrorSpy.mock.calls.length + consoleLogSpy.mock.calls.length
+      ).toBeGreaterThanOrEqual(1)
       expect(formatted).toBeDefined()
 
-      consoleSpy.mockRestore()
+      consoleErrorSpy.mockRestore()
+      consoleLogSpy.mockRestore()
     })
   })
 

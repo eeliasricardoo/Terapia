@@ -4,7 +4,10 @@ test('registration flow with multi-step wizard', async ({ page }) => {
   await page.goto('/')
 
   // Click "Criar Conta" in Hero
-  await page.getByRole('button', { name: 'Criar Conta' }).first().click()
+  await page
+    .getByRole('button', { name: /Começar agora/i })
+    .first()
+    .click()
 
   // Wait for dialog
   await expect(page.getByRole('dialog')).toBeVisible()

@@ -27,8 +27,8 @@ test('login flow for patient', async ({ page }) => {
   await page.getByLabel('Email').fill('test@example.com')
   await page.getByLabel('Senha').fill('password123')
 
-  // Submit
-  await page.getByRole('button', { name: 'Entrar' }).click()
+  // Submit - usar .last() para pegar o botão do formulário (não o do header)
+  await page.getByRole('button', { name: 'Entrar' }).last().click()
 
   // Should redirect to dashboard (mocked)
   await expect(page).toHaveURL(/\/dashboard/)
