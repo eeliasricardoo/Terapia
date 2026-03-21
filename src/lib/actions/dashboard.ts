@@ -118,18 +118,17 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
     const monthStart = startOfMonth(now)
     const monthEnd = endOfMonth(now)
 
-    // 1. Upcoming Sessions (From today onwards)
+    // 1. Today's Sessions only — used for "Agenda de Hoje" initial render and sessionsToday stat
     const upcomingSessions = await prisma.appointment.findMany({
       where: {
         psychologistId: psychProfile.id,
-        scheduledAt: { gte: todayStart },
+        scheduledAt: { gte: todayStart, lte: todayEnd },
         status: { not: 'CANCELED' },
       },
       include: {
         patient: { include: { profiles: true } },
       },
       orderBy: { scheduledAt: 'asc' },
-      take: 10,
     })
 
     // 2. Active Patients Count (from links table)
@@ -254,9 +253,7 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
 
     return {
       stats: {
-        sessionsToday: upcomingSessions.filter(
-          (s) => s.scheduledAt >= todayStart && s.scheduledAt <= todayEnd
-        ).length,
+        sessionsToday: upcomingSessions.length,
         activePatients: activeLinks.length,
         totalPatients: totalLinks,
         monthlyRevenue,
