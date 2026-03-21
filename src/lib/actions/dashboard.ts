@@ -59,6 +59,19 @@ export type PatientDashboardData = {
     completedSessions: number
     totalSessions: number
   }
+  upcomingSessions: {
+    id: string
+    type: string
+    scheduledAt: string
+    durationMinutes: number
+    psychologist: {
+      userId: string
+      name: string
+      specialty: string
+      image?: string
+      timezone: string
+    }
+  }[]
 }
 
 export type CompanyDashboardData = {
@@ -372,6 +385,40 @@ export async function getPatientDashboardData(): Promise<PatientDashboardData> {
     const completedSessions = monthlyAppointments.filter((a) => a.status === 'COMPLETED').length
     const totalSessions = monthlyAppointments.length
 
+    // 4. All Upcoming Sessions
+    const upcomingAppts = await prisma.appointment.findMany({
+      where: {
+        patientId: user.id,
+        scheduledAt: { gte: new Date() },
+        status: 'SCHEDULED',
+      },
+      orderBy: { scheduledAt: 'asc' },
+      include: {
+        psychologist: {
+          include: {
+            user: { include: { profiles: true } },
+          },
+        },
+      },
+    })
+
+    const upcomingSessions = upcomingAppts.map((appt) => {
+      const pProfile = appt.psychologist.user.profiles
+      return {
+        id: appt.id,
+        type: appt.sessionType,
+        scheduledAt: appt.scheduledAt.toISOString(),
+        durationMinutes: appt.durationMinutes,
+        psychologist: {
+          userId: appt.psychologist.userId,
+          name: pProfile?.fullName || appt.psychologist.user.name || 'Psicólogo',
+          specialty: appt.psychologist.specialties[0] || 'Psicólogo Clínico',
+          image: pProfile?.avatarUrl || undefined,
+          timezone: appt.psychologist.timezone || 'America/Sao_Paulo',
+        },
+      }
+    })
+
     return {
       nextSession,
       recentSessions,
@@ -379,6 +426,7 @@ export async function getPatientDashboardData(): Promise<PatientDashboardData> {
         completedSessions,
         totalSessions,
       },
+      upcomingSessions,
     }
   } catch (error) {
     logger.error('Error fetching patient dashboard data:', error)
@@ -386,6 +434,7 @@ export async function getPatientDashboardData(): Promise<PatientDashboardData> {
       nextSession: null,
       recentSessions: [],
       monthlyProgress: { completedSessions: 0, totalSessions: 0 },
+      upcomingSessions: [],
     }
   }
 }

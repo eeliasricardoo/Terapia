@@ -15,6 +15,7 @@ import { PaymentStatusToast } from './_components/payment-status-toast'
 import { Suspense } from 'react'
 import { QuickActions } from './_components/quick-actions'
 import { CompanyDashboard } from '@/components/dashboard/company/CompanyDashboard'
+import { UpcomingSessionsList } from './_components/upcoming-sessions-list'
 
 import {
   getPsychologistDashboardData,
@@ -86,6 +87,10 @@ export default async function DashboardPage() {
             <NextSessionHero session={patientData.nextSession} />
           ) : (
             <FindPsychologistCTA />
+          )}
+
+          {patientData.upcomingSessions && patientData.upcomingSessions.length > 1 && (
+            <UpcomingSessionsList sessions={patientData.upcomingSessions} />
           )}
 
           <div className="pt-4">
