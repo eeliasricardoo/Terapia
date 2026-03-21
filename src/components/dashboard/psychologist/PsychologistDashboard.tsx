@@ -21,13 +21,16 @@ import {
   Bell,
   TrendingUp,
   ArrowUpRight,
+  PartyPopper,
+  Sparkles,
 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { Profile } from '@/lib/supabase/types'
 
 import { PsychologistDashboardData } from '@/lib/actions/dashboard'
 import { RescheduleDialog } from '@/components/dashboard/RescheduleDialog'
-import { format, isSameDay, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns'
+import { format } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
 import { createClient } from '@/lib/supabase/client'
@@ -35,6 +38,14 @@ import { createClient } from '@/lib/supabase/client'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { DashboardCalendar } from './DashboardCalendar'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
 
 interface Props {
   userProfile: Profile
@@ -43,8 +54,13 @@ interface Props {
 
 export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
-  const [allAppointments, setAllAppointments] = useState<any[]>([])
+  const [allAppointments, setAllAppointments] = useState<any[]>([
+    ...dashboardData.upcomingSessions,
+    ...dashboardData.futureSessions,
+  ])
   const [unreadCount, setUnreadCount] = useState(dashboardData.unreadNotifications)
+  const [showNewApptModal, setShowNewApptModal] = useState(false)
+  const [lastNotif, setLastNotif] = useState<any>(null)
   const [overrides, setOverrides] = useState<any>({})
   const [weeklySchedule, setWeeklySchedule] = useState<any>({
     monday: { enabled: true, slots: [] },
@@ -166,6 +182,8 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
 
             console.log('[REALTIME] New notification for current user:', newNotif)
             setUnreadCount((prev) => prev + 1)
+            setLastNotif(newNotif)
+            setShowNewApptModal(true)
 
             // EYE-CATCHING Notification (Toast)
             toast.success(newNotif.title, {
@@ -196,23 +214,24 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
     }
   }, [])
 
-  const displaySessions = useMemo(() => {
-    if (!selectedDate) return []
-    const dateStr = format(selectedDate, 'yyyy-MM-dd')
-
-    // If it's today and we don't have all data yet, use server-side sessions
-    if (isSameDay(selectedDate, new Date()) && allAppointments.length === 0) {
-      return upcomingSessions
-    }
-
-    return allAppointments.filter((a) => a.scheduledAt.startsWith(dateStr))
-  }, [selectedDate, allAppointments, upcomingSessions])
-
-  const agendaTitle = useMemo(() => {
-    if (!selectedDate) return 'Agenda de Hoje'
-    if (isSameDay(selectedDate, new Date())) return 'Agenda de Hoje'
-    return `Agenda de ${format(selectedDate, "eeee, d 'de' MMMM", { locale: ptBR })}`
-  }, [selectedDate])
+  const sessionsByDate = useMemo(() => {
+    const todayStr = format(new Date(), 'yyyy-MM-dd')
+    const source = allAppointments.length > 0 ? allAppointments : upcomingSessions
+    const relevant = source
+      .filter((a) => a.scheduledAt.substring(0, 10) >= todayStr)
+      .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt))
+    const map = new Map<string, any[]>()
+    relevant.forEach((session) => {
+      const dateKey = session.scheduledAt.substring(0, 10)
+      if (!map.has(dateKey)) map.set(dateKey, [])
+      map.get(dateKey)!.push(session)
+    })
+    return Array.from(map.entries()).map(([date, sessions]) => ({
+      date,
+      sessions,
+      isToday: date === todayStr,
+    }))
+  }, [allAppointments, upcomingSessions])
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-8">
@@ -316,36 +335,34 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
 
           {/* Stats Overview */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
+            <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                 Sessões
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-slate-900">{stats.sessionsToday}</span>
-                <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full font-bold">
-                  HOJE
-                </span>
+                <span className="text-3xl font-bold text-slate-900">{stats.sessionsToday}</span>
+                <span className="text-[10px] text-slate-400 font-bold">HOJE</span>
               </div>
             </div>
 
-            <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
+            <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                 Pacientes Ativos
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-slate-900">{stats.activePatients}</span>
-                <span className="text-[10px] text-slate-500 font-bold">
-                  TOTAL {stats.totalPatients}
+                <span className="text-3xl font-bold text-slate-900">{stats.activePatients}</span>
+                <span className="text-[10px] text-slate-400 font-bold">
+                  / {stats.totalPatients}
                 </span>
               </div>
             </div>
 
-            <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
+            <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                 Receita
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-slate-900">
+                <span className="text-3xl font-bold text-slate-900">
                   {new Intl.NumberFormat('pt-BR', {
                     style: 'currency',
                     currency: 'BRL',
@@ -355,17 +372,17 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
               </div>
             </div>
 
-            <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
+            <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                 Desempenho
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-slate-900">
+                <span className="text-3xl font-bold text-slate-900">
                   {stats.revenueChange >= 0 ? '+' : ''}
                   {stats.revenueChange}%
                 </span>
                 <span
-                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${stats.revenueChange >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'}`}
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${stats.revenueChange >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'}`}
                 >
                   MENSAL
                 </span>
@@ -374,171 +391,198 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Upcoming Schedule */}
-            <Card className="col-span-1 lg:col-span-2 border-none shadow-sm bg-white flex flex-col">
-              <CardHeader className="border-b border-slate-100 bg-white pb-5 pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg font-semibold text-slate-900 capitalize">
-                      {agendaTitle}
-                    </CardTitle>
-                    <CardDescription>
-                      {selectedDate
-                        ? format(selectedDate, "eeee, d 'de' MMMM", { locale: ptBR })
-                        : 'Selecione uma data'}
-                    </CardDescription>
+            <div className="col-span-1 lg:col-span-2 space-y-4">
+              {/* Agenda */}
+              <Card className="border-none shadow-sm bg-white">
+                <CardHeader className="border-b border-slate-100 bg-white pb-5 pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg font-semibold text-slate-900">
+                        Próximas Sessões
+                      </CardTitle>
+                      <CardDescription>
+                        {(() => {
+                          const todayCount =
+                            sessionsByDate.find((g) => g.isToday)?.sessions.length ?? 0
+                          const futureCount = sessionsByDate
+                            .filter((g) => !g.isToday)
+                            .reduce((acc, g) => acc + g.sessions.length, 0)
+                          const parts = []
+                          if (todayCount > 0) parts.push(`${todayCount} hoje`)
+                          if (futureCount > 0) parts.push(`${futureCount} em breve`)
+                          return parts.length > 0 ? parts.join(' · ') : 'Agenda livre'
+                        })()}
+                      </CardDescription>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-slate-400 hover:text-primary hover:bg-transparent font-semibold text-xs transition-colors"
+                      asChild
+                    >
+                      <Link href="/dashboard/agenda">VER AGENDA &rarr;</Link>
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-slate-400 hover:text-primary hover:bg-transparent font-semibold text-xs transition-colors"
-                    asChild
-                  >
-                    <Link href="/dashboard/agenda">VER AGENDA &rarr;</Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0 overflow-hidden">
-                <div className="flex flex-col overflow-y-auto max-h-[420px]">
-                  {displaySessions.map((session, index) => {
-                    const isNext = index === 0 && session.status === 'scheduled'
-                    const scheduledDate = new Date(session.scheduledAt)
-                    const startTimeStr = formatInTimeZone(
-                      scheduledDate,
-                      dashboardData.timezone,
-                      'HH:mm'
-                    )
-                    return (
-                      <div
-                        key={session.id}
-                        className={`flex items-stretch ${isNext ? 'bg-slate-50/50' : 'bg-white'} border-b border-slate-50 last:border-0 transition-colors`}
-                      >
-                        {/* Time & Session Info */}
-                        <div className="flex-1 flex items-center justify-between px-6 py-4">
-                          <div className="flex items-center gap-4">
-                            <div className="flex flex-col items-center justify-center min-w-[3.5rem]">
-                              <span
-                                className={`text-lg font-bold ${isNext ? 'text-slate-900' : 'text-slate-500'}`}
-                              >
-                                {startTimeStr}
-                              </span>
-                              <span className="text-[10px] font-medium text-slate-400">
-                                {session.duration}m
-                              </span>
-                            </div>
-
-                            <Avatar
-                              className={`h-10 w-10 transition-all ${isNext ? 'ring-2 ring-primary/20 ring-offset-2' : ''}`}
+                </CardHeader>
+                <CardContent className="p-0">
+                  {sessionsByDate.length === 0 ? (
+                    <div className="p-12 text-center bg-slate-50/50">
+                      <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm mb-4">
+                        <CalendarIcon className="h-6 w-6 text-slate-400" />
+                      </div>
+                      <h3 className="text-sm font-medium text-slate-900">Agenda livre</h3>
+                      <p className="text-slate-500 text-xs mt-1">Nenhum atendimento agendado.</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-y-auto max-h-[600px]">
+                      {sessionsByDate.map(({ date, sessions, isToday }) => (
+                        <div key={date}>
+                          {/* Date Header */}
+                          <div className="px-6 py-2.5 border-b border-slate-100 bg-slate-50/80 sticky top-0 z-10 flex items-center gap-2">
+                            <span
+                              className={`text-[11px] font-bold uppercase tracking-widest capitalize ${isToday ? 'text-slate-800' : 'text-slate-400'}`}
                             >
-                              <AvatarImage src={session.image} />
-                              <AvatarFallback className="bg-slate-50 text-slate-400 text-xs font-semibold">
-                                {session.patientName.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-
-                            <div>
-                              <h4
-                                className={`font-semibold text-sm ${isNext ? 'text-slate-900' : 'text-slate-700'}`}
-                              >
-                                {session.patientName}
-                              </h4>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[11px] text-slate-400">{session.type}</span>
-                                {session.status === 'completed' && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="bg-emerald-50 text-emerald-600 border-none text-[9px] h-4 font-black uppercase tracking-tighter"
-                                  >
-                                    Concluída
-                                  </Badge>
-                                )}
-                                {session.status === 'scheduled' && isNext && (
-                                  <Badge className="bg-primary/10 text-primary border-none text-[9px] h-4 font-bold uppercase tracking-wider">
-                                    Próxima
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3">
-                            {isNext ? (
-                              <div className="flex items-center gap-2 w-full md:w-auto">
-                                <Link href={`/sala/${session.id}`} className="flex-1">
-                                  <Button
-                                    size="sm"
-                                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-5 h-8 text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-105 shadow-sm shadow-slate-200 w-full"
-                                  >
-                                    <Video className="w-3.5 h-3.5 mr-2" />
-                                    Iniciar
-                                  </Button>
-                                </Link>
-                                <RescheduleDialog
-                                  session={{
-                                    id: session.id,
-                                    doctor: session.patientName,
-                                    role: 'Paciente',
-                                    image: session.image || '/avatars/01.png',
-                                    date: format(
-                                      new Date(session.scheduledAt),
-                                      "dd 'de' MMMM, yyyy",
-                                      { locale: ptBR }
-                                    ),
-                                    time: session.time,
-                                    psychologistId: session.psychologistId,
-                                  }}
-                                >
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-slate-300 hover:text-primary transition-colors font-medium text-[11px] h-8 px-2"
-                                  >
-                                    Reagendar
-                                  </Button>
-                                </RescheduleDialog>
-                              </div>
-                            ) : (
-                              <RescheduleDialog
-                                session={{
-                                  id: session.id,
-                                  doctor: session.patientName,
-                                  role: 'Paciente',
-                                  image: session.image || '/avatars/01.png',
-                                  date: format(
-                                    new Date(session.scheduledAt),
-                                    "dd 'de' MMMM, yyyy",
-                                    { locale: ptBR }
-                                  ),
-                                  time: session.time,
-                                  psychologistId: session.psychologistId,
-                                }}
-                              >
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-slate-300 hover:text-primary transition-colors font-medium text-[11px] h-8 px-2"
-                                >
-                                  Reagendar
-                                </Button>
-                              </RescheduleDialog>
+                              {format(new Date(date + 'T12:00:00'), "eeee, d 'de' MMMM", {
+                                locale: ptBR,
+                              })}
+                            </span>
+                            {isToday && (
+                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                                — hoje
+                              </span>
                             )}
                           </div>
+                          {/* Sessions */}
+                          {sessions.map((session: any, idx: number) => {
+                            const isNext = isToday && idx === 0 && session.status === 'scheduled'
+                            const scheduledDate = new Date(session.scheduledAt)
+                            const startTimeStr = formatInTimeZone(
+                              scheduledDate,
+                              dashboardData.timezone,
+                              'HH:mm'
+                            )
+                            return (
+                              <div
+                                key={session.id}
+                                className={`flex items-center justify-between px-6 py-4 border-b border-slate-50 last:border-0 transition-colors ${isNext ? 'bg-slate-50/60' : 'bg-white hover:bg-slate-50/40'}`}
+                              >
+                                <div className="flex items-center gap-4">
+                                  <div className="flex flex-col items-center justify-center min-w-[3.5rem]">
+                                    <span
+                                      className={`text-base font-bold ${isNext ? 'text-slate-900' : 'text-slate-500'}`}
+                                    >
+                                      {startTimeStr}
+                                    </span>
+                                    <span className="text-[10px] font-medium text-slate-400">
+                                      {session.duration}m
+                                    </span>
+                                  </div>
+                                  <Avatar
+                                    className={`h-10 w-10 transition-all ${isNext ? 'ring-2 ring-primary/20 ring-offset-2' : ''}`}
+                                  >
+                                    <AvatarImage src={session.image} />
+                                    <AvatarFallback className="bg-slate-50 text-slate-400 text-xs font-semibold">
+                                      {session.patientName.charAt(0)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <h4
+                                      className={`font-semibold text-sm ${isNext ? 'text-slate-900' : 'text-slate-700'}`}
+                                    >
+                                      {session.patientName}
+                                    </h4>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[11px] text-slate-400">
+                                        {session.type}
+                                      </span>
+                                      {session.status === 'completed' && (
+                                        <Badge
+                                          variant="secondary"
+                                          className="bg-emerald-50 text-emerald-600 border-none text-[9px] h-4 font-black uppercase tracking-tighter"
+                                        >
+                                          Concluída
+                                        </Badge>
+                                      )}
+                                      {isNext && (
+                                        <Badge className="bg-primary/10 text-primary border-none text-[9px] h-4 font-bold uppercase tracking-wider">
+                                          Próxima
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {isNext ? (
+                                    <>
+                                      <Link href={`/sala/${session.id}`}>
+                                        <Button
+                                          size="sm"
+                                          className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-5 h-8 text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-105 shadow-sm shadow-slate-200"
+                                        >
+                                          <Video className="w-3.5 h-3.5 mr-2" />
+                                          Iniciar
+                                        </Button>
+                                      </Link>
+                                      <RescheduleDialog
+                                        session={{
+                                          id: session.id,
+                                          doctor: session.patientName,
+                                          role: 'Paciente',
+                                          image: session.image || '/avatars/01.png',
+                                          date: format(
+                                            new Date(session.scheduledAt),
+                                            "dd 'de' MMMM, yyyy",
+                                            { locale: ptBR }
+                                          ),
+                                          time: session.time,
+                                          psychologistId: session.psychologistId,
+                                        }}
+                                      >
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-slate-300 hover:text-primary transition-colors font-medium text-[11px] h-8 px-2"
+                                        >
+                                          Reagendar
+                                        </Button>
+                                      </RescheduleDialog>
+                                    </>
+                                  ) : (
+                                    <RescheduleDialog
+                                      session={{
+                                        id: session.id,
+                                        doctor: session.patientName,
+                                        role: 'Paciente',
+                                        image: session.image || '/avatars/01.png',
+                                        date: format(
+                                          new Date(session.scheduledAt),
+                                          "dd 'de' MMMM, yyyy",
+                                          { locale: ptBR }
+                                        ),
+                                        time: session.time,
+                                        psychologistId: session.psychologistId,
+                                      }}
+                                    >
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-slate-300 hover:text-primary transition-colors font-medium text-[11px] h-8 px-2"
+                                      >
+                                        Reagendar
+                                      </Button>
+                                    </RescheduleDialog>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })}
                         </div>
-                      </div>
-                    )
-                  })}
-                </div>
-                {displaySessions.length === 0 && (
-                  <div className="p-12 text-center bg-slate-50/50">
-                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm mb-4">
-                      <CalendarIcon className="h-6 w-6 text-slate-400" />
+                      ))}
                     </div>
-                    <h3 className="text-sm font-medium text-slate-900">Agenda livre</h3>
-                    <p className="text-slate-500 text-xs mt-1">Nenhum atendimento para hoje.</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Quick Actions / Recent Patients */}
             <div className="space-y-4">
@@ -549,60 +593,56 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 overrides={overrides}
                 weeklySchedule={weeklySchedule}
               />
-              <Card className="border-none shadow-md bg-gradient-to-br from-white to-slate-50/30 overflow-hidden">
-                <CardHeader className="pb-4 border-b border-slate-100 pt-5 px-5 bg-white/50 backdrop-blur-sm">
-                  <CardTitle className="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-sm">
-                      <Settings className="h-3 w-3 text-white" />
-                    </div>
+              <Card className="border border-slate-100 shadow-sm bg-white overflow-hidden">
+                <CardHeader className="pb-4 border-b border-slate-50 pt-5 px-5">
+                  <CardTitle className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <Settings className="h-3.5 w-3.5" />
                     Acesso Rápido
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 space-y-2">
                   <Link
                     href="/dashboard/agenda"
-                    className="group block rounded-xl p-4 bg-white border border-slate-100 hover:border-indigo-200 hover:shadow-md transition-all duration-200"
+                    className="group block rounded-xl p-3 bg-slate-50/50 border border-transparent hover:border-slate-200 hover:bg-white hover:shadow-sm transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-                        <CalendarIcon className="h-5 w-5" />
+                      <div className="h-9 w-9 rounded-lg bg-white border border-slate-100 text-slate-600 flex items-center justify-center group-hover:text-slate-900 transition-colors shadow-sm">
+                        <CalendarIcon className="h-4.5 w-4.5" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                        <p className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">
                           Gerenciar Horários
                         </p>
-                        <p className="text-xs text-slate-500 mt-0.5">Configure sua agenda</p>
+                        <p className="text-xs text-slate-400 mt-0.5">Configure sua agenda</p>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+                      <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-slate-400 group-hover:translate-x-0.5 transition-all" />
                     </div>
                   </Link>
 
                   <Link
                     href="/dashboard/pacientes"
-                    className="group block rounded-xl p-4 bg-white border border-slate-100 hover:border-pink-200 hover:shadow-md transition-all duration-200"
+                    className="group block rounded-xl p-3 bg-slate-50/50 border border-transparent hover:border-slate-200 hover:bg-white hover:shadow-sm transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-pink-50 to-pink-100 text-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
-                        <FileText className="h-5 w-5" />
+                      <div className="h-9 w-9 rounded-lg bg-white border border-slate-100 text-slate-600 flex items-center justify-center group-hover:text-slate-900 transition-colors shadow-sm">
+                        <FileText className="h-4.5 w-4.5" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-slate-900 group-hover:text-pink-600 transition-colors">
+                        <p className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">
                           Meus Pacientes
                         </p>
-                        <p className="text-xs text-slate-500 mt-0.5">Visualize prontuários</p>
+                        <p className="text-xs text-slate-400 mt-0.5">Visualize prontuários</p>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-pink-500 group-hover:translate-x-1 transition-all" />
+                      <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-slate-400 group-hover:translate-x-0.5 transition-all" />
                     </div>
                   </Link>
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-md bg-gradient-to-br from-white to-slate-50/30 overflow-hidden">
-                <CardHeader className="pb-4 border-b border-slate-100 pt-5 px-5 bg-white/50 backdrop-blur-sm">
-                  <CardTitle className="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm">
-                      <Clock className="h-3 w-3 text-white" />
-                    </div>
+              <Card className="border border-slate-100 shadow-sm bg-white overflow-hidden">
+                <CardHeader className="pb-4 border-b border-slate-50 pt-5 px-5">
+                  <CardTitle className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <Clock className="h-3.5 w-3.5" />
                     Histórico Recente
                   </CardTitle>
                 </CardHeader>
@@ -612,50 +652,39 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                       <Link
                         key={patient.id}
                         href="/dashboard/pacientes"
-                        className="flex items-center justify-between p-4 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-transparent transition-all duration-200 cursor-pointer group"
+                        className="flex items-center justify-between p-4 hover:bg-slate-50 transition-all duration-200 cursor-pointer group"
                       >
                         <div className="flex items-center gap-4 flex-1">
-                          <div className="relative">
-                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-sm font-bold text-blue-700 border-2 border-white shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all">
-                              {patient.name.charAt(0)}
-                            </div>
-                            <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 border-2 border-white flex items-center justify-center">
-                              <CheckCircle2 className="h-2.5 w-2.5 text-white" />
-                            </div>
+                          <div className="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 group-hover:bg-slate-200 transition-colors">
+                            {patient.name.charAt(0)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition-colors truncate">
+                            <p className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors truncate">
                               {patient.name}
                             </p>
-                            <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
+                            <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5">
                               <Clock className="h-3 w-3" />
                               {patient.lastSession}
                             </p>
                           </div>
-                          <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all" />
+                          <ArrowRight className="h-3.5 w-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-all" />
                         </div>
                       </Link>
                     ))}
                   </div>
                   {recentPatients.length === 0 && (
                     <div className="p-8 text-center">
-                      <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
-                        <Users className="h-6 w-6 text-slate-400" />
-                      </div>
-                      <p className="text-sm text-slate-500">Nenhum paciente recente</p>
+                      <p className="text-sm text-slate-400">Nenhum paciente recente</p>
                     </div>
                   )}
-                  <div className="p-3 border-t border-slate-100 bg-white/50">
+                  <div className="p-3 border-t border-slate-50 bg-slate-50/30">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="w-full text-slate-600 hover:text-blue-600 hover:bg-blue-50 text-xs font-semibold h-9 rounded-lg transition-all"
+                      className="w-full text-slate-500 hover:text-slate-900 hover:bg-white hover:shadow-sm text-[11px] font-bold h-8 rounded-lg transition-all uppercase tracking-wider"
                       asChild
                     >
-                      <Link href="/dashboard/pacientes">
-                        Ver todos os pacientes
-                        <ArrowRight className="h-3.5 w-3.5 ml-1" />
-                      </Link>
+                      <Link href="/dashboard/pacientes">Ver todos</Link>
                     </Button>
                   </div>
                 </CardContent>
@@ -664,6 +693,50 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
           </div>
         </>
       )}
+
+      {/* 🚀 New Appointment High-Impact Modal */}
+      <AnimatePresence>
+        {showNewApptModal && (
+          <Dialog open={showNewApptModal} onOpenChange={setShowNewApptModal}>
+            <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden border border-slate-200 rounded-[2rem] shadow-2xl">
+              <div className="bg-white">
+                <div className="p-8 flex flex-col items-center text-center">
+                  <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 border border-slate-100">
+                    <CalendarIcon className="h-8 w-8 text-slate-900" />
+                  </div>
+
+                  <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                    {lastNotif?.title || 'Novo Agendamento'}
+                  </h2>
+                  <p className="text-slate-500 mb-8 text-sm leading-relaxed">
+                    {lastNotif?.message ||
+                      'Um novo paciente acaba de agendar uma consulta com você.'}
+                  </p>
+
+                  <div className="w-full space-y-2">
+                    <Button
+                      onClick={() => {
+                        setShowNewApptModal(false)
+                        window.location.href = '/dashboard/agenda'
+                      }}
+                      className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-12 text-sm font-semibold transition-all"
+                    >
+                      Ver Agenda
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setShowNewApptModal(false)}
+                      className="w-full text-slate-400 hover:text-slate-600 text-xs font-bold uppercase tracking-widest h-10 rounded-xl"
+                    >
+                      Fechar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

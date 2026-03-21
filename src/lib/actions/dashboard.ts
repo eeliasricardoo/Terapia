@@ -28,6 +28,17 @@ export type PsychologistDashboardData = {
     duration: number
     details?: string
   }[]
+  futureSessions: {
+    id: string
+    patientName: string
+    time: string
+    scheduledAt: string
+    psychologistId: string
+    type: string
+    status: string
+    image?: string
+    duration: number
+  }[]
   recentPatients: {
     id: string
     name: string
@@ -123,6 +134,7 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
         isVerified: false,
         timezone: 'America/Sao_Paulo',
         upcomingSessions: [],
+        futureSessions: [],
         recentPatients: [],
       }
     }
@@ -133,7 +145,7 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
     const monthStart = startOfMonth(now)
     const monthEnd = endOfMonth(now)
 
-    // 1. Today's Sessions only — used for "Agenda de Hoje" initial render and sessionsToday stat
+    // 1. Today's Sessions — used for "Agenda de Hoje" initial render and sessionsToday stat
     const upcomingSessions = await prisma.appointment.findMany({
       where: {
         psychologistId: psychProfile.id,
@@ -146,7 +158,21 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
       orderBy: { scheduledAt: 'asc' },
     })
 
-    // 2. Active Patients Count (from links table)
+    // 2. Future Sessions (from tomorrow onwards, next 60 days)
+    const futureSessionsData = await prisma.appointment.findMany({
+      where: {
+        psychologistId: psychProfile.id,
+        scheduledAt: { gt: todayEnd },
+        status: { not: 'CANCELED' },
+      },
+      include: {
+        patient: { include: { profiles: true } },
+      },
+      orderBy: { scheduledAt: 'asc' },
+      take: 60,
+    })
+
+    // 3. Active Patients Count (from links table)
     // Links relate Profile (user.id) to Profile (user.id)
     const activeLinks = await prisma.patientPsychologistLink.findMany({
       where: {
@@ -297,6 +323,17 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
         image: s.patient.profiles?.avatarUrl || undefined,
         duration: s.durationMinutes,
         details: s.status === 'SCHEDULED' ? 'Aguardando início' : 'Concluída',
+      })),
+      futureSessions: futureSessionsData.map((s) => ({
+        id: s.id,
+        patientName: s.patient.profiles?.fullName || s.patient.name || 'Paciente',
+        time: formatTime(s.scheduledAt),
+        scheduledAt: s.scheduledAt.toISOString(),
+        psychologistId: s.psychologistId,
+        type: s.sessionType,
+        status: s.status.toLowerCase(),
+        image: s.patient.profiles?.avatarUrl || undefined,
+        duration: s.durationMinutes,
       })),
       recentPatients: Array.from(uniquePatientsMap.values()).map((p) => ({
         ...p,

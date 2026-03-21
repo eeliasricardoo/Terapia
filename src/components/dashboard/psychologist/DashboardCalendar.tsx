@@ -91,7 +91,7 @@ export function DashboardCalendar({
                       <div
                         className={cn(
                           'h-1 w-1 rounded-full',
-                          isSelected ? 'bg-white' : 'bg-red-400'
+                          isSelected ? 'bg-white' : 'bg-rose-200'
                         )}
                       />
                     )}
@@ -99,7 +99,7 @@ export function DashboardCalendar({
                       <div
                         className={cn(
                           'h-1 w-1 rounded-full',
-                          isSelected ? 'bg-white' : 'bg-blue-900'
+                          isSelected ? 'bg-white' : 'bg-slate-900'
                         )}
                       />
                     )}
@@ -107,7 +107,7 @@ export function DashboardCalendar({
                       <div
                         className={cn(
                           'h-1 w-1 rounded-full',
-                          isSelected ? 'bg-white' : 'bg-blue-600'
+                          isSelected ? 'bg-white' : 'bg-slate-400'
                         )}
                       />
                     )}
@@ -115,7 +115,7 @@ export function DashboardCalendar({
                       <div
                         className={cn(
                           'h-1 w-1 rounded-full',
-                          isSelected ? 'bg-white/40' : 'bg-slate-300'
+                          isSelected ? 'bg-white/40' : 'bg-slate-200'
                         )}
                       />
                     )}
@@ -123,7 +123,7 @@ export function DashboardCalendar({
                       <div
                         className={cn(
                           'h-1 w-1 rounded-full',
-                          isSelected ? 'bg-emerald-300' : 'bg-emerald-500'
+                          isSelected ? 'bg-emerald-300' : 'bg-emerald-400'
                         )}
                       />
                     )}
@@ -134,21 +134,21 @@ export function DashboardCalendar({
           }}
         />
 
-        <div className="mt-8 flex items-center justify-center gap-x-4 gap-y-2 flex-wrap text-[10px] text-slate-400 font-medium">
+        <div className="mt-8 flex items-center justify-center gap-x-4 gap-y-2 flex-wrap text-[10px] text-slate-400 font-bold uppercase tracking-wider">
           <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-blue-600" /> Padrão
+            <div className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Padrão
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-blue-900" /> Personalizado
+            <div className="h-1.5 w-1.5 rounded-full bg-slate-900" /> Custom
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-slate-300" /> Dia Livre
+            <div className="h-1.5 w-1.5 rounded-full bg-slate-200" /> Livre
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-red-400" /> Folga
+            <div className="h-1.5 w-1.5 rounded-full bg-rose-200" /> Folga
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-emerald-500" /> Agendamento
+            <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Agendado
           </div>
         </div>
       </CardContent>
