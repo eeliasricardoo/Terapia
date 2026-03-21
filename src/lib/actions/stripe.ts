@@ -15,6 +15,7 @@ export async function createStripeCheckoutSession(data: {
   scheduledAt: string
   durationMinutes: number
   couponCode?: string
+  returnUrl?: string
 }) {
   try {
     if (!isValidUUID(data.psychologistId)) {
@@ -112,7 +113,11 @@ export async function createStripeCheckoutSession(data: {
       )
       revalidateTag('appointments')
       revalidateTag('psychologist-profile-view')
-      return { url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success` }
+      return {
+        url: data.returnUrl
+          ? `${process.env.NEXT_PUBLIC_APP_URL}${data.returnUrl}${data.returnUrl.includes('?') ? '&' : '?'}payment=success`
+          : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success`,
+      }
     }
 
     // 3. Create the Checkout Session
@@ -145,8 +150,12 @@ export async function createStripeCheckoutSession(data: {
         originalPrice: price.toString(),
         couponCode: data.couponCode || '',
       },
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pagamento?payment=cancelled`,
+      success_url: data.returnUrl
+        ? `${process.env.NEXT_PUBLIC_APP_URL}${data.returnUrl}${data.returnUrl.includes('?') ? '&' : '?'}payment=success&session_id={CHECKOUT_SESSION_ID}`
+        : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: data.returnUrl
+        ? `${process.env.NEXT_PUBLIC_APP_URL}${data.returnUrl}${data.returnUrl.includes('?') ? '&' : '?'}payment=cancelled`
+        : `${process.env.NEXT_PUBLIC_APP_URL}/pagamento?payment=cancelled`,
     }
 
     if (psych.stripeAccountId) {

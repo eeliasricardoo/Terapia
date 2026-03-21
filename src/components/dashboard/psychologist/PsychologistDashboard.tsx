@@ -137,6 +137,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
   // 🔔 [REALTIME] - Listen for new notifications
   useEffect(() => {
     const supabase = createClient()
+    let channel: any
 
     const setupSubscription = async () => {
       const {
@@ -144,7 +145,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
       } = await supabase.auth.getUser()
       if (!user) return
 
-      const channel = supabase
+      channel = supabase
         .channel(`notifications-${user.id}`)
         .on(
           'postgres_changes',
@@ -155,13 +156,15 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
+            console.log('[REALTIME] New notification received:', payload)
             const newNotif = payload.new as any
             setUnreadCount((prev) => prev + 1)
 
             // EYE-CATCHING Notification (Toast)
             toast.success(newNotif.title, {
               description: newNotif.message,
-              duration: 8000, // Longer for important stuff
+              duration: 8000,
+              dismissible: true,
               action: {
                 label: 'Ver Agenda',
                 onClick: () => (window.location.href = '/dashboard/agenda'),
@@ -169,14 +172,21 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             })
           }
         )
-        .subscribe()
-
-      return () => {
-        supabase.removeChannel(channel)
-      }
+        .subscribe((status) => {
+          console.log(`[REALTIME] Subscription status for user ${user.id}:`, status)
+          if (status === 'SUBSCRIBED') {
+            console.log('[REALTIME] Successfully listening to notifications table')
+          }
+        })
     }
 
     setupSubscription()
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+    }
   }, [])
 
   const displaySessions = useMemo(() => {

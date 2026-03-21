@@ -116,6 +116,14 @@ export function useCheckout() {
   }, [doctorId, patientProfile?.id])
 
   useEffect(() => {
+    const payment = searchParams?.get('payment')
+    if (payment === 'success') {
+      setIsSuccess(true)
+      setIsProcessing(false)
+    }
+  }, [searchParams])
+
+  useEffect(() => {
     let discount = 0
     if (appliedCoupon) {
       if (appliedCoupon.type === 'percentage') {
@@ -195,11 +203,14 @@ export function useCheckout() {
       }
 
       // 🚀 STRIPE FLOW
+      const returnUrl = window.location.pathname + window.location.search
+
       const result = await createStripeCheckoutSession({
         psychologistId: doctorId,
         scheduledAt: scheduledAt,
         durationMinutes: 50,
         couponCode: appliedCoupon?.code,
+        returnUrl: returnUrl,
       })
 
       if (result.error) {
