@@ -153,11 +153,18 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             event: 'INSERT',
             schema: 'public',
             table: 'notifications',
-            filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
-            console.log('[REALTIME] New notification received:', payload)
+            console.log('[REALTIME] New record inserted:', payload)
             const newNotif = payload.new as any
+
+            // Filtro manual no cliente (mais resiliente que o filter string em alguns setups)
+            if (newNotif.user_id !== user.id) {
+              console.log('[REALTIME] Notification ignored (not for this user):', newNotif.user_id)
+              return
+            }
+
+            console.log('[REALTIME] New notification for current user:', newNotif)
             setUnreadCount((prev) => prev + 1)
 
             // EYE-CATCHING Notification (Toast)
@@ -258,6 +265,20 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              {process.env.NODE_ENV === 'development' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    toast.success('Notificação de Teste ✅', {
+                      description: 'Isso é apenas para validar se o sistema de avisos está ok.',
+                    })
+                  }
+                  className="rounded-full text-[10px] font-bold uppercase tracking-wider"
+                >
+                  Testar Toast
+                </Button>
+              )}
               <Link
                 href="/dashboard/ajustes"
                 className="opacity-70 hover:opacity-100 transition-opacity"
