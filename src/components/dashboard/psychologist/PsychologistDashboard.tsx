@@ -216,10 +216,12 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 aria-label="Notificações"
               >
                 <Bell className="h-5 w-5" />
-                <span
-                  className="absolute top-2 right-2 h-2 w-2 bg-rose-500 rounded-full border-2 border-slate-50"
-                  aria-hidden="true"
-                />
+                {dashboardData.unreadNotifications > 0 && (
+                  <span
+                    className="absolute top-2 right-2 h-2 w-2 bg-rose-500 rounded-full border-2 border-slate-50"
+                    aria-hidden="true"
+                  />
+                )}
                 <span className="sr-only">Você tem novas notificações</span>
               </Button>
               <Button

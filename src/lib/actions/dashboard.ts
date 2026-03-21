@@ -13,6 +13,7 @@ export type PsychologistDashboardData = {
     monthlyRevenue: number
     revenueChange: number // % vs last month
   }
+  unreadNotifications: number
   isVerified: boolean
   timezone: string
   upcomingSessions: {
@@ -118,6 +119,7 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
           monthlyRevenue: 0,
           revenueChange: 0,
         },
+        unreadNotifications: 0,
         isVerified: false,
         timezone: 'America/Sao_Paulo',
         upcomingSessions: [],
@@ -264,6 +266,14 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
       }
     }
 
+    // 5. Unread Notifications Count
+    const unreadNotifications = await prisma.notification.count({
+      where: {
+        userId: user.id,
+        read: false,
+      },
+    })
+
     return {
       stats: {
         sessionsToday: upcomingSessions.length,
@@ -272,6 +282,7 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
         monthlyRevenue,
         revenueChange: Math.round(revenueChange),
       },
+      unreadNotifications,
       isVerified: psychProfile.isVerified,
       timezone: psychProfile.timezone || 'America/Sao_Paulo',
       upcomingSessions: upcomingSessions.map((s) => ({

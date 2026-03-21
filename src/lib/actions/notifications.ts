@@ -59,6 +59,17 @@ export async function sendAppointmentNotifications(appointmentId: string) {
           time: timeFormatted,
         }),
       })
+
+      // Create in-app notification
+      await prisma.notification.create({
+        data: {
+          userId: appointment.psychologist.userId,
+          title: 'Novo agendamento recebido!',
+          message: `${patientName} agendou uma sessão para ${dateFormatted} às ${timeFormatted}.`,
+          type: 'appointment',
+          link: '/dashboard/agenda',
+        },
+      })
     }
 
     logger.info(`[NOTIFICATION] Emails sent for appointment ${appointmentId}`)

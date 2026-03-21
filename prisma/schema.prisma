@@ -25,6 +25,7 @@ model User {
   sentMessages        Message[]                 @relation("SentMessages")
   profiles            Profile?
   psychologistProfile PsychologistProfile?
+  notifications       Notification[]
 
   @@map("users")
 }
@@ -321,4 +322,21 @@ enum UserRole {
   PSYCHOLOGIST
   COMPANY
   ADMIN
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  message   String
+  type      String   @default("info")
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("notifications")
 }
