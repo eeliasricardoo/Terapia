@@ -1,5 +1,7 @@
 /**
  * Tests for sessions Server Actions
+ * Rule 1: Appointments are visible to BOTH patient and psychologist
+ * Rule 2: Conflict checks prevent double-booking for both parties
  */
 
 const mockGetUser = jest.fn()
@@ -24,11 +26,22 @@ jest.mock('@/lib/security', () => ({
   isValidUUID: jest.fn(() => true),
 }))
 
+jest.mock('@/lib/actions/notifications', () => ({
+  sendAppointmentNotifications: jest.fn().mockResolvedValue(undefined),
+}))
+
+jest.mock('next/cache', () => ({
+  revalidatePath: jest.fn(),
+  revalidateTag: jest.fn(),
+}))
+
 const mockPrismaAppointmentFindMany = jest.fn()
+const mockPrismaAppointmentFindFirst = jest.fn()
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     appointment: {
       findMany: (...args: any[]) => mockPrismaAppointmentFindMany(...args),
+      findFirst: (...args: any[]) => mockPrismaAppointmentFindFirst(...args),
     },
   },
 }))
@@ -44,6 +57,36 @@ import {
 
 const MOCK_USER = { id: 'user-1', email: 'test@test.com' }
 
+// Sample appointment returned by Prisma (includes nested relations)
+function makePrismaAppointment(overrides: Record<string, any> = {}) {
+  return {
+    id: 'appt-1',
+    patientId: 'user-1',
+    psychologistId: 'psych-profile-1',
+    scheduledAt: new Date('2024-06-01T10:00:00Z'),
+    durationMinutes: 50,
+    status: 'SCHEDULED',
+    price: 150,
+    meetingUrl: null,
+    paymentMethod: null,
+    sessionType: 'Terapia Individual',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    patient: {
+      id: 'user-1',
+      profiles: { full_name: 'Patient Name', role: 'PATIENT', avatar_url: null },
+    },
+    psychologist: {
+      id: 'psych-profile-1',
+      user: {
+        id: 'psych-user-1',
+        profiles: { full_name: 'Psych Name', role: 'PSYCHOLOGIST', avatar_url: null },
+      },
+    },
+    ...overrides,
+  }
+}
+
 // Helper to build chainable Supabase mock
 function mockSupabaseQuery(data: any = null, error: any = null) {
   const chain: any = {
@@ -58,19 +101,7 @@ function mockSupabaseQuery(data: any = null, error: any = null) {
     single: jest.fn().mockResolvedValue({ data, error }),
     insert: jest.fn().mockReturnThis(),
     update: jest.fn().mockReturnThis(),
-    // When chain ends without single(), resolve data
   }
-  // Make final resolution work for non-single queries
-  chain.order.mockImplementation(() => {
-    chain.then = (resolve: any) => resolve({ data: data ? [data] : [], error })
-    return chain
-  })
-
-  // Override for methods that should resolve
-  const originalLimit = chain.limit
-  chain.limit = jest.fn().mockImplementation(() => {
-    return chain
-  })
 
   mockFrom.mockReturnValue(chain)
   return chain
@@ -81,27 +112,94 @@ describe('sessions actions', () => {
     jest.clearAllMocks()
   })
 
-  describe('getUserSessions', () => {
-    it('should return empty array on supabase error', async () => {
-      const chain = mockSupabaseQuery(null, { message: 'Error' })
-      // Override the order to resolve with error
-      chain.order.mockResolvedValue({ data: null, error: { message: 'Error' } })
+  // ──────────────────────────────────────────────────────────────────
+  // Rule 1: Appointments must appear on BOTH patient and psychologist
+  // ──────────────────────────────────────────────────────────────────
+  describe('getUserSessions - both-party visibility (Rule 1)', () => {
+    it('should return empty array when Prisma throws an error', async () => {
+      mockPrismaAppointmentFindMany.mockRejectedValue(new Error('DB error'))
 
       const result = await getUserSessions('user-1')
       expect(result).toEqual([])
     })
 
-    it('should call supabase with correct user filter', async () => {
-      const chain = mockSupabaseQuery()
-      chain.order.mockResolvedValue({ data: [], error: null })
+    it('should query using OR filter covering both patient and psychologist roles', async () => {
+      mockPrismaAppointmentFindMany.mockResolvedValue([])
 
       await getUserSessions('user-1')
 
-      expect(mockFrom).toHaveBeenCalledWith('appointments')
-      expect(chain.or).toHaveBeenCalledWith('patient_id.eq.user-1,psychologist_id.eq.user-1')
+      expect(mockPrismaAppointmentFindMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            OR: [{ patientId: 'user-1' }, { psychologist: { userId: 'user-1' } }],
+          },
+        })
+      )
+    })
+
+    it('should return appointments when patient queries their sessions', async () => {
+      const appt = makePrismaAppointment({ patientId: 'user-1' })
+      mockPrismaAppointmentFindMany.mockResolvedValue([appt])
+
+      const result = await getUserSessions('user-1')
+
+      expect(result).toHaveLength(1)
+      expect(result[0].patient_id).toBe('user-1')
+      expect(result[0].psychologist_id).toBe('psych-profile-1')
+      expect(result[0].scheduled_at).toBe('2024-06-01T10:00:00.000Z')
+      expect(result[0].duration_minutes).toBe(50)
+      expect(result[0].status).toBe('SCHEDULED')
+      expect(result[0].price).toBe(150)
+    })
+
+    it('should return same appointment when psychologist queries their sessions (both-party visibility)', async () => {
+      // The appointment was booked by patient-user-id with psychologist psych-user-id.
+      // Both should see it — verified here from the psychologist's perspective.
+      const appt = makePrismaAppointment({
+        patientId: 'patient-user-id',
+        psychologist: {
+          id: 'psych-profile-1',
+          user: {
+            id: 'psych-user-id',
+            profiles: { full_name: 'Dr. Silva', role: 'PSYCHOLOGIST', avatar_url: null },
+          },
+        },
+      })
+      mockPrismaAppointmentFindMany.mockResolvedValue([appt])
+
+      // Psychologist queries using their user ID
+      const result = await getUserSessions('psych-user-id')
+
+      expect(result).toHaveLength(1)
+      expect(result[0].id).toBe('appt-1')
+      // Patient info is present so the psychologist can see who booked
+      expect(result[0].patient).not.toBeNull()
+      // Psychologist info is present so both sides can identify the session
+      expect(result[0].psychologist).not.toBeNull()
+    })
+
+    it('should return multiple sessions ordered correctly', async () => {
+      const first = makePrismaAppointment({
+        id: 'appt-a',
+        scheduledAt: new Date('2024-06-01T09:00:00Z'),
+      })
+      const second = makePrismaAppointment({
+        id: 'appt-b',
+        scheduledAt: new Date('2024-06-02T10:00:00Z'),
+      })
+      mockPrismaAppointmentFindMany.mockResolvedValue([first, second])
+
+      const result = await getUserSessions('user-1')
+
+      expect(result).toHaveLength(2)
+      expect(result[0].id).toBe('appt-a')
+      expect(result[1].id).toBe('appt-b')
     })
   })
 
+  // ──────────────────────────────────────────────────────────────────
+  // createSession
+  // ──────────────────────────────────────────────────────────────────
   describe('createSession', () => {
     it('should return error if user is not authenticated', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } })
@@ -136,7 +234,7 @@ describe('sessions actions', () => {
 
     it('should return error when psychologist not found', async () => {
       mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
-      const chain = mockSupabaseQuery(null, { message: 'Not found' })
+      mockSupabaseQuery(null, { message: 'Not found' })
 
       const result = await createSession({
         patientId: MOCK_USER.id,
@@ -148,15 +246,17 @@ describe('sessions actions', () => {
       expect(result.success).toBe(false)
     })
 
-    it('should return error if there is a booking conflict', async () => {
+    it('should block double-booking when there is a conflict (Rule 2)', async () => {
       mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
       mockSupabaseQuery({ id: 'psych-profile-1', price_per_session: 150 })
 
-      // Mock conflict
       const now = new Date()
+      // Simulate an existing appointment overlapping the requested slot
       mockPrismaAppointmentFindMany.mockResolvedValue([
         {
           id: 'existing-session',
+          psychologistId: 'psych-profile-1',
+          patientId: 'other-patient',
           scheduledAt: now,
           durationMinutes: 50,
         },
@@ -172,8 +272,39 @@ describe('sessions actions', () => {
       expect(result.success).toBe(false)
       expect(result.error).toContain('horário já foi reservado')
     })
+
+    it('should block double-booking when patient already has an appointment at the same time (Rule 2)', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
+      mockSupabaseQuery({ id: 'psych-profile-2', price_per_session: 200 })
+
+      const now = new Date()
+      // Patient has an existing session with ANOTHER psychologist at the same time
+      mockPrismaAppointmentFindMany.mockResolvedValue([
+        {
+          id: 'patient-existing-session',
+          psychologistId: 'different-psych-profile',
+          patientId: MOCK_USER.id,
+          scheduledAt: now,
+          durationMinutes: 50,
+        },
+      ])
+
+      const result = await createSession({
+        patientId: MOCK_USER.id,
+        psychologistId: 'psych-2',
+        scheduledAt: now.toISOString(),
+        durationMinutes: 50,
+      })
+
+      expect(result.success).toBe(false)
+      // Patient conflict message
+      expect(result.error).toContain('agenda')
+    })
   })
 
+  // ──────────────────────────────────────────────────────────────────
+  // cancelSession
+  // ──────────────────────────────────────────────────────────────────
   describe('cancelSession', () => {
     it('should return error if user is not authenticated', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } })
@@ -183,7 +314,7 @@ describe('sessions actions', () => {
 
     it('should return error if session is not found', async () => {
       mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
-      const chain = mockSupabaseQuery(null, { message: 'Not found' })
+      mockSupabaseQuery(null, { message: 'Not found' })
 
       const result = await cancelSession('session-nonexistent')
 
@@ -205,6 +336,9 @@ describe('sessions actions', () => {
     })
   })
 
+  // ──────────────────────────────────────────────────────────────────
+  // rescheduleSession
+  // ──────────────────────────────────────────────────────────────────
   describe('rescheduleSession', () => {
     it('should return error if user is not authenticated', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } })
@@ -217,7 +351,7 @@ describe('sessions actions', () => {
 
     it('should return error if session is not found', async () => {
       mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
-      const chain = mockSupabaseQuery(null, { message: 'Not found' })
+      mockSupabaseQuery(null, { message: 'Not found' })
 
       const result = await rescheduleSession({
         sessionId: 'session-nonexistent',
@@ -244,7 +378,7 @@ describe('sessions actions', () => {
       expect(result.error).toContain('Acesso negado')
     })
 
-    it('should return error if there is a booking conflict on reschedule', async () => {
+    it('should block rescheduling into a conflicting slot (Rule 2)', async () => {
       mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
       const chain = mockSupabaseQuery()
       chain.single.mockResolvedValue({
@@ -258,11 +392,12 @@ describe('sessions actions', () => {
         error: null,
       })
 
-      // Mock conflict
       const now = new Date()
       mockPrismaAppointmentFindMany.mockResolvedValue([
         {
-          id: 'existing-session',
+          id: 'other-existing-session',
+          psychologistId: 'psych-1',
+          patientId: 'another-patient',
           scheduledAt: now,
           durationMinutes: 50,
         },
