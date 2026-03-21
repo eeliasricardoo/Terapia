@@ -140,7 +140,7 @@ function ActiveRoomInterface({
 
   const [isMicOn, setIsMicOn] = useState(localParticipant?.audio ?? true)
   const [isCamOn, setIsCamOn] = useState(localParticipant?.video ?? true)
-  const [activeTab, setActiveTab] = useState(appointmentInfo?.isPsychologist ? 'record' : 'chat')
+  const [activeTab, setActiveTab] = useState(appointmentInfo?.isPsychologist ? 'record' : 'info')
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   // Sync state if it changed in lobby or via Daily events
@@ -183,7 +183,7 @@ function ActiveRoomInterface({
       setActiveTab('chat')
     } else {
       setActiveTab((prev) =>
-        prev === 'chat' ? (appointmentInfo?.isPsychologist ? 'record' : 'chat') : 'chat'
+        prev === 'chat' ? (appointmentInfo?.isPsychologist ? 'record' : 'info') : 'chat'
       )
     }
   }, [isSidebarOpen, appointmentInfo?.isPsychologist])
