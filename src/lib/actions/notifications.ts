@@ -60,16 +60,18 @@ export async function sendAppointmentNotifications(appointmentId: string) {
         }),
       })
 
-      // Create in-app notification
-      await prisma.notification.create({
-        data: {
-          userId: appointment.psychologist.userId,
-          title: 'Novo agendamento recebido!',
-          message: `${patientName} agendou uma sessão para ${dateFormatted} às ${timeFormatted}.`,
-          type: 'appointment',
-          link: '/dashboard/agenda',
-        },
-      })
+      // Create in-app notification (use raw SQL to avoid runtime "undefined" error if prisma is still caching older version)
+      await prisma
+        .$executeRawUnsafe(
+          `INSERT INTO notifications (id, user_id, title, message, type, link, updated_at) 
+         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, NOW())`,
+          appointment.psychologist.userId,
+          'Novo agendamento recebido!',
+          `${patientName} agendou uma sessão para ${dateFormatted} às ${timeFormatted}.`,
+          'appointment',
+          '/dashboard/agenda'
+        )
+        .catch((err) => logger.error('[NOTIFICATION] Error creating DB entry:', err))
     }
 
     logger.info(`[NOTIFICATION] Emails sent for appointment ${appointmentId}`)
