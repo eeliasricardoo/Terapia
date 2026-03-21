@@ -29,6 +29,64 @@ export type PatientData = {
   birthDate?: string
 }
 
+export async function getPatientInfoByAppointment(
+  appointmentId: string
+): Promise<PatientData | null> {
+  try {
+    if (!isValidUUID(appointmentId)) return null
+
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return null
+
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        patient: {
+          include: { profiles: true },
+        },
+        psychologist: true,
+      },
+    })
+
+    if (!appointment) return null
+
+    // Verify psychologist
+    if (appointment.psychologist.userId !== user.id) return null
+
+    const profile = appointment.patient.profiles
+    if (!profile) return null
+
+    const patientUser = appointment.patient
+
+    return {
+      id: profile.id,
+      userId: patientUser.id,
+      name: profile.fullName || patientUser.name || 'Paciente',
+      email: patientUser.email,
+      phone: profile.phone || '',
+      image: profile.avatarUrl || patientUser.image || undefined,
+      status: 'active',
+      totalSessions: 0, // Could fetch count if needed
+      gender: profile.gender || '',
+      profession: profile.profession || '',
+      document: profile.document || '',
+      birthDate: profile.birth_date ? new Date(profile.birth_date).toLocaleDateString('pt-BR') : '',
+      address: {
+        line: profile.addressLine || '',
+        city: profile.city || '',
+        state: profile.state || '',
+        zip: profile.zipCode || '',
+      },
+    }
+  } catch (error) {
+    logger.error('Error fetching patient info by appointment:', error)
+    return null
+  }
+}
+
 export async function getPsychologistPatients(): Promise<PatientData[]> {
   try {
     const supabase = await createClient()

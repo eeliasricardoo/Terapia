@@ -1,7 +1,10 @@
+'use server'
+
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
-import { decryptData } from '@/lib/security'
+import { decryptData, encryptData, assertValidUUID } from '@/lib/security'
+import { revalidatePath } from 'next/cache'
 
 export type PublicEvolution = {
   id: string
@@ -9,6 +12,76 @@ export type PublicEvolution = {
   psychologistName: string
   publicSummary: string | null
   mood: string | null
+}
+
+export async function createSessionEvolution(data: {
+  appointmentId: string
+  mood: string | null
+  publicSummary: string
+  privateNotes: string
+}) {
+  try {
+    assertValidUUID(data.appointmentId, 'ID do agendamento')
+
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error('Não autenticado')
+
+    // 1. Fetch appointment to get patient and psych info
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: data.appointmentId },
+      include: {
+        psychologist: true,
+        patient: {
+          include: { profiles: true },
+        },
+      },
+    })
+
+    if (!appointment) throw new Error('Agendamento não encontrado')
+
+    // 2. Security: Verify psychologist ownership
+    if (appointment.psychologist.userId !== user.id) {
+      throw new Error('Você não tem permissão para registrar evoluções para esta sessão.')
+    }
+
+    // 3. Get Patient Profile ID (Evolution relates to Profile, not User directly)
+    const patientProfileId = appointment.patient.profiles?.id
+    if (!patientProfileId) {
+      throw new Error('Perfil do paciente não encontrado.')
+    }
+
+    // 4. Encrypt sensitive health data
+    const encryptedPublic = encryptData(data.publicSummary)
+    const encryptedPrivate = encryptData(data.privateNotes)
+
+    // 5. Create Evolution record
+    const evolution = await prisma.evolution.create({
+      data: {
+        patientId: patientProfileId,
+        psychologistId: appointment.psychologistId, // This is the UUID of PsychologistProfile
+        mood: data.mood,
+        publicSummary: encryptedPublic,
+        privateNotes: encryptedPrivate,
+        date: new Date(),
+      },
+    })
+
+    // 6. Optionally update appointment status to COMPLETED
+    await prisma.appointment.update({
+      where: { id: data.appointmentId },
+      data: { status: 'COMPLETED' },
+    })
+
+    revalidatePath(`/dashboard/psicologo/pacientes/${patientProfileId}`)
+
+    return { success: true, id: evolution.id }
+  } catch (error: any) {
+    logger.error('Error creating session evolution:', error)
+    return { success: false, error: error.message || 'Falha ao salvar evolução' }
+  }
 }
 
 export async function getPatientPublicEvolutions(): Promise<PublicEvolution[]> {
@@ -33,19 +106,11 @@ export async function getPatientPublicEvolutions(): Promise<PublicEvolution[]> {
       where: {
         patientId: profile.id,
       },
-      include: {
-        // We need to get psychologist name.
-        // In this schema, Evolution.psychologistId is a string.
-        // Let's check if we can join it or if we need to fetch separately.
-      },
       orderBy: {
         date: 'desc',
       },
     })
 
-    // Since psychologistId in Evolution doesn't have an explicit relation in the model shown,
-    // we might need to fetch psychologist details separately or fix the schema later.
-    // For now, let's fetch unique psychologist ids from results.
     const psychIds = [...new Set(evolutions.map((e) => e.psychologistId))]
     const psychologists = await prisma.psychologistProfile.findMany({
       where: { id: { in: psychIds } },

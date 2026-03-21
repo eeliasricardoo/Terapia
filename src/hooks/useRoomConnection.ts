@@ -1,7 +1,6 @@
 'use client'
 import { logger } from '@/lib/utils/logger'
-
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import DailyIframe, { DailyCall } from '@daily-co/daily-js'
 
 export interface AppointmentInfo {
@@ -18,10 +17,26 @@ export function useRoomConnection(appointmentId: string) {
   const [isLoading, setIsLoading] = useState(true)
   const [callObject, setCallObject] = useState<DailyCall | null>(null)
 
-  // Fetch Token
+  // Guard against redundant fetches
+  const lastFetchedId = useRef<string | null>(null)
+  const isSettingUp = useRef(false)
+
+  // 1. Fetch Token
   useEffect(() => {
+    // Only fetch if ID changed or we haven't fetched yet
+    if (!appointmentId || lastFetchedId.current === appointmentId) {
+      if (lastFetchedId.current === appointmentId) {
+        setIsLoading(false) // Already done
+      }
+      return
+    }
+
     async function init() {
       try {
+        setIsLoading(true)
+        lastFetchedId.current = appointmentId
+        logger.debug(`Fetching room info for: ${appointmentId}`)
+
         const res = await fetch('/api/video/token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -33,12 +48,8 @@ export function useRoomConnection(appointmentId: string) {
           let errorMessage = errorText || 'Falha ao obter token da sala'
           try {
             const errorJson = JSON.parse(errorText)
-            if (errorJson.error) {
-              errorMessage = errorJson.error
-            }
-          } catch (e) {
-            // Ignore parse error, use original text
-          }
+            if (errorJson.error) errorMessage = errorJson.error
+          } catch (e) {}
           throw new Error(errorMessage)
         }
 
@@ -51,42 +62,60 @@ export function useRoomConnection(appointmentId: string) {
           isPsychologist: data.isPsychologist,
         })
       } catch (err: any) {
+        logger.error('Failed to init room connection:', err)
         setError(err.message)
       } finally {
         setIsLoading(false)
       }
     }
+
     init()
   }, [appointmentId])
 
+  // 2. Setup Call Object
   useEffect(() => {
-    if (!roomUrl || !token) return
+    if (!roomUrl || !token || isSettingUp.current) return
+
+    // If we already have a call object and it matches our current URL, don't recreate it
+    // Actually Daily CallObjects can only be loaded once with a specific URL usually.
+    // If the URL changed, we MUST recreate.
 
     const setupCall = async () => {
-      const existingCall = DailyIframe.getCallInstance()
+      try {
+        isSettingUp.current = true
+        const existingCall = DailyIframe.getCallInstance()
 
-      if (existingCall) {
-        logger.debug('Destroying existing Daily instance to ensure fresh state')
-        await existingCall.destroy()
+        if (existingCall) {
+          // Check if it's already usable or needs destruction
+          const state = existingCall.meetingState()
+          // Valid initial states: 'new', 'loading', 'loaded', 'joining-meeting', 'joined-meeting', 'left-meeting', 'error'
+          if (state !== 'left-meeting' && state !== 'error') {
+            logger.debug(`Existing Daily instance state: ${state} - destroying for fresh start`)
+            await existingCall.destroy()
+          }
+        }
+
+        logger.debug('Creating new Daily call object')
+        const newCo = DailyIframe.createCallObject()
+        setCallObject(newCo)
+      } catch (err) {
+        logger.error('Error in setupCall', err)
+      } finally {
+        isSettingUp.current = false
       }
-
-      logger.debug('Creating new Daily call object')
-      const newCo = DailyIframe.createCallObject()
-
-      setCallObject(newCo)
     }
 
     setupCall()
 
     return () => {
-      // Cleanup will be handled when component unmounts
+      // We don't destroy here to avoid loops. Total destruction should happen on unmount of VideoRoomPage.
     }
   }, [roomUrl, token])
 
   return {
     appointmentInfo,
     error,
-    isLoading: isLoading || !roomUrl || !token,
+    isLoading: isLoading || (!roomUrl && !error),
     callObject,
     roomUrl,
     token,
