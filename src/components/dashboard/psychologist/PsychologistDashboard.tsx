@@ -151,7 +151,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
   }, [selectedDate])
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-8">
       {!dashboardData.isVerified ? (
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
           <div className="h-20 w-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-6 shadow-sm border border-amber-200">
@@ -189,7 +189,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
       ) : (
         <>
           {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 mt-2">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 mt-2">
             <div>
               <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
                 Olá, {userName}.
@@ -293,7 +293,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Upcoming Schedule */}
             <Card className="col-span-1 lg:col-span-2 border-none shadow-sm bg-white flex flex-col">
               <CardHeader className="border-b border-slate-100 bg-white pb-5 pt-6">
@@ -318,8 +318,8 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="p-0 flex-1">
-                <div className="flex flex-col">
+              <CardContent className="p-0 overflow-hidden">
+                <div className="flex flex-col overflow-y-auto max-h-[420px]">
                   {displaySessions.map((session, index) => {
                     const isNext = index === 0 && session.status === 'scheduled'
                     const scheduledDate = new Date(session.scheduledAt)
@@ -331,14 +331,10 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                     return (
                       <div
                         key={session.id}
-                        className={`
-                                            flex items-stretch 
-                                            ${isNext ? 'bg-slate-50/50' : 'bg-white'} 
-                                            border-b border-slate-50 last:border-0 transition-colors
-                                        `}
+                        className={`flex items-stretch ${isNext ? 'bg-slate-50/50' : 'bg-white'} border-b border-slate-50 last:border-0 transition-colors`}
                       >
                         {/* Time & Session Info */}
-                        <div className="flex-1 flex items-center justify-between px-6 py-5">
+                        <div className="flex-1 flex items-center justify-between px-6 py-4">
                           <div className="flex items-center gap-4">
                             <div className="flex flex-col items-center justify-center min-w-[3.5rem]">
                               <span
@@ -465,7 +461,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             </Card>
 
             {/* Quick Actions / Recent Patients */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               <DashboardCalendar
                 selected={selectedDate}
                 onSelect={setSelectedDate}
