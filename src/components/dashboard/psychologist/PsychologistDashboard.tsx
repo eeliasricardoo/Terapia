@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -43,6 +44,7 @@ interface Props {
 export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [allAppointments, setAllAppointments] = useState<any[]>([])
+  const [unreadCount, setUnreadCount] = useState(dashboardData.unreadNotifications)
   const [overrides, setOverrides] = useState<any>({})
   const [weeklySchedule, setWeeklySchedule] = useState<any>({
     monday: { enabled: true, slots: [] },
@@ -132,6 +134,51 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
     fetchAllData()
   }, [])
 
+  // 🔔 [REALTIME] - Listen for new notifications
+  useEffect(() => {
+    const supabase = createClient()
+
+    const setupSubscription = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) return
+
+      const channel = supabase
+        .channel(`notifications-${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            const newNotif = payload.new as any
+            setUnreadCount((prev) => prev + 1)
+
+            // EYE-CATCHING Notification (Toast)
+            toast.success(newNotif.title, {
+              description: newNotif.message,
+              duration: 8000, // Longer for important stuff
+              action: {
+                label: 'Ver Agenda',
+                onClick: () => (window.location.href = '/dashboard/agenda'),
+              },
+            })
+          }
+        )
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(channel)
+      }
+    }
+
+    setupSubscription()
+  }, [])
+
   const displaySessions = useMemo(() => {
     if (!selectedDate) return []
     const dateStr = format(selectedDate, 'yyyy-MM-dd')
@@ -216,7 +263,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 aria-label="Notificações"
               >
                 <Bell className="h-5 w-5" />
-                {dashboardData.unreadNotifications > 0 && (
+                {unreadCount > 0 && (
                   <span
                     className="absolute top-2 right-2 h-2 w-2 bg-rose-500 rounded-full border-2 border-slate-50"
                     aria-hidden="true"
