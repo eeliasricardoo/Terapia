@@ -78,13 +78,13 @@ export default async function SessionsPage() {
             const now = new Date()
 
             // A session is "upcoming" if it's in the future and scheduled
-            const isUpcoming = scheduledDate > now && session.status === 'scheduled'
+            const statusUpper = session.status.toUpperCase()
+            const isUpcoming = scheduledDate > now && statusUpper === 'SCHEDULED'
 
             // We allow rescheduling if it's upcoming OR if it's a past scheduled session (missed)
             // especially useful for psychologists to manage their agenda
             const canReschedule =
-              session.status === 'scheduled' &&
-              (isUpcoming || isPsychologist || scheduledDate < now)
+              statusUpper === 'SCHEDULED' && (isUpcoming || isPsychologist || scheduledDate < now)
 
             return (
               <Card key={session.id}>
@@ -112,7 +112,7 @@ export default async function SessionsPage() {
                             Agendada
                           </Badge>
                         )}
-                        {session.status === 'completed' && (
+                        {statusUpper === 'COMPLETED' && (
                           <Badge
                             variant="secondary"
                             className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200"
@@ -120,7 +120,15 @@ export default async function SessionsPage() {
                             Realizada
                           </Badge>
                         )}
-                        {session.status === 'cancelled' && (
+                        {statusUpper === 'CANCELLED' && (
+                          <Badge
+                            variant="destructive"
+                            className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200"
+                          >
+                            Cancelada
+                          </Badge>
+                        )}
+                        {statusUpper === 'CANCELED' && (
                           <Badge
                             variant="destructive"
                             className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200"

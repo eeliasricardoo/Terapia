@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
+import { sendAppointmentNotifications } from './notifications'
+import { checkAppointmentConflict } from './appointments-utils'
 
 /**
  * Create a new appointment covered by health insurance
@@ -40,38 +42,28 @@ export async function createInsuranceAppointment(data: {
   const psychologistProfileId = psychData.id
 
   // 3. Prevent double booking
-  const newSessionStart = new Date(data.scheduledAt)
-  const newSessionEnd = new Date(newSessionStart.getTime() + data.durationMinutes * 60 * 1000)
-
   try {
-    const existingConflicts = await prisma.appointment.findMany({
-      where: {
-        psychologistId: psychologistProfileId,
-        status: { notIn: ['CANCELED'] },
-        scheduledAt: {
-          gte: new Date(newSessionStart.getTime() - 120 * 60000),
-          lte: new Date(newSessionStart.getTime() + 120 * 60000),
-        },
-      },
-    })
-
-    const hasConflict = existingConflicts.some((appt) => {
-      const apptStart = new Date(appt.scheduledAt)
-      const apptEnd = new Date(apptStart.getTime() + appt.durationMinutes * 60000)
-      return newSessionStart < apptEnd && newSessionEnd > apptStart
+    const { hasConflict, type } = await checkAppointmentConflict({
+      psychologistProfileId,
+      patientId: user.id,
+      scheduledAt: new Date(data.scheduledAt),
+      durationMinutes: data.durationMinutes,
     })
 
     if (hasConflict) {
       return {
         success: false,
-        error: 'Este horário já foi reservado ou entra em conflito com outra sessão.',
+        error:
+          type === 'psychologist'
+            ? 'Este horário já foi reservado ou entra em conflito com outra sessão do psicólogo.'
+            : 'Sua agenda já possui um compromisso neste horário.',
       }
     }
   } catch (error) {
-    logger.error('Error checking conflicts:', error)
+    logger.error('Conflict check error in createInsuranceAppointment:', error)
+    return { success: false, error: 'Erro ao verificar disponibilidade.' }
   }
 
-  // 4. Create the appointment with insurance info
   const { data: newSession, error } = await supabase
     .from('appointments')
     .insert({
@@ -91,6 +83,11 @@ export async function createInsuranceAppointment(data: {
     logger.error('Error creating insurance session:', error)
     return { success: false, error: error.message }
   }
+
+  // Send notifications asynchronously
+  sendAppointmentNotifications(newSession.id).catch((err) =>
+    logger.error('Error sending insurance appt notifications:', err)
+  )
 
   revalidateTag('appointments')
   revalidatePath('/', 'layout')

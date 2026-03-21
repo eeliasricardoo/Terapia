@@ -6,6 +6,8 @@ import type { Database } from '@/lib/supabase/types'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { isValidUUID } from '@/lib/security'
+import { sendAppointmentNotifications } from './notifications'
+import { checkAppointmentConflict } from './appointments-utils'
 
 type Appointment = Database['public']['Tables']['appointments']['Row']
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -19,61 +21,85 @@ export type SessionWithDetails = Appointment & {
  * Get all sessions (appointments) for a user
  */
 export async function getUserSessions(userId: string): Promise<SessionWithDetails[]> {
-  const supabase = await createClient()
+  try {
+    // We use Prisma to bypass any Supabase join/schema inconsistencies
+    // and manually ensure we only fetch for the requesting user
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        OR: [{ patientId: userId }, { psychologist: { userId: userId } }],
+      },
+      include: {
+        patient: { include: { profiles: true } },
+        psychologist: {
+          include: {
+            user: { include: { profiles: true } },
+          },
+        },
+      },
+      orderBy: { scheduledAt: 'asc' },
+    })
 
-  // Query for appointments where user is either patient or psychologist
-  const { data, error } = await supabase
-    .from('appointments')
-    .select(
-      `
-            *,
-            psychologist:profiles!appointments_psychologist_id_fkey(*),
-            patient:profiles!appointments_patient_id_fkey(*)
-        `
-    )
-    .or(`patient_id.eq.${userId},psychologist_id.eq.${userId}`)
-    .order('scheduled_at', { ascending: true })
-
-  if (error) {
-    logger.error('Error fetching user sessions:', error)
+    // Map to the expected SessionWithDetails structure
+    // Prisma returns User but we need to match the Profile structure expected by UI
+    return appointments.map((appt) => ({
+      ...appt,
+      id: appt.id,
+      patient_id: appt.patientId,
+      psychologist_id: appt.psychologistId,
+      scheduled_at: appt.scheduledAt.toISOString(),
+      duration_minutes: appt.durationMinutes,
+      status: appt.status,
+      price: Number(appt.price),
+      patient: appt.patient.profiles ? (appt.patient.profiles as any) : null,
+      psychologist: appt.psychologist.user.profiles
+        ? (appt.psychologist.user.profiles as any)
+        : null,
+    })) as unknown as SessionWithDetails[]
+  } catch (error) {
+    logger.error('Error fetching user sessions (Prisma):', error)
     return []
   }
-
-  return data as SessionWithDetails[]
 }
 
 /**
  * Get the next upcoming session for a user
  */
 export async function getNextSession(userId: string): Promise<SessionWithDetails | null> {
-  const supabase = await createClient()
-  const now = new Date().toISOString()
+  const now = new Date()
 
-  const { data, error } = await supabase
-    .from('appointments')
-    .select(
-      `
-            *,
-            psychologist:profiles!appointments_psychologist_id_fkey(*),
-            patient:profiles!appointments_patient_id_fkey(*)
-        `
-    )
-    .or(`patient_id.eq.${userId},psychologist_id.eq.${userId}`)
-    .gte('scheduled_at', now)
-    .eq('status', 'scheduled')
-    .order('scheduled_at', { ascending: true })
-    .limit(1)
-    .single()
+  try {
+    const appt = await prisma.appointment.findFirst({
+      where: {
+        OR: [{ patientId: userId }, { psychologist: { userId: userId } }],
+        scheduledAt: { gte: now },
+        status: 'SCHEDULED',
+      },
+      include: {
+        patient: { include: { profiles: true } },
+        psychologist: {
+          include: {
+            user: { include: { profiles: true } },
+          },
+        },
+      },
+      orderBy: { scheduledAt: 'asc' },
+    })
 
-  if (error) {
-    if (error.code !== 'PGRST116') {
-      // PGRST116 is "The result contains 0 rows"
-      logger.error('Error fetching next session:', error)
-    }
+    if (!appt) return null
+
+    return {
+      ...appt,
+      scheduled_at: appt.scheduledAt.toISOString(),
+      price: Number(appt.price),
+      patient: appt.patient.profiles ? (appt.patient.profiles as any) : null,
+      psychologist: appt.psychologist.user.profiles
+        ? (appt.psychologist.user.profiles as any)
+        : null,
+    } as unknown as SessionWithDetails
+  } catch (error) {
+    logger.error('Error fetching next session (Prisma):', error)
     return null
   }
-
-  return data as SessionWithDetails
 }
 
 /**
@@ -83,29 +109,40 @@ export async function getSessionHistory(
   userId: string,
   limit: number = 10
 ): Promise<SessionWithDetails[]> {
-  const supabase = await createClient()
-  const now = new Date().toISOString()
+  const now = new Date()
 
-  const { data, error } = await supabase
-    .from('appointments')
-    .select(
-      `
-            *,
-            psychologist:profiles!appointments_psychologist_id_fkey(*),
-            patient:profiles!appointments_patient_id_fkey(*)
-        `
-    )
-    .or(`patient_id.eq.${userId},psychologist_id.eq.${userId}`)
-    .lte('scheduled_at', now) // History is past or current
-    .order('scheduled_at', { ascending: false })
-    .limit(limit)
+  try {
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        OR: [{ patientId: userId }, { psychologist: { userId: userId } }],
+        scheduledAt: { lte: now },
+      },
+      include: {
+        patient: { include: { profiles: true } },
+        psychologist: {
+          include: {
+            user: { include: { profiles: true } },
+          },
+        },
+      },
+      orderBy: { scheduledAt: 'desc' },
+      take: limit,
+    })
 
-  if (error) {
-    logger.error('Error fetching session history:', error)
+    return appointments.map((appt) => ({
+      ...appt,
+      scheduled_at: appt.scheduledAt.toISOString(),
+      status: appt.status,
+      price: Number(appt.price),
+      patient: appt.patient.profiles ? (appt.patient.profiles as any) : null,
+      psychologist: appt.psychologist.user.profiles
+        ? (appt.psychologist.user.profiles as any)
+        : null,
+    })) as unknown as SessionWithDetails[]
+  } catch (error) {
+    logger.error('Error fetching session history (Prisma):', error)
     return []
   }
-
-  return data as SessionWithDetails[]
 }
 
 /**
@@ -148,37 +185,29 @@ export async function createSession(data: {
   const psychologistProfileId = psychData.id
   const securePrice = psychData.price_per_session || 0
 
-  // 4. Backend validation: Prevent double booking (Race condition protection)
-  const newSessionStart = new Date(data.scheduledAt)
-  const newSessionEnd = new Date(newSessionStart.getTime() + data.durationMinutes * 60 * 1000)
-
-  // Consider appointments within a +/- 2h window for performance, but Prisma handles it well
-  const existingAppts = await prisma.appointment.findMany({
-    where: {
-      psychologistId: psychologistProfileId,
-      status: { notIn: ['CANCELED'] },
-      scheduledAt: {
-        gte: new Date(newSessionStart.getTime() - 120 * 60000),
-        lte: new Date(newSessionStart.getTime() + 120 * 60000),
-      },
-    },
-  })
-
-  if (existingAppts) {
-    const hasConflict = existingAppts.some((appt) => {
-      const apptStart = new Date(appt.scheduledAt)
-      const apptEnd = new Date(apptStart.getTime() + appt.durationMinutes * 60 * 1000)
-
-      // Check for overlap: (StartA < EndB) and (EndA > StartB)
-      return newSessionStart < apptEnd && newSessionEnd > apptStart
+  // 4. Backend validation: Prevent double booking
+  try {
+    const { hasConflict, type } = await checkAppointmentConflict({
+      psychologistProfileId,
+      patientId: data.patientId,
+      scheduledAt: new Date(data.scheduledAt),
+      durationMinutes: data.durationMinutes,
     })
 
     if (hasConflict) {
       return {
         success: false,
-        error: 'Este horário já foi reservado ou entra em conflito com outra sessão.',
+        error:
+          type === 'psychologist'
+            ? 'Este horário já foi reservado ou entra em conflito com outra sessão do psicólogo.'
+            : 'Sua agenda já possui um compromisso neste horário.',
       }
     }
+  } catch (err) {
+    logger.error('Conflict check error in createSession:', err)
+    // We proceed if there's a technical error, or fail safe?
+    // Let's fail safe if we can't be sure
+    return { success: false, error: 'Erro ao verificar disponibilidade.' }
   }
 
   // 5. Create the appointment
@@ -199,6 +228,11 @@ export async function createSession(data: {
     logger.error('Error creating session:', error)
     return { success: false, error: error.message }
   }
+
+  // Send notifications asynchronously
+  sendAppointmentNotifications(newSession.id).catch((err) =>
+    logger.error('Error sending session notifications:', err)
+  )
 
   revalidateTag('appointments')
   revalidatePath('/', 'layout')
@@ -311,39 +345,22 @@ export async function rescheduleSession(data: { sessionId: string; newScheduledA
   }
 
   // 4. Backend validation: Prevent double booking
-  const newSessionStart = new Date(data.newScheduledAt)
-  const newSessionEnd = new Date(
-    newSessionStart.getTime() + appointment.duration_minutes * 60 * 1000
-  )
-
   try {
-    // USE PRISMA to bypass RLS and see all conflicts for this psychologist
-    // We check for any appointment that starts before our end AND ends after our start
-    const existingConflicts = await prisma.appointment.findMany({
-      where: {
-        psychologistId: appointment.psychologist_id,
-        id: { not: data.sessionId },
-        status: { notIn: ['CANCELED'] },
-        // (StartA < EndB) AND (EndA > StartB)
-        // Since we don't know the exact end time of all existing sessions easily in a single query
-        // we'll fetch sessions within our +/- 2h window and check in memory
-        scheduledAt: {
-          gte: new Date(newSessionStart.getTime() - 120 * 60000),
-          lte: new Date(newSessionStart.getTime() + 120 * 60000),
-        },
-      },
-    })
-
-    const hasConflict = existingConflicts.some((appt) => {
-      const apptStart = new Date(appt.scheduledAt)
-      const apptEnd = new Date(apptStart.getTime() + appt.durationMinutes * 60000)
-      return newSessionStart < apptEnd && newSessionEnd > apptStart
+    const { hasConflict, type } = await checkAppointmentConflict({
+      psychologistProfileId: appointment.psychologist_id,
+      patientId: appointment.patient_id,
+      scheduledAt: new Date(data.newScheduledAt),
+      durationMinutes: appointment.duration_minutes,
+      excludeAppointmentId: data.sessionId,
     })
 
     if (hasConflict) {
       return {
         success: false,
-        error: 'Este horário já foi reservado ou entra em conflito com outra sessão.',
+        error:
+          type === 'psychologist'
+            ? 'Este horário já foi reservado ou entra em conflito com outra sessão do psicólogo.'
+            : 'Sua agenda já possui um compromisso neste horário.',
       }
     }
   } catch (error: any) {
@@ -351,11 +368,10 @@ export async function rescheduleSession(data: { sessionId: string; newScheduledA
       psychId: appointment.psychologist_id,
       sessionId: data.sessionId,
       error: error.message || error,
-      stack: error.stack,
     })
     return {
       success: false,
-      error: `Erro ao verificar disponibilidade: ${error.message || 'Erro desconhecido'}`,
+      error: 'Ocorreu um erro ao verificar disponibilidade do novo horário.',
     }
   }
 

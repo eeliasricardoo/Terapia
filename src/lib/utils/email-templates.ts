@@ -193,3 +193,49 @@ export function getRejectionEmailTemplate(name: string, reason: string) {
     </div>
   `
 }
+export function getPsychologistNewAppointmentTemplate({
+  psychologistName,
+  patientName,
+  dateFormatted,
+  time,
+}: {
+  psychologistName: string
+  patientName: string
+  dateFormatted: string
+  time: string
+}) {
+  return `
+    <div style="${baseStyles}">
+      <div style="${containerStyles}">
+        <div style="background-color: #2563eb; padding: 40px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800;">Novo Agendamento 📅</h1>
+        </div>
+        
+        <div style="padding: 40px;">
+          <h2 style="color: #0f172a; margin-top: 0;">Olá, Dr(a). ${psychologistName}!</h2>
+          <p>Você tem um novo agendamento realizado através da plataforma:</p>
+          
+          <div style="margin: 30px 0; border: 1px solid #e2e8f0; border-radius: 16px; padding: 25px; background-color: #f8fafc;">
+            <p style="margin: 0; font-size: 14px; color: #64748b; font-weight: bold; text-transform: uppercase;">Paciente</p>
+            <h3 style="margin: 10px 0 20px 0; color: #0f172a; font-size: 20px;">${patientName}</h3>
+            
+            <p style="margin: 0; font-size: 14px; color: #64748b; font-weight: bold; text-transform: uppercase;">Horário</p>
+            <p style="margin: 10px 0 0 0; font-size: 18px; font-weight: bold; color: #2563eb;">${dateFormatted} às ${time}</p>
+          </div>
+          
+          <p>Você pode acessar os detalhes do paciente e preparar o prontuário através do seu painel.</p>
+
+          <div style="text-align: center; margin-top: 40px;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/agenda" style="background-color: #2563eb; color: #ffffff; padding: 16px 32px; border-radius: 40px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Acessar minha Agenda
+            </a>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid #f1f5f9;">
+          ${footerContent}
+        </div>
+      </div>
+    </div>
+  `
+}

@@ -7,6 +7,8 @@ import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { isValidUUID } from '@/lib/security'
 import { revalidateTag } from 'next/cache'
+import { sendAppointmentNotifications } from './notifications'
+import { checkAppointmentConflict } from './appointments-utils'
 
 export async function createStripeCheckoutSession(data: {
   psychologistId: string
@@ -42,6 +44,23 @@ export async function createStripeCheckoutSession(data: {
 
     if (!psych) throw new Error('Psicólogo não encontrado')
 
+    // 1c. Conflict check BEFORE starting checkout or creating free appt
+    const { hasConflict, type } = await checkAppointmentConflict({
+      psychologistProfileId: psych.id,
+      patientId: user.id,
+      scheduledAt: new Date(data.scheduledAt),
+      durationMinutes: data.durationMinutes,
+    })
+
+    if (hasConflict) {
+      return {
+        error:
+          type === 'psychologist'
+            ? 'Este horário acabou de ser reservado por outro paciente. Por favor, escolha outro horário.'
+            : 'Você já possui uma sessão agendada para este mesmo horário.',
+      }
+    }
+
     const price = Number(psych.pricePerSession) || 0
     let finalPrice = price
 
@@ -75,7 +94,7 @@ export async function createStripeCheckoutSession(data: {
 
     // 2. IF FREE (100% DISCOUNT): Create appointment directly and return success
     if (finalPrice <= 0) {
-      await prisma.appointment.create({
+      const newAppt = await prisma.appointment.create({
         data: {
           patientId: user.id,
           psychologistId: psych.id,
@@ -86,6 +105,11 @@ export async function createStripeCheckoutSession(data: {
           status: 'SCHEDULED',
         },
       })
+
+      // Send notifications asynchronously
+      sendAppointmentNotifications(newAppt.id).catch((err) =>
+        logger.error('Error sending appt notifications:', err)
+      )
       revalidateTag('appointments')
       revalidateTag('psychologist-profile-view')
       return { url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success` }

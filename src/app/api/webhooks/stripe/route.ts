@@ -5,6 +5,8 @@ import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { revalidateTag } from 'next/cache'
+import { sendAppointmentNotifications } from '@/lib/actions/notifications'
+import { checkAppointmentConflict } from '@/lib/actions/appointments-utils'
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
 
@@ -48,8 +50,25 @@ export async function POST(req: Request) {
         return NextResponse.json({ received: true, duplicate: true })
       }
 
+      // Final Conflict Check (Safety Guard)
+      const { hasConflict } = await checkAppointmentConflict({
+        psychologistProfileId: metadata.psychologistId,
+        patientId: metadata.patientId,
+        scheduledAt: new Date(metadata.scheduledAt),
+        durationMinutes: parseInt(metadata.durationMinutes),
+      })
+
+      if (hasConflict) {
+        logger.error(
+          `CRITICAL: Overlapping appointment detected during webhook for session ${session.id}. Payment received but slot taken.`
+        )
+        // In a real production app, we would trigger a refund or an admin alert here.
+        // For now, we block the creation to maintain database integrity.
+        return NextResponse.json({ error: 'Time slot occupied during payment' }, { status: 409 })
+      }
+
       // Fulfill the purchase
-      await prisma.appointment.create({
+      const newAppt = await prisma.appointment.create({
         data: {
           patientId: metadata.patientId,
           psychologistId: metadata.psychologistId,
@@ -61,6 +80,11 @@ export async function POST(req: Request) {
           stripeSessionId: session.id,
         },
       })
+
+      // Send notifications asynchronously
+      sendAppointmentNotifications(newAppt.id).catch((err) =>
+        logger.error('Error sending appt notifications:', err)
+      )
 
       logger.info(
         `Appointment created for patient ${metadata.patientId} via Stripe session ${session.id}`
