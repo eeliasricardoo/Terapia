@@ -193,6 +193,188 @@ export function getRejectionEmailTemplate(name: string, reason: string) {
     </div>
   `
 }
+export function getCancellationEmailForPatient({
+  patientName,
+  psychologistName,
+  dateFormatted,
+  time,
+}: {
+  patientName: string
+  psychologistName: string
+  dateFormatted: string
+  time: string
+}) {
+  return `
+    <div style="${baseStyles}">
+      <div style="${containerStyles}">
+        <div style="background-color: #dc2626; padding: 40px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800;">Sessão Cancelada ❌</h1>
+        </div>
+
+        <div style="padding: 40px;">
+          <h2 style="color: #0f172a; margin-top: 0;">Olá, ${patientName}!</h2>
+          <p>Informamos que a seguinte sessão foi cancelada:</p>
+
+          <div style="margin: 30px 0; border: 1px solid #fee2e2; border-radius: 16px; padding: 25px; background-color: #fef2f2;">
+            <p style="margin: 0; font-size: 14px; color: #b91c1c; font-weight: bold; text-transform: uppercase;">Sessão Cancelada</p>
+            <h3 style="margin: 10px 0 5px 0; color: #7f1d1d;">${psychologistName}</h3>
+            <p style="margin: 0; font-size: 18px; font-weight: bold; color: #991b1b;">${dateFormatted} às ${time}</p>
+          </div>
+
+          <p style="color: #64748b;">Se precisar reagendar, acesse sua conta e escolha um novo horário disponível.</p>
+
+          <div style="text-align: center; margin-top: 40px;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="background-color: #2563eb; color: #ffffff; padding: 16px 32px; border-radius: 40px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Acessar Minha Conta
+            </a>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid #f1f5f9;">
+          ${footerContent}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+export function getCancellationEmailForPsychologist({
+  psychologistName,
+  patientName,
+  dateFormatted,
+  time,
+}: {
+  psychologistName: string
+  patientName: string
+  dateFormatted: string
+  time: string
+}) {
+  return `
+    <div style="${baseStyles}">
+      <div style="${containerStyles}">
+        <div style="background-color: #dc2626; padding: 40px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800;">Sessão Cancelada ❌</h1>
+        </div>
+
+        <div style="padding: 40px;">
+          <h2 style="color: #0f172a; margin-top: 0;">Olá, Dr(a). ${psychologistName}!</h2>
+          <p>O paciente <strong>${patientName}</strong> cancelou a seguinte sessão:</p>
+
+          <div style="margin: 30px 0; border: 1px solid #fee2e2; border-radius: 16px; padding: 25px; background-color: #fef2f2;">
+            <p style="margin: 0; font-size: 14px; color: #b91c1c; font-weight: bold; text-transform: uppercase;">Sessão Cancelada</p>
+            <h3 style="margin: 10px 0 5px 0; color: #7f1d1d;">${patientName}</h3>
+            <p style="margin: 0; font-size: 18px; font-weight: bold; color: #991b1b;">${dateFormatted} às ${time}</p>
+          </div>
+
+          <p style="color: #64748b;">Este horário foi liberado automaticamente na sua agenda.</p>
+
+          <div style="text-align: center; margin-top: 40px;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/agenda" style="background-color: #2563eb; color: #ffffff; padding: 16px 32px; border-radius: 40px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Ver Minha Agenda
+            </a>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid #f1f5f9;">
+          ${footerContent}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+export function getRescheduleEmailForPatient({
+  patientName,
+  psychologistName,
+  oldDateFormatted,
+  oldTime,
+  newDateFormatted,
+  newTime,
+}: {
+  patientName: string
+  psychologistName: string
+  oldDateFormatted: string
+  oldTime: string
+  newDateFormatted: string
+  newTime: string
+}) {
+  return `
+    <div style="${baseStyles}">
+      <div style="${containerStyles}">
+        <div style="background-color: #d97706; padding: 40px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800;">Sessão Reagendada 📅</h1>
+        </div>
+
+        <div style="padding: 40px;">
+          <h2 style="color: #0f172a; margin-top: 0;">Olá, ${patientName}!</h2>
+          <p>Sua sessão com <strong>${psychologistName}</strong> foi reagendada:</p>
+
+          <div style="margin: 30px 0; border: 1px solid #fde68a; border-radius: 16px; padding: 25px; background-color: #fffbeb;">
+            <p style="margin: 0; font-size: 13px; color: #92400e; text-decoration: line-through;">Antes: ${oldDateFormatted} às ${oldTime}</p>
+            <p style="margin: 12px 0 0 0; font-size: 18px; font-weight: bold; color: #065f46;">Novo horário: ${newDateFormatted} às ${newTime}</p>
+          </div>
+
+          <div style="text-align: center; margin-top: 40px;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="background-color: #2563eb; color: #ffffff; padding: 16px 32px; border-radius: 40px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Ver Sessões
+            </a>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid #f1f5f9;">
+          ${footerContent}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+export function getRescheduleEmailForPsychologist({
+  psychologistName,
+  patientName,
+  oldDateFormatted,
+  oldTime,
+  newDateFormatted,
+  newTime,
+}: {
+  psychologistName: string
+  patientName: string
+  oldDateFormatted: string
+  oldTime: string
+  newDateFormatted: string
+  newTime: string
+}) {
+  return `
+    <div style="${baseStyles}">
+      <div style="${containerStyles}">
+        <div style="background-color: #d97706; padding: 40px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800;">Sessão Reagendada 📅</h1>
+        </div>
+
+        <div style="padding: 40px;">
+          <h2 style="color: #0f172a; margin-top: 0;">Olá, Dr(a). ${psychologistName}!</h2>
+          <p>O paciente <strong>${patientName}</strong> reagendou uma sessão:</p>
+
+          <div style="margin: 30px 0; border: 1px solid #fde68a; border-radius: 16px; padding: 25px; background-color: #fffbeb;">
+            <p style="margin: 0; font-size: 13px; color: #92400e; text-decoration: line-through;">Antes: ${oldDateFormatted} às ${oldTime}</p>
+            <p style="margin: 12px 0 0 0; font-size: 18px; font-weight: bold; color: #065f46;">Novo horário: ${newDateFormatted} às ${newTime}</p>
+          </div>
+
+          <div style="text-align: center; margin-top: 40px;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/agenda" style="background-color: #2563eb; color: #ffffff; padding: 16px 32px; border-radius: 40px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Ver Minha Agenda
+            </a>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid #f1f5f9;">
+          ${footerContent}
+        </div>
+      </div>
+    </div>
+  `
+}
+
 export function getPsychologistNewAppointmentTemplate({
   psychologistName,
   patientName,

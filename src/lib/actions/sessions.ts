@@ -6,7 +6,11 @@ import type { Database } from '@/lib/supabase/types'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { isValidUUID } from '@/lib/security'
-import { sendAppointmentNotifications } from './notifications'
+import {
+  sendAppointmentNotifications,
+  sendCancellationNotifications,
+  sendRescheduleNotifications,
+} from './notifications'
 import { checkAppointmentConflict } from './appointments-utils'
 
 type Appointment = Database['public']['Tables']['appointments']['Row']
@@ -290,6 +294,11 @@ export async function cancelSession(sessionId: string) {
     return { success: false, error: error.message }
   }
 
+  // Send notification to the other party
+  sendCancellationNotifications(sessionId, user.id).catch((err) =>
+    logger.error('Error sending cancellation notifications:', err)
+  )
+
   revalidateTag('appointments')
   revalidatePath('/', 'layout')
 
@@ -376,6 +385,8 @@ export async function rescheduleSession(data: { sessionId: string; newScheduledA
   }
 
   // 5. Update the appointment
+  const previousDate = new Date(appointment.scheduled_at)
+
   const { data: updatedSession, error: updateError } = await supabase
     .from('appointments')
     .update({
@@ -390,6 +401,11 @@ export async function rescheduleSession(data: { sessionId: string; newScheduledA
     logger.error('Error rescheduling session:', updateError)
     return { success: false, error: updateError.message }
   }
+
+  // Send notification to the other party
+  sendRescheduleNotifications(data.sessionId, user.id, previousDate).catch((err) =>
+    logger.error('Error sending reschedule notifications:', err)
+  )
 
   revalidateTag('appointments')
   revalidatePath('/', 'layout')

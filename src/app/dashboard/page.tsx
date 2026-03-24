@@ -16,6 +16,7 @@ import { Suspense } from 'react'
 import { QuickActions } from './_components/quick-actions'
 import { CompanyDashboard } from '@/components/dashboard/company/CompanyDashboard'
 import { UpcomingSessionsList } from './_components/upcoming-sessions-list'
+import { NotificationListener } from '@/components/dashboard/NotificationListener'
 
 import {
   getPsychologistDashboardData,
@@ -70,6 +71,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700 max-w-6xl mx-auto px-4 sm:px-6">
+      <NotificationListener />
       <Suspense>
         <PaymentStatusToast />
       </Suspense>
