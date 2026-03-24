@@ -114,6 +114,8 @@ export function PsychologistProfileClient({ psychologist, availability, stats }:
                 displayPrice={pricing.displayPrice}
                 price={pricing.price}
                 monthlyTotal={pricing.monthlyTotal}
+                monthlyEnabled={pricing.monthlyEnabled}
+                monthlyDiscount={pricing.monthlyDiscount}
                 timezone={timezone}
                 currentMonthName={calendar.currentMonthName}
                 currentYear={calendar.currentYear}

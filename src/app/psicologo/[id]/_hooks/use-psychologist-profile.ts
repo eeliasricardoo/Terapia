@@ -13,11 +13,17 @@ export function usePsychologistProfile(
 ) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedTime, setSelectedTime] = useState<string | null>(initialTime)
-  const [selectedPlan, setSelectedPlan] = useState<'single' | 'monthly'>('monthly')
+
+  const monthlyEnabled = psychologist.monthly_plan_enabled ?? false
+  const [selectedPlan, setSelectedPlan] = useState<'single' | 'monthly'>(
+    monthlyEnabled ? 'monthly' : 'single'
+  )
 
   const price = psychologist.price_per_session ? Number(psychologist.price_per_session) : 150
-  const monthlyPricePerSession = price * 0.8
-  const monthlyTotal = monthlyPricePerSession * 4
+  const monthlyDiscount = (psychologist.monthly_plan_discount ?? 20) / 100
+  const monthlySessions = psychologist.monthly_plan_sessions ?? 4
+  const monthlyPricePerSession = price * (1 - monthlyDiscount)
+  const monthlyTotal = monthlyPricePerSession * monthlySessions
   const displayPrice = selectedPlan === 'single' ? price : monthlyPricePerSession
 
   const timezone = availability?.timezone || 'America/Sao_Paulo'
@@ -181,7 +187,14 @@ export function usePsychologistProfile(
     setSelectedTime,
     selectedPlan,
     setSelectedPlan,
-    pricing: { price, monthlyPricePerSession, monthlyTotal, displayPrice },
+    pricing: {
+      price,
+      monthlyPricePerSession,
+      monthlyTotal,
+      displayPrice,
+      monthlyEnabled,
+      monthlyDiscount: psychologist.monthly_plan_discount ?? 20,
+    },
     calendar: {
       handlePrevMonth,
       handleNextMonth,

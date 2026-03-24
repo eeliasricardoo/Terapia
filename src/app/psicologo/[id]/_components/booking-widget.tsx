@@ -14,6 +14,8 @@ interface BookingWidgetProps {
   displayPrice: number
   price: number
   monthlyTotal: number
+  monthlyEnabled: boolean
+  monthlyDiscount?: number
   timezone: string
   currentMonthName: string
   currentYear: number
@@ -37,6 +39,8 @@ export function BookingWidget({
   displayPrice,
   price,
   monthlyTotal,
+  monthlyEnabled,
+  monthlyDiscount = 20,
   timezone,
   currentMonthName,
   currentYear,
@@ -104,34 +108,37 @@ export function BookingWidget({
     <Card className="border-none shadow-xl shadow-blue-900/5 bg-white overflow-hidden ring-1 ring-slate-100 flex flex-col max-h-[calc(100vh-6.5rem)]">
       <div className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full pb-4">
         {/* Plan Selection Header */}
-        <div className="grid grid-cols-2 p-1.5 bg-slate-100/80 rounded-2xl mb-6 mx-6 mt-6">
-          <button
-            onClick={() => setSelectedPlan('monthly')}
-            className={cn(
-              'py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300 relative',
-              selectedPlan === 'monthly'
-                ? 'bg-white text-indigo-700 shadow-sm ring-1 ring-slate-200/50'
-                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
-            )}
-          >
-            Pacote Mensal
-          </button>
-          <button
-            onClick={() => setSelectedPlan('single')}
-            className={cn(
-              'py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300 relative',
-              selectedPlan === 'single'
-                ? 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-200/50'
-                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
-            )}
-          >
-            Sessão Avulsa
-          </button>
-        </div>
+        {monthlyEnabled && (
+          <div className="grid grid-cols-2 p-1.5 bg-slate-100/80 rounded-2xl mb-6 mx-6 mt-6">
+            <button
+              onClick={() => setSelectedPlan('monthly')}
+              className={cn(
+                'py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300 relative',
+                selectedPlan === 'monthly'
+                  ? 'bg-white text-indigo-700 shadow-sm ring-1 ring-slate-200/50'
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+              )}
+            >
+              Pacote Mensal
+            </button>
+            <button
+              onClick={() => setSelectedPlan('single')}
+              className={cn(
+                'py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300 relative',
+                selectedPlan === 'single'
+                  ? 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-200/50'
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+              )}
+            >
+              Sessão Avulsa
+            </button>
+          </div>
+        )}
 
         <div
           className={cn(
             'mx-6 p-6 md:p-8 rounded-3xl text-white text-center transition-all duration-500 relative overflow-hidden',
+            !monthlyEnabled && 'mt-6',
             selectedPlan === 'single'
               ? 'bg-gradient-to-br from-slate-800 to-slate-900 shadow-slate-900/20 shadow-xl'
               : 'bg-gradient-to-br from-indigo-600 to-blue-700 shadow-indigo-600/20 shadow-xl'
@@ -161,7 +168,7 @@ export function BookingWidget({
             {selectedPlan === 'monthly' && (
               <div className="mt-5 bg-white/20 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 text-xs font-bold inline-flex items-center gap-1.5 shadow-sm">
                 <Award className="w-4 h-4 text-amber-300" />
-                Economize 20% no total de{' '}
+                Economize {monthlyDiscount}% no total de{' '}
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
                   monthlyTotal
                 )}

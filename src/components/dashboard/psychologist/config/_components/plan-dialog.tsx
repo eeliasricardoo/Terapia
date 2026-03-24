@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Loader2, Check } from 'lucide-react'
 
 interface PlanDialogProps {
   open: boolean
@@ -19,6 +20,7 @@ interface PlanDialogProps {
   newPlan: { name: string; sessions: string; price: string }
   setNewPlan: (plan: { name: string; sessions: string; price: string }) => void
   onSave: () => void
+  isSaving?: boolean
 }
 
 export function PlanDialog({
@@ -28,6 +30,7 @@ export function PlanDialog({
   newPlan,
   setNewPlan,
   onSave,
+  isSaving = false,
 }: PlanDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -73,15 +76,20 @@ export function PlanDialog({
             Valor por sessão neste pacote:{' '}
             <span className="font-bold">
               R${' '}
-              {newPlan.price && newPlan.sessions
+              {newPlan.price && newPlan.sessions && parseInt(newPlan.sessions) > 0
                 ? (parseFloat(newPlan.price) / parseInt(newPlan.sessions)).toFixed(2)
                 : '0.00'}
             </span>
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={onSave} className="bg-slate-900 text-white">
-            {editingPlanId ? 'Salvar Alterações' : 'Criar Pacote'}
+          <Button onClick={onSave} disabled={isSaving} className="bg-slate-900 text-white">
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Check className="h-4 w-4 mr-2" />
+            )}
+            {isSaving ? 'Salvando...' : editingPlanId ? 'Salvar Alterações' : 'Criar Pacote'}
           </Button>
         </DialogFooter>
       </DialogContent>

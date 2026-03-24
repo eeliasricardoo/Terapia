@@ -1,10 +1,9 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
-import { Plus, Edit2, Trash2, Check } from 'lucide-react'
+import { Plus, Edit2, Trash2, Package, Sparkles } from 'lucide-react'
 import type { Plan } from '../_hooks/use-services-config'
 
 interface PlansConfigProps {
@@ -16,85 +15,123 @@ interface PlansConfigProps {
 }
 
 export function PlansConfig({ plans, onEdit, onToggle, onDelete, onCreateNew }: PlansConfigProps) {
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex justify-between items-center bg-blue-50 p-6 rounded-xl border border-blue-100">
-        <div>
-          <h3 className="font-semibold text-blue-900">Ofereça Pacotes Mensais</h3>
-          <p className="text-sm text-blue-700 mt-1 max-w-xl">
-            Pacotes aumentam a retenção de pacientes. Crie opções com 4 ou mais sessões com um leve
-            desconto.
+  if (plans.length === 0) {
+    return (
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+          <div className="h-14 w-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
+            <Package className="h-7 w-7 text-slate-400" />
+          </div>
+          <h3 className="font-semibold text-slate-900 mb-1">Nenhum pacote criado</h3>
+          <p className="text-sm text-slate-500 max-w-xs mb-6">
+            Pacotes com múltiplas sessões aumentam a fidelização e garantem uma receita mais
+            previsível.
           </p>
+          <Button onClick={onCreateNew} className="bg-slate-900 text-white hover:bg-slate-800">
+            <Plus className="h-4 w-4 mr-2" />
+            Criar primeiro pacote
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Header row */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-slate-700">
+            {plans.length} {plans.length === 1 ? 'pacote' : 'pacotes'}
+          </span>
+          <span className="text-slate-300">·</span>
+          <span className="text-sm text-slate-500">
+            {plans.filter((p) => p.active).length} ativo
+            {plans.filter((p) => p.active).length !== 1 ? 's' : ''}
+          </span>
         </div>
         <Button
           onClick={onCreateNew}
-          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-200"
+          size="sm"
+          className="bg-slate-900 text-white hover:bg-slate-800 h-8 text-xs px-3"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Criar Novo Pacote
+          <Plus className="h-3.5 w-3.5 mr-1.5" />
+          Novo pacote
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Plans grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {plans.map((plan) => (
-          <Card
+          <div
             key={plan.id}
-            className={`border-2 transition-all duration-200 ${plan.active ? 'border-slate-200 shadow-sm hover:border-blue-200 hover:shadow-md' : 'border-slate-100 bg-slate-50 opacity-70'}`}
+            className={`relative bg-white border rounded-2xl overflow-hidden transition-all duration-200 ${
+              plan.active
+                ? 'border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300'
+                : 'border-slate-100 opacity-50'
+            }`}
           >
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <Badge variant={plan.active ? 'default' : 'secondary'} className="mb-2">
-                  {plan.sessions} Sessões
+            {/* Top accent line */}
+            {plan.active && (
+              <div className="h-1 w-full bg-gradient-to-r from-slate-700 to-slate-500" />
+            )}
+
+            <div className="p-5">
+              {/* Badge + actions */}
+              <div className="flex items-center justify-between mb-3">
+                <Badge
+                  variant="secondary"
+                  className="text-xs font-semibold bg-slate-100 text-slate-600 border-0"
+                >
+                  {plan.sessions} sessões
                 </Badge>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-slate-400 hover:text-blue-600"
+                <div className="flex items-center gap-0.5">
+                  <button
                     onClick={() => onEdit(plan)}
+                    className="h-7 w-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
                   >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 hover:text-blue-600"
-                    onClick={() => onToggle(plan.id)}
-                  >
-                    <Switch checked={plan.active} className="pointer-events-none scale-75" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-slate-400 hover:text-red-600"
+                    <Edit2 className="h-3.5 w-3.5" />
+                  </button>
+                  <button
                     onClick={() => onDelete(plan.id)}
+                    className="h-7 w-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </div>
-              <CardTitle className="text-xl">{plan.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-baseline gap-2 mb-4">
-                <span className="text-3xl font-bold tracking-tight text-slate-900">
-                  R$ {plan.price.toFixed(0)}
+
+              {/* Name */}
+              <p className="font-semibold text-slate-900 text-sm mb-3 leading-tight">{plan.name}</p>
+
+              {/* Price */}
+              <div className="flex items-baseline gap-1.5 mb-1">
+                <span className="text-2xl font-bold tracking-tight text-slate-900">
+                  R$ {plan.price.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
                 </span>
                 {plan.discount > 0 && (
-                  <Badge
-                    variant="outline"
-                    className="text-emerald-600 bg-emerald-50 border-emerald-200"
-                  >
-                    -{plan.discount}% OFF
-                  </Badge>
+                  <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5 flex items-center gap-1">
+                    <Sparkles className="h-2.5 w-2.5" />-{plan.discount}%
+                  </span>
                 )}
               </div>
-              <p className="text-sm text-slate-500 flex items-center gap-2">
-                <Check className="h-4 w-4 text-emerald-500" />
+              <p className="text-xs text-slate-500">
                 R$ {(plan.price / plan.sessions).toFixed(2)} por sessão
               </p>
-            </CardContent>
-          </Card>
+            </div>
+
+            {/* Footer toggle */}
+            <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-xs text-slate-500">
+                {plan.active ? 'Visível para pacientes' : 'Oculto'}
+              </span>
+              <Switch
+                checked={plan.active}
+                onCheckedChange={() => onToggle(plan.id)}
+                className="scale-90 data-[state=checked]:bg-slate-800"
+              />
+            </div>
+          </div>
         ))}
       </div>
     </div>

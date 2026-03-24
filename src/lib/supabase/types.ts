@@ -212,6 +212,9 @@ export type Database = {
           university: string | null
           academic_level: string | null
           session_duration: number | null
+          monthly_plan_enabled: boolean
+          monthly_plan_sessions: number
+          monthly_plan_discount: number
         }
         Insert: {
           bio?: string | null
@@ -227,6 +230,9 @@ export type Database = {
           weekly_schedule?: Json | null
           timezone?: string
           external_scheduling_url?: string | null
+          monthly_plan_enabled?: boolean
+          monthly_plan_sessions?: number
+          monthly_plan_discount?: number
         }
         Update: {
           bio?: string | null
@@ -242,6 +248,9 @@ export type Database = {
           weekly_schedule?: Json | null
           timezone?: string
           external_scheduling_url?: string | null
+          monthly_plan_enabled?: boolean
+          monthly_plan_sessions?: number
+          monthly_plan_discount?: number
         }
         Relationships: [
           {

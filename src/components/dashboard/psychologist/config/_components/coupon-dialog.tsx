@@ -21,8 +21,13 @@ import {
 interface CouponDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  newCoupon: { code: string; type: string; value: string; limit: string }
-  setNewCoupon: (coupon: { code: string; type: string; value: string; limit: string }) => void
+  newCoupon: { code: string; type: 'percentage' | 'fixed'; value: string; limit: string }
+  setNewCoupon: (coupon: {
+    code: string
+    type: 'percentage' | 'fixed'
+    value: string
+    limit: string
+  }) => void
   onSave: () => void
 }
 
