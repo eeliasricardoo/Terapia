@@ -59,7 +59,9 @@ export function CouponDialog({
               <Label>Tipo de Desconto</Label>
               <Select
                 value={newCoupon.type}
-                onValueChange={(v) => setNewCoupon({ ...newCoupon, type: v })}
+                onValueChange={(v) =>
+                  setNewCoupon({ ...newCoupon, type: v as 'percentage' | 'fixed' })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
