@@ -23,6 +23,7 @@ const PATIENT_MENU = [
   { href: '/busca', label: 'Buscar Psicólogos', icon: Search },
   { href: '/dashboard/sessoes', label: 'Minhas Sessões', icon: Calendar },
   { href: '/dashboard/mensagens', label: 'Mensagens', icon: MessageSquare },
+  { href: '/dashboard/configuracoes', label: 'Serviços & Tarifas', icon: DollarSign },
   { href: '/dashboard/perfil', label: 'Meu Perfil', icon: User },
 ]
 

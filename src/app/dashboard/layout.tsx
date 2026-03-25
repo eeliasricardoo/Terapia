@@ -1,6 +1,7 @@
 import { Footer } from '@/components/layout/Footer'
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
 import { MobileNav } from '@/components/dashboard/MobileNav'
+import { NotificationListener } from '@/components/dashboard/NotificationListener'
 import { getCurrentUserProfile } from '@/lib/actions/profile'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +19,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <a href="#main-content" className="skip-to-content">
         Ir para o conteúdo principal
       </a>
+
+      {/* Realtime notification toasts for patients (psychologists have their own listener in PsychologistDashboard) */}
+      {profile?.role === 'PATIENT' && <NotificationListener />}
 
       <DashboardSidebar initialProfile={profile} />
 

@@ -21,8 +21,13 @@ import {
 interface CouponDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  newCoupon: { code: string; type: string; value: string; limit: string }
-  setNewCoupon: (coupon: { code: string; type: string; value: string; limit: string }) => void
+  newCoupon: { code: string; type: 'percentage' | 'fixed'; value: string; limit: string }
+  setNewCoupon: (coupon: {
+    code: string
+    type: 'percentage' | 'fixed'
+    value: string
+    limit: string
+  }) => void
   onSave: () => void
 }
 
@@ -54,7 +59,9 @@ export function CouponDialog({
               <Label>Tipo de Desconto</Label>
               <Select
                 value={newCoupon.type}
-                onValueChange={(v) => setNewCoupon({ ...newCoupon, type: v })}
+                onValueChange={(v) =>
+                  setNewCoupon({ ...newCoupon, type: v as 'percentage' | 'fixed' })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />

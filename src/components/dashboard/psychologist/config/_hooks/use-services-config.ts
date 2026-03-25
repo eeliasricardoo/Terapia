@@ -28,20 +28,28 @@ export function useServicesConfig() {
   const [sessionPrice, setSessionPrice] = useState('')
   const [sessionDuration, setSessionDuration] = useState('50')
   const [averagePlatformPrice, setAveragePlatformPrice] = useState<string | null>(null)
+  const [monthlyPlanEnabled, setMonthlyPlanEnabled] = useState(false)
+  const [monthlyPlanSessions, setMonthlyPlanSessions] = useState(4)
+  const [monthlyPlanDiscount, setMonthlyPlanDiscount] = useState(20)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
-  // Plans and coupons stay client-side for now (future: persist to DB)
   const [plans, setPlans] = useState<Plan[]>([])
   const [coupons, setCoupons] = useState<Coupon[]>([])
 
   const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false)
   const [isCouponDialogOpen, setIsCouponDialogOpen] = useState(false)
   const [isFetchingCoupons, setIsFetchingCoupons] = useState(false)
+  const [isSavingPlan, setIsSavingPlan] = useState(false)
 
   const [newPlan, setNewPlan] = useState({ name: '', sessions: '4', price: '' })
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null)
-  const [newCoupon, setNewCoupon] = useState({ code: '', type: 'percentage', value: '', limit: '' })
+  const [newCoupon, setNewCoupon] = useState<{
+    code: string
+    type: 'percentage' | 'fixed'
+    value: string
+    limit: string
+  }>({ code: '', type: 'percentage', value: '', limit: '' })
 
   // ─── Load config from DB ──────────────────────────────────────
   const loadConfig = useCallback(async () => {
@@ -51,8 +59,19 @@ export function useServicesConfig() {
       setSessionPrice(result.data.sessionPrice)
       setSessionDuration(result.data.sessionDuration)
       setAveragePlatformPrice(result.data.averagePlatformPrice)
+      setMonthlyPlanEnabled(result.data.monthlyPlanEnabled)
+      setMonthlyPlanSessions(result.data.monthlyPlanSessions)
+      setMonthlyPlanDiscount(result.data.monthlyPlanDiscount)
     }
     setIsLoading(false)
+  }, [])
+
+  const loadPlans = useCallback(async () => {
+    const { getPlans } = await import('@/lib/actions/plans')
+    const result = await getPlans()
+    if (result.success) {
+      setPlans(result.data)
+    }
   }, [])
 
   const loadCoupons = useCallback(async () => {
@@ -67,13 +86,18 @@ export function useServicesConfig() {
 
   useEffect(() => {
     loadConfig()
+    loadPlans()
     loadCoupons()
-  }, [loadConfig, loadCoupons])
+  }, [loadConfig, loadPlans, loadCoupons])
 
   // ─── Save General Config ──────────────────────────────────────
   const handleSaveGeneral = async () => {
     setIsSaving(true)
-    const result = await saveGeneralConfig(sessionPrice, sessionDuration)
+    const result = await saveGeneralConfig(sessionPrice, sessionDuration, {
+      enabled: monthlyPlanEnabled,
+      sessions: monthlyPlanSessions,
+      discount: monthlyPlanDiscount,
+    })
     setIsSaving(false)
 
     if (result.success) {
@@ -87,41 +111,70 @@ export function useServicesConfig() {
     }
   }
 
-  // ─── Plans Handlers (client-side for now) ─────────────────────
-  const handleSavePlan = () => {
+  // ─── Plans Handlers ───────────────────────────────────────────
+  const handleSavePlan = async () => {
     const price = parseFloat(newPlan.price)
     const sessions = parseInt(newPlan.sessions)
+
+    if (!newPlan.name.trim()) {
+      toast.error('Nome do pacote é obrigatório')
+      return
+    }
+    if (!sessions || sessions <= 0) {
+      toast.error('Número de sessões deve ser maior que zero')
+      return
+    }
+    if (!price || price <= 0) {
+      toast.error('Preço deve ser maior que zero')
+      return
+    }
+
     const singlePrice = parseFloat(sessionPrice)
     const fullPrice = singlePrice * sessions
-    const discount = Math.round(((fullPrice - price) / fullPrice) * 100)
+    const discount = fullPrice > 0 ? Math.round(((fullPrice - price) / fullPrice) * 100) : 0
+    const discountValue = discount > 0 ? discount : 0
+
+    setIsSavingPlan(true)
 
     if (editingPlanId) {
-      setPlans(
-        plans.map((p) =>
-          p.id === editingPlanId
-            ? {
-                ...p,
-                name: newPlan.name,
-                sessions,
-                price,
-                discount: discount > 0 ? discount : 0,
-              }
-            : p
-        )
-      )
-      toast.success('Pacote atualizado com sucesso!')
-    } else {
-      const plan: Plan = {
-        id: Math.random().toString(),
+      const { updatePlan } = await import('@/lib/actions/plans')
+      const result = await updatePlan(editingPlanId, {
         name: newPlan.name,
         sessions,
         price,
-        discount: discount > 0 ? discount : 0,
-        active: true,
+        discount: discountValue,
+      })
+
+      if (result.success) {
+        setPlans(
+          plans.map((p) =>
+            p.id === editingPlanId
+              ? { ...p, name: newPlan.name, sessions, price, discount: discountValue }
+              : p
+          )
+        )
+        toast.success('Pacote atualizado com sucesso!')
+      } else {
+        toast.error('Erro ao atualizar pacote', { description: result.error })
       }
-      setPlans([...plans, plan])
-      toast.success('Novo pacote criado!')
+    } else {
+      const { createPlan } = await import('@/lib/actions/plans')
+      const result = await createPlan({
+        name: newPlan.name,
+        sessions,
+        price,
+        discount: discountValue,
+      })
+
+      if (result.success) {
+        setPlans([...plans, result.data])
+        toast.success('Novo pacote criado!')
+      } else {
+        toast.error('Erro ao criar pacote', { description: result.error })
+      }
     }
+
+    setIsSavingPlan(false)
     setIsPlanDialogOpen(false)
     setNewPlan({ name: '', sessions: '4', price: '' })
     setEditingPlanId(null)
@@ -143,13 +196,30 @@ export function useServicesConfig() {
     setIsPlanDialogOpen(true)
   }
 
-  const handleTogglePlan = (id: string) => {
-    setPlans(plans.map((p) => (p.id === id ? { ...p, active: !p.active } : p)))
+  const handleTogglePlan = async (id: string) => {
+    const plan = plans.find((p) => p.id === id)
+    if (!plan) return
+
+    const { togglePlan } = await import('@/lib/actions/plans')
+    const result = await togglePlan(id, !plan.active)
+
+    if (result.success) {
+      setPlans(plans.map((p) => (p.id === id ? { ...p, active: !p.active } : p)))
+    } else {
+      toast.error('Erro ao atualizar pacote', { description: result.error })
+    }
   }
 
-  const handleDeletePlan = (id: string) => {
-    setPlans(plans.filter((p) => p.id !== id))
-    toast.success('Pacote removido.')
+  const handleDeletePlan = async (id: string) => {
+    const { deletePlan } = await import('@/lib/actions/plans')
+    const result = await deletePlan(id)
+
+    if (result.success) {
+      setPlans(plans.filter((p) => p.id !== id))
+      toast.success('Pacote removido.')
+    } else {
+      toast.error('Erro ao excluir pacote', { description: result.error })
+    }
   }
 
   // ─── Coupons Handlers ───────────────────────────────────────
@@ -166,7 +236,7 @@ export function useServicesConfig() {
       toast.success('Cupom criado com sucesso!')
       loadCoupons()
       setIsCouponDialogOpen(false)
-      setNewCoupon({ code: '', type: 'percentage', value: '', limit: '' })
+      setNewCoupon({ code: '', type: 'percentage' as const, value: '', limit: '' })
     } else {
       toast.error('Erro ao criar cupom', { description: result.error })
     }
@@ -204,8 +274,15 @@ export function useServicesConfig() {
     sessionDuration,
     setSessionDuration,
     averagePlatformPrice,
+    monthlyPlanEnabled,
+    setMonthlyPlanEnabled,
+    monthlyPlanSessions,
+    setMonthlyPlanSessions,
+    monthlyPlanDiscount,
+    setMonthlyPlanDiscount,
     isLoading,
     isSaving,
+    isSavingPlan,
     plans,
     coupons,
     dialogs: {
