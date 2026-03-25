@@ -21,31 +21,60 @@ export type SessionWithDetails = Appointment & {
   patient: Profile | null
 }
 
+export type PaginatedSessions = {
+  sessions: SessionWithDetails[]
+  nextCursor: string | null
+  total: number
+}
+
 /**
- * Get all sessions (appointments) for a user
+ * Get sessions (appointments) for a user with cursor-based pagination.
+ * @param userId  - The authenticated user's ID
+ * @param limit   - Page size (default 20, max 50)
+ * @param cursor  - ID of the last session from the previous page
  */
-export async function getUserSessions(userId: string): Promise<SessionWithDetails[]> {
+export async function getUserSessions(
+  userId: string,
+  limit: number = 20,
+  cursor?: string
+): Promise<PaginatedSessions> {
   try {
-    // We use Prisma to bypass any Supabase join/schema inconsistencies
-    // and manually ensure we only fetch for the requesting user
-    const appointments = await prisma.appointment.findMany({
-      where: {
-        OR: [{ patientId: userId }, { psychologist: { userId: userId } }],
-      },
-      include: {
-        patient: { include: { profiles: true } },
-        psychologist: {
-          include: {
-            user: { include: { profiles: true } },
+    const pageSize = Math.min(limit, 50) // Never load more than 50 at once
+
+    const [appointments, total] = await prisma.$transaction([
+      prisma.appointment.findMany({
+        where: {
+          OR: [{ patientId: userId }, { psychologist: { userId: userId } }],
+        },
+        include: {
+          patient: { include: { profiles: true } },
+          psychologist: {
+            include: {
+              user: { include: { profiles: true } },
+            },
           },
         },
-      },
-      orderBy: { scheduledAt: 'asc' },
-    })
+        orderBy: { scheduledAt: 'desc' },
+        take: pageSize + 1, // fetch one extra to detect if there's a next page
+        ...(cursor
+          ? {
+              cursor: { id: cursor },
+              skip: 1,
+            }
+          : {}),
+      }),
+      prisma.appointment.count({
+        where: {
+          OR: [{ patientId: userId }, { psychologist: { userId: userId } }],
+        },
+      }),
+    ])
 
-    // Map to the expected SessionWithDetails structure
-    // Prisma returns User but we need to match the Profile structure expected by UI
-    return appointments.map((appt) => ({
+    const hasNextPage = appointments.length > pageSize
+    const items = hasNextPage ? appointments.slice(0, pageSize) : appointments
+    const nextCursor = hasNextPage ? items[items.length - 1].id : null
+
+    const sessions = items.map((appt) => ({
       ...appt,
       id: appt.id,
       patient_id: appt.patientId,
@@ -59,11 +88,14 @@ export async function getUserSessions(userId: string): Promise<SessionWithDetail
         ? (appt.psychologist.user.profiles as any)
         : null,
     })) as unknown as SessionWithDetails[]
+
+    return { sessions, nextCursor, total }
   } catch (error) {
     logger.error('Error fetching user sessions (Prisma):', error)
-    return []
+    return { sessions: [], nextCursor: null, total: 0 }
   }
 }
+
 
 /**
  * Get the next upcoming session for a user
