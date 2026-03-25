@@ -1,5 +1,5 @@
 import { chromium, FullConfig } from '@playwright/test'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { PrismaClient } from '@prisma/client'
 import path from 'path'
 
@@ -51,7 +51,7 @@ async function ensureTestUsers() {
 }
 
 async function ensureAuthUser(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient<any, any, any>,
   email: string,
   password: string,
   name: string
