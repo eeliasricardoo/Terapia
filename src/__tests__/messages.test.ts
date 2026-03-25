@@ -70,6 +70,7 @@ describe('messages actions', () => {
       ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
       ;(prisma.conversationParticipant.findMany as jest.Mock).mockResolvedValue([
         {
+          lastReadAt: null,
           conversation: {
             id: CONV_ID,
             messages: [{ content: 'Hello', createdAt: new Date() }],
@@ -85,6 +86,8 @@ describe('messages actions', () => {
           },
         },
       ])
+      // Mock the batch unread query added by the N+1 fix
+      ;(prisma.message.findMany as jest.Mock).mockResolvedValue([])
 
       const result = await getConversations()
 
