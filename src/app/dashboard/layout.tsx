@@ -2,6 +2,7 @@ import { Footer } from '@/components/layout/Footer'
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
 import { MobileNav } from '@/components/dashboard/MobileNav'
 import { NotificationListener } from '@/components/dashboard/NotificationListener'
+import { PsychologistNotificationListener } from '@/components/dashboard/PsychologistNotificationListener'
 import { getCurrentUserProfile } from '@/lib/actions/profile'
 import { cn } from '@/lib/utils'
 
@@ -20,8 +21,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
         Ir para o conteúdo principal
       </a>
 
-      {/* Realtime notification toasts for patients (psychologists have their own listener in PsychologistDashboard) */}
+      {/* Realtime notification toasts — scoped by role, always active regardless of current dashboard page */}
       {profile?.role === 'PATIENT' && <NotificationListener />}
+      {profile?.role === 'PSYCHOLOGIST' && <PsychologistNotificationListener />}
 
       <DashboardSidebar initialProfile={profile} />
 

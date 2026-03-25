@@ -9,22 +9,13 @@ import { Badge } from '@/components/ui/badge'
 import {
   Video,
   Calendar as CalendarIcon,
-  Users,
   Clock,
-  CreditCard,
-  MoreHorizontal,
-  Star,
   Settings,
   FileText,
   CheckCircle2,
   ArrowRight,
   Bell,
-  TrendingUp,
-  ArrowUpRight,
-  PartyPopper,
-  Sparkles,
 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { Profile } from '@/lib/supabase/types'
 
@@ -35,17 +26,8 @@ import { formatInTimeZone } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
 import { createClient } from '@/lib/supabase/client'
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { DashboardCalendar } from './DashboardCalendar'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog'
 
 interface Props {
   userProfile: Profile
@@ -58,9 +40,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
     ...dashboardData.upcomingSessions,
     ...dashboardData.futureSessions,
   ])
-  const [unreadCount, setUnreadCount] = useState(dashboardData.unreadNotifications)
-  const [showNewApptModal, setShowNewApptModal] = useState(false)
-  const [lastNotif, setLastNotif] = useState<any>(null)
+  const [unreadCount] = useState(dashboardData.unreadNotifications)
   const [overrides, setOverrides] = useState<any>({})
   const [weeklySchedule, setWeeklySchedule] = useState<any>({
     monday: { enabled: true, slots: [] },
@@ -148,70 +128,6 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
       }
     }
     fetchAllData()
-  }, [])
-
-  // 🔔 [REALTIME] - Listen for new notifications
-  useEffect(() => {
-    const supabase = createClient()
-    let channel: any
-
-    const setupSubscription = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) return
-
-      channel = supabase
-        .channel(`notifications-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'notifications',
-          },
-          (payload) => {
-            console.log('[REALTIME] New record inserted:', payload)
-            const newNotif = payload.new as any
-
-            // Filtro manual no cliente (mais resiliente que o filter string em alguns setups)
-            if (newNotif.user_id !== user.id) {
-              console.log('[REALTIME] Notification ignored (not for this user):', newNotif.user_id)
-              return
-            }
-
-            console.log('[REALTIME] New notification for current user:', newNotif)
-            setUnreadCount((prev) => prev + 1)
-            setLastNotif(newNotif)
-            setShowNewApptModal(true)
-
-            // EYE-CATCHING Notification (Toast)
-            toast.success(newNotif.title, {
-              description: newNotif.message,
-              duration: 8000,
-              dismissible: true,
-              action: {
-                label: 'Ver Agenda',
-                onClick: () => (window.location.href = '/dashboard/agenda'),
-              },
-            })
-          }
-        )
-        .subscribe((status) => {
-          console.log(`[REALTIME] Subscription status for user ${user.id}:`, status)
-          if (status === 'SUBSCRIBED') {
-            console.log('[REALTIME] Successfully listening to notifications table')
-          }
-        })
-    }
-
-    setupSubscription()
-
-    return () => {
-      if (channel) {
-        supabase.removeChannel(channel)
-      }
-    }
   }, [])
 
   const sessionsByDate = useMemo(() => {
@@ -693,50 +609,6 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
           </div>
         </>
       )}
-
-      {/* 🚀 New Appointment High-Impact Modal */}
-      <AnimatePresence>
-        {showNewApptModal && (
-          <Dialog open={showNewApptModal} onOpenChange={setShowNewApptModal}>
-            <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden border border-slate-200 rounded-[2rem] shadow-2xl">
-              <div className="bg-white">
-                <div className="p-8 flex flex-col items-center text-center">
-                  <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 border border-slate-100">
-                    <CalendarIcon className="h-8 w-8 text-slate-900" />
-                  </div>
-
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                    {lastNotif?.title || 'Novo Agendamento'}
-                  </h2>
-                  <p className="text-slate-500 mb-8 text-sm leading-relaxed">
-                    {lastNotif?.message ||
-                      'Um novo paciente acaba de agendar uma consulta com você.'}
-                  </p>
-
-                  <div className="w-full space-y-2">
-                    <Button
-                      onClick={() => {
-                        setShowNewApptModal(false)
-                        window.location.href = '/dashboard/agenda'
-                      }}
-                      className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-12 text-sm font-semibold transition-all"
-                    >
-                      Ver Agenda
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => setShowNewApptModal(false)}
-                      className="w-full text-slate-400 hover:text-slate-600 text-xs font-bold uppercase tracking-widest h-10 rounded-xl"
-                    >
-                      Fechar
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
-      </AnimatePresence>
     </div>
   )
 }
