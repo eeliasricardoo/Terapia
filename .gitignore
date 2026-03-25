@@ -56,3 +56,5 @@ storybook.log
 
 # VSCode Workspace
 *.code-workspace
+e2e/fixtures/patient-auth.json
+e2e/fixtures/psychologist-auth.json
