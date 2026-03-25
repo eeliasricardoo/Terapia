@@ -54,8 +54,8 @@ export async function getUserSessions(userId: string): Promise<SessionWithDetail
       duration_minutes: appt.durationMinutes,
       status: appt.status,
       price: Number(appt.price),
-      patient: appt.patient.profiles ? (appt.patient.profiles as any) : null,
-      psychologist: appt.psychologist.user.profiles
+      patient: appt.patient?.profiles ? (appt.patient.profiles as any) : null,
+      psychologist: appt.psychologist?.user?.profiles
         ? (appt.psychologist.user.profiles as any)
         : null,
     })) as unknown as SessionWithDetails[]
@@ -95,8 +95,8 @@ export async function getNextSession(userId: string): Promise<SessionWithDetails
       ...appt,
       scheduled_at: appt.scheduledAt.toISOString(),
       price: Number(appt.price),
-      patient: appt.patient.profiles ? (appt.patient.profiles as any) : null,
-      psychologist: appt.psychologist.user.profiles
+      patient: appt.patient?.profiles ? (appt.patient.profiles as any) : null,
+      psychologist: appt.psychologist?.user?.profiles
         ? (appt.psychologist.user.profiles as any)
         : null,
     } as unknown as SessionWithDetails
@@ -138,8 +138,8 @@ export async function getSessionHistory(
       scheduled_at: appt.scheduledAt.toISOString(),
       status: appt.status,
       price: Number(appt.price),
-      patient: appt.patient.profiles ? (appt.patient.profiles as any) : null,
-      psychologist: appt.psychologist.user.profiles
+      patient: appt.patient?.profiles ? (appt.patient.profiles as any) : null,
+      psychologist: appt.psychologist?.user?.profiles
         ? (appt.psychologist.user.profiles as any)
         : null,
     })) as unknown as SessionWithDetails[]

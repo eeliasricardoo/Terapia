@@ -78,7 +78,7 @@ export default async function SessionsPage() {
             const now = new Date()
 
             // A session is "upcoming" if it's in the future and scheduled
-            const statusUpper = session.status.toUpperCase()
+            const statusUpper = (session.status || '').toUpperCase()
             const isUpcoming = scheduledDate > now && statusUpper === 'SCHEDULED'
 
             // We allow rescheduling if it's upcoming OR if it's a past scheduled session (missed)

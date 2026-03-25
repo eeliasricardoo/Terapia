@@ -1,3 +1,6 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -24,9 +27,15 @@ interface ReceiptDialogProps {
 }
 
 export function ReceiptDialog({ children, session }: ReceiptDialogProps) {
+  const [transactionId, setTransactionId] = useState('')
+  const [issueDate, setIssueDate] = useState('')
+
+  useEffect(() => {
+    setTransactionId(`TRX-${session.id}-${Math.floor(Math.random() * 1000000)}`)
+    setIssueDate(new Date().toLocaleDateString('pt-BR'))
+  }, [session.id])
+
   const amount = session.amount || 150.0
-  const transactionId = `TRX-${session.id}-${Math.floor(Math.random() * 1000000)}`
-  const issueDate = new Date().toLocaleDateString('pt-BR')
 
   return (
     <Dialog>
