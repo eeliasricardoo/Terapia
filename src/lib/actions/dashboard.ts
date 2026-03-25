@@ -292,14 +292,10 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
       }
     }
 
-    // 5. Unread Notifications Count (Using raw SQL as fallback for runtime model sync)
-    // @ts-ignore
-    const unreadCount: any = await prisma.$queryRaw`
-      SELECT count(*)::int as count FROM notifications 
-      WHERE user_id = ${user.id} AND read = false
-    `.catch(() => [{ count: 0 }])
-
-    const unreadNotifications = unreadCount[0]?.count || 0
+    // 5. Unread Notifications Count
+    const unreadNotifications = await prisma.notification.count({
+      where: { userId: user.id, read: false },
+    })
 
     return {
       stats: {
