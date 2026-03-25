@@ -96,7 +96,6 @@ export async function getUserSessions(
   }
 }
 
-
 /**
  * Get the next upcoming session for a user
  */
@@ -247,33 +246,39 @@ export async function createSession(data: {
   }
 
   // 5. Create the appointment
-  const { data: newSession, error } = await supabase
-    .from('appointments')
-    .insert({
-      patient_id: data.patientId,
-      psychologist_id: psychologistProfileId,
-      scheduled_at: data.scheduledAt,
-      duration_minutes: data.durationMinutes,
-      price: securePrice,
-      status: 'SCHEDULED', // Use uppercase for enum consistency
+  try {
+    const newSession = await prisma.appointment.create({
+      data: {
+        patientId: data.patientId,
+        psychologistId: psychologistProfileId,
+        scheduledAt: new Date(data.scheduledAt),
+        durationMinutes: data.durationMinutes,
+        price: securePrice,
+        status: 'SCHEDULED',
+      },
     })
-    .select()
-    .single()
 
-  if (error) {
+    // Send notifications asynchronously
+    sendAppointmentNotifications(newSession.id).catch((err) =>
+      logger.error('Error sending session notifications:', err)
+    )
+
+    revalidateTag('appointments')
+    revalidatePath('/', 'layout')
+
+    return {
+      success: true,
+      data: {
+        ...newSession,
+        scheduled_at: newSession.scheduledAt.toISOString(),
+        duration_minutes: newSession.durationMinutes,
+        price: Number(newSession.price),
+      },
+    }
+  } catch (error: any) {
     logger.error('Error creating session:', error)
     return { success: false, error: error.message }
   }
-
-  // Send notifications asynchronously
-  sendAppointmentNotifications(newSession.id).catch((err) =>
-    logger.error('Error sending session notifications:', err)
-  )
-
-  revalidateTag('appointments')
-  revalidatePath('/', 'layout')
-
-  return { success: true, data: newSession }
 }
 
 /**
@@ -316,14 +321,14 @@ export async function cancelSession(sessionId: string) {
   }
 
   // 3. Execute cancellation
-  const { error } = await supabase
-    .from('appointments')
-    .update({ status: 'CANCELED' })
-    .eq('id', sessionId)
-
-  if (error) {
+  try {
+    await prisma.appointment.update({
+      where: { id: sessionId },
+      data: { status: 'CANCELED' },
+    })
+  } catch (error: any) {
     logger.error('Error cancelling session:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: error.message || 'Erro ao cancelar sessão' }
   }
 
   // Send notification to the other party
@@ -419,30 +424,36 @@ export async function rescheduleSession(data: { sessionId: string; newScheduledA
   // 5. Update the appointment
   const previousDate = new Date(appointment.scheduled_at)
 
-  const { data: updatedSession, error: updateError } = await supabase
-    .from('appointments')
-    .update({
-      scheduled_at: data.newScheduledAt,
-      status: 'SCHEDULED',
+  try {
+    const updatedSession = await prisma.appointment.update({
+      where: { id: data.sessionId },
+      data: {
+        scheduledAt: new Date(data.newScheduledAt),
+        status: 'SCHEDULED',
+      },
     })
-    .eq('id', data.sessionId)
-    .select()
-    .single()
 
-  if (updateError) {
+    // Send notification to the other party
+    sendRescheduleNotifications(data.sessionId, user.id, previousDate).catch((err) =>
+      logger.error('Error sending reschedule notifications:', err)
+    )
+
+    revalidateTag('appointments')
+    revalidatePath('/', 'layout')
+
+    return {
+      success: true,
+      data: {
+        ...updatedSession,
+        scheduled_at: updatedSession.scheduledAt.toISOString(),
+        duration_minutes: updatedSession.durationMinutes,
+        price: Number(updatedSession.price),
+      },
+    }
+  } catch (updateError: any) {
     logger.error('Error rescheduling session:', updateError)
-    return { success: false, error: updateError.message }
+    return { success: false, error: updateError.message || 'Erro ao reagendar' }
   }
-
-  // Send notification to the other party
-  sendRescheduleNotifications(data.sessionId, user.id, previousDate).catch((err) =>
-    logger.error('Error sending reschedule notifications:', err)
-  )
-
-  revalidateTag('appointments')
-  revalidatePath('/', 'layout')
-
-  return { success: true, data: updatedSession }
 }
 
 /**
