@@ -27,7 +27,7 @@ export default async function SessionsPage() {
     )
   }
 
-  const sessions = await getUserSessions(profile.user_id)
+  const { sessions, total, nextCursor } = await getUserSessions(profile.user_id)
 
   // Fetch psychologist profiles for dynamic data in RescheduleDialog
   const psychologistIds = [...new Set(sessions.map((s) => s.psychologist_id))]
@@ -52,8 +52,16 @@ export default async function SessionsPage() {
         <h1 className="text-2xl font-bold tracking-tight">Minhas Sessões</h1>
         <p className="text-muted-foreground">
           Gerencie seus agendamentos e histórico de consultas.
+          {total > 0 && (
+            <span className="ml-1">
+              {nextCursor
+                ? `Exibindo ${sessions.length} de ${total} sessões.`
+                : `${total} ${total === 1 ? 'sessão' : 'sessões'} no total.`}
+            </span>
+          )}
         </p>
       </div>
+
 
       <div className="space-y-4">
         {sessions.length === 0 ? (
