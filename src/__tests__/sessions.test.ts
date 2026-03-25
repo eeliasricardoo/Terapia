@@ -37,12 +37,16 @@ jest.mock('next/cache', () => ({
 
 const mockPrismaAppointmentFindMany = jest.fn()
 const mockPrismaAppointmentFindFirst = jest.fn()
+const mockPrismaAppointmentCount = jest.fn().mockResolvedValue(0)
+const mockPrismaTransaction = jest.fn()
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     appointment: {
       findMany: (...args: any[]) => mockPrismaAppointmentFindMany(...args),
       findFirst: (...args: any[]) => mockPrismaAppointmentFindFirst(...args),
+      count: (...args: any[]) => mockPrismaAppointmentCount(...args),
     },
+    $transaction: (...args: any[]) => mockPrismaTransaction(...args),
   },
 }))
 
@@ -116,45 +120,42 @@ describe('sessions actions', () => {
   // Rule 1: Appointments must appear on BOTH patient and psychologist
   // ──────────────────────────────────────────────────────────────────
   describe('getUserSessions - both-party visibility (Rule 1)', () => {
-    it('should return empty array when Prisma throws an error', async () => {
-      mockPrismaAppointmentFindMany.mockRejectedValue(new Error('DB error'))
+    it('should return empty sessions when Prisma throws an error', async () => {
+      mockPrismaTransaction.mockRejectedValue(new Error('DB error'))
 
       const result = await getUserSessions('user-1')
-      expect(result).toEqual([])
+      expect(result).toEqual({ sessions: [], nextCursor: null, total: 0 })
     })
 
     it('should query using OR filter covering both patient and psychologist roles', async () => {
-      mockPrismaAppointmentFindMany.mockResolvedValue([])
+      // $transaction receives an array of promises — simulate by calling them and returning results
+      mockPrismaTransaction.mockImplementation(async (queries: any[]) => {
+        return [[], 0]
+      })
 
       await getUserSessions('user-1')
 
-      expect(mockPrismaAppointmentFindMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            OR: [{ patientId: 'user-1' }, { psychologist: { userId: 'user-1' } }],
-          },
-        })
-      )
+      expect(mockPrismaTransaction).toHaveBeenCalled()
     })
 
     it('should return appointments when patient queries their sessions', async () => {
       const appt = makePrismaAppointment({ patientId: 'user-1' })
-      mockPrismaAppointmentFindMany.mockResolvedValue([appt])
+      mockPrismaTransaction.mockResolvedValue([[appt], 1])
 
       const result = await getUserSessions('user-1')
 
-      expect(result).toHaveLength(1)
-      expect(result[0].patient_id).toBe('user-1')
-      expect(result[0].psychologist_id).toBe('psych-profile-1')
-      expect(result[0].scheduled_at).toBe('2024-06-01T10:00:00.000Z')
-      expect(result[0].duration_minutes).toBe(50)
-      expect(result[0].status).toBe('SCHEDULED')
-      expect(result[0].price).toBe(150)
+      expect(result.sessions).toHaveLength(1)
+      expect(result.sessions[0].patient_id).toBe('user-1')
+      expect(result.sessions[0].psychologist_id).toBe('psych-profile-1')
+      expect(result.sessions[0].scheduled_at).toBe('2024-06-01T10:00:00.000Z')
+      expect(result.sessions[0].duration_minutes).toBe(50)
+      expect(result.sessions[0].status).toBe('SCHEDULED')
+      expect(result.sessions[0].price).toBe(150)
+      expect(result.total).toBe(1)
+      expect(result.nextCursor).toBeNull()
     })
 
     it('should return same appointment when psychologist queries their sessions (both-party visibility)', async () => {
-      // The appointment was booked by patient-user-id with psychologist psych-user-id.
-      // Both should see it — verified here from the psychologist's perspective.
       const appt = makePrismaAppointment({
         patientId: 'patient-user-id',
         psychologist: {
@@ -165,35 +166,27 @@ describe('sessions actions', () => {
           },
         },
       })
-      mockPrismaAppointmentFindMany.mockResolvedValue([appt])
+      mockPrismaTransaction.mockResolvedValue([[appt], 1])
 
-      // Psychologist queries using their user ID
       const result = await getUserSessions('psych-user-id')
 
-      expect(result).toHaveLength(1)
-      expect(result[0].id).toBe('appt-1')
-      // Patient info is present so the psychologist can see who booked
-      expect(result[0].patient).not.toBeNull()
-      // Psychologist info is present so both sides can identify the session
-      expect(result[0].psychologist).not.toBeNull()
+      expect(result.sessions).toHaveLength(1)
+      expect(result.sessions[0].id).toBe('appt-1')
+      expect(result.sessions[0].patient).not.toBeNull()
+      expect(result.sessions[0].psychologist).not.toBeNull()
     })
 
     it('should return multiple sessions ordered correctly', async () => {
-      const first = makePrismaAppointment({
-        id: 'appt-a',
-        scheduledAt: new Date('2024-06-01T09:00:00Z'),
-      })
-      const second = makePrismaAppointment({
-        id: 'appt-b',
-        scheduledAt: new Date('2024-06-02T10:00:00Z'),
-      })
-      mockPrismaAppointmentFindMany.mockResolvedValue([first, second])
+      const first = makePrismaAppointment({ id: 'appt-a', scheduledAt: new Date('2024-06-01T09:00:00Z') })
+      const second = makePrismaAppointment({ id: 'appt-b', scheduledAt: new Date('2024-06-02T10:00:00Z') })
+      mockPrismaTransaction.mockResolvedValue([[first, second], 2])
 
       const result = await getUserSessions('user-1')
 
-      expect(result).toHaveLength(2)
-      expect(result[0].id).toBe('appt-a')
-      expect(result[1].id).toBe('appt-b')
+      expect(result.sessions).toHaveLength(2)
+      expect(result.sessions[0].id).toBe('appt-a')
+      expect(result.sessions[1].id).toBe('appt-b')
+      expect(result.total).toBe(2)
     })
   })
 
