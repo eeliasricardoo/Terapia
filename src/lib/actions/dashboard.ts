@@ -545,18 +545,16 @@ export async function getCompanyDashboardData(): Promise<CompanyDashboardData> {
     } = await supabase.auth.getUser()
     if (!user) throw new Error('Não autenticado')
 
+    // 1. Fetch company + members (profiles only — no appointments here)
     const company = await prisma.companyProfile.findUnique({
       where: { userId: user.id },
       include: {
         members: {
           include: {
             profile: {
-              include: {
-                users: {
-                  include: {
-                    patientAppointments: true,
-                  },
-                },
+              select: {
+                user_id: true,
+                fullName: true,
               },
             },
           },
@@ -583,28 +581,68 @@ export async function getCompanyDashboardData(): Promise<CompanyDashboardData> {
     const totalEmployees = company.members.length
     const now = new Date()
     const monthStart = startOfMonth(now)
+    const monthEnd = endOfMonth(now)
 
-    const allMembersAppts = company.members.flatMap((m) =>
-      m.profile.users.patientAppointments.filter((a) => a.scheduledAt >= monthStart)
-    )
+    // Build userId → name map (no extra DB query)
+    const memberUserIdToName = new Map<string, string>()
+    company.members.forEach((m) => {
+      memberUserIdToName.set(m.profile.user_id, m.profile.fullName || 'Colaborador')
+    })
+    const memberUserIds = Array.from(memberUserIdToName.keys())
 
-    const activeSessions = allMembersAppts.length
+    if (memberUserIds.length === 0) {
+      return {
+        stats: {
+          totalEmployees,
+          activeSessions: 0,
+          monthlyInvestment: 0,
+          wellbeingIndex: 0,
+          employeesChange: '+0 este mês',
+          sessionsChange: '0%',
+          investmentChange: 'Estável',
+          wellbeingChange: '0',
+        },
+        recentActivity: [],
+      }
+    }
+
+    // 2. Aggregate at DB level — no in-memory load of all appointments
+    const [activeSessions, recentAppointments] = await prisma.$transaction([
+      prisma.appointment.count({
+        where: {
+          patientId: { in: memberUserIds },
+          scheduledAt: { gte: monthStart, lte: monthEnd },
+          status: { not: 'CANCELED' },
+        },
+      }),
+      prisma.appointment.findMany({
+        where: {
+          patientId: { in: memberUserIds },
+          scheduledAt: { gte: monthStart, lte: monthEnd },
+          status: { not: 'CANCELED' },
+        },
+        orderBy: { scheduledAt: 'desc' },
+        take: 5,
+        select: {
+          patientId: true,
+          scheduledAt: true,
+          sessionType: true,
+          status: true,
+        },
+      }),
+    ])
+
     const monthlyInvestment = activeSessions * 199
 
-    const recentActivity = allMembersAppts
-      .sort((a, b) => b.scheduledAt.getTime() - a.scheduledAt.getTime())
-      .slice(0, 5)
-      .map((a) => ({
-        user:
-          company.members.find((m) => m.profile.user_id === a.patientId)?.profile.fullName ||
-          'Colaborador',
-        department: 'Time',
-        date: new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(
-          a.scheduledAt
-        ),
-        type: a.sessionType,
-        status: a.status === 'COMPLETED' ? 'Concluído' : 'Agendado',
-      }))
+    const recentActivity = recentAppointments.map((a) => ({
+      user: memberUserIdToName.get(a.patientId) || 'Colaborador',
+      department: 'Time',
+      date: new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(
+        a.scheduledAt
+      ),
+      type: a.sessionType,
+      status: a.status === 'COMPLETED' ? 'Concluído' : 'Agendado',
+    }))
 
     return {
       stats: {
