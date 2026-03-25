@@ -1,4 +1,4 @@
-import { sendEmail } from '../utils/email'
+import { dispatchEmailAsync } from '../utils/email-dispatch'
 import {
   getAppointmentConfirmedTemplate,
   getPsychologistNewAppointmentTemplate,
@@ -39,8 +39,8 @@ export async function sendAppointmentNotifications(appointmentId: string) {
     const dateFormatted = format(appointment.scheduledAt, "dd 'de' MMMM, yyyy", { locale: ptBR })
     const timeFormatted = format(appointment.scheduledAt, 'HH:mm')
 
-    // 1. Send to Patient
-    await sendEmail({
+    // 1. Notify Patient (fire-and-forget — does not block the booking flow)
+    dispatchEmailAsync({
       to: patientEmail,
       subject: 'Sessão Confirmada! ✅',
       html: getAppointmentConfirmedTemplate({
@@ -51,9 +51,9 @@ export async function sendAppointmentNotifications(appointmentId: string) {
       }),
     })
 
-    // 2. Send to Psychologist
+    // 2. Notify Psychologist (fire-and-forget)
     if (psychologistEmail) {
-      await sendEmail({
+      dispatchEmailAsync({
         to: psychologistEmail,
         subject: 'Novo Agendamento! 📅',
         html: getPsychologistNewAppointmentTemplate({
@@ -142,7 +142,7 @@ export async function sendCancellationNotifications(
     if (cancelledByPatient) {
       // Patient cancelled → notify psychologist
       if (psychologistEmail) {
-        await sendEmail({
+        dispatchEmailAsync({
           to: psychologistEmail,
           subject: 'Sessão Cancelada pelo Paciente ❌',
           html: getCancellationEmailForPsychologist({
@@ -162,7 +162,7 @@ export async function sendCancellationNotifications(
       )
     } else {
       // Psychologist cancelled → notify patient
-      await sendEmail({
+      dispatchEmailAsync({
         to: patientEmail,
         subject: 'Sua Sessão foi Cancelada ❌',
         html: getCancellationEmailForPatient({
@@ -231,7 +231,7 @@ export async function sendRescheduleNotifications(
     if (rescheduledByPatient) {
       // Patient rescheduled → notify psychologist
       if (psychologistEmail) {
-        await sendEmail({
+        dispatchEmailAsync({
           to: psychologistEmail,
           subject: 'Sessão Reagendada pelo Paciente 📅',
           html: getRescheduleEmailForPsychologist({
@@ -253,7 +253,7 @@ export async function sendRescheduleNotifications(
       )
     } else {
       // Psychologist rescheduled → notify patient
-      await sendEmail({
+      dispatchEmailAsync({
         to: patientEmail,
         subject: 'Sua Sessão foi Reagendada 📅',
         html: getRescheduleEmailForPatient({
