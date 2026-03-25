@@ -28,41 +28,79 @@ import {
 import { createClient } from '@supabase/supabase-js'
 import { logger } from '@/lib/utils/logger'
 
-// Use a pure client for caching to bypass cookies() dynamically blowing up unstable_cache
+// Use a pure prisma call to fetch all verified psychologists
 const getCachedPsychologists = unstable_cache(
   async () => {
     try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      // Import Prisma specifically inside the action to keep it clean
+      const { prisma } = await import('@/lib/prisma')
 
-      const { data: psychologists, error } = await supabase
-        .from('psychologist_profiles')
-        .select('*')
-        .eq('is_verified', true)
-        .order('created_at', { ascending: false })
-        .limit(100)
+      const psychologists = await prisma.psychologistProfile.findMany({
+        where: { isVerified: true },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+        include: {
+          user: {
+            include: {
+              profiles: true, // Prisma relation
+            },
+          },
+        },
+      })
 
-      if (error || !psychologists || psychologists.length === 0) {
-        if (error) logger.error('Error fetching psychologists:', error)
+      if (!psychologists || psychologists.length === 0) {
         return []
       }
 
-      const userIds = psychologists.map((p: PsychologistProfile) => p.userId)
-      const { data: profiles } = await supabase.from('profiles').select('*').in('user_id', userIds)
+      // Map back to the legacy Supabase type structure to avoid breaking the SearchClient
+      return psychologists.map((psych) => {
+        const userProfile = psych.user?.profiles || null
 
-      return psychologists.map((psych: PsychologistProfile) => ({
-        ...psych,
-        profile:
-          (profiles as UserProfile[])?.find((profile) => profile.user_id === psych.userId) || null,
-      })) as PsychologistWithProfile[]
+        const profile = userProfile
+          ? {
+              id: userProfile.id,
+              user_id: userProfile.user_id,
+              full_name: userProfile.fullName,
+              avatar_url: userProfile.avatarUrl,
+              role: userProfile.role,
+              birth_date: userProfile.birth_date ? userProfile.birth_date.toISOString() : null,
+              document: userProfile.document,
+              phone: userProfile.phone,
+              created_at: userProfile.createdAt.toISOString(),
+              updated_at: userProfile.updatedAt.toISOString(),
+            }
+          : null
+
+        return {
+          id: psych.id,
+          userId: psych.userId,
+          crp: psych.crp,
+          bio: psych.bio,
+          specialties: psych.specialties,
+          price_per_session: psych.pricePerSession ? Number(psych.pricePerSession) : null,
+          video_presentation_url: psych.videoPresentationUrl,
+          is_verified: psych.isVerified,
+          weekly_schedule: psych.weeklySchedule as any,
+          timezone: psych.timezone,
+          academic_level: psych.academicLevel,
+          session_duration: psych.sessionDuration,
+          years_of_experience: psych.yearsOfExperience,
+          university: psych.university,
+          external_scheduling_url: psych.externalSchedulingUrl,
+          monthly_plan_discount: psych.monthlyPlanDiscount,
+          monthly_plan_enabled: psych.monthlyPlanEnabled,
+          monthly_plan_sessions: psych.monthlyPlanSessions,
+          created_at: psych.createdAt.toISOString(),
+          updated_at: psych.updatedAt.toISOString(),
+          profile,
+        }
+      }) as unknown as PsychologistWithProfile[]
     } catch (error) {
-      logger.error('Failed to load psychologists Server-Side:', error)
+      logger.error('Failed to load psychologists API/DB:', error)
       return []
     }
   },
-  ['psychologists-search-list-v5'],
+  ['psychologists-search-list-v6'],
   { revalidate: 60, tags: ['psychologists'] }
 )
 

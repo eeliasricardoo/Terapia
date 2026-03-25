@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import { PsychologistProfileClient } from './PsychologistProfileClient'
 import { unstable_cache } from 'next/cache'
-import { createClient } from '@supabase/supabase-js'
 import { PsychologistWithProfile, PsychologistProfile } from '@/lib/supabase/types'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
@@ -9,101 +8,116 @@ import { PsychologistAvailability, TimeSlot } from '@/lib/actions/availability'
 
 async function getPsychologistDataInternal(userId: string) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    const { prisma } = await import('@/lib/prisma')
 
-    // 1. Fetch psychologist
-    const { data: psych, error: psychError } = await supabase
-      .from('psychologist_profiles')
-      .select('*')
-      .eq('userId', userId)
-      .single()
-
-    if (psychError || !psych) {
-      if (psychError) logger.error('Error fetching psychologist:', psychError)
-      return null
-    }
-
-    // Fetch profile (full_name, avatar_url, etc.)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .single()
-
-    const fullPsychologist = {
-      ...psych,
-      profile: profile || null,
-    } as PsychologistWithProfile
-
-    // 2. Fetch overrides & appointments
-    const recentPastDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split('T')[0]
-
-    const overridesRes = await supabase
-      .from('schedule_overrides')
-      .select('date, type, slots')
-      .eq('psychologist_id', psych.id)
-      .gte('date', recentPastDate)
-
-    const appointmentList = await prisma.appointment.findMany({
-      where: {
-        psychologistId: psych.id,
-        status: { notIn: ['CANCELED'] },
-        scheduledAt: { gte: new Date(recentPastDate) },
-      },
-      select: {
-        id: true,
-        scheduledAt: true,
-        durationMinutes: true,
+    // 1. Fetch psychologist, profile and insurances in a single trip
+    const psych = await prisma.psychologistProfile.findUnique({
+      where: { userId },
+      include: {
+        user: {
+          include: { profiles: true },
+        },
+        acceptedInsurances: {
+          include: { healthInsurance: true },
+        },
       },
     })
 
-    const apptsRes = {
-      data: appointmentList.map((a) => ({
-        id: a.id,
-        scheduled_at: a.scheduledAt.toISOString(),
-        duration_minutes: a.durationMinutes,
-      })),
+    if (!psych) {
+      return null
     }
+
+    const userProfile = psych.user?.profiles || null
+    const profile = userProfile
+      ? {
+          id: userProfile.id,
+          user_id: userProfile.user_id,
+          full_name: userProfile.fullName,
+          avatar_url: userProfile.avatarUrl,
+          role: userProfile.role,
+          birth_date: userProfile.birth_date ? userProfile.birth_date.toISOString() : null,
+          document: userProfile.document,
+          phone: userProfile.phone,
+          created_at: userProfile.createdAt.toISOString(),
+          updated_at: userProfile.updatedAt.toISOString(),
+        }
+      : null
+
+    const fullPsychologist = {
+      id: psych.id,
+      userId: psych.userId,
+      crp: psych.crp,
+      bio: psych.bio,
+      specialties: psych.specialties,
+      price_per_session: psych.pricePerSession ? Number(psych.pricePerSession) : null,
+      video_presentation_url: psych.videoPresentationUrl,
+      is_verified: psych.isVerified,
+      weekly_schedule: psych.weeklySchedule as any,
+      timezone: psych.timezone,
+      academic_level: psych.academicLevel,
+      session_duration: psych.sessionDuration,
+      years_of_experience: psych.yearsOfExperience,
+      university: psych.university,
+      external_scheduling_url: psych.externalSchedulingUrl,
+      monthly_plan_discount: psych.monthlyPlanDiscount,
+      monthly_plan_enabled: psych.monthlyPlanEnabled,
+      monthly_plan_sessions: psych.monthlyPlanSessions,
+      created_at: psych.createdAt.toISOString(),
+      updated_at: psych.updatedAt.toISOString(),
+      profile: profile,
+    }
+
+    // 2. Fetch overrides & appointments in parallel
+    const recentPastDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+    const recentPastDateStr = recentPastDate.toISOString().split('T')[0]
+
+    const [overridesList, appointmentList] = await Promise.all([
+      prisma.scheduleOverride.findMany({
+        where: {
+          psychologistId: psych.id,
+          date: { gte: recentPastDateStr },
+        },
+        select: { date: true, type: true, slots: true },
+      }),
+      prisma.appointment.findMany({
+        where: {
+          psychologistId: psych.id,
+          status: { notIn: ['CANCELED'] },
+          scheduledAt: { gte: recentPastDate },
+        },
+        select: {
+          id: true,
+          scheduledAt: true,
+          durationMinutes: true,
+        },
+      }),
+    ])
 
     const overridesMap: Record<string, { type: 'blocked' | 'custom'; slots: TimeSlot[] }> = {}
-    if (overridesRes.data) {
-      overridesRes.data.forEach((o) => {
-        overridesMap[o.date] = {
-          type: o.type as 'blocked' | 'custom',
-          slots: o.slots as unknown as TimeSlot[],
-        }
-      })
-    }
+    overridesList.forEach((o) => {
+      overridesMap[o.date] = {
+        type: o.type as 'blocked' | 'custom',
+        slots: (o.slots as unknown as TimeSlot[]) || [],
+      }
+    })
 
-    const appointmentsMap = apptsRes.data
-      ? apptsRes.data.map((a) => ({
-          id: a.id,
-          scheduled_at: a.scheduled_at,
-          duration_minutes: a.duration_minutes,
-        }))
-      : []
+    const appointmentsMap = appointmentList.map((a) => ({
+      id: a.id,
+      scheduled_at: a.scheduledAt.toISOString(),
+      duration_minutes: a.durationMinutes,
+    }))
 
     const availability: PsychologistAvailability = {
       timezone: psych.timezone || 'America/Sao_Paulo',
-      weeklySchedule: psych.weekly_schedule || null,
+      weeklySchedule: psych.weeklySchedule as any,
       overrides: overridesMap,
       appointments: appointmentsMap,
     }
 
-    // 3. Fetch health insurances
-    const { data: insurancesRes } = await supabase
-      .from('psychologist_insurances')
-      .select('health_insurance:health_insurances(id, name)')
-      .eq('psychologist_id', psych.id)
-
-    const acceptedInsurances = insurancesRes
-      ? insurancesRes.map((item) => (item as any).health_insurance)
-      : []
+    // 3. Extract and map accepted insurances
+    const acceptedInsurances = psych.acceptedInsurances
+      .map((item) => item.healthInsurance)
+      .filter(Boolean)
 
     // 4. Fetch stats (sessions count)
     const { getPsychologistStats } = await import('@/lib/actions/psychologists')
@@ -114,7 +128,7 @@ async function getPsychologistDataInternal(userId: string) {
       psychologist: {
         ...fullPsychologist,
         acceptedInsurances,
-      },
+      } as unknown as PsychologistWithProfile,
       availability,
       stats,
     }
