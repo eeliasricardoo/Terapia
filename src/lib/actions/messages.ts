@@ -60,41 +60,42 @@ export async function getConversations() {
     },
   })
 
-  const conversationsWithData = await Promise.all(
-    participants.map(async (p) => {
-      const conv = p.conversation
-      const otherParticipant = conv.participants[0]
-      const lastMsg = conv.messages[0]
+  const conversationIds = participants.map((p) => p.conversation.id)
 
-      let unreadCount = 0
-      if (p.lastReadAt) {
-        unreadCount = await prisma.message.count({
-          where: {
-            conversationId: conv.id,
-            senderId: { not: userId },
-            createdAt: { gt: p.lastReadAt },
-          },
-        })
-      } else {
-        unreadCount = await prisma.message.count({
-          where: {
-            conversationId: conv.id,
-            senderId: { not: userId },
-          },
-        })
-      }
+  // Single query for all unread messages across conversations (avoids N+1)
+  const unreadMessages = await prisma.message.findMany({
+    where: {
+      conversationId: { in: conversationIds },
+      senderId: { not: userId },
+    },
+    select: { conversationId: true, createdAt: true },
+  })
 
-      return {
-        id: conv.id,
-        name: otherParticipant?.user.profiles?.fullName || otherParticipant?.user.name || 'Usuário',
-        avatar: otherParticipant?.user.profiles?.avatarUrl,
-        lastMessage: decryptData(lastMsg?.content || ''),
-        lastMessageAt: lastMsg?.createdAt,
-        unreadCount,
-        otherParticipantId: otherParticipant?.userId,
-      } as ConversationData
-    })
-  )
+  // Build lastReadAt map and count unread per conversation in memory
+  const lastReadAtMap = new Map(participants.map((p) => [p.conversation.id, p.lastReadAt]))
+  const unreadCountMap = new Map<string, number>()
+  for (const msg of unreadMessages) {
+    const lastReadAt = lastReadAtMap.get(msg.conversationId)
+    if (!lastReadAt || msg.createdAt > lastReadAt) {
+      unreadCountMap.set(msg.conversationId, (unreadCountMap.get(msg.conversationId) ?? 0) + 1)
+    }
+  }
+
+  const conversationsWithData = participants.map((p) => {
+    const conv = p.conversation
+    const otherParticipant = conv.participants[0]
+    const lastMsg = conv.messages[0]
+
+    return {
+      id: conv.id,
+      name: otherParticipant?.user.profiles?.fullName || otherParticipant?.user.name || 'Usuário',
+      avatar: otherParticipant?.user.profiles?.avatarUrl,
+      lastMessage: decryptData(lastMsg?.content || ''),
+      lastMessageAt: lastMsg?.createdAt,
+      unreadCount: unreadCountMap.get(conv.id) ?? 0,
+      otherParticipantId: otherParticipant?.userId,
+    } as ConversationData
+  })
 
   return conversationsWithData.sort((a: ConversationData, b: ConversationData) => {
     const timeA = a.lastMessageAt?.getTime() || 0
