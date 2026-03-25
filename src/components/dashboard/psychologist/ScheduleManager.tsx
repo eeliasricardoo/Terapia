@@ -1,16 +1,9 @@
 'use client'
 import { logger } from '@/lib/utils/logger'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from '@/components/ui/card'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import {
   Select,
@@ -38,14 +31,13 @@ import {
   Ban,
   RotateCcw,
   Settings2,
-  Info,
+  AlertCircle,
   CheckCircle2,
   Users,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { ptBR } from 'date-fns/locale'
-import { format, isSameDay } from 'date-fns'
-import { Badge } from '@/components/ui/badge'
+import { format } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 
@@ -224,19 +216,6 @@ export function ScheduleManager() {
 
   // --- Helpers ---
 
-  const getDayId = (date: Date) => {
-    return format(date, 'EEEE', { locale: ptBR })
-      .toLowerCase()
-      .replace('-feira', '')
-      .replace('ça', 'ca')
-      .replace('ábodo', 'abado') // Normalize if needed, but easier to map date-fns day index
-      .replace('ç', 'c')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // remove accents
-  }
-
-  // Map standard date-fns format 'EEEE' output to our keys if needed,
-  // but simpler to use getDay() index: 0=Sunday, 1=Monday...
   const getWeekDayKey = (date: Date) => {
     const index = date.getDay()
     const map = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
@@ -301,6 +280,36 @@ export function ScheduleManager() {
     })
 
     return slots
+  }
+
+  // --- Overlap Helpers ---
+
+  const doSlotsOverlap = (a: TimeSlot, b: TimeSlot) => a.start < b.end && b.start < a.end
+
+  const getOverlappingIndices = (slots: TimeSlot[]): Set<number> => {
+    const overlapping = new Set<number>()
+    for (let i = 0; i < slots.length; i++) {
+      for (let j = i + 1; j < slots.length; j++) {
+        if (doSlotsOverlap(slots[i], slots[j])) {
+          overlapping.add(i)
+          overlapping.add(j)
+        }
+      }
+    }
+    return overlapping
+  }
+
+  const hasAnyOverlap = (): boolean => {
+    // Check overrides
+    for (const key of Object.keys(overrides)) {
+      const ov = overrides[key]
+      if (ov.type === 'custom' && getOverlappingIndices(ov.slots).size > 0) return true
+    }
+    // Check weekly
+    for (const day of Object.values(weeklySchedule)) {
+      if (day.enabled && getOverlappingIndices(day.slots).size > 0) return true
+    }
+    return false
   }
 
   // --- Handlers: Weekly ---
@@ -383,9 +392,26 @@ export function ScheduleManager() {
     const override = overrides[key]
     if (!override || override.type !== 'custom') return
 
+    const duration = parseInt(sessionDuration)
+    const breakTime = parseInt(breakDuration)
+    const lastSlot = override.slots[override.slots.length - 1]
+
+    let newStart = '09:00'
+    let newEnd = '10:00'
+
+    if (lastSlot) {
+      const lastEnd = new Date(`1970-01-01T${lastSlot.end}:00`)
+      lastEnd.setMinutes(lastEnd.getMinutes() + breakTime)
+      const newEndDate = new Date(lastEnd.getTime() + duration * 60000)
+
+      const pad = (n: number) => n.toString().padStart(2, '0')
+      newStart = `${pad(lastEnd.getHours())}:${pad(lastEnd.getMinutes())}`
+      newEnd = `${pad(newEndDate.getHours())}:${pad(newEndDate.getMinutes())}`
+    }
+
     setOverrides((prev) => ({
       ...prev,
-      [key]: { ...override, slots: [...override.slots, { start: '12:00', end: '13:00' }] },
+      [key]: { ...override, slots: [...override.slots, { start: newStart, end: newEnd }] },
     }))
   }
 
@@ -402,6 +428,13 @@ export function ScheduleManager() {
   }
 
   const handleSave = async () => {
+    if (hasAnyOverlap()) {
+      toast.error('Janelas sobrepostas', {
+        description: 'Corrija os horários conflitantes antes de salvar.',
+      })
+      return
+    }
+
     setIsLoading(true)
     try {
       const { updatePsychologistAvailability } = await import('@/lib/actions/availability')
@@ -442,7 +475,6 @@ export function ScheduleManager() {
       setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a)))
 
       toast.success(`Sessão marcada como ${newStatus.toLowerCase()}`)
-      toast.success(`Sessão marcada como ${newStatus.toLowerCase()}`)
     } catch (error) {
       logger.error('Error updating appointment status:', error)
       toast.error('Erro ao atualizar status')
@@ -451,235 +483,241 @@ export function ScheduleManager() {
 
   // --- Render ---
   const effective = selectedDate ? getEffectiveSchedule(selectedDate) : null
+  const effectiveOverlapping =
+    effective?.source === 'override' ? getOverlappingIndices(effective.slots) : new Set<number>()
+  const hasConflicts = hasAnyOverlap()
 
-  return (
-    <div className="max-w-6xl mx-auto pb-20 space-y-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Gerenciar Agenda</h2>
-          <p className="text-slate-500">
-            Controle total sobre seus dias de atendimento e horários.
-          </p>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="text-sm text-slate-500">Fuso Horário:</span>
-            <Select value={timezone} onValueChange={setTimezone}>
-              <SelectTrigger className="w-[180px] h-8 text-xs">
+  const WeeklyConfigDialog = (
+    <Dialog open={isWeeklyConfigOpen} onOpenChange={setIsWeeklyConfigOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1.5 h-9 border-slate-200 text-slate-700">
+          <Settings2 className="h-3.5 w-3.5" />
+          Rotina Semanal
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Configurações da Agenda</DialogTitle>
+          <DialogDescription>
+            Defina os horários base e a duração das suas sessões.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid grid-cols-2 gap-4 py-4 border-b border-slate-100 mb-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Duração da Sessão</label>
+            <Select value={sessionDuration} onValueChange={setSessionDuration}>
+              <SelectTrigger>
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
-                {TIMEZONES.map((tz) => (
-                  <SelectItem key={tz} value={tz}>
-                    {tz}
-                  </SelectItem>
-                ))}
+                <SelectItem value="30">30 minutos</SelectItem>
+                <SelectItem value="45">45 minutos</SelectItem>
+                <SelectItem value="50">50 minutos</SelectItem>
+                <SelectItem value="60">60 minutos</SelectItem>
+                <SelectItem value="90">90 minutos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Intervalo entre Sessões</label>
+            <Select value={breakDuration} onValueChange={setBreakDuration}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Sem intervalo</SelectItem>
+                <SelectItem value="5">5 minutos</SelectItem>
+                <SelectItem value="10">10 minutos</SelectItem>
+                <SelectItem value="15">15 minutos</SelectItem>
+                <SelectItem value="20">20 minutos</SelectItem>
+                <SelectItem value="30">30 minutos</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Dialog open={isWeeklyConfigOpen} onOpenChange={setIsWeeklyConfigOpen}>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="gap-2 border-slate-200 text-slate-700 bg-white hover:bg-slate-50"
+        <div className="space-y-3 py-4">
+          {DAYS_OF_WEEK.map((day) => {
+            const daySchedule = weeklySchedule[day.id] || { enabled: false, slots: [] }
+            const isAvailable = daySchedule.enabled
+
+            return (
+              <div
+                key={day.id}
+                className={cn(
+                  'p-4 rounded-xl border transition-all',
+                  isAvailable
+                    ? 'bg-white border-slate-200'
+                    : 'bg-slate-50 border-slate-100 opacity-60'
+                )}
               >
-                <Settings2 className="h-4 w-4" />
-                Configurar Rotina Semanal
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Configurações da Agenda</DialogTitle>
-                <DialogDescription>
-                  Defina os horários base e a duração das suas sessões.
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="grid grid-cols-2 gap-4 py-4 border-b border-slate-100 mb-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Duração da Sessão</label>
-                  <Select value={sessionDuration} onValueChange={setSessionDuration}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="30">30 minutos</SelectItem>
-                      <SelectItem value="45">45 minutos</SelectItem>
-                      <SelectItem value="50">50 minutos</SelectItem>
-                      <SelectItem value="60">60 minutos</SelectItem>
-                      <SelectItem value="90">90 minutos</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">
-                    Intervalo entre Sessões
-                  </label>
-                  <Select value={breakDuration} onValueChange={setBreakDuration}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">Sem intervalo</SelectItem>
-                      <SelectItem value="5">5 minutos</SelectItem>
-                      <SelectItem value="10">10 minutos</SelectItem>
-                      <SelectItem value="15">15 minutos</SelectItem>
-                      <SelectItem value="20">20 minutos</SelectItem>
-                      <SelectItem value="30">30 minutos</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-6 py-4">
-                {DAYS_OF_WEEK.map((day) => {
-                  const daySchedule = weeklySchedule[day.id] || { enabled: false, slots: [] }
-                  const isAvailable = daySchedule.enabled
-
-                  return (
-                    <div
-                      key={day.id}
-                      className={`p-4 rounded-xl border transition-all ${isAvailable ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-50 border-slate-100 opacity-70'}`}
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <Switch
-                            checked={isAvailable}
-                            onCheckedChange={() => handleWeeklyToggle(day.id)}
-                            className="data-[state=checked]:bg-primary"
-                          />
-                          <span
-                            className={`font-semibold ${isAvailable ? 'text-slate-900' : 'text-slate-500'}`}
-                          >
-                            {day.fullLabel}
-                          </span>
-                        </div>
-                        {!isAvailable && (
-                          <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
-                            Indisponível
-                          </span>
-                        )}
-                      </div>
-
-                      {isAvailable && (
-                        <div className="pl-12 space-y-3">
-                          {daySchedule.slots.map((slot, idx) => (
-                            <div key={idx} className="flex items-center gap-3">
-                              <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-md border border-slate-100">
-                                <Select
-                                  value={slot.start}
-                                  onValueChange={(v) =>
-                                    handleWeeklySlotChange(day.id, idx, 'start', v)
-                                  }
-                                >
-                                  <SelectTrigger className="w-[90px] h-8 border-none bg-transparent shadow-none focus:ring-0 text-sm">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {HOURS.map((h) => (
-                                      <SelectItem key={h} value={h}>
-                                        {h}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <span className="text-slate-300">→</span>
-                                <Select
-                                  value={slot.end}
-                                  onValueChange={(v) =>
-                                    handleWeeklySlotChange(day.id, idx, 'end', v)
-                                  }
-                                >
-                                  <SelectTrigger className="w-[90px] h-8 border-none bg-transparent shadow-none focus:ring-0 text-sm">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {HOURS.map((h) => (
-                                      <SelectItem key={h} value={h}>
-                                        {h}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50"
-                                onClick={() => handleWeeklyRemoveSlot(day.id, idx)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-primary hover:text-primary/90 hover:bg-primary/10 text-xs h-8 px-2"
-                            onClick={() => handleWeeklyAddSlot(day.id)}
-                          >
-                            <Plus className="h-3 w-3 mr-1" /> Adicionar intervalo
-                          </Button>
-                        </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      checked={isAvailable}
+                      onCheckedChange={() => handleWeeklyToggle(day.id)}
+                      className="data-[state=checked]:bg-primary"
+                    />
+                    <span
+                      className={cn(
+                        'text-sm font-medium',
+                        isAvailable ? 'text-slate-900' : 'text-slate-400'
                       )}
-                    </div>
-                  )
-                })}
-              </div>
-              <DialogFooter>
-                <Button
-                  onClick={() => setIsWeeklyConfigOpen(false)}
-                  className="bg-slate-900 text-white"
-                >
-                  Concluir Configuração
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                    >
+                      {day.fullLabel}
+                    </span>
+                  </div>
+                  {!isAvailable && <span className="text-xs text-slate-400">Indisponível</span>}
+                </div>
 
+                {isAvailable && (
+                  <div className="mt-3 pl-10 space-y-2">
+                    {daySchedule.slots.map((slot, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                          <Select
+                            value={slot.start}
+                            onValueChange={(v) => handleWeeklySlotChange(day.id, idx, 'start', v)}
+                          >
+                            <SelectTrigger className="w-[80px] h-7 border-none bg-transparent shadow-none focus:ring-0 text-sm font-medium">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {HOURS.map((h) => (
+                                <SelectItem key={h} value={h}>
+                                  {h}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <span className="text-slate-300 text-xs">—</span>
+                          <Select
+                            value={slot.end}
+                            onValueChange={(v) => handleWeeklySlotChange(day.id, idx, 'end', v)}
+                          >
+                            <SelectTrigger className="w-[80px] h-7 border-none bg-transparent shadow-none focus:ring-0 text-sm font-medium">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {HOURS.map((h) => (
+                                <SelectItem key={h} value={h}>
+                                  {h}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-md"
+                          onClick={() => handleWeeklyRemoveSlot(day.id, idx)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-primary hover:text-primary/90 hover:bg-primary/10 text-xs h-7 px-2 gap-1"
+                      onClick={() => handleWeeklyAddSlot(day.id)}
+                    >
+                      <Plus className="h-3 w-3" /> Adicionar intervalo
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+        <DialogFooter>
+          <Button onClick={() => setIsWeeklyConfigOpen(false)} className="bg-slate-900 text-white">
+            Concluir
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+
+  return (
+    <div className="max-w-6xl mx-auto pb-20 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-900">Gerenciar Agenda</h2>
+          <p className="text-sm text-slate-500 mt-0.5">
+            Controle seus dias e horários de atendimento
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Select value={timezone} onValueChange={setTimezone}>
+            <SelectTrigger className="w-[160px] h-9 text-xs border-slate-200">
+              <SelectValue placeholder="Fuso..." />
+            </SelectTrigger>
+            <SelectContent>
+              {TIMEZONES.map((tz) => (
+                <SelectItem key={tz} value={tz}>
+                  {tz}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {WeeklyConfigDialog}
           <Button
             onClick={handleSave}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-sm"
+            size="sm"
+            className={cn(
+              'gap-1.5 h-9',
+              hasConflicts && 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100'
+            )}
+            variant={hasConflicts ? 'outline' : 'default'}
+            disabled={isLoading}
+            title={hasConflicts ? 'Existem janelas com horários conflitantes' : undefined}
           >
-            <Save className="h-4 w-4" />
-            Salvar Alterações
+            {hasConflicts ? (
+              <AlertCircle className="h-3.5 w-3.5" />
+            ) : (
+              <Save className="h-3.5 w-3.5" />
+            )}
+            {isLoading ? 'Salvando...' : hasConflicts ? 'Conflito' : 'Salvar'}
           </Button>
         </div>
       </div>
 
-      {/* Main Content Areas */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-[600px] h-auto">
-        {/* Visual Calendar */}
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:items-start">
+        {/* Calendar */}
         <Card className="lg:col-span-8 border border-slate-200 shadow-sm bg-white overflow-hidden flex flex-col">
-          <CardHeader className="border-b border-slate-50 pb-4 bg-slate-50/30">
-            <CardTitle className="flex items-center gap-2 text-base font-medium text-slate-500">
+          <CardHeader className="border-b border-slate-100 py-3 px-5">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-slate-500">
               <CalendarIcon className="h-4 w-4" />
               Visão Mensal
             </CardTitle>
           </CardHeader>
-          <div className="flex-1 p-6 flex justify-center items-start overflow-y-auto">
+          <div className="p-4 flex justify-center items-start">
             <Calendar
               mode="single"
               selected={selectedDate}
               onSelect={setSelectedDate}
               className="rounded-md border-0 w-full max-w-lg"
               classNames={{
-                month: 'space-y-4 w-full',
+                month: 'space-y-3 w-full',
                 caption: 'flex justify-start pt-1 relative items-center pl-2',
                 caption_label: 'text-sm font-bold text-slate-900',
                 nav: 'space-x-1 flex items-center absolute right-1 inset-y-0',
                 prev: 'h-7 w-7 bg-transparent hover:opacity-100 p-0 text-slate-400 hover:text-slate-900',
                 next: 'h-7 w-7 bg-transparent hover:opacity-100 p-0 text-slate-400 hover:text-slate-900',
                 table: 'w-full border-collapse space-y-1',
-                head_row: 'flex w-full justify-between mb-2',
-                row: 'flex w-full mt-2 justify-between',
-                cell: 'h-14 w-14 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-slate-50 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20',
-                day: 'h-14 w-14 p-0 font-normal aria-selected:opacity-100 hover:bg-slate-100 rounded-lg transition-all border border-transparent hover:border-slate-200 flex flex-col items-center justify-center gap-1',
+                head_row: 'flex w-full justify-between mb-1',
+                row: 'flex w-full mt-1 justify-between',
+                cell: 'h-12 w-12 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-slate-50 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20',
+                day: 'h-12 w-12 p-0 font-normal aria-selected:opacity-100 hover:bg-slate-100 rounded-lg transition-all flex flex-col items-center justify-center gap-0.5',
                 day_selected:
-                  'bg-slate-900 text-white hover:bg-slate-800 hover:text-white border-slate-900 shadow-md',
-                day_today: 'bg-slate-50 text-slate-900 font-bold border-slate-200',
+                  'bg-slate-900 text-white hover:bg-slate-800 hover:text-white shadow-sm',
+                day_today: 'bg-slate-50 text-slate-900 font-bold ring-1 ring-slate-200',
               }}
               modifiers={{
                 blocked: (date: Date) => overrides[format(date, 'yyyy-MM-dd')]?.type === 'blocked',
@@ -703,16 +741,16 @@ export function ScheduleManager() {
                   const hasAppt = appointments.some((a) => a.scheduled_at.startsWith(dateStr))
 
                   return (
-                    <div className="w-full h-full flex flex-col items-center justify-center relative">
-                      <span className="text-sm font-medium">{date.getDate()}</span>
+                    <div className="w-full h-full flex flex-col items-center justify-center">
+                      <span className="text-sm font-medium leading-none">{date.getDate()}</span>
                       <div className="flex gap-0.5 mt-1">
-                        {isBlocked && <div className="h-1.5 w-1.5 rounded-full bg-red-400" />}
-                        {isCustom && <div className="h-1.5 w-1.5 rounded-full bg-blue-900" />}
-                        {hasRoutine && <div className="h-1.5 w-1.5 rounded-full bg-blue-600" />}
+                        {isBlocked && <div className="h-1 w-1 rounded-full bg-red-400" />}
+                        {isCustom && <div className="h-1 w-1 rounded-full bg-indigo-500" />}
+                        {hasRoutine && <div className="h-1 w-1 rounded-full bg-blue-500" />}
                         {!hasRoutine && !isBlocked && !isCustom && (
-                          <div className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                          <div className="h-1 w-1 rounded-full bg-slate-200" />
                         )}
-                        {hasAppt && <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                        {hasAppt && <div className="h-1 w-1 rounded-full bg-emerald-500" />}
                       </div>
                     </div>
                   )
@@ -720,456 +758,406 @@ export function ScheduleManager() {
               }}
             />
           </div>
-          <CardFooter className="border-t border-slate-50 bg-slate-50/30 p-4 text-xs text-slate-500 flex justify-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-blue-600" /> Padrão
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-blue-900" /> Personalizado
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-slate-300" /> Dia Livre
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-red-400" /> Folga
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-emerald-500" /> Agendamento
-            </div>
-          </CardFooter>
+          <div className="border-t border-slate-100 px-5 py-2.5 flex items-center justify-center gap-5">
+            {[
+              { color: 'bg-blue-500', label: 'Padrão' },
+              { color: 'bg-indigo-500', label: 'Personalizado' },
+              { color: 'bg-slate-200', label: 'Dia livre' },
+              { color: 'bg-red-400', label: 'Folga' },
+              { color: 'bg-emerald-500', label: 'Agendamento' },
+            ].map(({ color, label }) => (
+              <div key={label} className="flex items-center gap-1.5 text-xs text-slate-500">
+                <div className={cn('h-1.5 w-1.5 rounded-full', color)} />
+                {label}
+              </div>
+            ))}
+          </div>
         </Card>
 
         {/* Day Editor Panel */}
-        <Card className="lg:col-span-4 border border-slate-200 shadow-xl bg-white flex flex-col overflow-hidden h-full relative">
+        <Card className="lg:col-span-4 border border-slate-200 shadow-sm bg-white flex flex-col overflow-hidden">
           {!selectedDate ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8 text-center bg-slate-50/10">
-              <div className="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mb-6 opacity-40">
-                <CalendarIcon className="h-10 w-10 text-slate-400" />
+            <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+              <div className="h-14 w-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
+                <CalendarIcon className="h-7 w-7 text-slate-400" />
               </div>
-              <p className="font-bold text-slate-500 text-lg">Selecione um dia</p>
-              <p className="text-sm mt-2 max-w-[200px] leading-relaxed">
-                Clique em uma data no calendário para gerenciar seus horários.
+              <p className="font-semibold text-slate-600">Selecione um dia</p>
+              <p className="text-sm text-slate-400 mt-1 max-w-[180px]">
+                Clique em uma data para gerenciar os horários.
               </p>
             </div>
           ) : (
             <>
-              {/* Card Header with Date Info */}
+              {/* Header */}
               <div
                 className={cn(
-                  'p-8 border-b transition-all duration-500',
+                  'px-5 pt-5 pb-4 border-b transition-colors',
                   effective?.type === 'blocked'
-                    ? 'bg-red-50/50 border-red-100'
-                    : effective?.type === 'custom'
-                      ? 'bg-slate-900 border-slate-800 shadow-inner' // Dark elegant mode for custom
-                      : 'bg-white border-slate-100'
+                    ? 'bg-red-50 border-red-100'
+                    : 'bg-white border-slate-100'
                 )}
               >
-                <div className="flex items-center justify-between mb-6">
-                  <Badge
-                    variant="outline"
+                <div className="flex items-center justify-between mb-3">
+                  <span
                     className={cn(
-                      'uppercase tracking-[0.2em] text-[10px] font-black px-3 py-1 border-2 transition-all',
+                      'inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full',
                       effective?.type === 'blocked'
-                        ? 'text-red-700 border-red-200 bg-white'
+                        ? 'bg-red-100 text-red-600'
                         : effective?.type === 'custom'
-                          ? 'text-white border-white/20 bg-white/10'
-                          : 'text-blue-600 border-blue-100 bg-blue-50/50'
+                          ? 'bg-indigo-100 text-indigo-600'
+                          : 'bg-blue-50 text-blue-600'
                     )}
                   >
-                    {effective?.type === 'blocked'
-                      ? 'DIA BLOQUEADO'
-                      : effective?.type === 'custom'
-                        ? 'HORÁRIO ESPECIAL'
-                        : 'ROTINA SEMANAL'}
-                  </Badge>
-
+                    {effective?.type === 'blocked' ? (
+                      <>
+                        <Ban className="h-3 w-3" /> Folga
+                      </>
+                    ) : effective?.type === 'custom' ? (
+                      <>
+                        <Settings2 className="h-3 w-3" /> Personalizado
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-3 w-3" /> Rotina semanal
+                      </>
+                    )}
+                  </span>
                   {effective?.source === 'override' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        'h-8 px-3 text-[10px] font-black uppercase tracking-widest transition-all',
-                        effective?.type === 'custom'
-                          ? 'text-slate-400 hover:text-white hover:bg-white/10'
-                          : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
-                      )}
+                    <button
                       onClick={handleResetOverride}
+                      className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors"
                     >
-                      <RotateCcw className="h-3 w-3 mr-2" />
-                      RESTAURAR PADRÃO
-                    </Button>
+                      <RotateCcw className="h-3 w-3" />
+                      Restaurar padrão
+                    </button>
                   )}
                 </div>
 
-                <div className="flex items-baseline gap-3">
-                  <span
-                    className={cn(
-                      'text-5xl font-black tracking-tighter',
-                      effective?.type === 'custom' ? 'text-white' : 'text-slate-900'
-                    )}
-                  >
+                <div className="flex items-end gap-2.5">
+                  <span className="text-4xl font-bold text-slate-900 leading-none">
                     {format(selectedDate, 'dd', { locale: ptBR })}
                   </span>
-                  <div className="flex flex-col">
-                    <span
-                      className={cn(
-                        'text-sm font-black uppercase tracking-[0.1em]',
-                        effective?.type === 'custom' ? 'text-slate-200' : 'text-slate-600'
-                      )}
-                    >
-                      {format(selectedDate, 'MMMM', { locale: ptBR })}
-                    </span>
-                    <span
-                      className={cn(
-                        'text-[10px] font-bold uppercase tracking-widest opacity-60',
-                        effective?.type === 'custom' ? 'text-white' : 'text-slate-400'
-                      )}
-                    >
+                  <div className="pb-0.5">
+                    <p className="text-sm font-semibold text-slate-700 capitalize">
+                      {format(selectedDate, 'MMMM yyyy', { locale: ptBR })}
+                    </p>
+                    <p className="text-xs text-slate-400 capitalize">
                       {format(selectedDate, 'EEEE', { locale: ptBR })}
-                    </span>
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* Card Body - Scrollable Area */}
-              <div className="flex-1 overflow-y-auto bg-slate-50/20 custom-scrollbar">
-                <div className="p-8">
-                  {effective?.type === 'blocked' ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center space-y-6">
-                      <div className="h-24 w-24 bg-red-50 rounded-3xl flex items-center justify-center border-2 border-red-100 shadow-md rotate-3">
-                        <Ban className="h-12 w-12 text-red-400" />
-                      </div>
-                      <div className="space-y-2">
-                        <h4 className="font-black text-slate-900 text-xl tracking-tight">
-                          Dia de Folga
-                        </h4>
-                        <p className="text-sm text-slate-500 max-w-[260px] mx-auto leading-relaxed">
-                          Este dia foi marcado como indisponível. Nenhum horário aparecerá para seus
-                          pacientes.
-                        </p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        className="mt-6 border-2 border-slate-200 text-slate-700 bg-white hover:border-red-500 hover:text-red-500 transition-all font-black px-10 h-12 rounded-xl"
-                        onClick={handleResetOverride}
-                      >
-                        ATIVAR DIA
-                      </Button>
+              {/* Body */}
+              <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+                {effective?.type === 'blocked' ? (
+                  <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                    <div className="h-12 w-12 bg-red-50 rounded-2xl flex items-center justify-center mb-3 border border-red-100">
+                      <Ban className="h-6 w-6 text-red-400" />
                     </div>
-                  ) : (
-                    <div className="space-y-12">
-                      {/* Attendance Periods Section */}
-                      <div>
-                        <div className="flex items-center justify-between mb-6">
-                          <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] inline-flex items-center">
-                            <Clock className="h-3 w-3 mr-2 text-indigo-400" />
-                            Janelas de Atendimento
-                          </h4>
-                          {(effective?.slots?.length || 0) > 0 && (
-                            <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">
-                              {effective?.slots?.length || 0} BLOCO
-                              {(effective?.slots?.length || 0) === 1 ? '' : 'S'}
-                            </span>
-                          )}
-                        </div>
+                    <p className="font-semibold text-slate-700">Dia de folga</p>
+                    <p className="text-sm text-slate-400 mt-1 max-w-[200px]">
+                      Nenhum horário disponível para seus pacientes.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-4 border-slate-200 text-slate-600 hover:text-slate-900"
+                      onClick={handleResetOverride}
+                    >
+                      Ativar dia
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Conflict banner */}
+                    {effectiveOverlapping.size > 0 && (
+                      <div className="mx-4 mt-4 flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 font-medium">
+                        <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                        Janelas sobrepostas — corrija antes de salvar
+                      </div>
+                    )}
 
-                        {(effective?.slots?.length || 0) === 0 ? (
-                          <div className="text-center py-12 bg-white rounded-3xl border-2 border-dashed border-slate-200 shadow-inner">
-                            <p className="text-xs font-bold text-slate-400">
-                              Sem horários definidos.
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            {effective?.slots.map((slot, idx) => (
-                              <div
-                                key={idx}
-                                className="group relative animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
-                                style={{ animationDelay: `${idx * 100}ms` }}
-                              >
-                                <div
-                                  className={cn(
-                                    'flex items-center justify-between p-5 rounded-3xl border-2 transition-all duration-300',
-                                    effective.source === 'override'
-                                      ? 'bg-white border-slate-100 shadow-sm hover:border-blue-500 hover:shadow-xl hover:-translate-y-1'
-                                      : 'bg-blue-50/50 border-blue-100/50'
-                                  )}
-                                >
-                                  <div className="flex items-center gap-6">
-                                    {effective.source === 'override' ? (
-                                      <>
-                                        <div className="space-y-2">
-                                          <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest pl-1">
-                                            Início
-                                          </span>
-                                          <Select
-                                            value={slot.start}
-                                            onValueChange={(v) =>
-                                              handleCustomSlotChange(idx, 'start', v)
-                                            }
-                                          >
-                                            <SelectTrigger className="h-12 w-[100px] bg-slate-50 border-2 border-slate-100 hover:border-blue-400 font-bold text-slate-900 rounded-2xl transition-all outline-none ring-0 shadow-none focus:ring-0">
-                                              <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <div className="grid grid-cols-2">
-                                                {HOURS.map((h) => (
-                                                  <SelectItem
-                                                    key={h}
-                                                    value={h}
-                                                    className="text-xs font-bold"
-                                                  >
-                                                    {h}
-                                                  </SelectItem>
-                                                ))}
-                                              </div>
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        <div className="h-8 w-1 bg-slate-100 self-end mb-2 rounded-full hidden sm:block" />
-                                        <div className="space-y-2">
-                                          <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest pl-1">
-                                            Fim
-                                          </span>
-                                          <Select
-                                            value={slot.end}
-                                            onValueChange={(v) =>
-                                              handleCustomSlotChange(idx, 'end', v)
-                                            }
-                                          >
-                                            <SelectTrigger className="h-12 w-[100px] bg-slate-50 border-2 border-slate-100 hover:border-blue-400 font-bold text-slate-900 rounded-2xl transition-all outline-none ring-0 shadow-none focus:ring-0">
-                                              <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <div className="grid grid-cols-2">
-                                                {HOURS.map((h) => (
-                                                  <SelectItem
-                                                    key={h}
-                                                    value={h}
-                                                    className="text-xs font-bold"
-                                                  >
-                                                    {h}
-                                                  </SelectItem>
-                                                ))}
-                                              </div>
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                      </>
-                                    ) : (
-                                      <div className="py-2 pl-4">
-                                        <p className="text-xl font-black text-slate-800 tracking-tight">
-                                          {slot.start} — {slot.end}
-                                        </p>
-                                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-1">
-                                          Horário Regular
-                                        </p>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {effective.source === 'override' && (
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-10 w-10 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all mr-2"
-                                      onClick={() => handleRemoveCustomSlot(idx)}
-                                    >
-                                      <Trash2 className="h-5 w-5" />
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                    {/* Time windows */}
+                    <div className="p-4 space-y-2">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5 text-slate-400" />
+                          Janelas de atendimento
+                        </span>
+                        {(effective?.slots?.length || 0) > 0 && (
+                          <span className="text-xs text-slate-400">
+                            {effective?.slots?.length} bloco
+                            {(effective?.slots?.length || 0) !== 1 ? 's' : ''}
+                          </span>
                         )}
                       </div>
 
-                      {/* Logic Buttons / Actions */}
-                      {effective?.source === 'weekly' ? (
-                        <div className="pt-4 space-y-4">
-                          <div className="relative py-4">
-                            <div className="absolute inset-0 flex items-center">
-                              <div className="w-full border-t-2 border-slate-100 border-dashed"></div>
-                            </div>
-                            <div className="relative flex justify-center text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] bg-[#fbfbfb] px-4">
-                              Alternativas
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-1 gap-4">
-                            <Button
-                              className="bg-white border-2 border-slate-200 text-slate-900 hover:border-blue-600 hover:bg-blue-50/50 hover:text-blue-600 transition-all font-black h-16 rounded-3xl shadow-sm text-sm"
-                              onClick={() => handleOverride('custom')}
-                            >
-                              <Settings2 className="h-5 w-5 mr-3 text-blue-500" />
-                              PERSONALIZAR DIA
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              className="text-red-500 hover:text-red-600 hover:bg-red-50 font-black h-14 rounded-2xl text-[11px] tracking-widest uppercase"
-                              onClick={() => handleOverride('blocked')}
-                            >
-                              <Ban className="h-4 w-4 mr-2" /> MARCAR FOLGA
-                            </Button>
-                          </div>
+                      {(effective?.slots?.length || 0) === 0 ? (
+                        <div className="text-center py-6 border border-dashed border-slate-200 rounded-lg">
+                          <p className="text-xs text-slate-400">Sem janelas definidas</p>
                         </div>
                       ) : (
-                        <div className="pt-8 border-t-2 border-slate-100 border-dashed">
-                          <Button
-                            variant="outline"
-                            className="w-full border-2 border-dashed border-slate-200 text-slate-400 hover:border-blue-500 hover:text-blue-600 hover:bg-white h-16 rounded-3xl transition-all group"
-                            onClick={handleAddCustomSlot}
-                          >
-                            <Plus className="h-5 w-5 mr-2 group-hover:scale-125 transition-transform" />
-                            <span className="font-black text-xs uppercase tracking-widest">
-                              Adicionar Horário
-                            </span>
-                          </Button>
-                        </div>
-                      )}
-
-                      {/* Generated Slots Preview */}
-                      <div className="pt-8 space-y-6">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-emerald-500" />
-                          <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">
-                            Slots de Consulta Gerados
-                          </h4>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-sm space-y-6">
-                          <div className="flex flex-wrap gap-2">
-                            {getGeneratedSlots(selectedDate!).length === 0 ? (
-                              <p className="text-xs text-slate-400 italic py-2">
-                                Nenhum slot disponível.
-                              </p>
-                            ) : (
-                              getGeneratedSlots(selectedDate!).map((time) => {
-                                const isBooked = appointments.some(
-                                  (a) =>
-                                    a.scheduled_at.startsWith(
-                                      format(selectedDate!, 'yyyy-MM-dd')
-                                    ) &&
-                                    format(new Date(a.scheduled_at), 'HH:mm') === time &&
-                                    a.status !== 'cancelled'
-                                )
-                                return (
-                                  <Badge
-                                    key={time}
-                                    variant="outline"
-                                    className={cn(
-                                      'px-3 py-1 text-[11px] font-black h-8 rounded-xl transition-all',
-                                      isBooked
-                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-inner'
-                                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-white'
+                        <div className="space-y-2">
+                          {effective?.slots.map((slot, idx) => {
+                            const isConflict = effectiveOverlapping.has(idx)
+                            return (
+                              <div
+                                key={idx}
+                                className={cn(
+                                  'flex items-center gap-2 p-3 rounded-lg border transition-colors',
+                                  effective.source === 'override'
+                                    ? isConflict
+                                      ? 'bg-red-50 border-red-300'
+                                      : 'bg-white border-slate-200 hover:border-slate-300'
+                                    : 'bg-slate-50 border-slate-100'
+                                )}
+                              >
+                                {effective.source === 'override' ? (
+                                  <>
+                                    <Select
+                                      value={slot.start}
+                                      onValueChange={(v) => handleCustomSlotChange(idx, 'start', v)}
+                                    >
+                                      <SelectTrigger
+                                        className={cn(
+                                          'h-8 w-[84px] text-sm font-medium focus:ring-0 focus:ring-offset-0',
+                                          isConflict
+                                            ? 'bg-red-50 border-red-300'
+                                            : 'bg-slate-50 border-slate-200'
+                                        )}
+                                      >
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <div className="grid grid-cols-2">
+                                          {HOURS.map((h) => (
+                                            <SelectItem key={h} value={h} className="text-xs">
+                                              {h}
+                                            </SelectItem>
+                                          ))}
+                                        </div>
+                                      </SelectContent>
+                                    </Select>
+                                    <span className="text-slate-300 text-sm">—</span>
+                                    <Select
+                                      value={slot.end}
+                                      onValueChange={(v) => handleCustomSlotChange(idx, 'end', v)}
+                                    >
+                                      <SelectTrigger
+                                        className={cn(
+                                          'h-8 w-[84px] text-sm font-medium focus:ring-0 focus:ring-offset-0',
+                                          isConflict
+                                            ? 'bg-red-50 border-red-300'
+                                            : 'bg-slate-50 border-slate-200'
+                                        )}
+                                      >
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <div className="grid grid-cols-2">
+                                          {HOURS.map((h) => (
+                                            <SelectItem key={h} value={h} className="text-xs">
+                                              {h}
+                                            </SelectItem>
+                                          ))}
+                                        </div>
+                                      </SelectContent>
+                                    </Select>
+                                    {isConflict && (
+                                      <span className="text-xs text-red-500 font-medium shrink-0">
+                                        Conflito
+                                      </span>
                                     )}
-                                  >
-                                    {time}
-                                    {isBooked && (
-                                      <CheckCircle2 className="h-3 w-3 ml-2 text-emerald-500" />
-                                    )}
-                                  </Badge>
-                                )
-                              })
-                            )}
-                          </div>
-
-                          <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest pt-4 border-t border-slate-100">
-                            <span className="text-slate-400">
-                              Tempo de Sessão: {sessionDuration}m
-                            </span>
-                            <span className="text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
-                              {getGeneratedSlots(selectedDate!).length} VAGAS DISPONÍVEIS
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Appointments list (footer of panel context) */}
-                      {appointments.filter((a) =>
-                        a.scheduled_at.startsWith(format(selectedDate!, 'yyyy-MM-dd'))
-                      ).length > 0 && (
-                        <div className="pt-12 space-y-6">
-                          <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] inline-flex items-center">
-                            <Users className="h-4 w-4 mr-2 text-indigo-400" />
-                            Meus Agendamentos de Hoje
-                          </h4>
-                          <div className="space-y-4">
-                            {appointments
-                              .filter((a) =>
-                                a.scheduled_at.startsWith(format(selectedDate!, 'yyyy-MM-dd'))
-                              )
-                              .sort(
-                                (a, b) =>
-                                  new Date(a.scheduled_at).getTime() -
-                                  new Date(b.scheduled_at).getTime()
-                              )
-                              .map((appt) => (
-                                <div
-                                  key={appt.id}
-                                  className="bg-white border-2 border-slate-100 p-4 rounded-3xl flex items-center justify-between hover:shadow-lg transition-all"
-                                >
-                                  <div className="flex items-center gap-4">
-                                    <div className="h-10 w-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center font-black text-xs border border-indigo-100 uppercase">
-                                      {appt.patient_name.charAt(0)}
-                                    </div>
-                                    <div>
-                                      <p className="text-sm font-black text-slate-800">
-                                        {appt.patient_name}
-                                      </p>
-                                      <div className="flex items-center gap-3 mt-1">
-                                        <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1">
-                                          <Clock className="h-2.5 w-2.5" />
-                                          {format(new Date(appt.scheduled_at), 'HH:mm')}
-                                        </span>
-                                        <Badge
-                                          className={cn(
-                                            'text-[9px] font-black uppercase tracking-tighter px-2 h-5 rounded-md',
-                                            appt.status === 'COMPLETED'
-                                              ? 'bg-slate-100 text-slate-500'
-                                              : 'bg-emerald-500 text-white'
-                                          )}
-                                        >
-                                          {appt.status}
-                                        </Badge>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    {appt.status === 'scheduled' && (
-                                      <>
-                                        <Button
-                                          size="icon"
-                                          variant="ghost"
-                                          className="h-10 w-10 rounded-2xl hover:bg-emerald-50 text-emerald-600 transition-all"
-                                          onClick={() =>
-                                            handleUpdateAppointmentStatus(appt.id, 'COMPLETED')
-                                          }
-                                        >
-                                          <CheckCircle2 className="h-5 w-5" />
-                                        </Button>
-                                        <Button
-                                          size="icon"
-                                          variant="ghost"
-                                          className="h-10 w-10 rounded-2xl hover:bg-red-50 text-red-400 transition-all"
-                                          onClick={() =>
-                                            handleUpdateAppointmentStatus(appt.id, 'cancelled')
-                                          }
-                                        >
-                                          <Trash2 className="h-5 w-5" />
-                                        </Button>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
-                          </div>
+                                    <div className="flex-1" />
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-md shrink-0"
+                                      onClick={() => handleRemoveCustomSlot(idx)}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                                    <span className="text-sm font-semibold text-slate-800">
+                                      {slot.start} — {slot.end}
+                                    </span>
+                                    <span className="text-xs text-slate-400 ml-auto">Regular</span>
+                                  </>
+                                )}
+                              </div>
+                            )
+                          })}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
+
+                    {/* Generated slots */}
+                    <div className="p-4 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                          <Users className="h-3.5 w-3.5 text-slate-400" />
+                          Slots gerados
+                        </span>
+                        <span className="text-xs font-medium text-emerald-600">
+                          {getGeneratedSlots(selectedDate!).length} vagas
+                        </span>
+                      </div>
+
+                      {getGeneratedSlots(selectedDate!).length === 0 ? (
+                        <p className="text-xs text-slate-400 py-1">Nenhum slot disponível.</p>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5">
+                          {getGeneratedSlots(selectedDate!).map((time) => {
+                            const isBooked = appointments.some(
+                              (a) =>
+                                a.scheduled_at.startsWith(format(selectedDate!, 'yyyy-MM-dd')) &&
+                                format(new Date(a.scheduled_at), 'HH:mm') === time &&
+                                a.status !== 'cancelled'
+                            )
+                            return (
+                              <span
+                                key={time}
+                                className={cn(
+                                  'inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md border',
+                                  isBooked
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                    : 'bg-slate-50 text-slate-600 border-slate-200'
+                                )}
+                              >
+                                {time}
+                                {isBooked && <CheckCircle2 className="h-3 w-3 text-emerald-500" />}
+                              </span>
+                            )
+                          })}
+                        </div>
+                      )}
+                      <p className="text-xs text-slate-400">
+                        Sessão de {sessionDuration}min · Intervalo de {breakDuration}min
+                      </p>
+                    </div>
+
+                    {/* Appointments for this day */}
+                    {appointments.filter((a) =>
+                      a.scheduled_at.startsWith(format(selectedDate!, 'yyyy-MM-dd'))
+                    ).length > 0 && (
+                      <div className="p-4 space-y-2">
+                        <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                          <Users className="h-3.5 w-3.5 text-slate-400" />
+                          Agendamentos
+                        </span>
+                        <div className="space-y-1.5">
+                          {appointments
+                            .filter((a) =>
+                              a.scheduled_at.startsWith(format(selectedDate!, 'yyyy-MM-dd'))
+                            )
+                            .sort(
+                              (a, b) =>
+                                new Date(a.scheduled_at).getTime() -
+                                new Date(b.scheduled_at).getTime()
+                            )
+                            .map((appt) => (
+                              <div
+                                key={appt.id}
+                                className="flex items-center gap-3 p-2.5 rounded-lg border border-slate-100 bg-white hover:border-slate-200 transition-colors"
+                              >
+                                <div className="h-8 w-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center font-semibold text-xs border border-indigo-100 uppercase shrink-0">
+                                  {appt.patient_name.charAt(0)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-slate-800 truncate">
+                                    {appt.patient_name}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-xs text-slate-400 flex items-center gap-1">
+                                      <Clock className="h-2.5 w-2.5" />
+                                      {format(new Date(appt.scheduled_at), 'HH:mm')}
+                                    </span>
+                                    <span
+                                      className={cn(
+                                        'text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded',
+                                        appt.status === 'COMPLETED'
+                                          ? 'bg-slate-100 text-slate-500'
+                                          : 'bg-emerald-100 text-emerald-700'
+                                      )}
+                                    >
+                                      {appt.status}
+                                    </span>
+                                  </div>
+                                </div>
+                                {appt.status === 'scheduled' && (
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-8 w-8 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600"
+                                      onClick={() =>
+                                        handleUpdateAppointmentStatus(appt.id, 'COMPLETED')
+                                      }
+                                    >
+                                      <CheckCircle2 className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-8 w-8 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500"
+                                      onClick={() =>
+                                        handleUpdateAppointmentStatus(appt.id, 'cancelled')
+                                      }
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
+
+              {/* Footer actions */}
+              {effective?.type !== 'blocked' && (
+                <div className="p-3 border-t border-slate-100 bg-slate-50/50">
+                  {effective?.source === 'weekly' ? (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 gap-1.5 h-9 border-slate-200 text-slate-700 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50/50 bg-white"
+                        onClick={() => handleOverride('custom')}
+                      >
+                        <Settings2 className="h-3.5 w-3.5" />
+                        Personalizar dia
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 px-3 border-slate-200 text-slate-400 hover:border-red-200 hover:text-red-500 hover:bg-red-50 bg-white"
+                        onClick={() => handleOverride('blocked')}
+                        title="Marcar folga"
+                      >
+                        <Ban className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ) : effective?.source === 'override' ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-1.5 h-9 border-dashed border-slate-200 text-slate-500 hover:border-slate-300 bg-white"
+                      onClick={handleAddCustomSlot}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Adicionar janela
+                    </Button>
+                  ) : null}
+                </div>
+              )}
             </>
           )}
         </Card>
