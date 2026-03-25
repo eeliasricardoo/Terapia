@@ -18,11 +18,13 @@ import { CompanyDashboard } from '@/components/dashboard/company/CompanyDashboar
 import { UpcomingSessionsList } from './_components/upcoming-sessions-list'
 
 import {
-  getPsychologistDashboardData,
-  getPatientDashboardData,
   getAdminDashboardData,
   getCompanyDashboardData,
 } from '@/lib/actions/dashboard'
+import {
+  getCachedPsychologistDashboard,
+  getCachedPatientDashboard,
+} from '@/lib/cache/dashboard'
 
 export default async function DashboardPage() {
   let userProfile = await getCurrentUserProfile()
@@ -47,7 +49,7 @@ export default async function DashboardPage() {
   }
 
   if (userProfile.role === 'PSYCHOLOGIST') {
-    const dashboardData = await getPsychologistDashboardData()
+    const dashboardData = await getCachedPsychologistDashboard(userProfile.user_id)
     return <PsychologistDashboard userProfile={userProfile} dashboardData={dashboardData} />
   }
 
@@ -66,7 +68,7 @@ export default async function DashboardPage() {
   }
 
   const userName = userProfile?.full_name?.split(' ')[0] || 'Usuário'
-  const patientData = await getPatientDashboardData()
+  const patientData = await getCachedPatientDashboard(userProfile.user_id)
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700 max-w-6xl mx-auto px-4 sm:px-6">
