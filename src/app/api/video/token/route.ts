@@ -14,26 +14,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'ID do agendamento ausente' }, { status: 400 })
     }
 
-    // DEVELOPMENT BYPASS: Allow testing without authentication or real appointment
-    if (appointmentId === 'test' || appointmentId.startsWith('mock_')) {
-      try {
-        const uniqueSuffix = Math.random().toString(36).substring(2, 7)
-        const roomData = await createDailyRoom(`terapia-dev-${uniqueSuffix}`)
-        const token = await createDailyToken(roomData.name, 'Testador (Dev)', true, 3600) // 1 hour token
-
-        return NextResponse.json({
-          token,
-          url: roomData.url,
-          scheduledAt: new Date().toISOString(),
-          durationMinutes: 60,
-          isPsychologist: true,
-        })
-      } catch (error) {
-        console.error('Error creating test room:', error)
-        return NextResponse.json({ error: 'Falha ao criar sala de teste' }, { status: 500 })
-      }
-    }
-
     const supabase = await createClient()
     const {
       data: { user },

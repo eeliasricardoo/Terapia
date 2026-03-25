@@ -35,14 +35,6 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { toast } from 'sonner'
 import { getCompanyProfile, updateCompanyBenefit } from '../actions'
 
@@ -101,33 +93,6 @@ export default function CompanyProfilePage() {
       </div>
     )
   }
-
-  const SECURITY_LOGS = [
-    {
-      id: 1,
-      event: 'Novo Vínculo',
-      status: 'Sucesso',
-      user: 'ana.s@milano.com.br',
-      date: 'Hoje, 14:20',
-      ip: '189.12.43.1',
-    },
-    {
-      id: 2,
-      event: 'Tentativa Bloqueada',
-      status: 'Bloqueado',
-      user: 'hack@externo.com',
-      date: 'Hoje, 10:05',
-      ip: '45.1.99.2',
-    },
-    {
-      id: 3,
-      event: 'Alteração de Subsídio',
-      status: 'Admin RH',
-      user: 'rh@milano.com.br',
-      date: 'Ontem, 16:45',
-      ip: '189.12.43.1',
-    },
-  ]
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl animate-in fade-in duration-700">
@@ -249,44 +214,10 @@ export default function CompanyProfilePage() {
                           </DialogDescription>
                         </DialogHeader>
                         <div className="py-4">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead className="font-bold">Evento</TableHead>
-                                <TableHead className="font-bold">Usuário</TableHead>
-                                <TableHead className="font-bold text-center">Status</TableHead>
-                                <TableHead className="font-bold">Data/Hora</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {SECURITY_LOGS.map((log) => (
-                                <TableRow key={log.id}>
-                                  <TableCell className="font-medium text-slate-900">
-                                    {log.event}
-                                  </TableCell>
-                                  <TableCell className="text-xs text-slate-500">
-                                    {log.user}
-                                  </TableCell>
-                                  <TableCell className="text-center">
-                                    <Badge
-                                      className={`rounded-full text-[9px] uppercase font-black ${
-                                        log.status === 'Sucesso'
-                                          ? 'bg-emerald-50 text-emerald-600'
-                                          : log.status === 'Bloqueado'
-                                            ? 'bg-red-50 text-red-600'
-                                            : 'bg-blue-50 text-blue-600'
-                                      }`}
-                                    >
-                                      {log.status}
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell className="text-xs text-slate-500">
-                                    {log.date}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
+                          <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
+                            <Eye className="h-8 w-8 opacity-30" />
+                            <p className="text-sm font-medium">Nenhum log disponível no momento.</p>
+                          </div>
                         </div>
                       </DialogContent>
                     </Dialog>
