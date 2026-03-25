@@ -62,6 +62,16 @@ export function useChat() {
     [scrollToBottom]
   )
 
+  // Refreshes messages without showing the loading spinner — used by realtime updates.
+  const refreshMessages = useCallback(
+    async (id: string) => {
+      const msgs = await getMessages(id)
+      setMessages(msgs)
+      setTimeout(() => scrollToBottom('smooth'), 50)
+    },
+    [scrollToBottom]
+  )
+
   useEffect(() => {
     if (selectedId) {
       loadMessages(selectedId)
@@ -76,22 +86,10 @@ export function useChat() {
             table: 'messages',
             filter: `conversation_id=eq.${selectedId}`,
           },
-          (payload) => {
-            const newMsg = payload.new as any
-            setMessages((prev) => {
-              if (prev.some((m) => m.id === newMsg.id)) return prev
-              return [
-                ...prev,
-                {
-                  id: newMsg.id,
-                  content: newMsg.content,
-                  senderId: newMsg.sender_id,
-                  senderName: '...',
-                  createdAt: new Date(newMsg.created_at),
-                } as MessageData,
-              ]
-            })
-            setTimeout(() => scrollToBottom('smooth'), 50)
+          () => {
+            // Fetch from server to get decrypted content and resolved sender names,
+            // rather than displaying the raw (encrypted) payload from the realtime event.
+            refreshMessages(selectedId)
           }
         )
         .subscribe()
@@ -100,7 +98,7 @@ export function useChat() {
         supabase.removeChannel(channel)
       }
     }
-  }, [selectedId, loadMessages, supabase, scrollToBottom])
+  }, [selectedId, loadMessages, refreshMessages, supabase, scrollToBottom])
 
   const handleSend = async () => {
     if (!newMessage.trim() || !selectedId || isSending) return
@@ -109,7 +107,7 @@ export function useChat() {
     const result = await sendMessage(selectedId, newMessage.trim())
     if (result.success) {
       setNewMessage('')
-      loadMessages(selectedId)
+      // The realtime INSERT event will trigger refreshMessages, so no explicit reload needed.
     }
     setIsSending(false)
   }
