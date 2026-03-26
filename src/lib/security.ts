@@ -2,6 +2,7 @@ import sanitizeHtmlModule from 'sanitize-html'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 import { env, isRedisConfigured } from './env'
+import { logger } from './utils/logger'
 
 // ==========================================
 // 1. Sanitização de Input (Prevenção XSS)
@@ -91,8 +92,8 @@ const RATE_LIMIT_ALLOWED = { success: true, limit: 20, remaining: 20, reset: 0 }
  */
 export async function checkRateLimit(identifier: string) {
   if (!ratelimitInstance) {
-    console.warn(
-      '⚠️ [Rate Limiter] Chaves do Upstash ausentes, permitindo requisição por segurança de failover.'
+    logger.warn(
+      '[Rate Limiter] Chaves do Upstash ausentes, permitindo requisição por segurança de failover.'
     )
     return RATE_LIMIT_ALLOWED
   }
@@ -100,7 +101,7 @@ export async function checkRateLimit(identifier: string) {
   try {
     return await ratelimitInstance.limit(identifier)
   } catch (err) {
-    console.error('Error in rate limit:', err)
+    logger.error('Error in rate limit:', err)
     return RATE_LIMIT_ALLOWED
   }
 }
@@ -114,7 +115,7 @@ export async function checkRateLimit(identifier: string) {
  */
 export async function checkLoginRateLimit(ip: string, email: string) {
   if (!authIpRatelimitInstance || !authEmailRatelimitInstance) {
-    console.warn('⚠️ [Rate Limiter] Auth limiters unavailable, allowing request.')
+    logger.warn('[Rate Limiter] Auth limiters unavailable, allowing request.')
     return RATE_LIMIT_ALLOWED
   }
 
@@ -128,7 +129,7 @@ export async function checkLoginRateLimit(ip: string, email: string) {
     if (!emailResult.success) return emailResult
     return ipResult
   } catch (err) {
-    console.error('Error in auth rate limit:', err)
+    logger.error('Error in auth rate limit:', err)
     return RATE_LIMIT_ALLOWED
   }
 }
@@ -138,14 +139,14 @@ export async function checkLoginRateLimit(ip: string, email: string) {
  */
 export async function checkForgotPasswordRateLimit(ip: string) {
   if (!forgotPasswordRatelimitInstance) {
-    console.warn('⚠️ [Rate Limiter] Forgot password limiter unavailable, allowing request.')
+    logger.warn('[Rate Limiter] Forgot password limiter unavailable, allowing request.')
     return RATE_LIMIT_ALLOWED
   }
 
   try {
     return await forgotPasswordRatelimitInstance.limit(`ip:${ip}`)
   } catch (err) {
-    console.error('Error in forgot password rate limit:', err)
+    logger.error('Error in forgot password rate limit:', err)
     return RATE_LIMIT_ALLOWED
   }
 }
@@ -201,7 +202,7 @@ export function decryptData(text: string): string {
     decrypted = Buffer.concat([decrypted, decipher.final()])
     return decrypted.toString()
   } catch (error) {
-    console.error('Falha ao descriptografar dado sensível', error)
+    logger.error('Falha ao descriptografar dado sensível', error)
     return '🔒 [Dados Criptografados - Chave Inválida]'
   }
 }

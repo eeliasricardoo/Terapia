@@ -63,15 +63,10 @@ describe('security utilities', () => {
 
     it('should return error message when decryption fails (e.g. invalid format)', () => {
       const invalidData = 'somehex:invaliddata'
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
-
       const result = decryptData(invalidData)
       // Can be either "Chave Inválida" (when key exists but data is bad)
       // or "Chave Não Configurada" (when key is missing)
       expect(result).toMatch(/🔒 \[Dados Criptografados/)
-      expect(consoleSpy).toHaveBeenCalled()
-
-      consoleSpy.mockRestore()
     })
 
     it('should handle empty input in encryption', () => {

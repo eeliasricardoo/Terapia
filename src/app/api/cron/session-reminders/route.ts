@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
+import { env } from '@/lib/env'
 import { dispatchEmailAsync } from '@/lib/utils/email-dispatch'
 import {
   getReminderEmailForPatient,
@@ -22,9 +23,8 @@ import { ptBR } from 'date-fns/locale'
  */
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (authHeader !== `Bearer ${env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

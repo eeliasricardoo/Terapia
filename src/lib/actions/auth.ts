@@ -209,7 +209,7 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
           <p>Atenciosamente,</p>
           <p>Equipe Terapia</p>
         `,
-      }).catch((e) => console.error('Failed to send welcome email:', e))
+      }).catch((e) => logger.error('Failed to send welcome email:', e))
     }
 
     revalidatePath('/')

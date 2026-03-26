@@ -117,7 +117,7 @@ describe('stripe actions', () => {
       // Verify price in cents: R$ 150 = 15000 cents
       expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          payment_method_types: ['card'],
+          payment_method_types: ['card', 'pix'],
           mode: 'payment',
           line_items: [
             expect.objectContaining({

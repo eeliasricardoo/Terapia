@@ -5,6 +5,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { checkRateLimit } from '@/lib/security'
 import { headers } from 'next/headers'
+import { logger } from '@/lib/utils/logger'
 
 export async function uploadProfileImage(formData: FormData) {
   const supabase = await createClient()
@@ -72,7 +73,7 @@ export async function uploadProfileImage(formData: FormData) {
       })
 
     if (uploadError) {
-      console.error('Upload Error:', uploadError)
+      logger.error('Upload Error:', uploadError)
       return { error: `Erro no upload: ${uploadError.message}` }
     }
 
@@ -89,7 +90,7 @@ export async function uploadProfileImage(formData: FormData) {
 
     // If no row updated, try to insert/upsert
     if (updateError || !updateData || updateData.length === 0) {
-      console.log('Profile not found or update failed, attempting upsert...')
+      logger.info('Profile not found or update failed, attempting upsert...')
 
       const { error: upsertError } = await adminSupabase.from('profiles').upsert(
         {
@@ -105,7 +106,7 @@ export async function uploadProfileImage(formData: FormData) {
       )
 
       if (upsertError) {
-        console.error('Upsert Error:', upsertError)
+        logger.error('Upsert Error:', upsertError)
         return { error: `Erro ao criar perfil: ${upsertError.message}` }
       }
     }
@@ -119,7 +120,7 @@ export async function uploadProfileImage(formData: FormData) {
     revalidatePath('/dashboard/perfil')
     return { success: true, publicUrl }
   } catch (error: any) {
-    console.error('Unexpected Error:', error)
+    logger.error('Unexpected Error:', error)
     return { error: `Erro inesperado: ${error.message || error}` }
   }
 }
@@ -182,7 +183,7 @@ export async function updateUserProfile(data: {
       .eq('user_id', user.id)
 
     if (updateError) {
-      console.error('Update Error:', updateError)
+      logger.error('Update Error:', updateError)
       return { error: `Erro ao atualizar perfil: ${updateError.message}` }
     }
 
@@ -192,14 +193,14 @@ export async function updateUserProfile(data: {
     })
 
     if (metaError) {
-      console.error('Metadata Update Error:', metaError)
+      logger.error('Metadata Update Error:', metaError)
     }
 
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/perfil')
     return { success: true }
   } catch (error: any) {
-    console.error('Unexpected Error:', error)
+    logger.error('Unexpected Error:', error)
     return { error: `Erro inesperado: ${error.message || error}` }
   }
 }

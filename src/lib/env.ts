@@ -44,6 +44,12 @@ const envSchema = z.object({
   // Email Service
   RESEND_API_KEY: z.string().min(1, 'RESEND_API_KEY is required').optional(),
 
+  // Internal API secret (used by email-dispatch → /api/internal/send-email)
+  INTERNAL_API_SECRET: z.string().min(16, 'INTERNAL_API_SECRET must be at least 16 characters'),
+
+  // Cron job secret (Vercel sets this automatically; must also be in env)
+  CRON_SECRET: z.string().min(16, 'CRON_SECRET must be at least 16 characters'),
+
   // Application URL
   NEXT_PUBLIC_APP_URL: z
     .string()
