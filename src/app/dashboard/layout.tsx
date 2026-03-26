@@ -20,8 +20,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
         Ir para o conteúdo principal
       </a>
 
-      {/* Realtime notification toasts for patients (psychologists have their own listener in PsychologistDashboard) */}
-      {profile?.role === 'PATIENT' && <NotificationListener />}
+      {/* Realtime notification toasts for ALL users (Psychologist, Patient, Admin) */}
+      {profile && <NotificationListener />}
 
       <DashboardSidebar initialProfile={profile} />
 
