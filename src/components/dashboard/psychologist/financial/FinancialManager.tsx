@@ -11,6 +11,7 @@ import {
 import { toast } from 'sonner'
 import { AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -107,9 +108,60 @@ export function FinancialManager() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-slate-400" />
-        <p className="text-slate-500 font-medium">Carregando dados financeiros...</p>
+      <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="border-none shadow-sm">
+              <CardContent className="p-6">
+                <Skeleton className="h-4 w-24 mb-4 bg-slate-100" />
+                <Skeleton className="h-8 w-32 mb-1 bg-slate-200" />
+                <Skeleton className="h-3 w-20 bg-slate-100" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="grid lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2 border-none shadow-sm">
+            <CardHeader>
+              <Skeleton className="h-5 w-40 bg-slate-200" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-48 w-full rounded-xl bg-slate-100" />
+            </CardContent>
+          </Card>
+          <Card className="border-none shadow-sm">
+            <CardHeader>
+              <Skeleton className="h-5 w-36 bg-slate-200" />
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex justify-between items-center">
+                  <Skeleton className="h-4 w-24 bg-slate-100" />
+                  <Skeleton className="h-4 w-16 bg-slate-200" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+        <Card className="border-none shadow-sm">
+          <CardHeader>
+            <Skeleton className="h-5 w-44 bg-slate-200" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-4 py-2 border-b border-slate-50">
+                  <Skeleton className="h-9 w-9 rounded-full bg-slate-200 shrink-0" />
+                  <div className="flex-1">
+                    <Skeleton className="h-4 w-36 mb-1 bg-slate-200" />
+                    <Skeleton className="h-3 w-24 bg-slate-100" />
+                  </div>
+                  <Skeleton className="h-5 w-20 bg-slate-200" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }

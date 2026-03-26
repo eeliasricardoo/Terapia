@@ -25,9 +25,19 @@ export function PaymentMethods({
 
   if (isFetchingInfo) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-8 w-64 bg-slate-200 rounded-lg" />
-        <Card className="rounded-3xl border-none shadow-sm h-[400px] bg-slate-100" />
+      <div className="space-y-6">
+        <div className="h-7 w-64 bg-slate-200 rounded-lg animate-pulse" />
+        <Card className="border border-slate-100 rounded-3xl overflow-hidden">
+          <div className="flex border-b border-slate-100">
+            {[1, 2].map((i) => (
+              <div key={i} className="flex-1 h-14 bg-slate-50 animate-pulse" />
+            ))}
+          </div>
+          <div className="p-8 space-y-8">
+            <div className="h-24 w-full rounded-2xl bg-slate-100 animate-pulse" />
+            <div className="h-14 w-full rounded-2xl bg-slate-200 animate-pulse" />
+          </div>
+        </Card>
       </div>
     )
   }

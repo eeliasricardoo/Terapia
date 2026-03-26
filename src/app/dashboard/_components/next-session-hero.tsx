@@ -133,6 +133,7 @@ export function NextSessionHero({ session }: Props) {
                   }),
                   time: format(new Date(session.scheduledAt), 'HH:mm'),
                   psychologistId: session.psychologist.userId,
+                  scheduledAt: session.scheduledAt,
                 }}
               >
                 <Button

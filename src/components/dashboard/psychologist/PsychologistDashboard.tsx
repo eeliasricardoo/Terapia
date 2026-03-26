@@ -465,6 +465,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                           ),
                                           time: session.time,
                                           psychologistId: session.psychologistId,
+                                          scheduledAt: session.scheduledAt,
                                         }}
                                       >
                                         <Button
@@ -490,6 +491,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                         ),
                                         time: session.time,
                                         psychologistId: session.psychologistId,
+                                        scheduledAt: session.scheduledAt,
                                       }}
                                     >
                                       <Button

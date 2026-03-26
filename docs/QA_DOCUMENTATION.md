@@ -12,7 +12,7 @@ Password123!
 Psicólogo:
 psicologo@test.com
 Senha:
-Password123!
+123456789
 
 > **Versão:** 1.0
 > **Data:** 2026-03-26

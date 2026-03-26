@@ -421,3 +421,97 @@ export function getPsychologistNewAppointmentTemplate({
     </div>
   `
 }
+
+export function getReminderEmailForPatient({
+  patientName,
+  psychologistName,
+  dateFormatted,
+  time,
+  meetingUrl,
+}: {
+  patientName: string
+  psychologistName: string
+  dateFormatted: string
+  time: string
+  meetingUrl?: string
+}) {
+  return `
+    <div style="${baseStyles}">
+      <div style="${containerStyles}">
+        <div style="background-color: #7c3aed; padding: 40px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800;">Lembrete de Sessão 🗓️</h1>
+        </div>
+
+        <div style="padding: 40px;">
+          <h2 style="color: #0f172a; margin-top: 0;">Olá, ${patientName}!</h2>
+          <p style="font-size: 16px;">Sua sessão de terapia é <strong>amanhã</strong>. Confira os detalhes:</p>
+
+          <div style="background: #f5f3ff; border-left: 4px solid #7c3aed; border-radius: 8px; padding: 20px; margin: 24px 0;">
+            <p style="margin: 0 0 8px;"><strong>Profissional:</strong> ${psychologistName}</p>
+            <p style="margin: 0 0 8px;"><strong>Data:</strong> ${dateFormatted}</p>
+            <p style="margin: 0;"><strong>Horário:</strong> ${time}</p>
+          </div>
+
+          ${
+            meetingUrl
+              ? `<div style="text-align: center; margin: 32px 0;">
+              <a href="${meetingUrl}" style="background-color: #7c3aed; color: #ffffff; padding: 14px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 16px;">
+                Acessar Sala Virtual
+              </a>
+            </div>`
+              : ''
+          }
+
+          <p style="color: #64748b; font-size: 14px;">Veja sua <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/sessoes" style="color: #7c3aed;">agenda completa</a> no painel.</p>
+        </div>
+
+        <div style="border-top: 1px solid #f1f5f9;">
+          ${footerContent}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+export function getReminderEmailForPsychologist({
+  psychologistName,
+  patientName,
+  dateFormatted,
+  time,
+}: {
+  psychologistName: string
+  patientName: string
+  dateFormatted: string
+  time: string
+}) {
+  return `
+    <div style="${baseStyles}">
+      <div style="${containerStyles}">
+        <div style="background-color: #7c3aed; padding: 40px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800;">Lembrete de Sessão 🗓️</h1>
+        </div>
+
+        <div style="padding: 40px;">
+          <h2 style="color: #0f172a; margin-top: 0;">Olá, ${psychologistName}!</h2>
+          <p style="font-size: 16px;">Você tem uma sessão agendada para <strong>amanhã</strong>:</p>
+
+          <div style="background: #f5f3ff; border-left: 4px solid #7c3aed; border-radius: 8px; padding: 20px; margin: 24px 0;">
+            <p style="margin: 0 0 8px;"><strong>Paciente:</strong> ${patientName}</p>
+            <p style="margin: 0 0 8px;"><strong>Data:</strong> ${dateFormatted}</p>
+            <p style="margin: 0;"><strong>Horário:</strong> ${time}</p>
+          </div>
+
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/agenda" style="background-color: #7c3aed; color: #ffffff; padding: 14px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 16px;">
+              Ver Agenda
+            </a>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid #f1f5f9;">
+          ${footerContent}
+        </div>
+      </div>
+    </div>
+  `
+}
