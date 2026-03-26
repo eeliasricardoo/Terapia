@@ -66,31 +66,33 @@ export default async function DashboardPage() {
   const patientData = await getCachedPatientDashboard(userProfile.user_id)
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-700 max-w-6xl mx-auto px-4 sm:px-6">
+    <div className="space-y-6 sm:space-y-8 lg:space-y-12 animate-in fade-in duration-700 max-w-6xl mx-auto">
       <Suspense>
         <PaymentStatusToast />
       </Suspense>
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-4xl font-black tracking-tight text-slate-900">Olá, {userName}.</h1>
-          <p className="text-slate-600 font-medium">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900">
+            Olá, {userName}.
+          </h1>
+          <p className="text-sm sm:text-base text-slate-600 font-medium">
             Bem-vindo ao seu espaço de cuidado e autoconhecimento.
           </p>
         </div>
-        <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+        <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100 self-start sm:self-auto">
           <NotificationCenter />
-          <div className="h-6 w-px bg-slate-100 hidden md:block" />
+          <div className="h-6 w-px bg-slate-100 hidden sm:block" />
           <Link href="/busca">
-            <Button className="rounded-xl font-bold bg-slate-900 text-white hover:bg-slate-800">
+            <Button className="rounded-xl font-bold bg-slate-900 text-white hover:bg-slate-800 text-sm">
               Nova Sessão
             </Button>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        <div className="lg:col-span-8 space-y-10">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
+        <div className="lg:col-span-8 space-y-6 lg:space-y-10">
           {patientData.nextSession ? (
             <NextSessionHero session={patientData.nextSession} />
           ) : (
@@ -109,7 +111,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="lg:col-span-4 space-y-10">
+        <div className="lg:col-span-4 space-y-6 lg:space-y-10">
           <div>
             <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">
               Ações Rápidas

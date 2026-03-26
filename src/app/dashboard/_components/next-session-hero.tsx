@@ -42,16 +42,16 @@ interface Props {
 export function NextSessionHero({ session }: Props) {
   if (!session) {
     return (
-      <Card className="border-none shadow-md overflow-hidden relative p-8 flex flex-col items-center justify-center text-center bg-white min-h-[300px]">
-        <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-          <CalendarIcon className="h-8 w-8 text-slate-400" />
+      <Card className="border-none shadow-md overflow-hidden relative p-6 sm:p-8 flex flex-col items-center justify-center text-center bg-white min-h-[220px] sm:min-h-[300px]">
+        <div className="h-12 w-12 sm:h-16 sm:w-16 bg-slate-50 rounded-full flex items-center justify-center mb-3 sm:mb-4">
+          <CalendarIcon className="h-6 w-6 sm:h-8 sm:w-8 text-slate-400" />
         </div>
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Sem sessões agendadas</h2>
-        <p className="text-slate-500 mb-6">
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">Sem sessões agendadas</h2>
+        <p className="text-sm text-slate-500 mb-4 sm:mb-6">
           Você não possui atendimentos marcados para os próximos dias.
         </p>
         <Link href="/busca">
-          <Button className="bg-blue-600 text-white hover:bg-blue-700">
+          <Button className="bg-blue-600 text-white hover:bg-blue-700 text-sm">
             Encontrar um Psicólogo
           </Button>
         </Link>
@@ -72,10 +72,10 @@ export function NextSessionHero({ session }: Props) {
   // For now let's just show the session time as agreed (psychologist's clock).
 
   return (
-    <Card className="border border-slate-100 shadow-sm overflow-hidden relative rounded-[2rem]">
-      <div className="flex flex-col md:flex-row min-h-[320px]">
-        <div className="p-10 flex-1 flex flex-col justify-center">
-          <div className="flex items-center gap-2 mb-6">
+    <Card className="border border-slate-100 shadow-sm overflow-hidden relative rounded-2xl sm:rounded-[2rem]">
+      <div className="flex flex-col lg:flex-row min-h-fit lg:min-h-[320px]">
+        <div className="p-5 sm:p-7 lg:p-10 flex-1 flex flex-col justify-center">
+          <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
             <span className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
               {dateStr}
             </span>
@@ -84,26 +84,28 @@ export function NextSessionHero({ session }: Props) {
             </span>
           </div>
 
-          <h2 className="text-4xl font-black text-slate-900 mb-6 leading-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 mb-4 sm:mb-6 leading-tight">
             Sua próxima sessão de <span className="text-blue-600">{session.type}</span>
           </h2>
 
-          <div className="flex items-center gap-4 mb-10">
-            <Avatar className="h-14 w-14 ring-4 ring-slate-50 transition-all hover:ring-blue-50">
+          <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-10">
+            <Avatar className="h-10 w-10 sm:h-14 sm:w-14 ring-4 ring-slate-50 transition-all hover:ring-blue-50">
               <AvatarImage src={session.psychologist.image || undefined} />
               <AvatarFallback className="bg-slate-100 text-slate-600 font-bold">
                 {session.psychologist.name.charAt(0)}
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-base font-bold text-slate-900">{session.psychologist.name}</p>
+              <p className="text-sm sm:text-base font-bold text-slate-900">
+                {session.psychologist.name}
+              </p>
               <p className="text-xs font-medium text-slate-500">{session.psychologist.specialty}</p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-8 mt-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-8 mt-2">
             <Link href={`/sala/${session.id}`} className="w-full sm:w-auto">
-              <Button className="w-full bg-slate-900 text-white hover:bg-slate-800 rounded-full px-10 h-14 text-sm font-bold shadow-xl shadow-slate-200 transition-all active:scale-95">
+              <Button className="w-full sm:w-auto bg-slate-900 text-white hover:bg-slate-800 rounded-full px-8 sm:px-10 h-12 sm:h-14 text-sm font-bold shadow-xl shadow-slate-200 transition-all active:scale-95">
                 Entrar na Sala
               </Button>
             </Link>
@@ -112,7 +114,7 @@ export function NextSessionHero({ session }: Props) {
               <SessionDetailsDialog session={session}>
                 <Button
                   variant="ghost"
-                  className="h-10 rounded-full px-4 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors"
+                  className="h-9 sm:h-10 rounded-full px-3 sm:px-4 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors"
                 >
                   Detalhes
                 </Button>
@@ -124,7 +126,7 @@ export function NextSessionHero({ session }: Props) {
                 session={{
                   id: session.id,
                   doctor: session.psychologist.name,
-                  role: 'Psicóloga Clínica', // Patient view
+                  role: 'Psicóloga Clínica',
                   image: session.psychologist.image || '/avatars/01.png',
                   date: format(new Date(session.scheduledAt), "dd 'de' MMMM, yyyy", {
                     locale: ptBR,
@@ -135,7 +137,7 @@ export function NextSessionHero({ session }: Props) {
               >
                 <Button
                   variant="ghost"
-                  className="h-10 rounded-full px-4 text-xs font-bold text-slate-500 hover:text-rose-500 transition-colors"
+                  className="h-9 sm:h-10 rounded-full px-3 sm:px-4 text-xs font-bold text-slate-500 hover:text-rose-500 transition-colors"
                 >
                   Reagendar
                 </Button>
@@ -144,7 +146,7 @@ export function NextSessionHero({ session }: Props) {
           </div>
         </div>
 
-        <div className="w-full md:w-[35%] bg-slate-50 flex items-center justify-center p-12 border-l border-slate-100">
+        <div className="hidden lg:flex w-full lg:w-[35%] bg-slate-50 items-center justify-center p-12 border-l border-slate-100">
           <div className="text-center">
             <p className="text-lg font-serif italic text-slate-400 leading-relaxed">
               &quot;{QUOTES[Math.floor(Date.now() / 86400000) % QUOTES.length]}&quot;

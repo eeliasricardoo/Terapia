@@ -28,7 +28,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="lg:pl-64 flex flex-col min-h-screen">
         <MobileNav />
 
-        <main id="main-content" className="flex-1 container py-8 space-y-6" role="main">
+        <main
+          id="main-content"
+          className="flex-1 container py-4 sm:py-6 lg:py-8 px-4 sm:px-6 space-y-4 sm:space-y-6"
+          role="main"
+        >
           {children}
         </main>
 
