@@ -258,7 +258,7 @@ export async function syncStripeAccountStatus() {
 
     // Aproveitamos para persistir o status no banco (redundância ao webhook)
     if (account.details_submitted) {
-      await prisma.psychologistProfile.update({
+      await (prisma.psychologistProfile as any).update({
         where: { id: psych.id },
         data: { stripeOnboardingComplete: true },
       })

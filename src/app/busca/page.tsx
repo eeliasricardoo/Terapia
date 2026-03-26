@@ -56,7 +56,7 @@ const getCachedPsychologists = unstable_cache(
       }
 
       // Map back to the legacy Supabase type structure to avoid breaking the SearchClient
-      return psychologists.map((psych) => {
+      return (psychologists as any[]).map((psych) => {
         const userProfile = psych.user?.profiles || null
 
         const profile = userProfile
