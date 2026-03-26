@@ -1,5 +1,19 @@
 # QA Documentation — Terapia Platform
 
+\*\*
+
+# Auth:
+
+Paciente:
+paciente.carlos@test.com
+Senha:
+Password123!
+
+Psicólogo:
+psicologo@test.com
+Senha:
+Password123!
+
 > **Versão:** 1.0
 > **Data:** 2026-03-26
 > **Autor:** QA Senior

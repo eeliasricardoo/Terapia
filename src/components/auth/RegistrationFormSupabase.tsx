@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { auth } from '@/lib/supabase/auth'
@@ -134,9 +135,8 @@ export function RegistrationFormSupabase() {
 
       <div className="space-y-2">
         <Label htmlFor="password">Senha</Label>
-        <Input
+        <PasswordInput
           id="password"
-          type="password"
           placeholder="••••••••"
           value={formData.password}
           onChange={(e) => handleChange('password', e.target.value)}
@@ -147,9 +147,8 @@ export function RegistrationFormSupabase() {
 
       <div className="space-y-2">
         <Label htmlFor="confirmPassword">Confirmar Senha</Label>
-        <Input
+        <PasswordInput
           id="confirmPassword"
-          type="password"
           placeholder="••••••••"
           value={formData.confirmPassword}
           onChange={(e) => handleChange('confirmPassword', e.target.value)}

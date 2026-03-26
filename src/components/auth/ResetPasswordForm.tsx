@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { auth } from '@/lib/supabase/auth'
 import { toast } from 'sonner'
@@ -76,7 +77,7 @@ export function ResetPasswordForm() {
                 <FormItem>
                   <FormLabel>Nova Senha</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="******" {...field} />
+                    <PasswordInput placeholder="******" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -89,7 +90,7 @@ export function ResetPasswordForm() {
                 <FormItem>
                   <FormLabel>Confirmar Nova Senha</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="******" {...field} />
+                    <PasswordInput placeholder="******" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -5,6 +5,7 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 
 // Reusing UserAuthForm logic but focusing on existing users
@@ -42,10 +43,9 @@ export function LoginForm() {
             <Label className="sr-only" htmlFor="password">
               Senha
             </Label>
-            <Input
+            <PasswordInput
               id="password"
               placeholder="Sua senha"
-              type="password"
               autoCapitalize="none"
               autoCorrect="off"
               disabled={isLoading}

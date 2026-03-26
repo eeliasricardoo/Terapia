@@ -17,6 +17,7 @@ import {
   FormDescription,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { PhoneInput } from '@/components/ui/phone-input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -319,7 +320,7 @@ export function RegistrationForm() {
                         <FormItem>
                           <FormLabel>Senha</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Sua senha forte" {...field} />
+                            <PasswordInput placeholder="Sua senha forte" {...field} />
                           </FormControl>
                           <div className="flex gap-1 h-1 mt-1">
                             {[...Array(5)].map((_, i) => (
@@ -349,7 +350,7 @@ export function RegistrationForm() {
                       <FormItem>
                         <FormLabel>Confirmar Senha</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Confirme sua senha" {...field} />
+                          <PasswordInput placeholder="Confirme sua senha" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
