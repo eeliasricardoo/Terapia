@@ -15,6 +15,7 @@ export type PsychologistDashboardData = {
   }
   unreadNotifications: number
   isVerified: boolean
+  hasStripeAccount: boolean
   timezone: string
   upcomingSessions: {
     id: string
@@ -132,6 +133,7 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
         },
         unreadNotifications: 0,
         isVerified: false,
+        hasStripeAccount: false,
         timezone: 'America/Sao_Paulo',
         upcomingSessions: [],
         futureSessions: [],
@@ -307,6 +309,7 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
       },
       unreadNotifications,
       isVerified: psychProfile.isVerified,
+      hasStripeAccount: !!psychProfile.stripeAccountId,
       timezone: psychProfile.timezone || 'America/Sao_Paulo',
       upcomingSessions: upcomingSessions.map((s) => ({
         id: s.id,

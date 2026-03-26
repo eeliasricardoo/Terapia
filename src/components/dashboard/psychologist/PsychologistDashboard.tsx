@@ -249,6 +249,32 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             </div>
           </div>
 
+          {!dashboardData.hasStripeAccount && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm animate-in slide-in-from-top-4 duration-500 mb-6">
+              <div className="flex items-start gap-4">
+                <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-amber-600 shadow-sm border border-amber-100 flex-shrink-0">
+                  <AlertCircle className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-amber-900 font-bold font-serif italic text-lg tracking-tight">
+                    Faturamento Pendente
+                  </h3>
+                  <p className="text-amber-700/80 text-sm leading-relaxed max-w-xl font-medium">
+                    Seu perfil está <b>oculto na busca</b> até que você conecte sua conta bancária
+                    via Stripe Connect. Isso é necessário para que você receba os repasses das
+                    sessões automaticamente.
+                  </p>
+                </div>
+              </div>
+              <Button
+                asChild
+                className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl px-8 shadow-lg shadow-amber-600/20 whitespace-nowrap h-12"
+              >
+                <Link href="/dashboard/financeiro">Conectar Conta Agora</Link>
+              </Button>
+            </div>
+          )}
+
           {/* Stats Overview */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all">
