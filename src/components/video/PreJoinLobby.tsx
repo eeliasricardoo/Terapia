@@ -216,14 +216,27 @@ export function PreJoinLobby({ roomUrl, token }: PreJoinLobbyProps) {
 
             {/* Permission Warnings */}
             {(isCamBlocked || isMicBlocked) && (
-              <div className="absolute top-4 left-4 right-4 bg-zinc-950 text-white text-[10px] py-1.5 px-4 rounded-xl text-center border border-white/20 font-bold uppercase tracking-widest animate-pulse">
-                Atenção: Ative a{' '}
-                {isCamBlocked && isMicBlocked
-                  ? 'Câmera e Microfone'
-                  : isCamBlocked
-                    ? 'Câmera'
-                    : 'Microfone'}{' '}
-                nas configurações do navegador.
+              <div className="absolute inset-0 z-30 flex items-center justify-center p-6 bg-zinc-950/90 backdrop-blur-md">
+                <div className="max-w-xs text-center space-y-4">
+                  <div className="mx-auto h-12 w-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                    <ShieldCheck className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-white font-bold text-sm">Acesso Bloqueado</h3>
+                    <p className="text-zinc-400 text-[10px] leading-relaxed">
+                      Clique no ícone de <b>Cadeado</b> ou <b>Câmera</b> na barra de endereço do seu
+                      navegador e selecione <b>Permitir</b>.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-white/20 text-white hover:bg-white/10"
+                    onClick={() => window.location.reload()}
+                  >
+                    Já permiti, recarregar
+                  </Button>
+                </div>
               </div>
             )}
           </div>

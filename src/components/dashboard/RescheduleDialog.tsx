@@ -18,7 +18,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { getPsychologistAvailability, PsychologistAvailability } from '@/lib/actions/availability'
 import { getPsychologistById } from '@/lib/actions/psychologists'
-import { rescheduleSession } from '@/lib/actions/sessions'
+import { rescheduleSession, cancelSession } from '@/lib/actions/sessions'
 import { PsychologistWithProfile } from '@/lib/supabase/types'
 import { usePsychologistProfile } from '@/app/psicologo/[id]/_hooks/use-psychologist-profile'
 import { cn } from '@/lib/utils'
@@ -300,22 +300,51 @@ function RescheduleForm({
         )}
       </div>
 
-      <Button
-        className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-black text-lg rounded-2xl shadow-xl shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-        disabled={!selectedTime || isRescheduling}
-        onClick={handleReschedule}
-      >
-        {isRescheduling ? (
-          <>
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Reagendando...
-          </>
-        ) : (
-          <>
-            Confirmar Reagendamento <ArrowRight className="ml-2 h-5 w-5" />
-          </>
-        )}
-      </Button>
+      <div className="flex flex-col gap-3">
+        <Button
+          className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-black text-lg rounded-2xl shadow-xl shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          disabled={!selectedTime || isRescheduling}
+          onClick={handleReschedule}
+        >
+          {isRescheduling ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Reagendando...
+            </>
+          ) : (
+            <>
+              Confirmar Reagendamento <ArrowRight className="ml-2 h-5 w-5" />
+            </>
+          )}
+        </Button>
+
+        <Button
+          variant="ghost"
+          className="w-full h-11 text-red-500 hover:text-red-700 hover:bg-red-50 font-bold transition-all rounded-xl"
+          disabled={isRescheduling}
+          onClick={async () => {
+            const confirmed = window.confirm('Tem certeza que deseja cancelar esta sessão?')
+            if (!confirmed) return
+
+            setIsRescheduling(true) // Reutiliza state pra bloquear UI
+            try {
+              const res = await cancelSession(sessionId)
+              if (res.success) {
+                toast.success('Sessão cancelada!')
+                onSuccess()
+              } else {
+                toast.error('Erro ao cancelar', { description: res.error })
+              }
+            } catch (err) {
+              toast.error('Erro inesperado')
+            } finally {
+              setIsRescheduling(false)
+            }
+          }}
+        >
+          Cancelar Sessão Permanente
+        </Button>
+      </div>
     </div>
   )
 }

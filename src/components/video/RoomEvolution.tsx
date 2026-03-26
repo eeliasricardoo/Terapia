@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { logger } from '@/lib/utils/logger'
 import {
   FileText,
   PenLine,
@@ -35,6 +36,34 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
   const [isFinalized, setIsFinalized] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
 
+  // Auto-recovery from localStorage for crash resilience
+  useEffect(() => {
+    if (!appointmentId || isFinalized) return
+    const draftKey = `draft-evolution-${appointmentId}`
+    const saved = localStorage.getItem(draftKey)
+    if (saved) {
+      try {
+        const { mood: sMood, summary: sSummary, analysis: sAnalysis } = JSON.parse(saved)
+        if (sMood) setMood(sMood)
+        if (sSummary) setSummary(sSummary)
+        if (sAnalysis) setAnalysis(sAnalysis)
+        toast.info('Rascunho recuperado automaticamente.')
+      } catch (e) {
+        logger.error('Error recovering draft:', e)
+      }
+    }
+  }, [appointmentId, isFinalized])
+
+  // Auto-save draft on changes
+  useEffect(() => {
+    if (!appointmentId || isFinalized) return
+    const draftKey = `draft-evolution-${appointmentId}`
+    const timer = setTimeout(() => {
+      localStorage.setItem(draftKey, JSON.stringify({ mood, summary, analysis }))
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [appointmentId, isFinalized, mood, summary, analysis])
+
   const handleSave = async () => {
     if (!summary.trim() && !analysis.trim()) {
       toast.error('Preencha ao menos um campo da evolução.')
@@ -66,6 +95,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
       if (result.success) {
         setIsFinalized(true)
         setLastSaved(new Date())
+        if (appointmentId) localStorage.removeItem(`draft-evolution-${appointmentId}`)
         toast.success('Registro de sessão salvo!', {
           description: 'As informações foram sincronizadas com o prontuário permanente.',
         })

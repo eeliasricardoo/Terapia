@@ -1,10 +1,17 @@
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import { PsychologistProfileClient } from './PsychologistProfileClient'
 import { unstable_cache } from 'next/cache'
-import { PsychologistWithProfile, PsychologistProfile } from '@/lib/supabase/types'
+import { PsychologistWithProfile } from '@/lib/supabase/types'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { PsychologistAvailability, TimeSlot } from '@/lib/actions/availability'
+
+interface PageProps {
+  params: {
+    id: string
+  }
+}
 
 async function getPsychologistDataInternal(userId: string) {
   try {
@@ -144,14 +151,49 @@ const getCachedPsychologistData = unstable_cache(
   { revalidate: 30, tags: ['appointments', 'psychologists', 'overrides'] }
 )
 
-interface PageProps {
-  params: {
-    id: string
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const data = await getCachedPsychologistData(params.id)
+
+  if (!data || !data.psychologist) {
+    return {
+      title: 'Psicólogo não encontrado',
+    }
+  }
+
+  const { psychologist } = data
+  const fullName = psychologist.profile?.full_name || 'Especialista'
+  const specialty = psychologist.specialties?.[0] || 'Psicologia Clínica'
+  const bio = psychologist.bio?.substring(0, 160) || 'Agende sua sessão de terapia online.'
+  const avatarUrl = psychologist.profile?.avatar_url || '/og-image.png'
+
+  return {
+    title: `Psic. ${fullName} - ${specialty}`,
+    description: bio,
+    openGraph: {
+      title: `Psic. ${fullName} | Terapia Online`,
+      description: bio,
+      images: [
+        {
+          url: avatarUrl,
+          width: 800,
+          height: 800,
+          alt: `Foto de ${fullName}`,
+        },
+      ],
+      type: 'profile',
+      firstName: fullName.split(' ')[0],
+      lastName: fullName.split(' ').slice(1).join(' '),
+    },
+    twitter: {
+      card: 'summary',
+      title: `Psic. ${fullName} - Terapia Online`,
+      description: bio,
+      images: [avatarUrl],
+    },
   }
 }
 
 export default async function PsychologistProfilePage({ params }: PageProps) {
-  // Both user profile & availability cached and aggregated in 1 trip
   const data = await getCachedPsychologistData(params.id)
 
   if (!data || !data.psychologist) {
