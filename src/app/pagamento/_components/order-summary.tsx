@@ -3,6 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ShieldCheck } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface OrderSummaryProps {
   doctorName: string
@@ -45,9 +46,27 @@ export function OrderSummary({
 }: OrderSummaryProps) {
   if (isFetchingInfo) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-8 w-48 bg-slate-200 rounded-lg" />
-        <Card className="rounded-3xl border-none shadow-sm h-[500px] bg-slate-100" />
+      <div className="space-y-6">
+        <Skeleton className="h-7 w-48 bg-slate-200" />
+        <Card className="overflow-hidden border border-slate-100 rounded-3xl">
+          <div className="p-8 text-center border-b border-slate-50 flex flex-col items-center gap-4">
+            <Skeleton className="h-20 w-20 rounded-3xl bg-slate-200" />
+            <Skeleton className="h-3 w-20 bg-slate-100" />
+            <Skeleton className="h-6 w-44 bg-slate-200" />
+          </div>
+          <CardContent className="p-8">
+            <Skeleton className="h-16 w-full rounded-2xl bg-slate-100 mb-10" />
+            <div className="space-y-5">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex justify-between py-3 border-b border-slate-50">
+                  <Skeleton className="h-4 w-28 bg-slate-100" />
+                  <Skeleton className="h-4 w-24 bg-slate-200" />
+                </div>
+              ))}
+            </div>
+            <Skeleton className="h-20 w-full rounded-2xl bg-slate-100 mt-10" />
+          </CardContent>
+        </Card>
       </div>
     )
   }
