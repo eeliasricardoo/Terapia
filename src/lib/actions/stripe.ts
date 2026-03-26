@@ -83,7 +83,6 @@ export async function createStripeCheckoutSession(data: {
         finalPrice = Math.max(0, finalPrice)
 
         // Increment usage
-        // @ts-ignore
         await prisma.coupon.update({
           where: { id: coupon.id },
           data: { used: { increment: 1 } },
@@ -258,7 +257,7 @@ export async function syncStripeAccountStatus() {
 
     // Aproveitamos para persistir o status no banco (redundância ao webhook)
     if (account.details_submitted) {
-      await (prisma.psychologistProfile as any).update({
+      await prisma.psychologistProfile.update({
         where: { id: psych.id },
         data: { stripeOnboardingComplete: true },
       })
@@ -289,12 +288,10 @@ export async function getStripeDashboardLink() {
       where: { userId: user.id },
     })
 
-    // @ts-ignore
     if (!psych || !psych.stripeAccountId) {
       throw new Error('Conta Stripe não configurada')
     }
 
-    // @ts-ignore
     const loginLink = await stripe.accounts.createLoginLink(psych.stripeAccountId)
     return { url: loginLink.url }
   } catch (error: any) {
