@@ -18,14 +18,14 @@ export default function SuportePage() {
     <div className="container mx-auto px-4 py-8 max-w-4xl space-y-8">
       <Link
         href="/dashboard"
-        className="inline-flex items-center text-sm text-slate-500 hover:text-blue-600 transition-colors gap-1 group"
+        className="inline-flex items-center text-sm text-slate-500 hover:text-primary transition-colors gap-1 group"
       >
         <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
         Voltar para o Dashboard
       </Link>
 
       <div className="text-center space-y-4 py-6">
-        <div className="h-20 w-20 rounded-3xl bg-blue-600 flex items-center justify-center text-white mx-auto shadow-xl shadow-blue-600/20 mb-6">
+        <div className="h-20 w-20 rounded-3xl bg-primary flex items-center justify-center text-primary-foreground mx-auto shadow-xl shadow-primary/20 mb-6">
           <HeadphonesIcon className="h-10 w-10" />
         </div>
         <h1 className="text-4xl font-extrabold text-slate-900">Como podemos ajudar?</h1>
@@ -53,16 +53,16 @@ export default function SuportePage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-md hover:shadow-lg transition-all bg-white group cursor-pointer border-t-2 border-blue-500">
+        <Card className="border-none shadow-md hover:shadow-lg transition-all bg-white group cursor-pointer border-t-2 border-primary">
           <CardContent className="p-6 text-center space-y-4">
-            <div className="h-12 w-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+            <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
               <Mail className="h-6 w-6" />
             </div>
             <div>
               <h3 className="font-bold text-slate-900">E-mail de Suporte</h3>
               <p className="text-xs text-slate-500 mt-1 italic">Resposta em até 24h</p>
             </div>
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl" asChild>
+            <Button className="w-full bg-primary hover:bg-primary/90 rounded-xl" asChild>
               <a href="mailto:suporte@terapia.com">Enviar E-mail</a>
             </Button>
           </CardContent>
@@ -86,8 +86,8 @@ export default function SuportePage() {
         </Card>
       </div>
 
-      <div className="bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl" />
+      <div className="bg-primary p-8 rounded-3xl text-primary-foreground relative overflow-hidden">
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
           <div className="flex-1">
             <h2 className="text-2xl font-bold mb-2">Emergência de Saúde Mental?</h2>
@@ -98,7 +98,7 @@ export default function SuportePage() {
           </div>
           <Button
             variant="outline"
-            className="text-white border-white/20 hover:bg-white/10 shrink-0"
+            className="text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/10 shrink-0"
             asChild
           >
             <a href="https://cvv.org.br" target="_blank" rel="noopener noreferrer">

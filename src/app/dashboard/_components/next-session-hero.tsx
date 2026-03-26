@@ -51,7 +51,7 @@ export function NextSessionHero({ session }: Props) {
           Você não possui atendimentos marcados para os próximos dias.
         </p>
         <Link href="/busca">
-          <Button className="bg-blue-600 text-white hover:bg-blue-700 text-sm">
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90 text-sm">
             Encontrar um Psicólogo
           </Button>
         </Link>
@@ -85,7 +85,7 @@ export function NextSessionHero({ session }: Props) {
           </div>
 
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 mb-4 sm:mb-6 leading-tight">
-            Sua próxima sessão de <span className="text-blue-600">{session.type}</span>
+            Sua próxima sessão de <span className="text-primary">{session.type}</span>
           </h2>
 
           <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-10">
@@ -105,7 +105,7 @@ export function NextSessionHero({ session }: Props) {
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-8 mt-2">
             <Link href={`/sala/${session.id}`} className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto bg-slate-900 text-white hover:bg-slate-800 rounded-full px-8 sm:px-10 h-12 sm:h-14 text-sm font-bold shadow-xl shadow-slate-200 transition-all active:scale-95">
+              <Button className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 sm:px-10 h-12 sm:h-14 text-sm font-bold shadow-xl shadow-primary/20 transition-all active:scale-95">
                 Entrar na Sala
               </Button>
             </Link>

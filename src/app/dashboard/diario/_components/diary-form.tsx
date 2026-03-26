@@ -37,7 +37,7 @@ export function DiaryForm({
       <CardHeader className="bg-slate-50/50 border-b border-slate-100">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-blue-500" />
+            <Sparkles className="h-5 w-5 text-primary" />
             Como você está agora?
           </CardTitle>
           <Badge
@@ -62,7 +62,7 @@ export function DiaryForm({
                 onClick={() => setSelectedMood(mood.value)}
                 className={`group relative flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all duration-300 ${
                   selectedMood === mood.value
-                    ? `border-blue-500 bg-blue-50/50 scale-105 shadow-md shadow-blue-100`
+                    ? `border-primary bg-primary/10 scale-105 shadow-md shadow-primary/10`
                     : 'border-slate-100 hover:border-slate-200 bg-white hover:bg-slate-50'
                 }`}
               >
@@ -70,12 +70,12 @@ export function DiaryForm({
                   {mood.emoji}
                 </span>
                 <span
-                  className={`text-[10px] font-bold text-center leading-tight transition-colors ${selectedMood === mood.value ? 'text-blue-700' : 'text-slate-500'}`}
+                  className={`text-[10px] font-bold text-center leading-tight transition-colors ${selectedMood === mood.value ? 'text-primary' : 'text-slate-500'}`}
                 >
                   {mood.label}
                 </span>
                 {selectedMood === mood.value && (
-                  <div className="absolute top-1 right-1 h-3 w-3 rounded-full bg-blue-500 border-2 border-white animate-in zoom-in" />
+                  <div className="absolute top-1 right-1 h-3 w-3 rounded-full bg-primary border-2 border-white animate-in zoom-in" />
                 )}
               </button>
             ))}
@@ -102,7 +102,9 @@ export function DiaryForm({
                       : 'border-slate-200 bg-white hover:border-slate-300 text-slate-600'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${isSelected ? 'text-blue-400' : 'text-slate-400'}`} />
+                  <Icon
+                    className={`h-4 w-4 ${isSelected ? 'text-primary-foreground/70' : 'text-slate-400'}`}
+                  />
                   {emotion.label}
                 </button>
               )
@@ -120,7 +122,7 @@ export function DiaryForm({
               placeholder="Sinta-se à vontade para escrever o que vier à mente..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="min-h-[180px] rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-base leading-relaxed p-4"
+              className="min-h-[180px] rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-base leading-relaxed p-4"
             />
             <div className="absolute bottom-3 right-3 flex items-center gap-2">
               <p className="text-[10px] font-bold text-slate-400 bg-white/80 px-2 py-1 rounded-md border border-slate-100 shadow-sm">
@@ -134,7 +136,7 @@ export function DiaryForm({
           <Button
             onClick={handleSave}
             disabled={isPending}
-            className="h-12 bg-blue-600 hover:bg-blue-700 text-white px-10 rounded-xl font-bold gap-2 shadow-lg shadow-blue-200 transition-all hover:-translate-y-0.5"
+            className="h-12 bg-primary hover:bg-primary/90 text-primary-foreground px-10 rounded-xl font-bold gap-2 shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5"
           >
             {isPending ? (
               <>

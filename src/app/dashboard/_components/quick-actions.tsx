@@ -12,7 +12,7 @@ export function QuickActions() {
         <div className="group bg-white border border-slate-100 p-6 rounded-[2rem] shadow-sm hover:shadow-md transition-all flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div
-              className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-all"
+              className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all"
               aria-hidden="true"
             >
               <FileText className="h-5 w-5" />
@@ -32,7 +32,7 @@ export function QuickActions() {
       </Link>
 
       <Link href="/dashboard/bem-estar" className="block">
-        <div className="group bg-slate-900 p-6 rounded-[2rem] shadow-lg shadow-slate-200 hover:translate-y-[-2px] transition-all flex items-center justify-between">
+        <div className="group bg-primary p-6 rounded-[2rem] shadow-lg shadow-primary/20 hover:translate-y-[-2px] transition-all flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div
               className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm"

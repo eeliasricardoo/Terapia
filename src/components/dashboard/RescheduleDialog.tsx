@@ -80,13 +80,16 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
         className="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl bg-white max-h-[90vh] flex flex-col"
         aria-describedby="reschedule-description"
       >
-        <div className="bg-gradient-to-br from-indigo-600 to-blue-700 p-6 text-white relative flex-shrink-0">
+        <div className="bg-gradient-to-br from-primary to-primary/80 p-6 text-primary-foreground relative flex-shrink-0">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
           <DialogHeader className="relative z-10 text-left">
-            <DialogTitle className="text-2xl font-black tracking-tight text-white mb-2">
+            <DialogTitle className="text-2xl font-black tracking-tight text-primary-foreground mb-2">
               Reagendar Sessão
             </DialogTitle>
-            <p className="text-white/80 text-sm font-medium" id="reschedule-description">
+            <p
+              className="text-primary-foreground/80 text-sm font-medium"
+              id="reschedule-description"
+            >
               {isPsychologistView
                 ? `Escolha uma nova data para sua sessão com ${session.doctor}.`
                 : `Escolha uma nova data para seu atendimento com ${session.doctor}.`}
@@ -96,7 +99,7 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
 
         {loading ? (
           <div className="h-[400px] flex flex-col items-center justify-center gap-4 bg-white">
-            <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+            <Loader2 className="h-8 w-8 text-primary animate-spin" />
             <p className="text-sm text-slate-500 font-medium">Carregando agenda...</p>
           </div>
         ) : psychologist && availability ? (
@@ -248,9 +251,9 @@ function RescheduleForm({
                 className={cn(
                   'h-10 w-10 md:h-11 md:w-11 rounded-2xl flex items-center justify-center text-sm transition-all relative overflow-hidden',
                   isSelected
-                    ? 'bg-blue-600 text-white font-black shadow-lg shadow-blue-600/30'
+                    ? 'bg-primary text-primary-foreground font-black shadow-lg shadow-primary/30'
                     : available
-                      ? 'bg-blue-50 text-blue-600 font-bold hover:bg-blue-100'
+                      ? 'bg-primary/10 text-primary font-bold hover:bg-primary/20'
                       : 'text-slate-400 cursor-not-allowed opacity-40'
                 )}
               >
@@ -264,7 +267,7 @@ function RescheduleForm({
       {/* Time Selection */}
       <div className="space-y-4">
         <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-          <Clock className="h-4 w-4 text-blue-600" /> Horários Disponíveis
+          <Clock className="h-4 w-4 text-primary" /> Horários Disponíveis
         </h4>
 
         {selectedDay ? (
@@ -277,8 +280,8 @@ function RescheduleForm({
                   className={cn(
                     'h-12 text-sm font-bold border-slate-200 transition-all rounded-xl',
                     selectedTime === time
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/20'
-                      : 'text-slate-600 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50'
+                      ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20'
+                      : 'text-slate-600 hover:border-primary/40 hover:text-primary hover:bg-primary/5'
                   )}
                   onClick={() => setSelectedTime(time)}
                 >
@@ -302,7 +305,7 @@ function RescheduleForm({
 
       <div className="flex flex-col gap-3">
         <Button
-          className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-black text-lg rounded-2xl shadow-xl shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-black text-lg rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
           disabled={!selectedTime || isRescheduling}
           onClick={handleReschedule}
         >
