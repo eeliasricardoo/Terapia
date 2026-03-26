@@ -1,3 +1,5 @@
+'use server'
+
 import { dispatchEmailAsync } from '../utils/email-dispatch'
 import {
   getAppointmentConfirmedTemplate,

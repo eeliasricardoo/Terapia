@@ -21,14 +21,10 @@ const CACHE_TTL_SECONDS = 60 // 1 minute — short enough to feel live, long eno
 // ─── Psychologist Dashboard ───────────────────────────────────────────────────
 
 export function getCachedPsychologistDashboard(userId: string) {
-  return unstable_cache(
-    () => fetchPsychologistDashboard(userId),
-    [`dashboard-psych-${userId}`],
-    {
-      revalidate: CACHE_TTL_SECONDS,
-      tags: [`dashboard-psych-${userId}`, 'appointments'],
-    }
-  )()
+  return unstable_cache(() => fetchPsychologistDashboard(userId), [`dashboard-psych-${userId}`], {
+    revalidate: CACHE_TTL_SECONDS,
+    tags: [`dashboard-psych-${userId}`, 'appointments'],
+  })()
 }
 
 async function fetchPsychologistDashboard(userId: string): Promise<PsychologistDashboardData> {
@@ -47,6 +43,7 @@ async function fetchPsychologistDashboard(userId: string): Promise<PsychologistD
       },
       unreadNotifications: 0,
       isVerified: false,
+      hasStripeAccount: false,
       timezone: 'America/Sao_Paulo',
       upcomingSessions: [],
       futureSessions: [],
@@ -194,7 +191,10 @@ async function fetchPsychologistDashboard(userId: string): Promise<PsychologistD
   }
 
   // Build unique recent patients list
-  const uniquePatientsMap = new Map<string, { id: string; name: string; lastSession: Date; status: string }>()
+  const uniquePatientsMap = new Map<
+    string,
+    { id: string; name: string; lastSession: Date; status: string }
+  >()
   recentAppts.forEach((appt) => {
     if (!uniquePatientsMap.has(appt.patientId) && uniquePatientsMap.size < 5) {
       uniquePatientsMap.set(appt.patientId, {
@@ -216,6 +216,7 @@ async function fetchPsychologistDashboard(userId: string): Promise<PsychologistD
     },
     unreadNotifications,
     isVerified: psychProfile.isVerified,
+    hasStripeAccount: !!psychProfile.stripeAccountId,
     timezone: psychProfile.timezone || 'America/Sao_Paulo',
     upcomingSessions: upcomingSessions.map((s) => ({
       id: s.id,
@@ -250,14 +251,10 @@ async function fetchPsychologistDashboard(userId: string): Promise<PsychologistD
 // ─── Patient Dashboard ────────────────────────────────────────────────────────
 
 export function getCachedPatientDashboard(userId: string) {
-  return unstable_cache(
-    () => fetchPatientDashboard(userId),
-    [`dashboard-patient-${userId}`],
-    {
-      revalidate: CACHE_TTL_SECONDS,
-      tags: [`dashboard-patient-${userId}`, 'appointments'],
-    }
-  )()
+  return unstable_cache(() => fetchPatientDashboard(userId), [`dashboard-patient-${userId}`], {
+    revalidate: CACHE_TTL_SECONDS,
+    tags: [`dashboard-patient-${userId}`, 'appointments'],
+  })()
 }
 
 async function fetchPatientDashboard(userId: string): Promise<PatientDashboardData> {

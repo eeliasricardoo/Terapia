@@ -16,15 +16,10 @@ import { Suspense } from 'react'
 import { QuickActions } from './_components/quick-actions'
 import { CompanyDashboard } from '@/components/dashboard/company/CompanyDashboard'
 import { UpcomingSessionsList } from './_components/upcoming-sessions-list'
+import { NotificationCenter } from '@/components/dashboard/NotificationCenter'
 
-import {
-  getAdminDashboardData,
-  getCompanyDashboardData,
-} from '@/lib/actions/dashboard'
-import {
-  getCachedPsychologistDashboard,
-  getCachedPatientDashboard,
-} from '@/lib/cache/dashboard'
+import { getAdminDashboardData, getCompanyDashboardData } from '@/lib/actions/dashboard'
+import { getCachedPsychologistDashboard, getCachedPatientDashboard } from '@/lib/cache/dashboard'
 
 export default async function DashboardPage() {
   let userProfile = await getCurrentUserProfile()
@@ -76,11 +71,22 @@ export default async function DashboardPage() {
         <PaymentStatusToast />
       </Suspense>
 
-      <div className="flex flex-col gap-2">
-        <h1 className="text-4xl font-black tracking-tight text-slate-900">Olá, {userName}.</h1>
-        <p className="text-slate-600 font-medium">
-          Bem-vindo ao seu espaço de cuidado e autoconhecimento.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-4xl font-black tracking-tight text-slate-900">Olá, {userName}.</h1>
+          <p className="text-slate-600 font-medium">
+            Bem-vindo ao seu espaço de cuidado e autoconhecimento.
+          </p>
+        </div>
+        <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+          <NotificationCenter />
+          <div className="h-6 w-px bg-slate-100 hidden md:block" />
+          <Link href="/busca">
+            <Button className="rounded-xl font-bold bg-slate-900 text-white hover:bg-slate-800">
+              Nova Sessão
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
