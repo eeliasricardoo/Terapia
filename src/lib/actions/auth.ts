@@ -7,7 +7,12 @@ import { cleanCRP } from '@/lib/utils/crp'
 import { loginSchema } from '@/lib/validations/auth'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { sanitizeText, checkRateLimit } from '@/lib/security'
+import {
+  sanitizeText,
+  checkRateLimit,
+  checkLoginRateLimit,
+  checkForgotPasswordRateLimit,
+} from '@/lib/security'
 import { headers } from 'next/headers'
 import { logger } from '@/lib/utils/logger'
 
@@ -223,16 +228,16 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
 
 export async function loginSupabase(formData: FormData): Promise<ActionResult> {
   try {
-    // Rate limiting by IP to prevent credential stuffing attacks
-    const ip = headers().get('x-forwarded-for') || 'unknown_ip'
-    const rateLimit = await checkRateLimit(`login_${ip}`)
-    if (!rateLimit.success) {
-      return { success: false, error: 'Muitas tentativas de login. Tente novamente mais tarde.' }
-    }
-
     const rawData = {
       email: formData.get('email') as string,
       password: formData.get('password') as string,
+    }
+
+    // Rate limiting: 10 tentativas / 15 min por IP + 5 / hora por email
+    const ip = headers().get('x-forwarded-for') || 'unknown_ip'
+    const rateLimit = await checkLoginRateLimit(ip, rawData.email || 'unknown')
+    if (!rateLimit.success) {
+      return { success: false, error: 'Muitas tentativas de login. Tente novamente mais tarde.' }
     }
 
     // Validate with Zod
@@ -279,6 +284,39 @@ export async function loginSupabase(formData: FormData): Promise<ActionResult> {
       success: false,
       error: 'Erro ao fazer login. Tente novamente mais tarde.',
     }
+  }
+}
+
+export async function requestPasswordReset(email: string): Promise<ActionResult> {
+  try {
+    const ip = headers().get('x-forwarded-for') || 'unknown_ip'
+    const rateLimit = await checkForgotPasswordRateLimit(ip)
+    if (!rateLimit.success) {
+      return {
+        success: false,
+        error: 'Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.',
+      }
+    }
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return { success: false, error: 'E-mail inválido.' }
+    }
+
+    const supabase = await createClient()
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
+    })
+
+    if (error) {
+      logger.error('Password reset error:', error)
+      // Não revelamos se o e-mail existe ou não (user enumeration prevention)
+    }
+
+    // Sempre retorna sucesso para não revelar se o e-mail está cadastrado
+    return { success: true }
+  } catch (error: any) {
+    logger.error('requestPasswordReset error:', error)
+    return { success: false, error: 'Erro ao processar solicitação. Tente novamente.' }
   }
 }
 

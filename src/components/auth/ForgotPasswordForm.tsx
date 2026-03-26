@@ -15,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
-import { auth } from '@/lib/supabase/auth'
+import { requestPasswordReset } from '@/lib/actions/auth'
 import { toast } from 'sonner'
 import * as z from 'zod'
 import { Loader2, ArrowLeft } from 'lucide-react'
@@ -40,14 +40,14 @@ export function ForgotPasswordForm() {
   async function onSubmit(values: ForgotPasswordInput) {
     startTransition(async () => {
       try {
-        const { error } = await auth.resetPassword(values.email)
-        if (error) {
-          toast.error(error.message || 'Erro ao enviar e-mail de recuperação.')
+        const result = await requestPasswordReset(values.email)
+        if (!result.success) {
+          toast.error(result.error || 'Erro ao enviar e-mail de recuperação.')
         } else {
           setIsSent(true)
           toast.success('E-mail de recuperação enviado!')
         }
-      } catch (error) {
+      } catch {
         toast.error('Erro ao processar solicitação.')
       }
     })

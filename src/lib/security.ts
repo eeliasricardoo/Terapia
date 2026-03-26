@@ -39,6 +39,9 @@ export function sanitizeHtml(input: string | undefined | null): string {
 
 // Variável para armazenar a instância do limitador
 let ratelimitInstance: Ratelimit | null = null
+let authIpRatelimitInstance: Ratelimit | null = null
+let authEmailRatelimitInstance: Ratelimit | null = null
+let forgotPasswordRatelimitInstance: Ratelimit | null = null
 
 // Só instanciamos se as chaves estiverem presentes
 if (isRedisConfigured) {
@@ -53,7 +56,33 @@ if (isRedisConfigured) {
     analytics: true,
     prefix: '@terapia/ratelimit',
   })
+
+  // Login por IP: 10 tentativas por 15 minutos (brute force via IP único)
+  authIpRatelimitInstance = new Ratelimit({
+    redis: redis,
+    limiter: Ratelimit.slidingWindow(10, '15 m'),
+    analytics: true,
+    prefix: '@terapia/auth-ip',
+  })
+
+  // Login por email: 5 tentativas por hora (brute force distribuído contra uma conta específica)
+  authEmailRatelimitInstance = new Ratelimit({
+    redis: redis,
+    limiter: Ratelimit.slidingWindow(5, '1 h'),
+    analytics: true,
+    prefix: '@terapia/auth-email',
+  })
+
+  // Recuperação de senha: 3 tentativas por 15 minutos por IP
+  forgotPasswordRatelimitInstance = new Ratelimit({
+    redis: redis,
+    limiter: Ratelimit.slidingWindow(3, '15 m'),
+    analytics: true,
+    prefix: '@terapia/forgot-pw',
+  })
 }
+
+const RATE_LIMIT_ALLOWED = { success: true, limit: 20, remaining: 20, reset: 0 }
 
 /**
  * Verifica se a requisição estourou o limite de taxa (Rate Limit).
@@ -62,20 +91,62 @@ if (isRedisConfigured) {
  */
 export async function checkRateLimit(identifier: string) {
   if (!ratelimitInstance) {
-    // Se as chaves do Upstash não foram configuradas, falha com graça
-    // e alerta no console que a proteção não está ativa.
     console.warn(
       '⚠️ [Rate Limiter] Chaves do Upstash ausentes, permitindo requisição por segurança de failover.'
     )
-    return { success: true, limit: 20, remaining: 20, reset: 0 }
+    return RATE_LIMIT_ALLOWED
   }
 
   try {
-    const result = await ratelimitInstance.limit(identifier)
-    return result
+    return await ratelimitInstance.limit(identifier)
   } catch (err) {
     console.error('Error in rate limit:', err)
-    return { success: true, limit: 20, remaining: 20, reset: 0 }
+    return RATE_LIMIT_ALLOWED
+  }
+}
+
+/**
+ * Rate limiting específico para login — aplica dois limites:
+ * 1. Por IP: 10 tentativas / 15 min (protege contra brute force de IP único)
+ * 2. Por email: 5 tentativas / 1h (protege contra ataques distribuídos a uma conta)
+ *
+ * @returns { success: false } se qualquer dos dois limites for atingido.
+ */
+export async function checkLoginRateLimit(ip: string, email: string) {
+  if (!authIpRatelimitInstance || !authEmailRatelimitInstance) {
+    console.warn('⚠️ [Rate Limiter] Auth limiters unavailable, allowing request.')
+    return RATE_LIMIT_ALLOWED
+  }
+
+  try {
+    const [ipResult, emailResult] = await Promise.all([
+      authIpRatelimitInstance.limit(`ip:${ip}`),
+      authEmailRatelimitInstance.limit(`email:${email.toLowerCase()}`),
+    ])
+
+    if (!ipResult.success) return ipResult
+    if (!emailResult.success) return emailResult
+    return ipResult
+  } catch (err) {
+    console.error('Error in auth rate limit:', err)
+    return RATE_LIMIT_ALLOWED
+  }
+}
+
+/**
+ * Rate limiting para recuperação de senha: 3 tentativas / 15 min por IP.
+ */
+export async function checkForgotPasswordRateLimit(ip: string) {
+  if (!forgotPasswordRatelimitInstance) {
+    console.warn('⚠️ [Rate Limiter] Forgot password limiter unavailable, allowing request.')
+    return RATE_LIMIT_ALLOWED
+  }
+
+  try {
+    return await forgotPasswordRatelimitInstance.limit(`ip:${ip}`)
+  } catch (err) {
+    console.error('Error in forgot password rate limit:', err)
+    return RATE_LIMIT_ALLOWED
   }
 }
 
