@@ -301,17 +301,16 @@ export async function cancelSession(sessionId: string) {
 
   // 2. Security: Verify Ownership Before Canceling
   // We check if the current user is either the patient or the psychologist for this specific appointment
-  const { data: appointment, error: fetchError } = await supabase
-    .from('appointments')
-    .select('patient_id, psychologist_id')
-    .eq('id', sessionId)
-    .single()
+  const appointment = await prisma.appointment.findUnique({
+    where: { id: sessionId },
+    select: { patientId: true, psychologist: { select: { userId: true } } },
+  })
 
-  if (fetchError || !appointment) {
+  if (!appointment) {
     return { success: false, error: 'Sessão não encontrada' }
   }
 
-  if (user.id !== appointment.patient_id && user.id !== appointment.psychologist_id) {
+  if (user.id !== appointment.patientId && user.id !== appointment.psychologist?.userId) {
     // Log this attempt as it could be an attack
     logger.warn(`UNAUTHORIZED CANCEL ATTEMPT: User ${user.id} tried to cancel session ${sessionId}`)
     return {
@@ -361,17 +360,22 @@ export async function rescheduleSession(data: { sessionId: string; newScheduledA
   }
 
   // 2. Security: Verify Ownership & Session Info
-  const { data: appointment, error: fetchError } = await supabase
-    .from('appointments')
-    .select('*')
-    .eq('id', data.sessionId)
-    .single()
+  const appointment = await prisma.appointment.findUnique({
+    where: { id: data.sessionId },
+    select: {
+      patientId: true,
+      psychologistId: true,
+      scheduledAt: true,
+      durationMinutes: true,
+      psychologist: { select: { userId: true } },
+    },
+  })
 
-  if (fetchError || !appointment) {
+  if (!appointment) {
     return { success: false, error: 'Sessão não encontrada' }
   }
 
-  if (user.id !== appointment.patient_id && user.id !== appointment.psychologist_id) {
+  if (user.id !== appointment.patientId && user.id !== appointment.psychologist?.userId) {
     return {
       success: false,
       error: 'Acesso negado. Você não tem permissão para reagendar esta sessão.',
@@ -379,10 +383,10 @@ export async function rescheduleSession(data: { sessionId: string; newScheduledA
   }
 
   // 3. Prevent rescheduling past sessions
-  if (new Date(appointment.scheduled_at) < new Date()) {
+  if (appointment.scheduledAt < new Date()) {
     // Optional: Allow psychologists to reschedule past sessions if needed?
     // Usually patients can't reschedule after the time has passed.
-    if (user.id === appointment.patient_id) {
+    if (user.id === appointment.patientId) {
       return {
         success: false,
         error: 'Não é possível reagendar uma sessão que já ocorreu ou está em andamento.',
@@ -393,10 +397,10 @@ export async function rescheduleSession(data: { sessionId: string; newScheduledA
   // 4. Backend validation: Prevent double booking
   try {
     const { hasConflict, type } = await checkAppointmentConflict({
-      psychologistProfileId: appointment.psychologist_id,
-      patientId: appointment.patient_id,
+      psychologistProfileId: appointment.psychologistId,
+      patientId: appointment.patientId,
       scheduledAt: new Date(data.newScheduledAt),
-      durationMinutes: appointment.duration_minutes,
+      durationMinutes: appointment.durationMinutes,
       excludeAppointmentId: data.sessionId,
     })
 
@@ -411,7 +415,7 @@ export async function rescheduleSession(data: { sessionId: string; newScheduledA
     }
   } catch (error: any) {
     logger.error('Reschedule conflict check error:', {
-      psychId: appointment.psychologist_id,
+      psychId: appointment.psychologistId,
       sessionId: data.sessionId,
       error: error.message || error,
     })
@@ -422,7 +426,7 @@ export async function rescheduleSession(data: { sessionId: string; newScheduledA
   }
 
   // 5. Update the appointment
-  const previousDate = new Date(appointment.scheduled_at)
+  const previousDate = appointment.scheduledAt
 
   try {
     const updatedSession = await prisma.appointment.update({
@@ -471,51 +475,51 @@ export async function getSessionSummary(sessionId: string) {
   } = await supabase.auth.getUser()
   if (!user) return null
 
-  // Fetch appointment with profile data
-  const { data: appointment, error: apptError } = await supabase
-    .from('appointments')
-    .select(
-      `
-      *,
-      psychologist:profiles!appointments_psychologist_id_fkey(*)
-    `
-    )
-    .eq('id', sessionId)
-    .single()
+  // Fetch appointment with strictly typed Prisma relations
+  const appointment = await prisma.appointment.findUnique({
+    where: { id: sessionId },
+    include: {
+      psychologist: {
+        include: { user: { include: { profiles: true } } },
+      },
+      patient: {
+        include: { profiles: true },
+      },
+    },
+  })
 
-  if (apptError || !appointment) return null
+  if (!appointment) return null
 
   // Verify ownership
-  if (user.id !== appointment.patient_id && user.id !== appointment.psychologist_id) {
+  if (user.id !== appointment.patientId && user.id !== appointment.psychologist.userId) {
     return null
   }
 
-  // Fetch psychologist profile for specialties
-  const { data: psychProfile } = await supabase
-    .from('psychologist_profiles')
-    .select('specialties')
-    .eq('userId', appointment.psychologist_id)
-    .single()
+  // To get the evolution correctly filtered (evolution.patientId maps to Profile.id, not User.id)
+  const patientProfileId = appointment.patient?.profiles?.id
+  const evolution = patientProfileId
+    ? await prisma.evolution.findFirst({
+        where: {
+          patientId: patientProfileId,
+          psychologistId: appointment.psychologistId,
+        },
+        orderBy: { date: 'desc' },
+      })
+    : null
 
-  // Fetch the closest evolution note for this session
-  const { data: evolution } = await supabase
-    .from('evolutions')
-    .select('public_summary, mood, date')
-    .eq('patient_id', appointment.patient_id)
-    .eq('psychologist_id', appointment.psychologist_id)
-    .order('date', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  const psychName =
+    appointment.psychologist.user.profiles?.fullName ||
+    appointment.psychologist.user.name ||
+    'Especialista'
 
   return {
     id: appointment.id,
-    durationMinutes: appointment.duration_minutes,
-    scheduledAt: appointment.scheduled_at,
+    durationMinutes: appointment.durationMinutes,
+    scheduledAt: appointment.scheduledAt.toISOString(),
     status: appointment.status,
-    psychologistName:
-      (appointment.psychologist as { full_name?: string | null })?.full_name || 'Especialista',
-    specialty: psychProfile?.specialties?.[0] || 'Psicologia',
-    publicSummary: evolution?.public_summary || null,
+    psychologistName: psychName,
+    specialty: appointment.psychologist.specialties?.[0] || 'Psicologia',
+    publicSummary: evolution?.publicSummary || null,
     mood: evolution?.mood || null,
   }
 }
