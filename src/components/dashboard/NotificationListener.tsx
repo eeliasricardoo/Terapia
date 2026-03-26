@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 
 /**
  * Listens for realtime notifications for the current user and shows toasts.
- * Used in the patient dashboard (psychologists have their own listener in PsychologistDashboard).
+ * Used globally across the dashboard.
  */
 export function NotificationListener() {
   const router = useRouter()
@@ -23,10 +23,15 @@ export function NotificationListener() {
       if (!user) return
 
       channel = supabase
-        .channel(`patient-notifications-${user.id}`)
+        .channel(`user-notifications-${user.id}`)
         .on(
           'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'notifications' },
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
           (payload) => {
             const notif = payload.new as {
               user_id: string
