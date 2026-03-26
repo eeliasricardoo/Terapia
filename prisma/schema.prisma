@@ -116,6 +116,7 @@ model PsychologistProfile {
   licenseUrl            String?                 @map("license_url")
   externalSchedulingUrl String?                 @map("external_scheduling_url")
   stripeAccountId       String?                 @map("stripe_account_id")
+  stripeOnboardingComplete Boolean             @default(false) @map("stripe_onboarding_complete")
   monthlyPlanDiscount   Int                     @default(20) @map("monthly_plan_discount")
   monthlyPlanEnabled    Boolean                 @default(false) @map("monthly_plan_enabled")
   monthlyPlanSessions   Int                     @default(4) @map("monthly_plan_sessions")

@@ -25,6 +25,7 @@ import { format } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
 import { createClient } from '@/lib/supabase/client'
+import { NotificationCenter } from '../NotificationCenter'
 
 import { AlertCircle } from 'lucide-react'
 import { DashboardCalendar } from './DashboardCalendar'
@@ -222,21 +223,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                   <Settings className="h-5 w-5" />
                 </Button>
               </Link>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full relative opacity-70 hover:opacity-100 transition-opacity"
-                aria-label="Notificações"
-              >
-                <Bell className="h-5 w-5" />
-                {unreadCount > 0 && (
-                  <span
-                    className="absolute top-2 right-2 h-2 w-2 bg-rose-500 rounded-full border-2 border-slate-50"
-                    aria-hidden="true"
-                  />
-                )}
-                <span className="sr-only">Você tem novas notificações</span>
-              </Button>
+              <NotificationCenter />
               <Button
                 asChild
                 className="ml-2 gap-2 bg-slate-900 text-white hover:bg-slate-800 rounded-full px-6 transition-all hover:translate-y-[-1px] shadow-lg shadow-slate-200"

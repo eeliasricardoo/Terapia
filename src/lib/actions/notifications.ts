@@ -280,3 +280,66 @@ export async function sendRescheduleNotifications(
     )
   }
 }
+
+/**
+ * Busca as notificações do usuário logado
+ */
+export async function getUserNotifications() {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    return await prisma.notification.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    })
+  } catch (error) {
+    logger.error('[NOTIFICATION] Error fetching notifications:', error)
+    return []
+  }
+}
+
+/**
+ * Marca uma notificação específica como lida
+ */
+export async function markNotificationAsRead(notificationId: string) {
+  try {
+    await prisma.notification.update({
+      where: { id: notificationId },
+      data: { read: true },
+    })
+    return { success: true }
+  } catch (error) {
+    logger.error('[NOTIFICATION] Error marking as read:', error)
+    return { error: 'Falha ao atualizar notificação' }
+  }
+}
+
+/**
+ * Marca TODAS as notificações do usuário como lidas
+ */
+export async function markAllAsRead() {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return { error: 'Não autenticado' }
+
+    await prisma.notification.updateMany({
+      where: { userId: user.id, read: false },
+      data: { read: true },
+    })
+    return { success: true }
+  } catch (error) {
+    return { error: 'Falha ao limpar notificações' }
+  }
+}

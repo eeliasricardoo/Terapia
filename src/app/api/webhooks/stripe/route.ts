@@ -62,8 +62,6 @@ export async function POST(req: Request) {
         logger.error(
           `CRITICAL: Overlapping appointment detected during webhook for session ${session.id}. Payment received but slot taken.`
         )
-        // In a real production app, we would trigger a refund or an admin alert here.
-        // For now, we block the creation to maintain database integrity.
         return NextResponse.json({ error: 'Time slot occupied during payment' }, { status: 409 })
       }
 
@@ -94,6 +92,26 @@ export async function POST(req: Request) {
     } catch (error) {
       logger.error(`Error completing booking for session ${session.id}:`, error)
       return NextResponse.json({ error: 'Internal server error during booking' }, { status: 500 })
+    }
+  } else if (event.type === 'account.updated') {
+    const account = event.data.object as Stripe.Account
+
+    try {
+      if (account.details_submitted) {
+        await prisma.psychologistProfile.updateMany({
+          where: { stripeAccountId: account.id },
+          data: { stripeOnboardingComplete: true },
+        })
+        logger.info(`Stripe Onboarding completed for account ${account.id}`)
+        revalidateTag('psychologist-profile-view')
+      } else {
+        await prisma.psychologistProfile.updateMany({
+          where: { stripeAccountId: account.id },
+          data: { stripeOnboardingComplete: false },
+        })
+      }
+    } catch (error) {
+      logger.error(`Error updating stripe onboarding status for ${account.id}:`, error)
     }
   }
 
