@@ -98,14 +98,14 @@ export async function POST(req: Request) {
 
     try {
       if (account.details_submitted) {
-        await (prisma.psychologistProfile as any).updateMany({
+        await prisma.psychologistProfile.updateMany({
           where: { stripeAccountId: account.id },
           data: { stripeOnboardingComplete: true },
         })
         logger.info(`Stripe Onboarding completed for account ${account.id}`)
         revalidateTag('psychologist-profile-view')
       } else {
-        await (prisma.psychologistProfile as any).updateMany({
+        await prisma.psychologistProfile.updateMany({
           where: { stripeAccountId: account.id },
           data: { stripeOnboardingComplete: false },
         })
