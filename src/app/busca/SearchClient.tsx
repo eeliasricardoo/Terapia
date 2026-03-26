@@ -147,17 +147,17 @@ export default function SearchClient({
       {/* Search Bar - Premium Hero Style */}
       <motion.div
         variants={itemVars}
-        className="relative overflow-hidden bg-white p-8 md:p-10 rounded-3xl border border-slate-200/60 shadow-xl shadow-blue-900/5"
+        className="relative overflow-hidden bg-white p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-xl shadow-blue-900/5"
       >
         <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-96 h-96 bg-blue-50/80 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-96 h-96 bg-orange-50/80 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 space-y-6 max-w-3xl mx-auto text-center">
+        <div className="relative z-10 space-y-4 sm:space-y-6 max-w-3xl mx-auto text-center">
           <div>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-3 tracking-tight">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 mb-2 sm:mb-3 tracking-tight">
               Encontre seu psicólogo ideal
             </h2>
-            <p className="text-lg text-slate-600 font-medium">
+            <p className="text-sm sm:text-lg text-slate-600 font-medium hidden sm:block">
               Conecte-se com profissionais qualificados para te apoiar em sua jornada de
               autoconhecimento e bem-estar.
             </p>
@@ -165,15 +165,15 @@ export default function SearchClient({
 
           <div className="relative max-w-2xl mx-auto group">
             <div className="absolute inset-0 bg-blue-500/5 rounded-full blur-md group-hover:bg-blue-500/10 transition-colors duration-500" />
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400 group-hover:text-blue-500 transition-colors duration-300 z-10" />
+            <Search className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 h-5 w-5 sm:h-6 sm:w-6 text-slate-400 group-hover:text-blue-500 transition-colors duration-300 z-10" />
             <Input
               value={filters.searchQuery}
               onChange={(e) => {
                 setHasInteracted(true)
                 setFilters({ ...filters, searchQuery: e.target.value })
               }}
-              placeholder="Busque por nome do especialista..."
-              className="pl-16 pr-6 h-16 text-lg shadow-sm w-full rounded-full border-2 border-slate-200 focus:border-blue-500 hover:border-slate-300 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 relative z-0 bg-white/80 backdrop-blur-sm"
+              placeholder="Busque por especialidade ou nome..."
+              className="pl-12 sm:pl-16 pr-4 sm:pr-6 h-12 sm:h-16 text-base sm:text-lg shadow-sm w-full rounded-full border-2 border-slate-200 focus:border-blue-500 hover:border-slate-300 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 relative z-0 bg-white/80 backdrop-blur-sm"
             />
           </div>
         </div>
@@ -185,12 +185,12 @@ export default function SearchClient({
         <div className="lg:hidden flex justify-between items-center">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="flex items-center gap-2 h-9">
                 <Filter className="h-4 w-4" />
                 Filtros
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto">
+            <SheetContent side="left" className="w-[min(85vw,24rem)] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Filtros</SheetTitle>
                 <SheetDescription>

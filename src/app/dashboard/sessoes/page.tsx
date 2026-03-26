@@ -47,9 +47,9 @@ export default async function SessionsPage() {
   const psychMap = new Map(psychProfiles.map((p) => [p.userId, p]))
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Minhas Sessões</h1>
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Minhas Sessões</h1>
         <p className="text-muted-foreground">
           Gerencie seus agendamentos e histórico de consultas.
           {total > 0 && (
@@ -61,7 +61,6 @@ export default async function SessionsPage() {
           )}
         </p>
       </div>
-
 
       <div className="space-y-4">
         {sessions.length === 0 ? (
@@ -97,15 +96,20 @@ export default async function SessionsPage() {
             return (
               <Card key={session.id}>
                 <CardContent className="p-6">
-                  <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-                    {/* Date Box */}
-                    <div className="flex-shrink-0 w-full md:w-auto flex md:flex-col items-center justify-center bg-slate-50 rounded-lg border p-4 min-w-[100px] gap-2 md:gap-0">
-                      <Calendar className="h-5 w-5 text-muted-foreground mb-1 md:block hidden" />
-                      <span className="text-2xl font-bold text-primary">
-                        {format(scheduledDate, 'dd')}
-                      </span>
-                      <span className="text-xs font-medium uppercase text-muted-foreground">
-                        {format(scheduledDate, 'MMM', { locale: ptBR })}
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
+                    {/* Date Box - horizontal strip on mobile, vertical block on sm+ */}
+                    <div className="flex-shrink-0 flex sm:flex-col items-center sm:justify-center bg-slate-50 rounded-lg border p-3 sm:p-4 sm:min-w-[80px] w-full sm:w-auto gap-3 sm:gap-0">
+                      <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground sm:mb-1" />
+                      <div className="flex items-baseline gap-1 sm:flex-col sm:items-center">
+                        <span className="text-xl sm:text-2xl font-bold text-primary">
+                          {format(scheduledDate, 'dd')}
+                        </span>
+                        <span className="text-xs font-medium uppercase text-muted-foreground">
+                          {format(scheduledDate, 'MMM', { locale: ptBR })}
+                        </span>
+                      </div>
+                      <span className="text-xs text-muted-foreground sm:hidden ml-auto">
+                        {format(scheduledDate, 'HH:mm')}
                       </span>
                     </div>
 
@@ -172,7 +176,7 @@ export default async function SessionsPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                    <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto flex-wrap">
                       {canReschedule ? (
                         <>
                           <RescheduleDialog

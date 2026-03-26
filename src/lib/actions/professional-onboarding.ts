@@ -23,10 +23,6 @@ export async function saveProfessionalData(formData: FormData) {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    if (process.env.NODE_ENV === 'development') {
-      logger.warn('Simulated success for saveProfessionalData (unauthenticated)')
-      return { success: true }
-    }
     return { success: false, error: 'Usuário não autenticado' }
   }
 
@@ -137,10 +133,6 @@ export async function savePaymentConfig(data: {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    if (process.env.NODE_ENV === 'development') {
-      logger.warn('Simulated success for savePaymentConfig (unauthenticated)')
-      return { success: true }
-    }
     return { success: false, error: 'Usuário não autenticado' }
   }
 
@@ -185,10 +177,6 @@ export async function savePatientPreferences(data: {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    if (process.env.NODE_ENV === 'development') {
-      logger.warn('Simulated success for savePatientPreferences (unauthenticated)')
-      return { success: true }
-    }
     return { success: false, error: 'Usuário não autenticado' }
   }
 

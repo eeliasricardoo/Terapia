@@ -6,10 +6,10 @@ import { CoreStarIcon, CoreShieldIcon, CoreHeartIcon } from '@/components/ui/exc
 
 export function SearchHero() {
   return (
-    <section className="w-full pt-12 pb-12 bg-white overflow-hidden relative border-b border-slate-100">
+    <section className="w-full pt-8 sm:pt-12 pb-8 sm:pb-12 bg-white overflow-hidden relative border-b border-slate-100">
       <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
-        <div className="flex flex-col md:flex-row items-center gap-12">
-          <div className="flex-1 space-y-6 text-center md:text-left">
+        <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-12">
+          <div className="flex-1 space-y-4 sm:space-y-6 text-center md:text-left">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -20,7 +20,7 @@ export function SearchHero() {
               Terapeutas Verificados
             </motion.div>
 
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight font-outfit text-slate-900 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight font-outfit text-slate-900 leading-tight">
               Encontre o profissional <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-600 via-rose-500 to-amber-600">
                 ideal para você.

@@ -105,23 +105,28 @@ export function MobileNav() {
           : PATIENT_MENU
 
   return (
-    <div className="lg:hidden flex items-center justify-between p-4 border-b bg-white sticky top-0 z-50">
+    <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b bg-white sticky top-0 z-50 shadow-sm">
       <Link
         href="/dashboard"
         className="flex items-center gap-2 font-semibold text-lg hover:opacity-80 transition-opacity"
       >
-        <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
+        <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground text-sm font-bold">
           T
         </div>
-        Terapia
+        <span className="text-slate-900">Terapia</span>
       </Link>
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Abrir menu de navegação">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10"
+            aria-label="Abrir menu de navegação"
+          >
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-80 p-0">
+        <SheetContent side="left" className="w-[min(85vw,20rem)] p-0">
           <div className="h-full flex flex-col p-6">
             {/* Profile Info */}
             <div className="flex items-center gap-3 mb-8">
@@ -145,14 +150,14 @@ export function MobileNav() {
                     href={item.href}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors',
+                      'flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-xl transition-colors',
                       isActive
                         ? 'bg-primary text-white shadow-sm'
                         : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                     )}
                   >
                     <item.icon
-                      className={cn('h-5 w-5', isActive ? 'text-white' : 'text-slate-500')}
+                      className={cn('h-5 w-5 shrink-0', isActive ? 'text-white' : 'text-slate-500')}
                       aria-hidden="true"
                     />
                     {item.label}

@@ -189,18 +189,18 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
       ) : (
         <>
           {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 mt-2">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-2">
             <div>
-              <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900">
                 Olá, {userName}.
               </h1>
-              <p className="text-slate-600 mt-2 font-medium">
+              <p className="text-slate-600 mt-1 sm:mt-2 font-medium text-sm sm:text-base">
                 Você tem {stats.sessionsToday}{' '}
                 {stats.sessionsToday === 1 ? 'atendimento agendado' : 'atendimentos agendados'} para
                 hoje.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {process.env.NODE_ENV === 'development' && (
                 <Button
                   variant="outline"
@@ -226,27 +226,27 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
               <NotificationCenter />
               <Button
                 asChild
-                className="ml-2 gap-2 bg-slate-900 text-white hover:bg-slate-800 rounded-full px-6 transition-all hover:translate-y-[-1px] shadow-lg shadow-slate-200"
+                className="ml-1 gap-2 bg-slate-900 text-white hover:bg-slate-800 rounded-full px-4 sm:px-6 transition-all hover:translate-y-[-1px] shadow-lg shadow-slate-200"
               >
                 <Link href={upcomingSessions?.[0]?.id ? `/sala/${upcomingSessions[0].id}` : '#'}>
                   <Video className="h-4 w-4" />
-                  <span>Sala Virtual</span>
+                  <span className="hidden sm:inline">Sala Virtual</span>
                 </Link>
               </Button>
             </div>
           </div>
 
           {!dashboardData.hasStripeAccount && (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm animate-in slide-in-from-top-4 duration-500 mb-6">
-              <div className="flex items-start gap-4">
-                <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center text-amber-600 shadow-sm border border-amber-100 flex-shrink-0">
-                  <AlertCircle className="h-6 w-6" />
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 shadow-sm animate-in slide-in-from-top-4 duration-500 mb-6">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="h-10 w-10 sm:h-12 sm:w-12 bg-white rounded-xl flex items-center justify-center text-amber-600 shadow-sm border border-amber-100 flex-shrink-0">
+                  <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div>
-                  <h3 className="text-amber-900 font-bold font-serif italic text-lg tracking-tight">
+                  <h3 className="text-amber-900 font-bold font-serif italic text-base sm:text-lg tracking-tight">
                     Faturamento Pendente
                   </h3>
-                  <p className="text-amber-700/80 text-sm leading-relaxed max-w-xl font-medium">
+                  <p className="text-amber-700/80 text-xs sm:text-sm leading-relaxed max-w-xl font-medium">
                     Seu perfil está <b>oculto na busca</b> até que você conecte sua conta bancária
                     via Stripe Connect. Isso é necessário para que você receba os repasses das
                     sessões automaticamente.
@@ -255,7 +255,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
               </div>
               <Button
                 asChild
-                className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl px-8 shadow-lg shadow-amber-600/20 whitespace-nowrap h-12"
+                className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl px-6 sm:px-8 shadow-lg shadow-amber-600/20 whitespace-nowrap h-10 sm:h-12 w-full sm:w-auto text-sm"
               >
                 <Link href="/dashboard/financeiro">Conectar Conta Agora</Link>
               </Button>
@@ -263,7 +263,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
           )}
 
           {/* Stats Overview */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
                 Sessões
@@ -319,7 +319,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <div className="col-span-1 lg:col-span-2 space-y-4">
               {/* Agenda */}
               <Card className="border-none shadow-sm bg-white">
@@ -393,7 +393,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                             return (
                               <div
                                 key={session.id}
-                                className={`flex items-center justify-between px-6 py-4 border-b border-slate-50 last:border-0 transition-colors ${isNext ? 'bg-slate-50/60' : 'bg-white hover:bg-slate-50/40'}`}
+                                className={`flex items-center gap-2 sm:gap-4 justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-50 last:border-0 transition-colors ${isNext ? 'bg-slate-50/60' : 'bg-white hover:bg-slate-50/40'}`}
                               >
                                 <div className="flex items-center gap-4">
                                   <div className="flex flex-col items-center justify-center min-w-[3.5rem]">

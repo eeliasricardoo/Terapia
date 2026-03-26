@@ -34,10 +34,6 @@ export async function saveAvailability(
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    if (process.env.NODE_ENV === 'development') {
-      logger.warn('Simulated success for saveAvailability (unauthenticated)')
-      return { success: true }
-    }
     return { success: false, error: 'Usuário não autenticado' }
   }
 

@@ -28,17 +28,17 @@ export const PsychologistCard = memo(function PsychologistCard({
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
       <CardContent className="p-0 flex flex-col flex-1 relative z-10">
-        <div className="p-6 md:p-8 flex flex-col flex-1">
-          <div className="flex gap-5 mb-5">
+        <div className="p-5 md:p-8 flex flex-col flex-1">
+          <div className="flex gap-4 sm:gap-5 mb-5">
             <div className="relative flex-shrink-0">
               <div className="absolute inset-0 bg-primary/20 rounded-full blur-md opacity-0 group-hover:opacity-60 transition-opacity duration-500" />
-              <Avatar className="h-24 w-24 border-[3px] border-white shadow-md ring-1 ring-slate-100/50 relative z-10 group-hover:scale-105 transition-transform duration-500">
+              <Avatar className="h-16 w-16 sm:h-24 sm:w-24 border-[3px] border-white shadow-md ring-1 ring-slate-100/50 relative z-10 group-hover:scale-105 transition-transform duration-500">
                 <AvatarImage src={profile?.avatar_url || undefined} className="object-cover" />
-                <AvatarFallback className="bg-gradient-to-br from-primary/10 to-indigo-50/30 text-primary text-2xl font-bold">
+                <AvatarFallback className="bg-gradient-to-br from-primary/10 to-indigo-50/30 text-primary text-xl sm:text-2xl font-bold">
                   {displayName.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <span className="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 border-[3px] border-white rounded-full z-20 shadow-sm"></span>
+              <span className="absolute bottom-1 right-1 w-3 h-3 sm:w-4 sm:h-4 bg-emerald-500 border-[3px] border-white rounded-full z-20 shadow-sm"></span>
             </div>
 
             <div className="flex-1 min-w-0 flex flex-col justify-center">
