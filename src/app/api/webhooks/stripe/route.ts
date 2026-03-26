@@ -76,6 +76,8 @@ export async function POST(req: Request) {
           paymentMethod: 'Stripe',
           status: 'SCHEDULED',
           stripeSessionId: session.id,
+          stripePaymentIntentId:
+            typeof session.payment_intent === 'string' ? session.payment_intent : null,
         },
       })
 

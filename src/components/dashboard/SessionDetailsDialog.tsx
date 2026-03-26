@@ -54,9 +54,12 @@ export function SessionDetailsDialog({ children, session }: SessionDetailsDialog
       const result = await cancelSession(session.id)
 
       if (result.success) {
+        const description = result.refunded
+          ? `Reembolso de R$ ${result.refundAmount?.toFixed(2).replace('.', ',')} será processado em até 5 dias úteis.`
+          : 'O profissional será notificado sobre o cancelamento.'
         toast.success('Sessão cancelada com sucesso', {
-          description: 'O profissional será notificado sobre o cancelamento.',
-          duration: 4000,
+          description,
+          duration: 5000,
         })
         setOpen(false)
         router.refresh()
