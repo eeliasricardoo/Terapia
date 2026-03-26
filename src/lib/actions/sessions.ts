@@ -333,13 +333,13 @@ export async function cancelSession(sessionId: string) {
   }
 
   // 3. Determine refund eligibility
-  // Policy: full refund if cancelled more than 24h before the session; no refund within 24h.
+  // Policy: full refund if cancelled more than 5h before the session; no refund within 5h.
   const now = new Date()
   const hoursUntilSession = (appointment.scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60)
   const isRefundEligible =
     appointment.paymentMethod === 'Stripe' &&
     appointment.stripePaymentIntentId !== null &&
-    hoursUntilSession > 24
+    hoursUntilSession > 5
 
   let refunded = false
   let refundAmount = 0
