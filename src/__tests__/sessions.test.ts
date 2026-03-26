@@ -20,6 +20,13 @@ jest.mock('@/lib/utils/logger', () => ({
 jest.mock('@upstash/ratelimit', () => ({ Ratelimit: jest.fn() }))
 jest.mock('@upstash/redis', () => ({ Redis: jest.fn() }))
 
+jest.mock('@/lib/stripe', () => ({
+  stripe: {
+    refunds: { create: jest.fn().mockResolvedValue({ id: 'refund_mock' }) },
+    paymentIntents: { retrieve: jest.fn().mockResolvedValue({ id: 'pi_mock', amount: 10000 }) },
+  },
+}))
+
 jest.mock('@/lib/security', () => ({
   encryptData: jest.fn((data) => `encrypted-${data}`),
   decryptData: jest.fn((data) => data.replace('encrypted-', '')),
