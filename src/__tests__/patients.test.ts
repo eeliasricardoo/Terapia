@@ -1,4 +1,10 @@
-import { getPsychologistPatients, getAnamnesis, saveEvolution } from '../lib/actions/patients'
+import {
+  getPsychologistPatients,
+  getAnamnesis,
+  getEvolutions,
+  saveEvolution,
+  updateAnamnesis,
+} from '../lib/actions/patients'
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { encryptData, decryptData } from '@/lib/security'
@@ -132,6 +138,150 @@ describe('patients actions', () => {
             publicSummary: 'encrypted-public notes',
             privateNotes: 'encrypted-private notes',
           }),
+        })
+      )
+    })
+  })
+
+  // ─── Data Isolation ──────────────────────────────────────────────────────────
+
+  describe('getAnamnesis — data isolation', () => {
+    it('returns null when user is not authenticated', async () => {
+      ;(createClient as jest.Mock).mockResolvedValue({
+        auth: { getUser: jest.fn().mockResolvedValue({ data: { user: null } }) },
+      })
+
+      const result = await getAnamnesis('prof-1')
+      expect(result).toBeNull()
+    })
+
+    it('returns null when caller has no psychologist profile (patient trying to read)', async () => {
+      ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue(null)
+
+      const result = await getAnamnesis('prof-1')
+      expect(result).toBeNull()
+      expect(prisma.anamnesis.findFirst).not.toHaveBeenCalled()
+    })
+
+    it('queries anamnesis scoped to the authenticated psychologist ID', async () => {
+      ;(prisma.anamnesis.findFirst as jest.Mock).mockResolvedValue(null)
+
+      await getAnamnesis('prof-1')
+
+      expect(prisma.anamnesis.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ psychologistId: mockPsychologist.id }),
+        })
+      )
+    })
+
+    it('returns null when anamnesis belongs to a different psychologist', async () => {
+      // findFirst returns null because psych-1 cannot see psych-2's records
+      ;(prisma.anamnesis.findFirst as jest.Mock).mockResolvedValue(null)
+
+      const result = await getAnamnesis('prof-1')
+      expect(result).toBeNull()
+    })
+
+    it('returns decrypted data only when the psychologist owns the anamnesis', async () => {
+      ;(prisma.anamnesis.findFirst as jest.Mock).mockResolvedValue({
+        id: 'ana-1',
+        mainComplaint: 'encrypted-dor',
+        familyHistory: 'encrypted-hist',
+        medication: 'encrypted-med',
+        diagnosticHypothesis: 'encrypted-diag',
+      })
+
+      const result = await getAnamnesis('prof-1')
+      expect(result).not.toBeNull()
+      expect(result?.mainComplaint).toBe('dor')
+    })
+  })
+
+  describe('getEvolutions — data isolation', () => {
+    it('returns empty array when caller has no psychologist profile', async () => {
+      ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue(null)
+
+      const result = await getEvolutions('prof-1')
+      expect(result).toEqual([])
+      expect(prisma.evolution.findMany).not.toHaveBeenCalled()
+    })
+
+    it('queries evolutions scoped to the authenticated psychologist ID', async () => {
+      ;(prisma.evolution.findMany as jest.Mock).mockResolvedValue([])
+
+      await getEvolutions('prof-1')
+
+      expect(prisma.evolution.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ psychologistId: mockPsychologist.id }),
+        })
+      )
+    })
+
+    it('returns empty array when evolutions belong to a different psychologist', async () => {
+      // DB returns [] because psychologistId filter doesn't match
+      ;(prisma.evolution.findMany as jest.Mock).mockResolvedValue([])
+
+      const result = await getEvolutions('prof-1')
+      expect(result).toEqual([])
+    })
+
+    it('returns only own records when psychologist has data for this patient', async () => {
+      ;(prisma.evolution.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: 'evo-1',
+          date: new Date(),
+          mood: 'Bem',
+          publicSummary: 'encrypted-s',
+          privateNotes: 'encrypted-p',
+        },
+      ])
+
+      const result = await getEvolutions('prof-1')
+      expect(result).toHaveLength(1)
+      expect(result[0].id).toBe('evo-1')
+    })
+  })
+
+  describe('updateAnamnesis — data isolation', () => {
+    it('returns error when user is not authenticated', async () => {
+      ;(createClient as jest.Mock).mockResolvedValue({
+        auth: { getUser: jest.fn().mockResolvedValue({ data: { user: null } }) },
+      })
+
+      const result = await updateAnamnesis('prof-1', { mainComplaint: 'x' })
+      expect(result.success).toBe(false)
+    })
+
+    it('returns error when caller has no psychologist profile', async () => {
+      ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue(null)
+
+      const result = await updateAnamnesis('prof-1', { mainComplaint: 'x' })
+      expect(result.success).toBe(false)
+      expect(prisma.anamnesis.update).not.toHaveBeenCalled()
+    })
+
+    it('never calls update for anamnesis belonging to another psychologist', async () => {
+      // findFirst returns null because the existing anamnesis belongs to another psychologist
+      ;(prisma.anamnesis.findFirst as jest.Mock).mockResolvedValue(null)
+      ;(prisma.anamnesis.create as jest.Mock).mockResolvedValue({ id: 'new-ana' })
+
+      await updateAnamnesis('prof-1', { mainComplaint: 'attempt' })
+
+      // The attacker's request must never reach the update path
+      expect(prisma.anamnesis.update).not.toHaveBeenCalled()
+    })
+
+    it('scopes the ownership check to the authenticated psychologist', async () => {
+      ;(prisma.anamnesis.findFirst as jest.Mock).mockResolvedValue(null)
+      ;(prisma.anamnesis.create as jest.Mock).mockResolvedValue({ id: 'ana-new' })
+
+      await updateAnamnesis('prof-1', { mainComplaint: 'test' })
+
+      expect(prisma.anamnesis.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ psychologistId: mockPsychologist.id }),
         })
       )
     })
