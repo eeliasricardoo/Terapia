@@ -12,6 +12,7 @@ import {
   sendRescheduleNotifications,
 } from './notifications'
 import { checkAppointmentConflict } from './appointments-utils'
+import { stripe } from '@/lib/stripe'
 
 type Appointment = Database['public']['Tables']['appointments']['Row']
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -303,7 +304,15 @@ export async function cancelSession(sessionId: string) {
   // We check if the current user is either the patient or the psychologist for this specific appointment
   const appointment = await prisma.appointment.findUnique({
     where: { id: sessionId },
-    select: { patientId: true, psychologist: { select: { userId: true } } },
+    select: {
+      patientId: true,
+      scheduledAt: true,
+      status: true,
+      price: true,
+      paymentMethod: true,
+      stripePaymentIntentId: true,
+      psychologist: { select: { userId: true } },
+    },
   })
 
   if (!appointment) {
@@ -319,7 +328,39 @@ export async function cancelSession(sessionId: string) {
     }
   }
 
-  // 3. Execute cancellation
+  if (appointment.status === 'CANCELED') {
+    return { success: false, error: 'Esta sessão já foi cancelada.' }
+  }
+
+  // 3. Determine refund eligibility
+  // Policy: full refund if cancelled more than 24h before the session; no refund within 24h.
+  const now = new Date()
+  const hoursUntilSession = (appointment.scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60)
+  const isRefundEligible =
+    appointment.paymentMethod === 'Stripe' &&
+    appointment.stripePaymentIntentId !== null &&
+    hoursUntilSession > 24
+
+  let refunded = false
+  let refundAmount = 0
+
+  if (isRefundEligible) {
+    try {
+      const refund = await stripe.refunds.create({
+        payment_intent: appointment.stripePaymentIntentId!,
+      })
+      refunded = refund.status === 'succeeded' || refund.status === 'pending'
+      refundAmount = Number(appointment.price)
+      logger.info(
+        `Refund ${refund.id} created for appointment ${sessionId} (status: ${refund.status})`
+      )
+    } catch (refundError: any) {
+      // Log but do NOT block cancellation — the appointment is still cancelled
+      logger.error(`Stripe refund failed for appointment ${sessionId}:`, refundError)
+    }
+  }
+
+  // 4. Execute cancellation
   try {
     await prisma.appointment.update({
       where: { id: sessionId },
@@ -338,7 +379,7 @@ export async function cancelSession(sessionId: string) {
   revalidateTag('appointments')
   revalidatePath('/', 'layout')
 
-  return { success: true }
+  return { success: true, refunded, refundAmount }
 }
 
 /**
