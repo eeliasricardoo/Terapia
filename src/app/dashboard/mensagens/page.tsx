@@ -40,7 +40,7 @@ export default function MessagesPage() {
       />
 
       {/* Chat Area */}
-      <Card className="flex-1 flex flex-col h-full border-none shadow-xl shadow-slate-200/50 ring-1 ring-slate-200 overflow-hidden rounded-2xl">
+      <Card className="flex-1 flex flex-col h-full overflow-hidden rounded-2xl border bg-card/50 backdrop-blur-sm shadow-sm">
         {!selectedId ? (
           <EmptyChatState />
         ) : (

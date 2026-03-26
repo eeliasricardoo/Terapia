@@ -162,7 +162,7 @@ export async function createStripeCheckoutSession(data: {
         transfer_data: {
           destination: psych.stripeAccountId,
         },
-        application_fee_amount: Math.round(stripeAmount * 0.2),
+        application_fee_amount: Math.round(stripeAmount * 0.11),
       }
     }
 
