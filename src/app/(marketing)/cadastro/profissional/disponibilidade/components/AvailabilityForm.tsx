@@ -396,7 +396,7 @@ export function AvailabilityForm() {
                         <button
                           type="button"
                           onClick={() => handleCopyToAllWeekdays(day.id)}
-                          className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1.5 transition-colors sm:ml-0 ml-auto bg-blue-50/50 hover:bg-blue-50 px-2 py-1.5 rounded-md border border-blue-100/50"
+                          className="text-xs text-primary hover:text-primary-foreground hover:bg-primary font-medium flex items-center gap-1.5 transition-all sm:ml-0 ml-auto bg-primary/10 px-2 py-1.5 rounded-md border border-primary/20"
                         >
                           <Copy className="h-3.5 w-3.5" /> Copiar p/ dias úteis
                         </button>
@@ -466,7 +466,7 @@ export function AvailabilityForm() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-[#D9416D] hover:text-[#D9416D] hover:bg-[#D9416D]/10 text-[14px] h-10 px-3 font-bold mt-1 -ml-3 rounded-lg transition-colors"
+                          className="text-primary hover:text-primary hover:bg-primary/10 text-[14px] h-10 px-3 font-bold mt-1 -ml-3 rounded-lg transition-colors"
                           onClick={() => handleWeeklyAddSlot(day.id)}
                         >
                           <Plus className="h-4 w-4 mr-2" /> Adicionar intervalo
@@ -493,7 +493,7 @@ export function AvailabilityForm() {
         <Button
           onClick={handleSave}
           disabled={isLoading}
-          className="bg-[#D9416D] text-white hover:bg-[#D9416D]/90 shadow-lg shadow-[#D9416D]/20 font-bold h-[48px] px-10 rounded-xl"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 font-bold h-[48px] px-10 rounded-xl"
         >
           {isLoading ? 'Salvando...' : 'Finalizar Cadastro'}
         </Button>

@@ -226,7 +226,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
               <NotificationCenter />
               <Button
                 asChild
-                className="ml-1 gap-2 bg-slate-900 text-white hover:bg-slate-800 rounded-full px-4 sm:px-6 transition-all hover:translate-y-[-1px] shadow-lg shadow-slate-200"
+                className="ml-1 gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-4 sm:px-6 transition-all hover:translate-y-[-1px] shadow-lg shadow-primary/20"
               >
                 <Link href={upcomingSessions?.[0]?.id ? `/sala/${upcomingSessions[0].id}` : '#'}>
                   <Video className="h-4 w-4" />
@@ -446,7 +446,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                       <Link href={`/sala/${session.id}`}>
                                         <Button
                                           size="sm"
-                                          className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-5 h-8 text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-105 shadow-sm shadow-slate-200"
+                                          className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-5 h-8 text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-105 shadow-sm shadow-primary/20"
                                         >
                                           <Video className="w-3.5 h-3.5 mr-2" />
                                           Iniciar

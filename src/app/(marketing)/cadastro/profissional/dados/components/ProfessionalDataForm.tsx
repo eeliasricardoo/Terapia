@@ -332,12 +332,8 @@ export function ProfessionalDataForm() {
           <div className="flex justify-end">
             <Button
               type="submit"
-              className="font-bold h-[44px]"
+              className="font-bold h-[44px] px-8"
               disabled={!form.formState.isValid || isSubmitting}
-              style={{
-                backgroundColor: 'hsl(340 72% 61%)',
-                color: 'white',
-              }}
             >
               {isSubmitting ? 'Salvando...' : 'Próximo'}
             </Button>

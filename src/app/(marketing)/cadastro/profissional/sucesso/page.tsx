@@ -33,7 +33,7 @@ export default function SuccessPage() {
   const router = useRouter()
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="professional-theme flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
       <Card className="w-full max-w-2xl">
         <CardContent className="space-y-8 p-8 sm:p-12">
           {/* Success Icon */}
@@ -68,7 +68,7 @@ export default function SuccessPage() {
                         step.variant === 'completed'
                           ? 'bg-green-100 text-green-600'
                           : step.variant === 'in-progress'
-                            ? 'bg-blue-100 text-blue-600'
+                            ? 'bg-primary/10 text-primary'
                             : 'bg-gray-100 text-gray-400'
                       }`}
                     >
