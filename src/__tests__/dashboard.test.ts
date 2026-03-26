@@ -19,9 +19,13 @@ jest.mock('@/lib/prisma', () => ({
     appointment: {
       findFirst: jest.fn(),
       findMany: jest.fn(),
+      aggregate: jest.fn(),
     },
     patientPsychologistLink: {
       findMany: jest.fn(),
+      count: jest.fn(),
+    },
+    notification: {
       count: jest.fn(),
     },
   },
@@ -90,20 +94,20 @@ describe('dashboard actions', () => {
         },
       ])
 
+      // mock future sessions (next 60 days)
+      ;(prisma.appointment.findMany as jest.Mock).mockResolvedValueOnce([])
+
       // mock links
       ;(prisma.patientPsychologistLink.findMany as jest.Mock).mockResolvedValueOnce([
         { id: 'link-1' },
       ]) // active
       ;(prisma.patientPsychologistLink.count as jest.Mock).mockResolvedValueOnce(2) // total
 
-      // mock monthly sessions
-      ;(prisma.appointment.findMany as jest.Mock).mockResolvedValueOnce([
-        { price: 100 },
-        { price: 150 },
-      ])
+      // mock monthly revenue aggregate
+      ;(prisma.appointment.aggregate as jest.Mock).mockResolvedValueOnce({ _sum: { price: 250 } })
 
-      // mock last month sessions (for revenueChange calculation)
-      ;(prisma.appointment.findMany as jest.Mock).mockResolvedValueOnce([{ price: 100 }])
+      // mock last month revenue aggregate (for revenueChange calculation)
+      ;(prisma.appointment.aggregate as jest.Mock).mockResolvedValueOnce({ _sum: { price: 100 } })
 
       // mock recent patients via last apps
       ;(prisma.appointment.findMany as jest.Mock).mockResolvedValueOnce([
@@ -144,6 +148,7 @@ describe('dashboard actions', () => {
         nextSession: null,
         recentSessions: [],
         monthlyProgress: { completedSessions: 0, totalSessions: 0 },
+        upcomingSessions: [],
       })
     })
 
@@ -163,7 +168,7 @@ describe('dashboard actions', () => {
         },
       })
 
-      // First findMany for recentSessions, Second for monthlyProgress
+      // First findMany: recentSessions, Second: monthlyProgress, Third: upcomingSessions
       ;(prisma.appointment.findMany as jest.Mock)
         .mockResolvedValueOnce([
           {
@@ -173,6 +178,7 @@ describe('dashboard actions', () => {
             psychologist: { user: { profiles: { fullName: 'Dr. John' } } },
           },
         ])
+        .mockResolvedValueOnce([])
         .mockResolvedValueOnce([])
 
       const result = await getPatientDashboardData()

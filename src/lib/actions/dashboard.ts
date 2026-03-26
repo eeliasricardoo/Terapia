@@ -186,29 +186,31 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
       where: { psychologistId: user.id },
     })
 
-    // 3. Monthly Revenue (Completed only)
-    const monthlySessions = await prisma.appointment.findMany({
+    // 3. Monthly Revenue (Completed only) — use aggregate to avoid loading all rows
+    const monthlyAgg = await prisma.appointment.aggregate({
+      _sum: { price: true },
       where: {
         psychologistId: psychProfile.id,
         scheduledAt: { gte: monthStart, lte: monthEnd },
         status: 'COMPLETED',
       },
     })
-    const monthlyRevenue = monthlySessions.reduce((acc, s) => acc + Number(s.price), 0)
+    const monthlyRevenue = Number(monthlyAgg._sum.price ?? 0)
 
     // Calculate Last Month Revenue for Change %
     const pastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
     const lastMonthStart = startOfMonth(pastMonthDate)
     const lastMonthEnd = endOfMonth(pastMonthDate)
 
-    const lastMonthlySessions = await prisma.appointment.findMany({
+    const lastMonthAgg = await prisma.appointment.aggregate({
+      _sum: { price: true },
       where: {
         psychologistId: psychProfile.id,
         scheduledAt: { gte: lastMonthStart, lte: lastMonthEnd },
         status: 'COMPLETED',
       },
     })
-    const lastMonthRevenue = lastMonthlySessions.reduce((acc, s) => acc + Number(s.price), 0)
+    const lastMonthRevenue = Number(lastMonthAgg._sum.price ?? 0)
 
     let revenueChange = 0
     if (lastMonthRevenue > 0) {
@@ -236,23 +238,21 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
     // Get unique patient IDs
     const uniquePatientIds = [...new Set(recentAppts.map((a) => a.patientId))]
 
-    // Fetch link statuses for these patients
-    const patientLinks = psychUserProfile
-      ? await prisma.patientPsychologistLink.findMany({
-          where: {
-            psychologistId: psychUserProfile.id,
-            patientId: {
-              in: await prisma.profile
-                .findMany({
-                  where: { user_id: { in: uniquePatientIds } },
-                  select: { id: true },
-                })
-                .then((profiles) => profiles.map((p) => p.id)),
-            },
-          },
-          include: { patient: true },
-        })
-      : []
+    // Fetch link statuses for these patients (two sequential queries avoids nested await)
+    const patientProfileIds =
+      psychUserProfile && uniquePatientIds.length > 0
+        ? await prisma.profile
+            .findMany({ where: { user_id: { in: uniquePatientIds } }, select: { id: true } })
+            .then((profiles) => profiles.map((p) => p.id))
+        : []
+
+    const patientLinks =
+      psychUserProfile && patientProfileIds.length > 0
+        ? await prisma.patientPsychologistLink.findMany({
+            where: { psychologistId: psychUserProfile.id, patientId: { in: patientProfileIds } },
+            include: { patient: true },
+          })
+        : []
 
     // Build a map: userId -> link status
     const statusByUserId = new Map<string, string>()
