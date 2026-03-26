@@ -17,6 +17,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendEmail } from '@/lib/utils/email'
 import { logger } from '@/lib/utils/logger'
+import { env } from '@/lib/env'
 
 type EmailPayload = {
   to: string
@@ -27,9 +28,8 @@ type EmailPayload = {
 export async function POST(req: NextRequest) {
   // Validate the shared secret to block external requests
   const secret = req.headers.get('x-internal-secret')
-  const expected = process.env.INTERNAL_API_SECRET
 
-  if (!expected || secret !== expected) {
+  if (secret !== env.INTERNAL_API_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -42,7 +42,10 @@ export async function POST(req: NextRequest) {
 
   const { to, subject, html } = payload
   if (!to || !subject || !html) {
-    return NextResponse.json({ error: 'Missing required fields: to, subject, html' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'Missing required fields: to, subject, html' },
+      { status: 400 }
+    )
   }
 
   // Send with retry — failure here is logged but doesn't affect the user

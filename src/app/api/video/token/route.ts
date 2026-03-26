@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { createDailyRoom, createDailyToken } from '@/lib/daily'
 import { NextResponse } from 'next/server'
-
+import { logger } from '@/lib/utils/logger'
 import { checkRateLimit } from '@/lib/security'
 
 export async function POST(req: Request) {
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
         data: { meetingUrl: roomUrl },
       })
     } catch (error) {
-      console.error('Error creating Daily room:', error)
+      logger.error('Error creating Daily room:', error)
       return NextResponse.json({ error: 'Falha ao criar sala de reunião' }, { status: 500 })
     }
 
@@ -122,11 +122,11 @@ export async function POST(req: Request) {
         isPsychologist,
       })
     } catch (error) {
-      console.error('Error creating Daily token:', error)
+      logger.error('Error creating Daily token:', error)
       return NextResponse.json({ error: 'Falha ao criar token da sala' }, { status: 500 })
     }
   } catch (error) {
-    console.error('[VIDEO_TOKEN_ERROR]', error)
+    logger.error('[VIDEO_TOKEN_ERROR]', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }
