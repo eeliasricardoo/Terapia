@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getPsychologistPatients } from '@/lib/actions/patients'
+import { getPatientById } from '@/lib/actions/patients'
 import { PatientProfilePage } from '@/components/dashboard/psychologist/patients/PatientProfilePage'
 
 interface Props {
@@ -8,8 +8,7 @@ interface Props {
 
 export default async function PacienteProfilePage({ params }: Props) {
   const { id } = await params
-  const patients = await getPsychologistPatients()
-  const patient = patients.find((p) => p.id === id)
+  const patient = await getPatientById(id)
 
   if (!patient) {
     notFound()
