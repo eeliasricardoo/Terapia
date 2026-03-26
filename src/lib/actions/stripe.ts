@@ -125,7 +125,7 @@ export async function createStripeCheckoutSession(data: {
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       // Using explicit payment_method_types because automatic_payment_methods
       // returned "unknown parameter" for this account/legacy configuration.
-      payment_method_types: ['card'],
+      payment_method_types: ['card', 'pix'],
       line_items: [
         {
           price_data: {
@@ -204,6 +204,7 @@ export async function createStripeConnectAccountLink() {
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },
+          boleto_payments: { requested: true },
         },
         business_type: 'individual',
         metadata: {
