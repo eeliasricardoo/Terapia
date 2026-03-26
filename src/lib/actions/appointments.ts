@@ -3,9 +3,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { logger } from '@/lib/utils/logger'
 import { sendAppointmentNotifications } from './notifications'
 import { checkAppointmentConflict } from './appointments-utils'
+
+class AppointmentConflictError extends Error {
+  constructor(public readonly conflictType: 'psychologist' | 'patient') {
+    super('CONFLICT')
+    this.name = 'AppointmentConflictError'
+  }
+}
 
 /**
  * Create a new appointment covered by health insurance
@@ -40,13 +48,14 @@ export async function createInsuranceAppointment(data: {
   }
 
   const psychologistProfileId = psychData.id
+  const scheduledAtDate = new Date(data.scheduledAt)
 
-  // 3. Prevent double booking
+  // 3. Fast pre-check for early user feedback (non-atomic, before transaction)
   try {
     const { hasConflict, type } = await checkAppointmentConflict({
       psychologistProfileId,
       patientId: user.id,
-      scheduledAt: new Date(data.scheduledAt),
+      scheduledAt: scheduledAtDate,
       durationMinutes: data.durationMinutes,
     })
 
@@ -64,33 +73,77 @@ export async function createInsuranceAppointment(data: {
     return { success: false, error: 'Erro ao verificar disponibilidade.' }
   }
 
-  const { data: newSession, error } = await supabase
-    .from('appointments')
-    .insert({
-      patient_id: user.id,
-      psychologist_id: psychologistProfileId,
-      scheduled_at: data.scheduledAt,
-      duration_minutes: data.durationMinutes,
-      price: 0, // Insurance covered
-      status: 'SCHEDULED',
-      health_insurance_plan_id: data.healthInsuranceId,
-      health_insurance_policy: data.healthInsurancePolicy,
-    })
-    .select()
-    .single()
+  // 4. Atomic conflict re-check + creation in a serializable transaction
+  // This prevents double booking when two requests pass the pre-check concurrently.
+  try {
+    const sessionEnd = new Date(scheduledAtDate.getTime() + data.durationMinutes * 60 * 1000)
+    const windowStart = new Date(scheduledAtDate.getTime() - 6 * 60 * 60 * 1000)
+    const windowEnd = new Date(scheduledAtDate.getTime() + 6 * 60 * 60 * 1000)
 
-  if (error) {
-    logger.error('Error creating insurance session:', error)
-    return { success: false, error: error.message }
+    const newSession = await prisma.$transaction(
+      async (tx) => {
+        const existingConflicts = await tx.appointment.findMany({
+          where: {
+            status: { not: 'CANCELED' },
+            scheduledAt: { gte: windowStart, lte: windowEnd },
+            OR: [{ psychologistId: psychologistProfileId }, { patientId: user.id }],
+          },
+        })
+
+        const conflict = existingConflicts.find((appt) => {
+          const apptStart = new Date(appt.scheduledAt)
+          const apptEnd = new Date(apptStart.getTime() + appt.durationMinutes * 60000)
+          return scheduledAtDate < apptEnd && sessionEnd > apptStart
+        })
+
+        if (conflict) {
+          throw new AppointmentConflictError(
+            conflict.psychologistId === psychologistProfileId ? 'psychologist' : 'patient'
+          )
+        }
+
+        return tx.appointment.create({
+          data: {
+            patientId: user.id,
+            psychologistId: psychologistProfileId,
+            scheduledAt: scheduledAtDate,
+            durationMinutes: data.durationMinutes,
+            price: 0,
+            status: 'SCHEDULED',
+            healthInsurancePlanId: data.healthInsuranceId,
+            healthInsurancePolicy: data.healthInsurancePolicy,
+          },
+        })
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+    )
+
+    // Send notifications asynchronously
+    sendAppointmentNotifications(newSession.id).catch((err) =>
+      logger.error('Error sending insurance appt notifications:', err)
+    )
+
+    revalidateTag('appointments')
+    revalidatePath('/', 'layout')
+
+    return { success: true, data: newSession }
+  } catch (error) {
+    if (error instanceof AppointmentConflictError) {
+      return {
+        success: false,
+        error:
+          error.conflictType === 'psychologist'
+            ? 'Este horário já foi reservado ou entra em conflito com outra sessão do psicólogo.'
+            : 'Sua agenda já possui um compromisso neste horário.',
+      }
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2034') {
+      return {
+        success: false,
+        error: 'Este horário foi reservado simultaneamente. Por favor, escolha outro horário.',
+      }
+    }
+    logger.error('Error creating insurance appointment:', error)
+    return { success: false, error: 'Erro interno ao criar consulta.' }
   }
-
-  // Send notifications asynchronously
-  sendAppointmentNotifications(newSession.id).catch((err) =>
-    logger.error('Error sending insurance appt notifications:', err)
-  )
-
-  revalidateTag('appointments')
-  revalidatePath('/', 'layout')
-
-  return { success: true, data: newSession }
 }
