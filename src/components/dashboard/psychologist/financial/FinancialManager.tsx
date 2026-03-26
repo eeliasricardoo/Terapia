@@ -3,7 +3,11 @@ import { logger } from '@/lib/utils/logger'
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { createStripeConnectAccountLink, getStripeDashboardLink } from '@/lib/actions/stripe'
+import {
+  createStripeConnectAccountLink,
+  getStripeDashboardLink,
+  syncStripeAccountStatus,
+} from '@/lib/actions/stripe'
 import { toast } from 'sonner'
 import { AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -41,6 +45,10 @@ export function FinancialManager() {
   const [stats, setStats] = useState<FinancialStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isConnecting, setIsConnecting] = useState(false)
+  const [onboardingStatus, setOnboardingStatus] = useState<{
+    detailsSubmitted: boolean
+    payoutsEnabled: boolean
+  } | null>(null)
 
   const handleConnectStripe = async () => {
     setIsConnecting(true)
@@ -77,8 +85,17 @@ export function FinancialManager() {
   useEffect(() => {
     async function loadStats() {
       try {
-        const data = await getFinancialStats()
+        const [data, stripeStatus] = await Promise.all([
+          getFinancialStats(),
+          syncStripeAccountStatus(),
+        ])
         setStats(data)
+        if (stripeStatus && 'detailsSubmitted' in stripeStatus) {
+          setOnboardingStatus({
+            detailsSubmitted: stripeStatus.detailsSubmitted || false,
+            payoutsEnabled: stripeStatus.payoutsEnabled || false,
+          })
+        }
       } catch (error) {
         logger.error('Error loading financial stats:', error)
       } finally {
@@ -144,6 +161,31 @@ export function FinancialManager() {
           </Button>
         </div>
       </div>
+
+      {stats.isStripeConnected && onboardingStatus && !onboardingStatus.detailsSubmitted && (
+        <Card className="border-none bg-amber-50 ring-1 ring-amber-100 shadow-sm overflow-hidden rounded-2xl mb-6">
+          <CardContent className="p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center text-amber-600 shadow-sm border border-amber-50">
+                <AlertCircle className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-amber-900">Configuração Incompleta</p>
+                <p className="text-xs text-amber-700">
+                  Você iniciou a conexão, mas não terminou de preencher seus dados no Stripe.
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleConnectStripe}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-bold h-9"
+            >
+              Terminar Cadastro
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {!stats.isStripeConnected && (
         <Card className="border-none bg-blue-50/50 ring-1 ring-blue-100 shadow-sm overflow-hidden rounded-3xl">

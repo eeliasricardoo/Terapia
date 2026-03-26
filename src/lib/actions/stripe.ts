@@ -194,7 +194,6 @@ export async function createStripeConnectAccountLink() {
 
     if (!psych) throw new Error('Perfil de psicólogo não encontrado')
 
-    // @ts-ignore
     let accountId = psych.stripeAccountId
 
     // 1. Create a Stripe Express account if it doesn't exist
@@ -219,7 +218,6 @@ export async function createStripeConnectAccountLink() {
       // Update DB with the new account ID
       await prisma.psychologistProfile.update({
         where: { id: psych.id },
-        // @ts-ignore
         data: { stripeAccountId: accountId },
       })
     }
@@ -227,8 +225,8 @@ export async function createStripeConnectAccountLink() {
     // 2. Create the Account Link for onboarding
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/financeiro?stripe=refresh`,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/financeiro?stripe=success`,
+      refresh_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/financeiro?stripe=refresh`,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/financeiro?stripe=success`,
       type: 'account_onboarding',
     })
 
@@ -236,6 +234,37 @@ export async function createStripeConnectAccountLink() {
   } catch (error: any) {
     logger.error('Error creating Stripe Connect link:', error)
     return { error: error.message || 'Erro ao conectar-se ao Stripe' }
+  }
+}
+
+/**
+ * Sincroniza o status real da conta Connect com o banco de dados.
+ */
+export async function syncStripeAccountStatus() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { error: 'Não autenticado' }
+
+    const psych = await prisma.psychologistProfile.findUnique({
+      where: { userId: user.id },
+    })
+
+    if (!psych?.stripeAccountId) return { connected: false }
+
+    const account = await stripe.accounts.retrieve(psych.stripeAccountId)
+
+    return {
+      connected: !!psych.stripeAccountId,
+      detailsSubmitted: account.details_submitted,
+      payoutsEnabled: account.payouts_enabled,
+      email: account.email,
+    }
+  } catch (err: any) {
+    logger.error('Error syncing Stripe status:', err)
+    return { error: err.message }
   }
 }
 
