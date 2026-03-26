@@ -22,7 +22,15 @@ import {
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Clock, Video, FileText, Loader2 } from 'lucide-react'
+import {
+  Calendar,
+  Clock,
+  Video,
+  FileText,
+  Loader2,
+  AlertTriangle,
+  CheckCircle2,
+} from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import { cancelSession } from '@/lib/actions/sessions'
@@ -47,6 +55,9 @@ export function SessionDetailsDialog({ children, session }: SessionDetailsDialog
   const [open, setOpen] = useState(false)
   const [isCanceling, setIsCanceling] = useState(false)
   const router = useRouter()
+
+  const hoursUntilSession = (new Date(session.scheduledAt).getTime() - Date.now()) / 3600000
+  const willRefund = hoursUntilSession > 5
 
   const handleCancelSession = async () => {
     setIsCanceling(true)
@@ -207,6 +218,22 @@ export function SessionDetailsDialog({ children, session }: SessionDetailsDialog
                     profissional será notificado.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+                {willRefund ? (
+                  <div className="flex items-start gap-2 rounded-lg bg-green-50 p-3 text-sm text-green-700 border border-green-100">
+                    <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
+                    <span>
+                      Como faltam mais de 5 horas para a sessão, você receberá reembolso integral.
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-700 border border-amber-100">
+                    <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                    <span>
+                      Atenção: como faltam menos de 5 horas para a sessão, o cancelamento{' '}
+                      <strong>não gerará reembolso</strong>.
+                    </span>
+                  </div>
+                )}
                 <AlertDialogFooter>
                   <AlertDialogCancel>Voltar</AlertDialogCancel>
                   <AlertDialogAction

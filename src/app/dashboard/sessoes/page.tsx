@@ -193,6 +193,7 @@ export default async function SessionsPage() {
                               price: psychMap.get(session.psychologist_id)?.pricePerSession
                                 ? Number(psychMap.get(session.psychologist_id)!.pricePerSession)
                                 : undefined,
+                              scheduledAt: scheduledDate.toISOString(),
                             }}
                           >
                             <Button variant="outline" className="w-full md:w-auto h-9">

@@ -9,8 +9,26 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, Loader2, Clock, ArrowRight } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Clock,
+  ArrowRight,
+  AlertTriangle,
+  CheckCircle2,
+} from 'lucide-react'
 import { format } from 'date-fns'
 import { fromZonedTime } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
@@ -36,6 +54,7 @@ interface RescheduleDialogProps {
     crp?: string
     specialties?: string[]
     price?: number
+    scheduledAt?: string
   }
 }
 
@@ -115,6 +134,7 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
             isRescheduling={isRescheduling}
             setIsRescheduling={setIsRescheduling}
             initialTime={session.time}
+            scheduledAt={session.scheduledAt}
           />
         ) : (
           <div className="p-12 text-center bg-white">
@@ -140,6 +160,7 @@ function RescheduleForm({
   isRescheduling,
   setIsRescheduling,
   initialTime,
+  scheduledAt,
 }: {
   psychologist: PsychologistWithProfile
   availability: PsychologistAvailability
@@ -149,7 +170,15 @@ function RescheduleForm({
   isRescheduling: boolean
   setIsRescheduling: (v: boolean) => void
   initialTime: string
+  scheduledAt?: string
 }) {
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+
+  const hoursUntilSession = scheduledAt
+    ? (new Date(scheduledAt).getTime() - Date.now()) / 3600000
+    : Infinity
+  const willRefund = hoursUntilSession > 5
+
   const {
     selectedDay,
     setSelectedDay,
@@ -325,32 +354,65 @@ function RescheduleForm({
           variant="ghost"
           className="w-full h-11 text-red-500 hover:text-red-700 hover:bg-red-50 font-bold transition-all rounded-xl"
           disabled={isRescheduling}
-          onClick={async () => {
-            const confirmed = window.confirm('Tem certeza que deseja cancelar esta sessão?')
-            if (!confirmed) return
-
-            setIsRescheduling(true) // Reutiliza state pra bloquear UI
-            try {
-              const res = await cancelSession(sessionId)
-              if (res.success) {
-                const description = res.refunded
-                  ? `Reembolso de R$ ${res.refundAmount?.toFixed(2).replace('.', ',')} será processado em até 5 dias úteis.`
-                  : undefined
-                toast.success('Sessão cancelada!', { description })
-                onSuccess()
-              } else {
-                toast.error('Erro ao cancelar', { description: res.error })
-              }
-            } catch (err) {
-              toast.error('Erro inesperado')
-            } finally {
-              setIsRescheduling(false)
-            }
-          }}
+          onClick={() => setCancelDialogOpen(true)}
         >
           Cancelar Sessão Permanente
         </Button>
       </div>
+
+      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancelar sessão permanentemente?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. O profissional será notificado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {willRefund ? (
+            <div className="flex items-start gap-2 rounded-lg bg-green-50 p-3 text-sm text-green-700 border border-green-100">
+              <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>
+                Como faltam mais de 5 horas para a sessão, você receberá reembolso integral.
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-700 border border-amber-100">
+              <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>
+                Atenção: como faltam menos de 5 horas para a sessão, o cancelamento{' '}
+                <strong>não gerará reembolso</strong>.
+              </span>
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel>Voltar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={async () => {
+                setIsRescheduling(true)
+                try {
+                  const res = await cancelSession(sessionId)
+                  if (res.success) {
+                    const description = res.refunded
+                      ? `Reembolso de R$ ${res.refundAmount?.toFixed(2).replace('.', ',')} será processado em até 5 dias úteis.`
+                      : undefined
+                    toast.success('Sessão cancelada!', { description })
+                    onSuccess()
+                  } else {
+                    toast.error('Erro ao cancelar', { description: res.error })
+                  }
+                } catch {
+                  toast.error('Erro inesperado')
+                } finally {
+                  setIsRescheduling(false)
+                }
+              }}
+            >
+              Sim, cancelar sessão
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
