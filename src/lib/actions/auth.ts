@@ -134,7 +134,11 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
         if (!adminResult.error) {
           authData = adminResult.data
           authError = null
-          logger.info('[AUTH] Successfully registered patient using Admin Client (bypassed SMTP)')
+          logger.warn(
+            '[AUTH][SECURITY] Patient registered with email_confirm=true because SMTP failed. ' +
+              'Email verification was BYPASSED. Ensure SMTP is correctly configured in production.',
+            { email: data.email }
+          )
         } else {
           authError = adminResult.error
         }
@@ -386,7 +390,11 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
         if (!adminResult.error) {
           authData = adminResult.data
           authError = null
-          logger.info('[AUTH] Successfully registered using Admin Client (bypassed SMTP)')
+          logger.warn(
+            '[AUTH][SECURITY] Psychologist registered with email_confirm=true because SMTP failed. ' +
+              'Email verification was BYPASSED. Ensure SMTP is correctly configured in production.',
+            { email: data.email }
+          )
         } else {
           authError = adminResult.error
         }
