@@ -7,6 +7,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 // Enable manual mock
 jest.mock('next/navigation')
 
+jest.mock('@upstash/ratelimit', () => ({ Ratelimit: jest.fn() }))
+jest.mock('@upstash/redis', () => ({ Redis: jest.fn() }))
+
 // Mock auth
 jest.mock('@/lib/supabase/auth', () => ({
   auth: {

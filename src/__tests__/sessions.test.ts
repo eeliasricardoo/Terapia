@@ -38,13 +38,19 @@ jest.mock('next/cache', () => ({
 const mockPrismaAppointmentFindMany = jest.fn()
 const mockPrismaAppointmentFindFirst = jest.fn()
 const mockPrismaAppointmentCount = jest.fn().mockResolvedValue(0)
+const mockPrismaAppointmentFindUnique = jest.fn()
+const mockPrismaAppointmentUpdate = jest.fn()
+const mockPrismaAppointmentCreate = jest.fn()
 const mockPrismaTransaction = jest.fn()
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     appointment: {
       findMany: (...args: any[]) => mockPrismaAppointmentFindMany(...args),
       findFirst: (...args: any[]) => mockPrismaAppointmentFindFirst(...args),
+      findUnique: (...args: any[]) => mockPrismaAppointmentFindUnique(...args),
       count: (...args: any[]) => mockPrismaAppointmentCount(...args),
+      update: (...args: any[]) => mockPrismaAppointmentUpdate(...args),
+      create: (...args: any[]) => mockPrismaAppointmentCreate(...args),
     },
     $transaction: (...args: any[]) => mockPrismaTransaction(...args),
   },
@@ -177,8 +183,14 @@ describe('sessions actions', () => {
     })
 
     it('should return multiple sessions ordered correctly', async () => {
-      const first = makePrismaAppointment({ id: 'appt-a', scheduledAt: new Date('2024-06-01T09:00:00Z') })
-      const second = makePrismaAppointment({ id: 'appt-b', scheduledAt: new Date('2024-06-02T10:00:00Z') })
+      const first = makePrismaAppointment({
+        id: 'appt-a',
+        scheduledAt: new Date('2024-06-01T09:00:00Z'),
+      })
+      const second = makePrismaAppointment({
+        id: 'appt-b',
+        scheduledAt: new Date('2024-06-02T10:00:00Z'),
+      })
       mockPrismaTransaction.mockResolvedValue([[first, second], 2])
 
       const result = await getUserSessions('user-1')
@@ -307,7 +319,7 @@ describe('sessions actions', () => {
 
     it('should return error if session is not found', async () => {
       mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
-      mockSupabaseQuery(null, { message: 'Not found' })
+      mockPrismaAppointmentFindUnique.mockResolvedValue(null)
 
       const result = await cancelSession('session-nonexistent')
 
@@ -315,11 +327,11 @@ describe('sessions actions', () => {
     })
 
     it('should reject cancellation by unauthorized user', async () => {
-      mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
-      const chain = mockSupabaseQuery()
-      chain.single.mockResolvedValue({
-        data: { patient_id: 'other-user', psychologist_id: 'other-psych' },
-        error: null,
+      mockGetUser.mockResolvedValue({ data: { user: { id: 'attacker-id' } } })
+      mockPrismaAppointmentFindUnique.mockResolvedValue({
+        id: 'session-1',
+        patientId: 'real-patient-id',
+        psychologist: { userId: 'real-psych-id' },
       })
 
       const result = await cancelSession('session-1')
@@ -344,7 +356,7 @@ describe('sessions actions', () => {
 
     it('should return error if session is not found', async () => {
       mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
-      mockSupabaseQuery(null, { message: 'Not found' })
+      mockPrismaAppointmentFindUnique.mockResolvedValue(null)
 
       const result = await rescheduleSession({
         sessionId: 'session-nonexistent',
@@ -355,11 +367,11 @@ describe('sessions actions', () => {
     })
 
     it('should reject rescheduling by unauthorized user', async () => {
-      mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
-      const chain = mockSupabaseQuery()
-      chain.single.mockResolvedValue({
-        data: { patient_id: 'other-user', psychologist_id: 'other-psych' },
-        error: null,
+      mockGetUser.mockResolvedValue({ data: { user: { id: 'attacker-id' } } })
+      mockPrismaAppointmentFindUnique.mockResolvedValue({
+        id: 'session-1',
+        patientId: 'real-patient-id',
+        psychologist: { userId: 'real-psych-id' },
       })
 
       const result = await rescheduleSession({
@@ -373,19 +385,17 @@ describe('sessions actions', () => {
 
     it('should block rescheduling into a conflicting slot (Rule 2)', async () => {
       mockGetUser.mockResolvedValue({ data: { user: MOCK_USER } })
-      const chain = mockSupabaseQuery()
-      chain.single.mockResolvedValue({
-        data: {
-          id: 'session-1',
-          patient_id: MOCK_USER.id,
-          psychologist_id: 'psych-1',
-          duration_minutes: 50,
-          scheduled_at: new Date().toISOString(),
-        },
-        error: null,
+      mockPrismaAppointmentFindUnique.mockResolvedValue({
+        id: 'session-1',
+        patientId: MOCK_USER.id,
+        psychologistId: 'psych-1',
+        durationMinutes: 50,
+        scheduledAt: new Date(),
+        psychologist: { userId: 'psych-user-1' },
       })
 
       const now = new Date()
+      // Conflict check calls findMany (Rule 2 prevention)
       mockPrismaAppointmentFindMany.mockResolvedValue([
         {
           id: 'other-existing-session',

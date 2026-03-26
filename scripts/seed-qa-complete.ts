@@ -100,7 +100,7 @@ const PATIENTS = [
 ]
 
 const ADMIN_USER = {
-  email: 'admin@teste-qa.com',
+  email: 'admin@test.com',
   name: 'Admin QA',
 }
 
@@ -165,14 +165,20 @@ async function main() {
 
   // ── 1. PSICÓLOGOS ──────────────────────────────────────────────
   console.log('👩‍⚕️  Criando psicólogos...')
-  const psychData: Array<{ userId: string; profileId: string; name: string; email: string }> = []
+  const psychData: Array<{
+    userId: string
+    profileId: string
+    psychologistProfileId: string
+    name: string
+    email: string
+  }> = []
 
   for (const p of PSYCHOLOGISTS) {
     const isVerified = p.isVerified !== false // default true
 
     const userId = await ensureAuthUser(p.email, p.name)
     await ensureUser(userId, p.email, p.name, UserRole.PSYCHOLOGIST)
-    await ensureProfile(userId, p.name, UserRole.PSYCHOLOGIST)
+    const profile = await ensureProfile(userId, p.name, UserRole.PSYCHOLOGIST)
 
     const weeklySchedule = {
       sessionDuration: String(p.sessionDuration),
@@ -216,7 +222,13 @@ async function main() {
       },
     })
 
-    psychData.push({ userId, profileId: psychProfile.id, name: p.name, email: p.email })
+    psychData.push({
+      userId,
+      profileId: profile.id,
+      psychologistProfileId: psychProfile.id,
+      name: p.name,
+      email: p.email,
+    })
     console.log(`  ✅ Psicólogo: ${p.name} (${isVerified ? 'verificado' : 'PENDENTE'})`)
   }
 
@@ -311,7 +323,7 @@ async function main() {
     create: {
       id: 'qa-appt-completed-carlos-ana',
       patientId: carlos.userId,
-      psychologistId: ana.profileId,
+      psychologistId: ana.psychologistProfileId,
       scheduledAt: yesterday,
       durationMinutes: 50,
       status: AppointmentStatus.COMPLETED,
@@ -331,7 +343,7 @@ async function main() {
     create: {
       id: 'qa-appt-scheduled-maria-ana',
       patientId: maria.userId,
-      psychologistId: ana.profileId,
+      psychologistId: ana.psychologistProfileId,
       scheduledAt: tomorrow,
       durationMinutes: 50,
       status: AppointmentStatus.SCHEDULED,
@@ -350,7 +362,7 @@ async function main() {
     create: {
       id: 'qa-appt-soon-carlos-ana',
       patientId: carlos.userId,
-      psychologistId: ana.profileId,
+      psychologistId: ana.psychologistProfileId,
       scheduledAt: inTwoHours,
       durationMinutes: 50,
       status: AppointmentStatus.SCHEDULED,
@@ -370,7 +382,7 @@ async function main() {
     create: {
       id: 'qa-appt-iminent-carlos-joao',
       patientId: carlos.userId,
-      psychologistId: joao.profileId,
+      psychologistId: joao.psychologistProfileId,
       scheduledAt: inFifteenMin,
       durationMinutes: 50,
       status: AppointmentStatus.SCHEDULED,
@@ -391,7 +403,7 @@ async function main() {
     create: {
       id: 'qa-appt-canceled-carlos-ana',
       patientId: carlos.userId,
-      psychologistId: ana.profileId,
+      psychologistId: ana.psychologistProfileId,
       scheduledAt: threeDaysAgo,
       durationMinutes: 50,
       status: AppointmentStatus.CANCELED,
@@ -473,7 +485,7 @@ async function main() {
 
   for (const c of coupons) {
     const existing = await prisma.coupon.findFirst({
-      where: { psychologistId: ana.profileId, code: c.code },
+      where: { psychologistId: ana.psychologistProfileId, code: c.code },
     })
 
     if (existing) {
@@ -491,7 +503,7 @@ async function main() {
     } else {
       await prisma.coupon.create({
         data: {
-          psychologistId: ana.profileId,
+          psychologistId: ana.psychologistProfileId,
           code: c.code,
           type: c.type,
           value: c.value,
@@ -534,13 +546,13 @@ async function main() {
 
   for (const plan of plans) {
     const existing = await prisma.plan.findFirst({
-      where: { psychologistId: ana.profileId, name: plan.name },
+      where: { psychologistId: ana.psychologistProfileId, name: plan.name },
     })
 
     if (existing) {
       await prisma.plan.update({ where: { id: existing.id }, data: plan })
     } else {
-      await prisma.plan.create({ data: { psychologistId: ana.profileId, ...plan } })
+      await prisma.plan.create({ data: { psychologistId: ana.psychologistProfileId, ...plan } })
     }
     console.log(
       `  ✅ ${plan.name} — ${plan.sessions} sessões, ${plan.discount}% desconto (${plan.active ? 'ativo' : 'INATIVO'})`
@@ -635,7 +647,7 @@ async function main() {
 
   await supabase.from('schedule_overrides').upsert(
     {
-      psychologist_id: ana.profileId,
+      psychologist_id: ana.psychologistProfileId,
       date: saturdayStr,
       type: 'custom',
       slots: [{ start: '10:00', end: '14:00' }],
@@ -652,7 +664,7 @@ async function main() {
 
   await supabase.from('schedule_overrides').upsert(
     {
-      psychologist_id: ana.profileId,
+      psychologist_id: ana.psychologistProfileId,
       date: wednesdayStr,
       type: 'blocked',
       slots: [],

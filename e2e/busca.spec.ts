@@ -16,7 +16,7 @@ test.describe('Busca de Psicólogos', () => {
     await page.waitForLoadState('networkidle')
 
     // Buscar por placeholder específico
-    const searchInput = page.getByPlaceholder(/busque por nome/i)
+    const searchInput = page.getByPlaceholder(/busque por especialidade/i)
     await expect(searchInput).toBeVisible({ timeout: 10000 })
   })
 
@@ -67,7 +67,7 @@ test.describe('Busca de Psicólogos', () => {
     await page.goto('/busca')
     await page.waitForLoadState('networkidle')
 
-    const searchInput = page.getByPlaceholder(/busque por nome/i)
+    const searchInput = page.getByPlaceholder(/busque por especialidade/i)
 
     if (await searchInput.isVisible({ timeout: 3000 })) {
       await searchInput.fill('Teste')

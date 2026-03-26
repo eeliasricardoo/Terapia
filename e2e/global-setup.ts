@@ -5,6 +5,7 @@ import path from 'path'
 
 export const PATIENT_AUTH_FILE = path.join(__dirname, 'fixtures/patient-auth.json')
 export const PSYCHOLOGIST_AUTH_FILE = path.join(__dirname, 'fixtures/psychologist-auth.json')
+export const ADMIN_AUTH_FILE = path.join(__dirname, 'fixtures/admin-auth.json')
 
 async function ensureTestUsers() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -21,6 +22,8 @@ async function ensureTestUsers() {
   const psychologistPassword = process.env.TEST_PSYCHOLOGIST_PASSWORD!
   const patientEmail = process.env.TEST_PATIENT_EMAIL!
   const patientPassword = process.env.TEST_PATIENT_PASSWORD!
+  const adminEmail = process.env.TEST_ADMIN_EMAIL!
+  const adminPassword = process.env.TEST_ADMIN_PASSWORD!
 
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
@@ -45,6 +48,10 @@ async function ensureTestUsers() {
       'Paciente Teste'
     )
     await ensureProfile(prisma, patientId, patientEmail, 'Paciente Teste', 'PATIENT')
+
+    // ─── Admin ────────────────────────────────────────────────────────────
+    const adminId = await ensureAuthUser(supabase, adminEmail, adminPassword, 'Admin Teste')
+    await ensureProfile(prisma, adminId, adminEmail, 'Admin Teste', 'ADMIN')
   } finally {
     await prisma.$disconnect()
   }
@@ -60,7 +67,10 @@ async function ensureAuthUser(
   const existing = listData?.users.find((u) => u.email === email)
 
   if (existing) {
-    await supabase.auth.admin.updateUserById(existing.id, { password, user_metadata: { name } })
+    await supabase.auth.admin.updateUserById(existing.id, {
+      password,
+      user_metadata: { name, full_name: name },
+    })
     console.log(`✅ Auth user exists: ${email}`)
     return existing.id
   }
@@ -69,7 +79,7 @@ async function ensureAuthUser(
     email,
     password,
     email_confirm: true,
-    user_metadata: { name },
+    user_metadata: { name, full_name: name },
   })
   if (error || !created?.user) throw new Error(`Failed to create user ${email}: ${error?.message}`)
   console.log(`✅ Created auth user: ${email}`)
@@ -81,7 +91,7 @@ async function ensureProfile(
   userId: string,
   email: string,
   name: string,
-  role: 'PSYCHOLOGIST' | 'PATIENT'
+  role: 'PSYCHOLOGIST' | 'PATIENT' | 'ADMIN'
 ) {
   // Upsert the User record
   await prisma.user.upsert({
@@ -144,10 +154,19 @@ async function globalSetup(config: FullConfig) {
   const patientPassword = process.env.TEST_PATIENT_PASSWORD
   const psychologistEmail = process.env.TEST_PSYCHOLOGIST_EMAIL
   const psychologistPassword = process.env.TEST_PSYCHOLOGIST_PASSWORD
+  const adminEmail = process.env.TEST_ADMIN_EMAIL
+  const adminPassword = process.env.TEST_ADMIN_PASSWORD
 
-  if (!patientEmail || !patientPassword || !psychologistEmail || !psychologistPassword) {
+  if (
+    !patientEmail ||
+    !patientPassword ||
+    !psychologistEmail ||
+    !psychologistPassword ||
+    !adminEmail ||
+    !adminPassword
+  ) {
     throw new Error(
-      'Missing test credentials. Set TEST_PATIENT_EMAIL, TEST_PATIENT_PASSWORD, TEST_PSYCHOLOGIST_EMAIL, TEST_PSYCHOLOGIST_PASSWORD in .env.local'
+      'Missing test credentials. Set TEST_PATIENT_EMAIL, TEST_PATIENT_PASSWORD, TEST_PSYCHOLOGIST_EMAIL, TEST_PSYCHOLOGIST_PASSWORD, TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD in .env.local'
     )
   }
 
@@ -163,6 +182,13 @@ async function globalSetup(config: FullConfig) {
       psychologistEmail,
       psychologistPassword,
       PSYCHOLOGIST_AUTH_FILE
+    ),
+    loginAndSave(
+      baseURL,
+      '/login/paciente', // Admin logs in as patient or generic login if exists
+      adminEmail,
+      adminPassword,
+      ADMIN_AUTH_FILE
     ),
   ])
 }

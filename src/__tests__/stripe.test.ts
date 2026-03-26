@@ -25,6 +25,9 @@ jest.mock('@/lib/stripe', () => ({
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     psychologistProfile: { findUnique: jest.fn() },
+    appointment: { findMany: jest.fn(), create: jest.fn() },
+    coupon: { findFirst: jest.fn(), update: jest.fn() },
+    patientProfile: { findUnique: jest.fn() },
   },
 }))
 
@@ -58,6 +61,8 @@ describe('stripe actions', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
+    // Default: no conflict
+    ;(prisma.appointment.findMany as jest.Mock).mockResolvedValue([])
   })
 
   describe('createStripeCheckoutSession', () => {
@@ -88,8 +93,7 @@ describe('stripe actions', () => {
         pricePerSession: 0,
         user: { name: 'Dr. Zero', profiles: { fullName: 'Dr. Zero' } },
       })
-      // @ts-ignore
-      prisma.appointment = { create: jest.fn().mockResolvedValue({}) }
+      ;(prisma.appointment.create as jest.Mock).mockResolvedValue({})
 
       const result = await createStripeCheckoutSession(validData)
       expect(result).toEqual({ url: expect.stringContaining('/dashboard?payment=success') })

@@ -63,14 +63,18 @@ test.describe('Core Platform Flows (Simulação QA)', () => {
 
     // Acesso à busca
     await page
-      .getByRole('link', { name: /Quero fazer terapia/i })
+      .getByRole('link', { name: /Começar agora/i })
       .first()
       .click()
     await expect(page).toHaveURL(/\/busca/)
 
-    // Verificação de filtros laterais/topo
-    await expect(page.getByText(/Filtros/i).first()).toBeVisible()
-    await expect(page.getByPlaceholder(/Buscar por nome/i)).toBeVisible()
+    // Verificação de filtros (Desktop ou Mobile)
+    const filterElement = page
+      .getByText(/Filtros/i)
+      .filter({ visible: true })
+      .first()
+    await expect(filterElement).toBeVisible()
+    await expect(page.getByPlaceholder(/Busque por especialidade/i)).toBeVisible()
 
     // Teste de responsividade (Mudando viewport)
     await page.setViewportSize({ width: 375, height: 667 })

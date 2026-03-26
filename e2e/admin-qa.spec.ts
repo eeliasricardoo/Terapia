@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Admin QA Simulator', () => {
   test('Flow: Admin Navigation and Resource Overview', async ({ page }) => {
-    // Redireciona para o admin (Assumindo que a sessão de admin será necessária ou mockada)
-    await page.goto('/admin')
+    // Redireciona para o dashboard (Assumindo que a sessão de admin será necessária ou mockada)
+    await page.goto('/dashboard')
 
     // Se houver login de admin pendente:
     if (page.url().includes('/login')) {
@@ -20,17 +20,19 @@ test.describe('Admin QA Simulator', () => {
     // Verifica Cards de Resumo (Stats)
     const statsSection = page.locator('div.grid').first()
     if (await statsSection.isVisible()) {
-      // Esperamos ver textos como "Total de Psicólogos", "Total de Clientes", "Sessões"
+      // Esperamos ver textos como "Total Usuários", "Psicólogos Verificados", "Sessões Ativas"
       await expect(
-        page.getByText(/Total de Psicólogos/i).or(page.getByText(/Ativos/i))
+        page
+          .getByText(/Total Usuários/i)
+          .or(page.getByText(/Psicólogos Verificados/i))
+          .first()
       ).toBeVisible()
     }
 
     // Navegar para submenus
     const navLinks = [
-      { name: 'Psicólogos', path: '/admin/psicologos' },
-      { name: 'Planos de Saúde', path: '/admin/planos-de-saude' },
-      { name: 'Configurações', path: '/admin/configuracoes' },
+      { name: 'Gerenciar Psicólogos', path: '/dashboard/admin/psicologos' },
+      { name: 'Aprovações Pendentes', path: '/dashboard/admin/aprovacoes' },
     ]
 
     for (const link of navLinks) {
@@ -39,13 +41,13 @@ test.describe('Admin QA Simulator', () => {
         await menuLink.click()
         await expect(page).toHaveURL(new RegExp(link.path))
         // Volta para o dashboard
-        await page.goto('/admin')
+        await page.goto('/dashboard')
       }
     }
   })
 
   test('Flow: Admin Search & Table Interaction', async ({ page }) => {
-    await page.goto('/admin/psicologos')
+    await page.goto('/dashboard/admin/psicologos')
 
     // Verifica se a tabela de dados carregou
     const table = page.locator('table')
