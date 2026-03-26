@@ -10,9 +10,21 @@ export async function saveProfessionalData(formData: FormData) {
   const title = formData.get('title') as string
   const registrationNumber = formData.get('registrationNumber') as string
   const expirationDate = formData.get('expirationDate') as string | null
-  const specializations = JSON.parse((formData.get('specializations') as string) || '[]')
   const yearsOfExperience = formData.get('yearsOfExperience') as string
-  const healthInsurances = JSON.parse((formData.get('healthInsurances') as string) || '[]')
+
+  let specializations: string[] = []
+  let healthInsurances: string[] = []
+  try {
+    const rawSpec = formData.get('specializations') as string
+    const rawInsur = formData.get('healthInsurances') as string
+    const parsedSpec = JSON.parse(rawSpec || '[]')
+    const parsedInsur = JSON.parse(rawInsur || '[]')
+    if (Array.isArray(parsedSpec)) specializations = parsedSpec.filter((x) => typeof x === 'string')
+    if (Array.isArray(parsedInsur))
+      healthInsurances = parsedInsur.filter((x) => typeof x === 'string')
+  } catch {
+    return { success: false, error: 'Formato de dados inválido.' }
+  }
   const diplomaFile = formData.get('diploma') as File | null
   const licenseFile = formData.get('license') as File | null
   const supabase = await createClient()
