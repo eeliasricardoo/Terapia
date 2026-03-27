@@ -145,6 +145,7 @@ export async function validateCoupon(
       where: {
         code: code.toUpperCase(),
         active: true,
+        psychologistId,
       },
     })
 
