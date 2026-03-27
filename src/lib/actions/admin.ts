@@ -281,6 +281,7 @@ export async function getAllPsychologists(page: number = 1, pageSize: number = 5
       suspensionReason: p.suspensionReason,
       createdAt: p.createdAt.toISOString(),
       avatarUrl: p.user.profiles?.avatarUrl,
+      stripeOnboardingComplete: p.stripeOnboardingComplete,
     }))
   } catch (error) {
     logger.error('Error fetching all psychologists:', error)
