@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   useDaily,
@@ -24,10 +24,9 @@ import { RoomSidebar } from '@/components/video/RoomSidebar'
 import { useRoomTimer } from '@/hooks/useRoomTimer'
 import { useRoomConnection, AppointmentInfo } from '@/hooks/useRoomConnection'
 
-export default function VideoRoomPage({ params }: { params: { id: string } }) {
-  const { appointmentInfo, error, isLoading, callObject, roomUrl, token } = useRoomConnection(
-    params.id
-  )
+export default function VideoRoomPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
+  const { appointmentInfo, error, isLoading, callObject, roomUrl, token } = useRoomConnection(id)
 
   if (error) {
     return (
@@ -74,7 +73,7 @@ export default function VideoRoomPage({ params }: { params: { id: string } }) {
   return (
     <DailyProvider callObject={callObject}>
       <RoomManager
-        appointmentId={params.id}
+        appointmentId={id}
         appointmentInfo={appointmentInfo!}
         roomUrl={roomUrl!}
         token={token!}

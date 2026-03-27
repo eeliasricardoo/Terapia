@@ -73,12 +73,12 @@ export const metadata: Metadata = {
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const nonce = headers().get('x-nonce') ?? undefined
+  const nonce = (await headers()).get('x-nonce') ?? undefined
 
   return (
     <html lang="pt-BR" nonce={nonce}>

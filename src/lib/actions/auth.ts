@@ -27,7 +27,7 @@ export type ActionResult = {
 export async function registerPatientSupabase(formData: FormData): Promise<ActionResult> {
   try {
     // Rate limiting by IP
-    const ip = headers().get('x-forwarded-for') || 'unknown_ip'
+    const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
     const rateLimit = await checkRateLimit(`register_${ip}`)
     if (!rateLimit.success) {
       return { success: false, error: 'Muitas tentativas de cadastro. Tente novamente mais tarde.' }
@@ -216,7 +216,7 @@ export async function loginSupabase(formData: FormData): Promise<ActionResult> {
     }
 
     // Rate limiting: 10 tentativas / 15 min por IP + 5 / hora por email
-    const ip = headers().get('x-forwarded-for') || 'unknown_ip'
+    const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
     const rateLimit = await checkLoginRateLimit(ip, rawData.email || 'unknown')
     if (!rateLimit.success) {
       return { success: false, error: 'Muitas tentativas de login. Tente novamente mais tarde.' }
@@ -271,7 +271,7 @@ export async function loginSupabase(formData: FormData): Promise<ActionResult> {
 
 export async function requestPasswordReset(email: string): Promise<ActionResult> {
   try {
-    const ip = headers().get('x-forwarded-for') || 'unknown_ip'
+    const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
     const rateLimit = await checkForgotPasswordRateLimit(ip)
     if (!rateLimit.success) {
       return {
@@ -311,7 +311,7 @@ export async function signOutSupabase() {
 
 export async function registerPsychologistSupabase(formData: FormData): Promise<ActionResult> {
   try {
-    const ip = headers().get('x-forwarded-for') || 'unknown_ip'
+    const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
     const rateLimit = await checkRateLimit(`register_psych_${ip}`)
     if (!rateLimit.success) {
       return {

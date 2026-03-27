@@ -20,7 +20,7 @@ export async function uploadProfileImage(formData: FormData) {
   }
 
   // Rate limiting
-  const ip = headers().get('x-forwarded-for') || 'unknown_ip'
+  const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
   const rateLimit = await checkRateLimit(`upload_${ip}`)
   if (!rateLimit.success) {
     return { error: 'Muitos uploads enviados. Tente novamente mais tarde.' }

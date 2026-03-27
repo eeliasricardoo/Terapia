@@ -10,7 +10,7 @@ interface MessagesListProps {
   messages: MessageData[]
   myUserId: string | null
   isLoading: boolean
-  messagesEndRef: React.RefObject<HTMLDivElement>
+  messagesEndRef: React.RefObject<HTMLDivElement | null>
 }
 
 export function MessagesList({ messages, myUserId, isLoading, messagesEndRef }: MessagesListProps) {

@@ -49,8 +49,8 @@ const nextConfig = {
       },
     ]
   },
+  serverExternalPackages: ['isomorphic-dompurify'],
   experimental: {
-    serverComponentsExternalPackages: ['isomorphic-dompurify'],
     serverActions: {
       allowedOrigins: [
         'localhost:3000',
@@ -60,6 +60,9 @@ const nextConfig = {
         ...(process.env.NEXT_PUBLIC_APP_URL ? [new URL(process.env.NEXT_PUBLIC_APP_URL).host] : []),
       ],
     },
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 }
 

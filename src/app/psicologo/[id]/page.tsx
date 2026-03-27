@@ -8,9 +8,9 @@ import { logger } from '@/lib/utils/logger'
 import { PsychologistAvailability, TimeSlot } from '@/lib/actions/availability'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 async function getPsychologistDataInternal(userId: string) {
@@ -153,7 +153,8 @@ const getCachedPsychologistData = (userId: string) =>
   )()
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const data = await getCachedPsychologistData(params.id)
+  const { id } = await params
+  const data = await getCachedPsychologistData(id)
 
   if (!data || !data.psychologist) {
     return {
@@ -195,7 +196,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function PsychologistProfilePage({ params }: PageProps) {
-  const data = await getCachedPsychologistData(params.id)
+  const { id } = await params
+  const data = await getCachedPsychologistData(id)
 
   if (!data || !data.psychologist) {
     notFound()
