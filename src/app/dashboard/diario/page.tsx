@@ -23,15 +23,15 @@ export default function DiarioPage() {
   } = useDiary()
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in duration-700 px-4">
       <DiaryHeader
         entriesLength={entries.length}
         avgMood={stats.avgMood}
         commonEmotion={stats.commonEmotion}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <div className="lg:col-span-7 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        <div className="space-y-8">
           <DiaryForm
             selectedMood={selectedMood}
             setSelectedMood={setSelectedMood}
@@ -44,12 +44,14 @@ export default function DiarioPage() {
           />
         </div>
 
-        <DiaryHistory
-          entries={entries}
-          isLoading={isLoading}
-          deletingId={DeletingId}
-          handleDelete={handleDelete}
-        />
+        <div className="lg:sticky lg:top-8">
+          <DiaryHistory
+            entries={entries}
+            isLoading={isLoading}
+            deletingId={DeletingId}
+            handleDelete={handleDelete}
+          />
+        </div>
       </div>
     </div>
   )

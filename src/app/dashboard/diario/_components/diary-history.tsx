@@ -19,7 +19,7 @@ export function DiaryHistory({ entries, isLoading, deletingId, handleDelete }: D
     <div className="lg:col-span-5 flex flex-col h-full gap-6">
       <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 px-1">
         <Clock className="h-5 w-5 text-blue-500" />
-        Suas reflexões
+        Sua Jornada
       </h3>
 
       <ScrollArea className="h-[700px] pr-4 -mr-4">
@@ -42,37 +42,39 @@ export function DiaryHistory({ entries, isLoading, deletingId, handleDelete }: D
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="relative ml-4 pl-8 border-l-2 border-slate-100 space-y-10 pb-10">
             {entries.map((entry) => {
               const moodInfo = MOODS.find((m) => m.value === entry.mood)
               return (
-                <Card
-                  key={entry.id}
-                  className="group border-none shadow-md shadow-slate-200/40 bg-white hover:bg-slate-50 transition-all ring-1 ring-slate-100"
-                >
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-4">
-                      <div className="flex flex-col items-center gap-1 mt-1">
-                        <span className="text-3xl filter saturate-[0.8] group-hover:saturate-100 transition-all">
-                          {moodInfo?.emoji || '😐'}
-                        </span>
-                      </div>
+                <div key={entry.id} className="relative">
+                  {/* Timeline Dot (Mood Emoji) */}
+                  <div className="absolute -left-[21px] top-0 h-10 w-10 rounded-full border-4 border-slate-50 bg-white flex items-center justify-center shadow-sm text-xl z-10 transition-transform hover:scale-110">
+                    {moodInfo?.emoji || '😐'}
+                  </div>
 
+                  <Card className="group border-none shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-white hover:bg-slate-50/50 transition-all ring-1 ring-slate-100/80 rounded-2xl overflow-hidden">
+                    <CardContent className="p-6">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-between mb-4">
                           <div className="flex flex-col">
-                            <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-tighter mb-0.5">
-                              {entry.dayOfWeek}
-                            </span>
-                            <span className="text-sm font-bold text-slate-900">
-                              {entry.dateLabel}
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-2 py-0.5 bg-blue-50 rounded-full">
+                                {entry.dayOfWeek}
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                • {entry.dateLabel.split(' ')[0]} {entry.dateLabel.split(' ')[1]}
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-1">
+                              {moodInfo?.label}
                             </span>
                           </div>
 
                           <button
                             onClick={() => handleDelete(entry.id)}
                             disabled={deletingId === entry.id}
-                            className="h-8 w-8 rounded-lg bg-slate-50 text-slate-300 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 transition-all"
+                            className="h-8 w-8 rounded-xl bg-slate-50 text-slate-300 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 transition-all"
+                            title="Remover reflexão"
                           >
                             {deletingId === entry.id ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -83,12 +85,12 @@ export function DiaryHistory({ entries, isLoading, deletingId, handleDelete }: D
                         </div>
 
                         {entry.emotions.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mb-3">
+                          <div className="flex flex-wrap gap-1.5 mb-4">
                             {entry.emotions.map((em) => (
                               <Badge
                                 key={em}
                                 variant="secondary"
-                                className="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0 h-5 border-none"
+                                className="bg-slate-50 hover:bg-slate-100 text-slate-500 text-[10px] font-bold px-2.5 py-0.5 h-6 border border-slate-100/50 rounded-lg shadow-none"
                               >
                                 {em}
                               </Badge>
@@ -96,13 +98,17 @@ export function DiaryHistory({ entries, isLoading, deletingId, handleDelete }: D
                           </div>
                         )}
 
-                        <p className="text-sm text-slate-600 leading-relaxed line-clamp-3">
-                          {entry.content}
-                        </p>
+                        <div className="relative">
+                          {/* Subtle left border for text */}
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-slate-100 rounded-full opacity-50" />
+                          <p className="text-sm text-slate-600 leading-relaxed pl-4 font-medium italic">
+                            &quot;{entry.content}&quot;
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               )
             })}
           </div>
