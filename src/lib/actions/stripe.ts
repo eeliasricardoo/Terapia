@@ -5,37 +5,30 @@ import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
-import { isValidUUID } from '@/lib/security'
 import { revalidateTag } from 'next/cache'
 import { sendAppointmentNotifications } from './notifications'
 import { checkAppointmentConflict } from './appointments-utils'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
 
-export async function createStripeCheckoutSession(data: {
-  psychologistId: string
-  scheduledAt: string
-  durationMinutes: number
-  couponCode?: string
-  returnUrl?: string
-}) {
-  try {
-    if (!isValidUUID(data.psychologistId)) {
-      return { error: 'ID de psicólogo inválido' }
-    }
+const createCheckoutSchema = z.object({
+  psychologistId: z.string().uuid('ID de psicólogo inválido'),
+  scheduledAt: z.string().datetime('Data de agendamento inválida'),
+  durationMinutes: z.number().int().min(15).max(180),
+  couponCode: z.string().optional(),
+  returnUrl: z.string().optional(),
+})
 
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('Não autenticado')
-
+export const createStripeCheckoutSession = createSafeAction(
+  createCheckoutSchema,
+  async (data, user) => {
     // 1. Fetch psychologist info for price and name
     let psych = await prisma.psychologistProfile.findUnique({
       where: { id: data.psychologistId },
       include: { user: { include: { profiles: true } } },
     })
 
-    // If not found by ID, try by userId (some parts of the app might be passing userId)
+    // If not found by ID, try by userId (compatibility)
     if (!psych) {
       psych = await prisma.psychologistProfile.findUnique({
         where: { userId: data.psychologistId },
@@ -45,7 +38,7 @@ export async function createStripeCheckoutSession(data: {
 
     if (!psych) throw new Error('Psicólogo não encontrado')
 
-    // 1c. Conflict check BEFORE starting checkout or creating free appt
+    // 1c. Conflict check BEFORE starting checkout
     const { hasConflict, type } = await checkAppointmentConflict({
       psychologistProfileId: psych.id,
       patientId: user.id,
@@ -54,12 +47,11 @@ export async function createStripeCheckoutSession(data: {
     })
 
     if (hasConflict) {
-      return {
-        error:
-          type === 'psychologist'
-            ? 'Este horário acabou de ser reservado por outro paciente. Por favor, escolha outro horário.'
-            : 'Você já possui uma sessão agendada para este mesmo horário.',
-      }
+      throw new Error(
+        type === 'psychologist'
+          ? 'Este horário acabou de ser reservado por outro paciente.'
+          : 'Você já possui uma sessão agendada para este mesmo horário.'
+      )
     }
 
     const price = Number(psych.pricePerSession) || 0
@@ -71,10 +63,16 @@ export async function createStripeCheckoutSession(data: {
         where: {
           code: data.couponCode.toUpperCase(),
           active: true,
+          psychologistId: psych.id, // Security: coupon must belong to THIS psych
         },
       })
 
       if (coupon) {
+        // Validate max uses
+        if (coupon.maxUses !== null && coupon.used >= coupon.maxUses) {
+          throw new Error('Este cupom já atingiu o limite de usos.')
+        }
+
         if (coupon.type === 'percentage') {
           finalPrice = price * (1 - Number(coupon.value) / 100)
         } else {
@@ -82,17 +80,21 @@ export async function createStripeCheckoutSession(data: {
         }
         finalPrice = Math.max(0, finalPrice)
 
-        // Increment usage
-        await prisma.coupon.update({
-          where: { id: coupon.id },
-          data: { used: { increment: 1 } },
-        })
+        // Increment usage (only for free ones here, for paid ones it should happen on webhook)
+        // But the previous implementation did it here.
+        // Better: do it here for free ones only.
+        if (finalPrice <= 0) {
+          await prisma.coupon.update({
+            where: { id: coupon.id },
+            data: { used: { increment: 1 } },
+          })
+        }
       }
     }
 
     const psychologistName = psych.user.profiles?.fullName || psych.user.name || 'Psicólogo'
 
-    // 2. IF FREE (100% DISCOUNT): Create appointment directly and return success
+    // 2. IF FREE (100% DISCOUNT): Create appointment directly
     if (finalPrice <= 0) {
       const newAppt = await prisma.appointment.create({
         data: {
@@ -106,12 +108,12 @@ export async function createStripeCheckoutSession(data: {
         },
       })
 
-      // Send notifications asynchronously
       sendAppointmentNotifications(newAppt.id).catch((err) =>
         logger.error('Error sending appt notifications:', err)
       )
+
       revalidateTag('appointments')
-      revalidateTag('psychologist-profile-view')
+
       return {
         url: data.returnUrl
           ? `${process.env.NEXT_PUBLIC_APP_URL}${data.returnUrl}${data.returnUrl.includes('?') ? '&' : '?'}payment=success`
@@ -123,8 +125,6 @@ export async function createStripeCheckoutSession(data: {
     const stripeAmount = Math.round(finalPrice * 100)
 
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
-      // Using explicit payment_method_types because automatic_payment_methods
-      // returned "unknown parameter" for this account/legacy configuration.
       payment_method_types: ['card', 'pix'],
       line_items: [
         {
@@ -144,7 +144,7 @@ export async function createStripeCheckoutSession(data: {
         patientId: user.id,
         psychologistId: psych.id,
         scheduledAt: data.scheduledAt,
-        durationMinutes: data.durationMinutes,
+        durationMinutes: data.durationMinutes.toString(),
         price: finalPrice.toString(),
         originalPrice: price.toString(),
         couponCode: data.couponCode || '',
@@ -158,25 +158,27 @@ export async function createStripeCheckoutSession(data: {
     }
 
     if (psych.stripeAccountId) {
-      sessionConfig.payment_intent_data = {
-        transfer_data: {
-          destination: psych.stripeAccountId,
-        },
-        application_fee_amount: Math.round(stripeAmount * 0.11),
+      // Robustness: Only use transfer_data if onboarding is actually complete
+      if (psych.stripeOnboardingComplete) {
+        sessionConfig.payment_intent_data = {
+          transfer_data: {
+            destination: psych.stripeAccountId,
+          },
+          application_fee_amount: Math.round(stripeAmount * 0.11), // 11% fee
+        }
+      } else {
+        logger.warn(
+          `Psychologist ${psych.id} has account ID but onboarding is incomplete. Holding funds on platform.`
+        )
       }
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig)
 
     return { url: session.url }
-  } catch (error: any) {
-    logger.error('Error creating Stripe session:', {
-      message: error.message,
-      stack: error.stack,
-    })
-    return { error: error.message || 'Erro ao processar pagamento' }
-  }
-}
+  },
+  { requiredRole: 'PATIENT' }
+)
 
 export async function createStripeConnectAccountLink() {
   try {
