@@ -198,7 +198,10 @@ export const createStripeCheckoutSession = createSafeAction(
         transfer_data: {
           destination: psych.stripeAccountId,
         },
-        application_fee_amount: Math.round(stripeAmount * 0.11), // 11% fee
+        // Calculate dynamic platform fee from env or default to 15%
+        application_fee_amount: Math.round(
+          stripeAmount * (Number(process.env.PLATFORM_FEE_PERCENT) / 100)
+        ),
       },
       success_url: data.returnUrl
         ? `${process.env.NEXT_PUBLIC_APP_URL}${data.returnUrl}${data.returnUrl.includes('?') ? '&' : '?'}payment=success&session_id={CHECKOUT_SESSION_ID}`

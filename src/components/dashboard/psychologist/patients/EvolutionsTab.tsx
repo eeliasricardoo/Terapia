@@ -70,6 +70,48 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
   const [publicSummary, setPublicSummary] = useState('')
   const [privateNotes, setPrivateNotes] = useState('')
 
+  // 1. Load draft from localStorage on mount
+  useEffect(() => {
+    if (!patientId) return
+    const draftKey = `terapia:draft:evolution:${patientId}`
+    const savedDraft = localStorage.getItem(draftKey)
+    if (savedDraft) {
+      try {
+        const { mood, publicSum, privateNot } = JSON.parse(savedDraft)
+        if (mood) setSelectedMood(mood)
+        if (publicSum) setPublicSummary(publicSum)
+        if (privateNot) setPrivateNotes(privateNot)
+
+        // Notify user about restored draft
+        if (publicSum || privateNot) {
+          toast.info('Rascunho da sessão restaurado automaticamente.', {
+            description: 'Os dados não salvos da última vez foram recuperados.',
+            duration: 5000,
+          })
+        }
+      } catch (e) {
+        console.error('Failed to load draft:', e)
+      }
+    }
+  }, [patientId])
+
+  // 2. Save draft to localStorage whenever fields change
+  useEffect(() => {
+    if (!patientId) return
+    const draftKey = `terapia:draft:evolution:${patientId}`
+
+    // Only save if there's significant content to avoid useless writes
+    if (publicSummary.length > 5 || privateNotes.length > 5 || selectedMood) {
+      const draft = {
+        mood: selectedMood,
+        publicSum: publicSummary,
+        privateNot: privateNotes,
+        updatedAt: new Date().toISOString(),
+      }
+      localStorage.setItem(draftKey, JSON.stringify(draft))
+    }
+  }, [patientId, publicSummary, privateNotes, selectedMood])
+
   useEffect(() => {
     if (!patientId) return
     setIsLoading(true)
@@ -94,6 +136,10 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
       })
       if (result.success) {
         toast.success('Registro salvo com sucesso!')
+
+        // 3. Clear draft upon success
+        localStorage.removeItem(`terapia:draft:evolution:${patientId}`)
+
         // Refresh list
         const res = await getEvolutions(patientId)
         if (res.success) setEvolutions(res.data)

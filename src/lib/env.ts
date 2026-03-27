@@ -25,6 +25,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z
     .string()
     .min(1, 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is required'),
+  PLATFORM_FEE_PERCENT: z.string().default('15'),
 
   // Daily.co Video Calls
   DAILY_API_KEY: z.string().min(1, 'DAILY_API_KEY is required'),
