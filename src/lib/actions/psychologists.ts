@@ -28,7 +28,7 @@ export const getPsychologists = createSafeAction(
   { isPublic: true }
 )
 
-export const getPsychologistByIdAction = createSafeAction(
+export const getPsychologistById = createSafeAction(
   z.string().uuid(),
   async (userId) => {
     // Try by userId or profileId
@@ -67,7 +67,7 @@ const searchFiltersSchema = z.object({
   searchQuery: z.string().optional(),
 })
 
-export const searchPsychologistsAction = createSafeAction(
+export const searchPsychologists = createSafeAction(
   searchFiltersSchema,
   async (filters) => {
     const {
@@ -136,7 +136,7 @@ export const searchPsychologistsAction = createSafeAction(
   { isPublic: true }
 )
 
-export const getPsychologistStatsAction = createSafeAction(
+export const getPsychologistStats = createSafeAction(
   z.string().uuid(),
   async (userId) => {
     const profile = await prisma.psychologistProfile.findUnique({

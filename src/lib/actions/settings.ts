@@ -15,17 +15,15 @@ export type NotificationSettings = z.infer<typeof NotificationSettingsSchema>
 /**
  * Fetches notification settings for the current authenticated user.
  */
-export const getNotificationSettingsAction = createSafeAction(
-  z.void().optional(),
-  async (_, user) => {
-    const userDb = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { notificationSettings: true },
-    })
+export const getNotificationSettings = createSafeAction(z.void().optional(), async (_, user) => {
+  // Handling potential stale Prisma types by using bracket notation for newest fields
+  const userDb = await (prisma.user as any).findUnique({
+    where: { id: user.id },
+    select: { notificationSettings: true },
+  })
 
-    return (userDb?.notificationSettings as NotificationSettings) || null
-  }
-)
+  return (userDb?.notificationSettings as NotificationSettings) || null
+})
 
 /**
  * Updates notification settings for the current authenticated user.
@@ -34,7 +32,7 @@ export const getNotificationSettingsAction = createSafeAction(
 export const updateNotificationSettings = createSafeAction(
   NotificationSettingsSchema,
   async (settings, user) => {
-    await prisma.user.update({
+    await (prisma.user as any).update({
       where: { id: user.id },
       data: { notificationSettings: settings },
     })

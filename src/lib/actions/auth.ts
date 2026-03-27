@@ -23,7 +23,7 @@ import { env } from '@/lib/env'
  * Public Actions (isPublic: true)
  */
 
-export const registerPatientAction = createSafeAction(
+export const registerPatientSupabase = createSafeAction(
   z.intersection(
     registrationSchema,
     z.object({
@@ -131,7 +131,7 @@ export const registerPatientAction = createSafeAction(
   { isPublic: true }
 )
 
-export const loginAction = createSafeAction(
+export const login = createSafeAction(
   loginSchema,
   async (data) => {
     const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
@@ -156,7 +156,7 @@ export const loginAction = createSafeAction(
   { isPublic: true }
 )
 
-export const registerPsychologistAction = createSafeAction(
+export const registerPsychologist = createSafeAction(
   z.object({
     name: z.string().min(3),
     email: z.string().email(),
@@ -249,7 +249,7 @@ export const registerPsychologistAction = createSafeAction(
   { isPublic: true }
 )
 
-export const recoverPasswordAction = createSafeAction(
+export const recoverPassword = createSafeAction(
   z.object({ email: z.string().email() }),
   async (data) => {
     const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
@@ -270,14 +270,14 @@ export const recoverPasswordAction = createSafeAction(
  * Authenticated Actions
  */
 
-export const signOutAction = createSafeAction(z.void().optional(), async () => {
+export const signOut = createSafeAction(z.void().optional(), async () => {
   const supabase = await createClient()
   await supabase.auth.signOut()
   revalidatePath('/')
   return { success: true }
 })
 
-export const updatePasswordAction = createSafeAction(
+export const updatePassword = createSafeAction(
   z.object({
     currentPassword: z.string(),
     newPassword: z.string().min(6),

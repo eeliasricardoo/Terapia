@@ -9,7 +9,7 @@ const contactFormSchema = z.object({
   message: z.string().min(10),
 })
 
-export const sendContactAction = createSafeAction(
+export const sendContactForm = createSafeAction(
   contactFormSchema,
   async (data) => {
     // Audit submission in logger

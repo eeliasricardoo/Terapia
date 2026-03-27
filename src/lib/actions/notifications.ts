@@ -288,7 +288,7 @@ export async function sendRescheduleNotifications(
 /**
  * Busca as notificações do usuário logado
  */
-export const getUserNotificationsAction = createSafeAction(z.void().optional(), async (_, user) => {
+export const getUserNotifications = createSafeAction(z.void().optional(), async (_, user) => {
   return await prisma.notification.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: 'desc' },
@@ -299,7 +299,7 @@ export const getUserNotificationsAction = createSafeAction(z.void().optional(), 
 /**
  * Marca uma notificação específica como lida
  */
-export const markNotificationAsReadAction = createSafeAction(
+export const markNotificationAsRead = createSafeAction(
   z.object({ notificationId: z.string().uuid() }),
   async (data) => {
     await prisma.notification.update({
@@ -313,7 +313,7 @@ export const markNotificationAsReadAction = createSafeAction(
 /**
  * Marca TODAS as notificações do usuário como lidas
  */
-export const markAllAsReadAction = createSafeAction(z.void().optional(), async (_, user) => {
+export const markAllAsRead = createSafeAction(z.void().optional(), async (_, user) => {
   await prisma.notification.updateMany({
     where: { userId: user.id, read: false },
     data: { read: true },

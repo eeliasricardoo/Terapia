@@ -8,10 +8,10 @@ import { z } from 'zod'
  * Link a company benefit by organization code.
  */
 export const linkCompanyBenefit = createSafeAction(
-  z.object({ organizationCode: z.string().min(1) }),
-  async (data, user) => {
+  z.string().min(1),
+  async (organizationCode, user) => {
     const company = await prisma.companyProfile.findUnique({
-      where: { organizationCode: data.organizationCode.toUpperCase() },
+      where: { organizationCode: organizationCode.toUpperCase() },
     })
 
     if (!company) throw new Error('Código de empresa inválido')

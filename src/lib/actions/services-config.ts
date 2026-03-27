@@ -27,7 +27,7 @@ const saveGeneralConfigSchema = z.object({
 
 // ─── Actions ──────────────────────────────────────────────────────
 
-export const getServicesConfigAction = createSafeAction(
+export const getServicesConfig = createSafeAction(
   z.void().optional(),
   async (_, user): Promise<ServicesConfigData> => {
     const profile = await prisma.psychologistProfile.findUnique({
@@ -64,58 +64,55 @@ export const getServicesConfigAction = createSafeAction(
   { requiredRole: 'PSYCHOLOGIST' }
 )
 
-export const getPatientServicesViewAction = createSafeAction(
-  z.void().optional(),
-  async (_, user) => {
-    const appointment = await prisma.appointment.findFirst({
-      where: { patientId: user.id },
-      orderBy: { scheduledAt: 'desc' },
-      select: { psychologistId: true },
-    })
+export const getPatientServicesView = createSafeAction(z.void().optional(), async (_, user) => {
+  const appointment = await prisma.appointment.findFirst({
+    where: { patientId: user.id },
+    orderBy: { scheduledAt: 'desc' },
+    select: { psychologistId: true },
+  })
 
-    if (!appointment) throw new Error('Nenhum psicólogo encontrado')
+  if (!appointment) throw new Error('Nenhum psicólogo encontrado')
 
-    const psych = await prisma.psychologistProfile.findUnique({
-      where: { id: appointment.psychologistId },
-      include: {
-        user: { select: { name: true } },
-        plans: { where: { active: true }, orderBy: { createdAt: 'asc' } },
-      },
-    })
+  const psych = await prisma.psychologistProfile.findUnique({
+    where: { id: appointment.psychologistId },
+    include: {
+      user: { select: { name: true } },
+      plans: { where: { active: true }, orderBy: { createdAt: 'asc' } },
+    },
+  })
 
-    if (!psych) throw new Error('Psicólogo não encontrado')
+  if (!psych) throw new Error('Psicólogo não encontrado')
 
-    const basePrice = psych.pricePerSession ? Number(psych.pricePerSession) : null
-    const discountFraction = (psych.monthlyPlanDiscount ?? 20) / 100
-    const sessions = psych.monthlyPlanSessions ?? 4
-    const monthly =
-      psych.monthlyPlanEnabled && basePrice
-        ? {
-            pricePerSession: basePrice * (1 - discountFraction),
-            total: basePrice * (1 - discountFraction) * sessions,
-            discountPercent: psych.monthlyPlanDiscount ?? 20,
-            sessions,
-          }
-        : null
+  const basePrice = psych.pricePerSession ? Number(psych.pricePerSession) : null
+  const discountFraction = (psych.monthlyPlanDiscount ?? 20) / 100
+  const sessions = psych.monthlyPlanSessions ?? 4
+  const monthly =
+    psych.monthlyPlanEnabled && basePrice
+      ? {
+          pricePerSession: basePrice * (1 - discountFraction),
+          total: basePrice * (1 - discountFraction) * sessions,
+          discountPercent: psych.monthlyPlanDiscount ?? 20,
+          sessions,
+        }
+      : null
 
-    return {
-      psychologistUserId: psych.userId,
-      psychologistName: psych.user.name || 'Psicólogo',
-      sessionPrice: basePrice,
-      sessionDuration: psych.sessionDuration,
-      monthly,
-      plans: psych.plans.map((p) => ({
-        id: p.id,
-        name: p.name,
-        sessions: p.sessions,
-        price: Number(p.price),
-        discount: p.discount,
-      })),
-    }
+  return {
+    psychologistUserId: psych.userId,
+    psychologistName: psych.user.name || 'Psicólogo',
+    sessionPrice: basePrice,
+    sessionDuration: psych.sessionDuration,
+    monthly,
+    plans: psych.plans.map((p) => ({
+      id: p.id,
+      name: p.name,
+      sessions: p.sessions,
+      price: Number(p.price),
+      discount: p.discount,
+    })),
   }
-)
+})
 
-export const saveGeneralConfigAction = createSafeAction(
+export const saveGeneralConfig = createSafeAction(
   saveGeneralConfigSchema,
   async (data, user) => {
     const price = parseFloat(data.sessionPrice)

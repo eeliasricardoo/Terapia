@@ -25,8 +25,10 @@ export function NotificationCenter() {
 
   async function loadNotifications() {
     setLoading(true)
-    const data = await getUserNotifications()
-    setNotifications(data)
+    const result = await getUserNotifications()
+    if (result.success) {
+      setNotifications(result.data)
+    }
     setLoading(false)
   }
 
@@ -40,7 +42,9 @@ export function NotificationCenter() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (!isOpen) {
-        getUserNotifications().then(setNotifications)
+        getUserNotifications().then((res) => {
+          if (res.success) setNotifications(res.data)
+        })
       }
     }, 60000)
     return () => clearInterval(interval)
@@ -48,14 +52,14 @@ export function NotificationCenter() {
 
   const handleMarkAsRead = async (id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
-    await markNotificationAsRead(id)
+    await markNotificationAsRead({ notificationId: id })
   }
 
   const handleMarkAllAsRead = async () => {
     const original = [...notifications]
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
     const res = await markAllAsRead()
-    if (res.error) {
+    if (!res.success) {
       setNotifications(original)
       toast.error('Erro ao marcar como lidas')
     } else {

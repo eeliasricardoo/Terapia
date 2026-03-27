@@ -39,7 +39,21 @@ export function createSafeAction<Schema extends z.ZodTypeAny, T>(
   return async (input: z.infer<Schema>): Promise<ActionResponse<T>> => {
     try {
       // 1. Validate Input
-      const validationResult = schema.safeParse(input)
+      let dataToValidate = input
+      if ((input as any) instanceof FormData) {
+        const entries = Array.from((input as any).entries()) as [string, any][]
+        dataToValidate = Object.fromEntries(
+          entries.map(([key, value]) => {
+            if (value === 'true') return [key, true]
+            if (value === 'false') return [key, false]
+            if (value === 'null') return [key, null]
+            if (value === 'undefined') return [key, undefined]
+            return [key, value]
+          })
+        )
+      }
+
+      const validationResult = schema.safeParse(dataToValidate)
       if (!validationResult.success) {
         return {
           success: false,

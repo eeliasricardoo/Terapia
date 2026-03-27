@@ -71,7 +71,10 @@ export function SecuritySettingsCard() {
 
     setIsLoading(true)
     try {
-      const result = await updatePassword(passwords.current, passwords.new)
+      const result = await updatePassword({
+        currentPassword: passwords.current,
+        newPassword: passwords.new,
+      })
 
       if (result.success) {
         setPasswords({ current: '', new: '', confirm: '' })

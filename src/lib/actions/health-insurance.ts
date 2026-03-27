@@ -5,7 +5,7 @@ import { z } from 'zod'
 /**
  * Fetches alphabetical list of all supported health insurances.
  */
-export const getHealthInsurancesAction = createSafeAction(
+export const getHealthInsurances = createSafeAction(
   z.void().optional(),
   async () => {
     return await prisma.healthInsurance.findMany({

@@ -99,33 +99,30 @@ const updateProfileSchema = z.object({
 /**
  * Update current user's profile
  */
-export const updateUserProfileAction = createSafeAction(
-  updateProfileSchema,
-  async (updates, user) => {
-    const { prisma } = await import('@/lib/prisma')
+export const updateUserProfile = createSafeAction(updateProfileSchema, async (updates, user) => {
+  const { prisma } = await import('@/lib/prisma')
 
-    // Update in transaction to maintain sync between profiles and users
-    await prisma.$transaction([
-      prisma.profile.update({
-        where: { user_id: user.id },
-        data: {
-          fullName: updates.fullName,
-          avatarUrl: updates.avatarUrl,
-          phone: updates.phone,
-        },
-      }),
-      ...(updates.fullName
-        ? [
-            prisma.user.update({
-              where: { id: user.id },
-              data: { name: updates.fullName },
-            }),
-          ]
-        : []),
-    ])
+  // Update in transaction to maintain sync between profiles and users
+  await prisma.$transaction([
+    prisma.profile.update({
+      where: { user_id: user.id },
+      data: {
+        fullName: updates.fullName,
+        avatarUrl: updates.avatarUrl,
+        phone: updates.phone,
+      },
+    }),
+    ...(updates.fullName
+      ? [
+          prisma.user.update({
+            where: { id: user.id },
+            data: { name: updates.fullName },
+          }),
+        ]
+      : []),
+  ])
 
-    revalidatePath('/dashboard/configuracoes')
-    revalidatePath('/dashboard', 'layout')
-    return { success: true }
-  }
-)
+  revalidatePath('/dashboard/configuracoes')
+  revalidatePath('/dashboard', 'layout')
+  return { success: true }
+})

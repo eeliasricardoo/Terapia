@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Link from 'next/link'
 import { loginSchema, type LoginInput } from '@/lib/validations/auth'
 import { toast } from 'sonner'
+import { login } from '@/lib/actions/auth'
 import { auth } from '@/lib/supabase/auth'
 import { Checkbox } from '@/components/ui/checkbox'
 
@@ -41,17 +42,17 @@ export function LoginForm() {
     setIsLoading(true)
 
     try {
-      const { error } = await auth.signIn(values.email, values.password)
+      const result = await login(values)
 
-      if (error) {
-        if (error.message.includes('Email not confirmed')) {
+      if (!result.success) {
+        if (result.error?.includes('Email not confirmed')) {
           toast.error('Seu e-mail ainda não foi confirmado.')
           router.push(
             `/cadastro/confirmar-email?email=${encodeURIComponent(values.email)}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`
           )
           return
         }
-        toast.error('Credenciais inválidas')
+        toast.error(result.error || 'Credenciais inválidas')
         return
       }
 
