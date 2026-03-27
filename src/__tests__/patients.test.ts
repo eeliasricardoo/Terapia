@@ -69,8 +69,8 @@ describe('patients actions', () => {
   describe('getPsychologistPatients', () => {
     it('should return empty list if psychologist profile not found', async () => {
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue(null)
-      const patients = await getPsychologistPatients()
-      expect(patients).toEqual([])
+      const patients = await getPsychologistPatients(undefined)
+      expect((patients as any).data).toEqual([])
     })
 
     it('should combine patients from appointments and explicit links', async () => {
@@ -98,9 +98,10 @@ describe('patients actions', () => {
         },
       ])
 
-      const patients = await getPsychologistPatients()
-      expect(patients.length).toBe(1)
-      expect(patients[0].name).toBe('Patient One')
+      const patients = await getPsychologistPatients(undefined)
+      expect(patients.success).toBe(true)
+      expect((patients as any).data!.length).toBe(1)
+      expect((patients as any).data![0].name).toBe('Patient One')
     })
   })
 
@@ -112,7 +113,8 @@ describe('patients actions', () => {
         familyHistory: 'encrypted-history',
       })
 
-      const anamnesis = await getAnamnesis('prof-1')
+      const res = await getAnamnesis('prof-1')
+      const anamnesis = (res as any).data
 
       expect(anamnesis?.mainComplaint).toBe('complaint')
       expect(decryptData).toHaveBeenCalledWith('encrypted-complaint')
@@ -124,7 +126,8 @@ describe('patients actions', () => {
       const mockEvolution = { id: 'evo-1' }
       ;(prisma.evolution.create as jest.Mock).mockResolvedValue(mockEvolution)
 
-      const result = await saveEvolution('prof-1', {
+      const result = await saveEvolution({
+        patientId: 'prof-1',
         publicSummary: 'public notes',
         privateNotes: 'private notes',
       })
@@ -193,8 +196,8 @@ describe('patients actions', () => {
       })
 
       const result = await getAnamnesis('prof-1')
-      expect(result).not.toBeNull()
-      expect(result?.mainComplaint).toBe('dor')
+      expect((result as any).data).not.toBeNull()
+      expect((result as any).data?.mainComplaint).toBe('dor')
     })
   })
 
@@ -239,8 +242,8 @@ describe('patients actions', () => {
       ])
 
       const result = await getEvolutions('prof-1')
-      expect(result).toHaveLength(1)
-      expect(result[0].id).toBe('evo-1')
+      expect((result as any).data).toHaveLength(1)
+      expect((result as any).data![0].id).toBe('evo-1')
     })
   })
 
@@ -250,14 +253,20 @@ describe('patients actions', () => {
         auth: { getUser: jest.fn().mockResolvedValue({ data: { user: null } }) },
       })
 
-      const result = await updateAnamnesis('prof-1', { mainComplaint: 'x' })
+      const result = await updateAnamnesis({
+        patientProfileId: 'prof-1',
+        data: { mainComplaint: 'x' },
+      })
       expect(result.success).toBe(false)
     })
 
     it('returns error when caller has no psychologist profile', async () => {
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue(null)
 
-      const result = await updateAnamnesis('prof-1', { mainComplaint: 'x' })
+      const result = await updateAnamnesis({
+        patientProfileId: 'prof-1',
+        data: { mainComplaint: 'x' },
+      })
       expect(result.success).toBe(false)
       expect(prisma.anamnesis.update).not.toHaveBeenCalled()
     })
@@ -267,7 +276,7 @@ describe('patients actions', () => {
       ;(prisma.anamnesis.findFirst as jest.Mock).mockResolvedValue(null)
       ;(prisma.anamnesis.create as jest.Mock).mockResolvedValue({ id: 'new-ana' })
 
-      await updateAnamnesis('prof-1', { mainComplaint: 'attempt' })
+      await updateAnamnesis({ patientProfileId: 'prof-1', data: { mainComplaint: 'attempt' } })
 
       // The attacker's request must never reach the update path
       expect(prisma.anamnesis.update).not.toHaveBeenCalled()
@@ -277,7 +286,7 @@ describe('patients actions', () => {
       ;(prisma.anamnesis.findFirst as jest.Mock).mockResolvedValue(null)
       ;(prisma.anamnesis.create as jest.Mock).mockResolvedValue({ id: 'ana-new' })
 
-      await updateAnamnesis('prof-1', { mainComplaint: 'test' })
+      await updateAnamnesis({ patientProfileId: 'prof-1', data: { mainComplaint: 'test' } })
 
       expect(prisma.anamnesis.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({

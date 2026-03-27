@@ -8,11 +8,11 @@ interface Props {
 
 export default async function PacienteProfilePage({ params }: Props) {
   const { id } = await params
-  const patient = await getPatientById(id)
+  const res = await getPatientById(id)
 
-  if (!patient) {
+  if (!res.success || !res.data) {
     notFound()
   }
 
-  return <PatientProfilePage patient={patient} />
+  return <PatientProfilePage patient={res.data} />
 }

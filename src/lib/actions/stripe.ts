@@ -193,22 +193,32 @@ export const createStripeConnectAccountLink = createSafeAction(
 
     // 1. Create a Stripe Express account if it doesn't exist
     if (!accountId) {
-      const account = await stripe.accounts.create({
-        type: 'express',
-        country: 'BR',
-        email: user.email,
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true },
-        },
-        business_type: 'individual',
-        metadata: {
-          userId: user.id,
-          profileId: psych.id,
-        },
-      })
+      try {
+        const account = await stripe.accounts.create({
+          type: 'express',
+          country: 'BR',
+          email: user.email,
+          capabilities: {
+            card_payments: { requested: true },
+            transfers: { requested: true },
+          },
+          business_type: 'individual',
+          metadata: {
+            userId: user.id,
+            profileId: psych.id,
+          },
+        })
 
-      accountId = account.id
+        accountId = account.id
+      } catch (error: any) {
+        logger.error('Connect Account Creation Failed:', error)
+        if (error.message?.includes('Connect')) {
+          throw new Error(
+            'A plataforma ainda não está habilitada para o Stripe Connect. Por favor, entre em contato com o suporte técnico para ativar os pagamentos diretos.'
+          )
+        }
+        throw error
+      }
 
       // Update DB with the new account ID
       await prisma.psychologistProfile.update({
