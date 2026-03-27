@@ -10,6 +10,7 @@ import { sendAppointmentNotifications } from './notifications'
 import { checkAppointmentConflict } from './appointments-utils'
 import { createSafeAction } from '@/lib/safe-action'
 import { env } from '@/lib/env'
+import { checkAppointmentRateLimit } from '@/lib/security'
 import { z } from 'zod'
 
 const createCheckoutSchema = z.object({
@@ -38,6 +39,12 @@ export const createStripeCheckoutSession = createSafeAction(
     }
 
     if (!psych) throw new Error('Psicólogo não encontrado')
+
+    // Rate limit: 5 agendamentos por hora por usuário
+    const rateLimit = await checkAppointmentRateLimit(user.id)
+    if (!rateLimit.success) {
+      throw new Error('Muitas tentativas de agendamento. Tente novamente em alguns minutos.')
+    }
 
     // Parse via string to avoid float imprecision from Decimal→Number conversion
     const price = parseFloat(psych.pricePerSession?.toString() ?? '0') || 0
