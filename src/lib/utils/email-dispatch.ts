@@ -10,6 +10,8 @@
  */
 
 import { logger } from './logger'
+import { pushToEmailQueue } from './email-queue'
+import { redis } from '@/lib/upstash/redis'
 
 type EmailPayload = {
   to: string
@@ -19,25 +21,37 @@ type EmailPayload = {
 
 /**
  * Dispatches an email asynchronously without blocking the caller.
- * Errors are swallowed intentionally — failures are logged in the API route.
+ * Now uses a Redis Queue for guaranteed delivery.
  */
-export function dispatchEmailAsync(payload: EmailPayload): void {
+export async function dispatchEmailAsync(payload: EmailPayload): Promise<void> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL
   const secret = process.env.INTERNAL_API_SECRET
 
+  // Standard delivery via Redis Queue (Highly Recommended)
+  if (redis) {
+    const pushed = await pushToEmailQueue(payload)
+    if (pushed) {
+      logger.info(`[EMAIL-DISPATCH] Queued for ${payload.to}`, { subject: payload.subject })
+
+      // Auto-trigger the worker via fetch (fire-and-forget)
+      // If this fetch fails, the cron job will eventually pick it up.
+      if (appUrl && secret) {
+        fetch(`${appUrl}/api/internal/process-email-queue`, {
+          method: 'POST',
+          headers: { 'x-internal-secret': secret },
+        }).catch(() => {}) // We don't care if it fails here
+      }
+      return
+    }
+  }
+
+  // FALLBACK: Old fetch mechanism if Redis is down or not configured
   if (!appUrl || !secret) {
-    // Fallback: log a warning and do nothing. Avoids crashing in environments
-    // where the variables are not yet configured.
-    logger.warn(
-      '[EMAIL-DISPATCH] NEXT_PUBLIC_APP_URL or INTERNAL_API_SECRET not set. Email not dispatched.',
-      { to: payload.to, subject: payload.subject }
-    )
+    logger.warn('[EMAIL-DISPATCH] No Redis and no API Secret. Email DROPPED!', payload.to)
     return
   }
 
   const url = `${appUrl}/api/internal/send-email`
-
-  // Fire and forget — intentionally not awaited
   fetch(url, {
     method: 'POST',
     headers: {
@@ -46,10 +60,6 @@ export function dispatchEmailAsync(payload: EmailPayload): void {
     },
     body: JSON.stringify(payload),
   }).catch((err) => {
-    logger.error('[EMAIL-DISPATCH] Failed to dispatch email:', {
-      to: payload.to,
-      subject: payload.subject,
-      error: err?.message || err,
-    })
+    logger.error('[EMAIL-DISPATCH] Fallback fetch failed:', err?.message)
   })
 }
