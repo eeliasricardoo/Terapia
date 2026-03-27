@@ -37,9 +37,9 @@ export function SessionSummaryDialog({ session, children }: SessionSummaryDialog
     if (open && !summary) {
       setIsLoading(true)
       getSessionSummary(String(session.id))
-        .then((data) => {
-          if (data) {
-            setSummary(data)
+        .then((res) => {
+          if (res.success && res.data) {
+            setSummary(res.data)
           }
         })
         .finally(() => setIsLoading(false))

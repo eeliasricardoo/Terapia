@@ -52,11 +52,13 @@ export function RoomRecord({ appointmentId }: RoomRecordProps) {
       }
 
       try {
-        const info = await getPatientInfoByAppointment(appointmentId)
-        if (info) {
-          setPatientData(info)
-          const sessionHistory = await getPatientSessionHistory(info.id)
-          setHistory(sessionHistory)
+        const res = await getPatientInfoByAppointment(appointmentId)
+        if (res.success && res.data) {
+          setPatientData(res.data)
+          const historyRes = await getPatientSessionHistory(res.data.id)
+          if (historyRes.success) {
+            setHistory(historyRes.data || [])
+          }
         }
       } catch (error) {
         console.error('Error loading patient record:', error)

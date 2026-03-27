@@ -25,7 +25,7 @@ jest.mock('@/lib/utils/logger', () => ({
 }))
 
 describe('financial actions', () => {
-  const mockUser = { id: 'user-1' }
+  const mockUser = { id: 'user-1', email: 'test@test.com', app_metadata: { role: 'PSYCHOLOGIST' } }
   const mockPsychologist = { id: 'psych-1' }
 
   beforeEach(() => {
@@ -48,8 +48,9 @@ describe('financial actions', () => {
         },
       })
 
-      const stats = await getFinancialStats()
-      expect(stats.totalRevenue).toBe(0)
+      const result: any = await getFinancialStats({})
+      expect(result.success).toBe(false)
+      expect(result.code).toBe('UNAUTHENTICATED')
     })
 
     it('should calculate revenue correctly for current and last month', async () => {
@@ -95,7 +96,9 @@ describe('financial actions', () => {
       // 11. allCompletedAppts (and fallback)
       findManyMock.mockResolvedValue([])
 
-      const stats = await getFinancialStats()
+      const result: any = await getFinancialStats({})
+      expect(result.success).toBe(true)
+      const stats = result.data
 
       // Total revenue should be 100 + 150 = 250
       expect(stats.totalRevenue).toBe(250)
@@ -113,8 +116,9 @@ describe('financial actions', () => {
         .mockResolvedValueOnce([]) // Pending
         .mockResolvedValue([]) // 6 months
 
-      const stats = await getFinancialStats()
-      expect(stats.revenueChange).toBe(0)
+      const result: any = await getFinancialStats({})
+      expect(result.success).toBe(true)
+      expect(result.data?.revenueChange).toBe(0)
     })
   })
 })

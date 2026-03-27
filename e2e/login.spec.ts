@@ -25,7 +25,7 @@ test('login flow for patient', async ({ page }) => {
 
   // Fill form
   await page.getByLabel('Email').fill('paciente.carlos@test.com')
-  await page.getByLabel('Senha').fill('password123')
+  await page.getByLabel('Senha').fill('Password123!')
 
   // Submit - usar .last() para pegar o botão do formulário (não o do header)
   await page.getByRole('button', { name: 'Entrar' }).last().click()

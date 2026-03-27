@@ -393,8 +393,9 @@ function RescheduleForm({
                 try {
                   const res = await cancelSession(sessionId)
                   if (res.success) {
-                    const description = res.refunded
-                      ? `Reembolso de R$ ${res.refundAmount?.toFixed(2).replace('.', ',')} será processado em até 5 dias úteis.`
+                    const { refunded, refundAmount } = res.data
+                    const description = refunded
+                      ? `Reembolso de R$ ${refundAmount?.toFixed(2).replace('.', ',')} será processado em até 5 dias úteis.`
                       : undefined
                     toast.success('Sessão cancelada!', { description })
                     onSuccess()
