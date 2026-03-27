@@ -213,13 +213,13 @@ export function useCheckout() {
         returnUrl: returnUrl,
       })
 
-      if (result.error) {
+      if (!result.success) {
         throw new Error(result.error)
       }
 
-      if (result.url) {
+      if (result.data?.url) {
         // Redirect user to Stripe Checkout
-        window.location.href = result.url
+        window.location.href = result.data.url
       }
     } catch (error: any) {
       console.error('Stripe error:', error)

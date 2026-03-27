@@ -2,11 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  useDaily,
-  useParticipantIds,
-  useLocalParticipant,
-} from '@daily-co/daily-react'
+import { useDaily, useParticipantIds, useLocalParticipant } from '@daily-co/daily-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { PanelRight } from 'lucide-react'
@@ -29,8 +25,6 @@ export function ActiveRoomInterface({
 }) {
   const daily = useDaily()
   const router = useRouter()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const remoteParticipantIds = useParticipantIds({ filter: 'remote' })
   const localParticipant = useLocalParticipant()
 
   const [isMicOn, setIsMicOn] = useState(localParticipant?.audio ?? true)

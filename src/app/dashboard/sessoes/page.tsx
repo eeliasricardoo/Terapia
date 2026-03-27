@@ -27,7 +27,12 @@ export default async function SessionsPage() {
     )
   }
 
-  const { sessions, total, nextCursor } = await getUserSessions(profile.user_id)
+  const sessionsRes = await getUserSessions({ limit: 20 })
+  const {
+    sessions = [],
+    total = 0,
+    nextCursor = null,
+  } = sessionsRes.success ? sessionsRes.data : {}
 
   // Fetch psychologist profiles for dynamic data in RescheduleDialog
   const psychologistIds = [...new Set(sessions.map((s) => s.psychologist_id))]

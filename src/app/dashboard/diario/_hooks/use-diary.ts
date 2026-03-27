@@ -59,7 +59,7 @@ export function useDiary() {
   const handleDelete = (id: string) => {
     setDeletingId(id)
     startTransition(async () => {
-      const result = await deleteDiaryEntry(id)
+      const result = await deleteDiaryEntry({ id })
       if (result.success) {
         setEntries((prev) => prev.filter((e) => e.id !== id))
         toast.success('Entrada removida.')

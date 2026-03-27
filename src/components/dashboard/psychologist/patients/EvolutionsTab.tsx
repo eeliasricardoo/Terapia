@@ -74,7 +74,9 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
     if (!patientId) return
     setIsLoading(true)
     getEvolutions(patientId)
-      .then(setEvolutions)
+      .then((res) => {
+        if (res.success) setEvolutions(res.data)
+      })
       .finally(() => setIsLoading(false))
   }, [patientId])
 
@@ -84,7 +86,8 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
       return
     }
     startTransition(async () => {
-      const result = await saveEvolution(patientId, {
+      const result = await saveEvolution({
+        patientId,
         mood: selectedMood,
         publicSummary,
         privateNotes,
@@ -92,8 +95,8 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
       if (result.success) {
         toast.success('Registro salvo com sucesso!')
         // Refresh list
-        const updated = await getEvolutions(patientId)
-        setEvolutions(updated)
+        const res = await getEvolutions(patientId)
+        if (res.success) setEvolutions(res.data)
         // Reset form
         setSelectedMood(undefined)
         setPublicSummary('')

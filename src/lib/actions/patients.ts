@@ -5,6 +5,7 @@ import { logger } from '@/lib/utils/logger'
 import { encryptData, decryptData, isValidUUID } from '@/lib/security'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
+import { revalidatePath } from 'next/cache'
 
 // Type representing a patient from the DB merged with required UI fields
 export type PatientData = {
@@ -484,6 +485,36 @@ export const getPatientSessionHistory = createSafeAction(
         psychologistName: appt.psychologist.user.name || 'Psicólogo',
       }
     })
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
+
+export const saveEvolution = createSafeAction(
+  z.object({
+    patientId: z.string().uuid(),
+    mood: z.string().optional(),
+    publicSummary: z.string().optional(),
+    privateNotes: z.string().optional(),
+  }),
+  async (input, user) => {
+    const psych = await prisma.psychologistProfile.findUnique({
+      where: { userId: user.id },
+    })
+    if (!psych) throw new Error('Não autorizado')
+
+    const evolution = await prisma.evolution.create({
+      data: {
+        patientId: input.patientId,
+        psychologistId: psych.id,
+        mood: input.mood,
+        publicSummary: encryptData(input.publicSummary || ''),
+        privateNotes: encryptData(input.privateNotes || ''),
+        date: new Date(),
+      },
+    })
+
+    revalidatePath(`/dashboard/pacientes/${input.patientId}`)
+    return { success: true, id: evolution.id }
   },
   { requiredRole: 'PSYCHOLOGIST' }
 )

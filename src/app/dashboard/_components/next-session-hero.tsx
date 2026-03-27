@@ -150,7 +150,7 @@ export function NextSessionHero({ session }: Props) {
         <div className="hidden lg:flex w-full lg:w-[35%] bg-slate-50 items-center justify-center p-12 border-l border-slate-100">
           <div className="text-center">
             <p className="text-lg font-serif italic text-slate-400 leading-relaxed">
-              &quot;{QUOTES[Math.floor(Date.now() / 86400000) % QUOTES.length]}&quot;
+              &quot;{QUOTES[new Date().getDate() % QUOTES.length]}&quot;
             </p>
           </div>
         </div>
