@@ -495,6 +495,8 @@ export type AdminDashboardData = {
   verifiedPsychologists: number
   activeSessions: number
   totalAppointments: number
+  totalRevenue: number
+  platformProfit: number
 }
 
 export async function getAdminDashboardData(): Promise<AdminDashboardData> {
@@ -522,11 +524,25 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
 
     const totalAppointments = await prisma.appointment.count()
 
+    const successfulAgg = await prisma.appointment.aggregate({
+      _sum: { price: true },
+      where: {
+        status: { in: ['COMPLETED', 'SCHEDULED'] },
+        paymentMethod: 'Stripe',
+      },
+    })
+
+    const totalRevenue = Number(successfulAgg._sum.price ?? 0)
+    const feePercent = Number(process.env.PLATFORM_FEE_PERCENT) || 15
+    const platformProfit = totalRevenue * (feePercent / 100)
+
     return {
       totalUsers,
       verifiedPsychologists,
       activeSessions,
       totalAppointments,
+      totalRevenue,
+      platformProfit,
     }
   } catch (error) {
     logger.error('Error fetching admin dashboard data:', error)
@@ -535,6 +551,8 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
       verifiedPsychologists: 0,
       activeSessions: 0,
       totalAppointments: 0,
+      totalRevenue: 0,
+      platformProfit: 0,
     }
   }
 }
