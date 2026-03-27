@@ -38,7 +38,8 @@ export const createStripeCheckoutSession = createSafeAction(
 
     if (!psych) throw new Error('Psicólogo não encontrado')
 
-    const price = Number(psych.pricePerSession) || 0
+    // Parse via string to avoid float imprecision from Decimal→Number conversion
+    const price = parseFloat(psych.pricePerSession?.toString() ?? '0') || 0
     let finalPrice = price
 
     // 1b. Apply Coupon if exists
@@ -168,7 +169,8 @@ export const createStripeCheckoutSession = createSafeAction(
     })
 
     // 4. Create the Checkout Session
-    const stripeAmount = Math.round(finalPrice * 100)
+    // toFixed(0) normalises float precision before parseInt to avoid Math.round(x.xx5 * 100) edge cases
+    const stripeAmount = parseInt((finalPrice * 100).toFixed(0), 10)
 
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card', 'pix'],
