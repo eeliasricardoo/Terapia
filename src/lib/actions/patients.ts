@@ -1,9 +1,10 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { encryptData, decryptData, isValidUUID } from '@/lib/security'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
 
 // Type representing a patient from the DB merged with required UI fields
 export type PatientData = {
@@ -29,18 +30,125 @@ export type PatientData = {
   birthDate?: string
 }
 
-export async function getPatientInfoByAppointment(
-  appointmentId: string
-): Promise<PatientData | null> {
-  try {
-    if (!isValidUUID(appointmentId)) return null
+export const getPsychologistPatients = createSafeAction(
+  z.any().optional(),
+  async (_, user) => {
+    // 1. Find psychologist profile ID
+    const psychologistProfile = await prisma.psychologistProfile.findUnique({
+      where: { userId: user.id },
+    })
 
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return null
+    if (!psychologistProfile) {
+      return []
+    }
 
+    // 2. Fetch data in parallel
+    const [appointments, explicitLinks] = await Promise.all([
+      prisma.appointment.findMany({
+        where: { psychologistId: psychologistProfile.id },
+        include: {
+          patient: {
+            include: { profiles: true },
+          },
+        },
+        orderBy: { scheduledAt: 'desc' },
+        take: 200,
+      }),
+      prisma.patientPsychologistLink.findMany({
+        where: { psychologistId: psychologistProfile.id },
+        include: {
+          patient: {
+            include: { users: true },
+          },
+        },
+      }),
+    ])
+
+    const patientsMap = new Map<string, any>()
+
+    for (const appt of appointments) {
+      const patientId = appt.patientId
+      const profile = appt.patient.profiles
+      if (!profile) continue
+      if (!patientsMap.has(patientId)) {
+        patientsMap.set(patientId, {
+          user: appt.patient,
+          profile: profile,
+          appointments: [],
+          status: 'active',
+        })
+      }
+      patientsMap.get(patientId).appointments.push(appt)
+    }
+
+    for (const link of explicitLinks) {
+      const patientId = link.patient.user_id
+      if (patientsMap.has(patientId)) {
+        patientsMap.get(patientId).status = link.status
+      } else {
+        patientsMap.set(patientId, {
+          user: link.patient.users,
+          profile: link.patient,
+          appointments: [],
+          status: link.status,
+        })
+      }
+    }
+
+    const now = new Date()
+    return Array.from(patientsMap.values()).map((data) => {
+      const { user, profile, appointments, status } = data
+      const sortedAppts = [...appointments].sort(
+        (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
+      )
+      const pastAppts = sortedAppts.filter((a) => new Date(a.scheduledAt) < now)
+      const futureAppts = sortedAppts.filter((a) => new Date(a.scheduledAt) >= now)
+
+      const lastSession =
+        pastAppts.length > 0 ? pastAppts[pastAppts.length - 1].scheduledAt : undefined
+      const nextSession = futureAppts.length > 0 ? futureAppts[0].scheduledAt : undefined
+
+      const formatDate = (date: Date) =>
+        new Intl.DateTimeFormat('pt-BR', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }).format(date)
+
+      return {
+        id: profile.id,
+        userId: user.id,
+        name: profile.fullName || user.name || 'Paciente',
+        email: user.email,
+        phone: profile.phone || '',
+        image: profile.avatarUrl || user.image || undefined,
+        status: status as 'active' | 'inactive' | 'archived',
+        totalSessions: appointments.length,
+        lastSession: lastSession ? formatDate(lastSession) : undefined,
+        nextSession: nextSession ? formatDate(nextSession) : undefined,
+        gender: profile.gender || '',
+        profession: profile.profession || '',
+        document: profile.document || '',
+        birthDate: profile.birth_date
+          ? new Date(profile.birth_date).toLocaleDateString('pt-BR')
+          : '',
+        address: {
+          line: profile.addressLine || '',
+          city: profile.city || '',
+          state: profile.state || '',
+          zip: profile.zipCode || '',
+        },
+      }
+    })
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
+
+export const getPatientInfoByAppointment = createSafeAction(
+  z.string().uuid(),
+  async (appointmentId, user) => {
     const appointment = await prisma.appointment.findUnique({
       where: { id: appointmentId },
       include: {
@@ -54,7 +162,9 @@ export async function getPatientInfoByAppointment(
     if (!appointment) return null
 
     // Verify psychologist
-    if (appointment.psychologist.userId !== user.id) return null
+    if (appointment.psychologist.userId !== user.id) {
+      throw new Error('Sem permissão para acessar este agendamento.')
+    }
 
     const profile = appointment.patient.profiles
     if (!profile) return null
@@ -69,7 +179,7 @@ export async function getPatientInfoByAppointment(
       phone: profile.phone || '',
       image: profile.avatarUrl || patientUser.image || undefined,
       status: 'active',
-      totalSessions: 0, // Could fetch count if needed
+      totalSessions: 0,
       gender: profile.gender || '',
       profession: profile.profession || '',
       document: profile.document || '',
@@ -81,26 +191,17 @@ export async function getPatientInfoByAppointment(
         zip: profile.zipCode || '',
       },
     }
-  } catch (error) {
-    logger.error('Error fetching patient info by appointment:', error)
-    return null
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
-export async function getPatientById(profileId: string): Promise<PatientData | null> {
-  try {
-    if (!isValidUUID(profileId)) return null
-
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return null
-
-    const psychologistProfile = await prisma.psychologistProfile.findUnique({
+export const getPatientById = createSafeAction(
+  z.string().uuid(),
+  async (profileId, user) => {
+    const psych = await prisma.psychologistProfile.findUnique({
       where: { userId: user.id },
     })
-    if (!psychologistProfile) return null
+    if (!psych) return null
 
     const profile = await prisma.profile.findUnique({
       where: { id: profileId },
@@ -112,7 +213,7 @@ export async function getPatientById(profileId: string): Promise<PatientData | n
       prisma.appointment.findMany({
         where: {
           patientId: profile.user_id,
-          psychologistId: psychologistProfile.id,
+          psychologistId: psych.id,
         },
         select: { id: true, scheduledAt: true, status: true },
         orderBy: { scheduledAt: 'asc' },
@@ -121,14 +222,16 @@ export async function getPatientById(profileId: string): Promise<PatientData | n
         where: {
           patientId_psychologistId: {
             patientId: profileId,
-            psychologistId: psychologistProfile.id,
+            psychologistId: psych.id,
           },
         },
       }),
     ])
 
-    // Verify the psychologist has access to this patient
-    if (appointments.length === 0 && !link) return null
+    // Verify access
+    if (appointments.length === 0 && !link) {
+      throw new Error('Você não tem permissão para acessar este paciente.')
+    }
 
     const now = new Date()
     const pastAppts = appointments.filter((a) => a.scheduledAt < now)
@@ -169,161 +272,9 @@ export async function getPatientById(profileId: string): Promise<PatientData | n
         zip: profile.zipCode || '',
       },
     }
-  } catch (error) {
-    logger.error('Error fetching patient by id:', error)
-    return null
-  }
-}
-
-export async function getPsychologistPatients(): Promise<PatientData[]> {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      throw new Error('Não autenticado')
-    }
-
-    // Find psychologist profile ID
-    const psychologistProfile = await prisma.psychologistProfile.findUnique({
-      where: { userId: user.id },
-    })
-
-    if (!psychologistProfile) {
-      return []
-    }
-
-    // Run both queries in parallel — they are independent after resolving psychologistProfile
-    const [appointments, explicitLinks] = await Promise.all([
-      // Most recent 200 appointments to build the patient list
-      prisma.appointment.findMany({
-        where: { psychologistId: psychologistProfile.id },
-        include: {
-          patient: {
-            include: { profiles: true },
-          },
-        },
-        orderBy: { scheduledAt: 'desc' },
-        take: 200,
-      }),
-      // Explicit links (patients added without appointments)
-      prisma.patientPsychologistLink.findMany({
-        where: { psychologistId: psychologistProfile.id },
-        include: {
-          patient: {
-            include: { users: true },
-          },
-        },
-      }),
-    ])
-
-    // Combine unique patients
-    const patientsMap = new Map<string, any>()
-
-    // Process appointments
-    for (const appt of appointments) {
-      const patientId = appt.patientId
-      const profile = appt.patient.profiles
-
-      if (!profile) continue
-
-      if (!patientsMap.has(patientId)) {
-        patientsMap.set(patientId, {
-          user: appt.patient,
-          profile: profile,
-          appointments: [],
-          status: 'active', // default
-        })
-      }
-
-      patientsMap.get(patientId).appointments.push(appt)
-    }
-
-    // Process explicit links (updates status if exists, or adds new patient)
-    for (const link of explicitLinks) {
-      const patientId = link.patient.user_id
-      if (patientsMap.has(patientId)) {
-        patientsMap.get(patientId).status = link.status
-        patientsMap.get(patientId).linkId = link.id
-      } else {
-        patientsMap.set(patientId, {
-          user: link.patient.users,
-          profile: link.patient,
-          appointments: [],
-          status: link.status,
-          linkId: link.id,
-        })
-      }
-    }
-
-    const now = new Date()
-    const patientDataList: PatientData[] = []
-
-    // Format to PatientData
-    for (const [_, data] of Array.from(patientsMap.entries())) {
-      const { user, profile, appointments, status } = data
-
-      // Sort appointments
-      const sortedAppts = [...appointments].sort(
-        (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
-      )
-
-      const pastAppts = sortedAppts.filter((a) => new Date(a.scheduledAt) < now)
-      const futureAppts = sortedAppts.filter((a) => new Date(a.scheduledAt) >= now)
-
-      const lastSession =
-        pastAppts.length > 0
-          ? Object.assign(pastAppts[pastAppts.length - 1]).scheduledAt
-          : undefined
-      const nextSession =
-        futureAppts.length > 0 ? Object.assign(futureAppts[0]).scheduledAt : undefined
-
-      // Formatting dates manually avoiding heavy libs like date-fns if not necessary,
-      // or just passing the ISO string to format on client side
-      const formatDate = (date: Date) => {
-        return new Intl.DateTimeFormat('pt-BR', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        }).format(date)
-      }
-
-      patientDataList.push({
-        id: profile.id, // Profile ID for clinical relations (Anamnesis, etc.)
-        userId: user.id, // User ID for account-level relations (Messages, Appointments)
-        name: profile.fullName || user.name || 'Paciente',
-        email: user.email,
-        phone: profile.phone || '',
-        image: profile.avatarUrl || user.image || undefined,
-        status: status as 'active' | 'inactive' | 'archived',
-        totalSessions: appointments.length,
-        lastSession: lastSession ? formatDate(lastSession) : undefined,
-        nextSession: nextSession ? formatDate(nextSession) : undefined,
-        gender: profile.gender || '',
-        profession: profile.profession || '',
-        document: profile.document || '',
-        birthDate: profile.birth_date
-          ? new Date(profile.birth_date).toLocaleDateString('pt-BR')
-          : '',
-        address: {
-          line: profile.addressLine || '',
-          city: profile.city || '',
-          state: profile.state || '',
-          zip: profile.zipCode || '',
-        },
-      })
-    }
-
-    return patientDataList
-  } catch (error) {
-    logger.error('Error fetching psychologist patients:', error)
-    return []
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
 export type AnamnesisData = {
   id?: string
@@ -333,38 +284,94 @@ export type AnamnesisData = {
   diagnosticHypothesis?: string
 }
 
-export async function getAnamnesis(patientProfileId: string): Promise<AnamnesisData | null> {
-  try {
-    if (!isValidUUID(patientProfileId)) return null
+const anamnesisSchema = z.object({
+  mainComplaint: z.string().optional(),
+  familyHistory: z.string().optional(),
+  medication: z.string().optional(),
+  diagnosticHypothesis: z.string().optional(),
+})
 
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      throw new Error('Não autenticado')
-    }
-
-    // Verify psychologist has this patient
-    const psychologistProfile = await prisma.psychologistProfile.findUnique({
+export const updateAnamnesis = createSafeAction(
+  z.object({
+    patientProfileId: z.string().uuid(),
+    data: anamnesisSchema,
+  }),
+  async (input, user) => {
+    const psych = await prisma.psychologistProfile.findUnique({
       where: { userId: user.id },
     })
+    if (!psych) throw new Error('Psicólogo não encontrado')
 
-    if (!psychologistProfile) {
-      throw new Error('Perfil de psicólogo não encontrado')
+    // 1. Verify link exists (Data Isolation)
+    const link = await prisma.patientPsychologistLink.findFirst({
+      where: {
+        patientId: input.patientProfileId,
+        psychologistId: psych.id,
+      },
+    })
+
+    if (!link) {
+      const profile = await prisma.profile.findUnique({ where: { id: input.patientProfileId } })
+      if (!profile) throw new Error('Paciente não encontrado')
+
+      const appt = await prisma.appointment.findFirst({
+        where: {
+          patientId: profile.user_id,
+          psychologistId: psych.id,
+        },
+      })
+      if (!appt) throw new Error('Você não tem permissão para editar este paciente.')
     }
+
+    // 2. Upsert Anamnesis
+    const existing = await prisma.anamnesis.findFirst({
+      where: {
+        patientId: input.patientProfileId,
+        psychologistId: psych.id,
+      },
+    })
+
+    const payload = {
+      mainComplaint: encryptData(input.data.mainComplaint || ''),
+      familyHistory: encryptData(input.data.familyHistory || ''),
+      medication: encryptData(input.data.medication || ''),
+      diagnosticHypothesis: encryptData(input.data.diagnosticHypothesis || ''),
+    }
+
+    if (existing) {
+      return await prisma.anamnesis.update({
+        where: { id: existing.id },
+        data: payload,
+      })
+    } else {
+      return await prisma.anamnesis.create({
+        data: {
+          ...payload,
+          patientId: input.patientProfileId,
+          psychologistId: psych.id,
+        },
+      })
+    }
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
+
+export const getAnamnesis = createSafeAction(
+  z.string().uuid(),
+  async (patientProfileId, user) => {
+    const psych = await prisma.psychologistProfile.findUnique({
+      where: { userId: user.id },
+    })
+    if (!psych) return null
 
     const anamnesis = await prisma.anamnesis.findFirst({
       where: {
         patientId: patientProfileId,
-        psychologistId: psychologistProfile.id,
+        psychologistId: psych.id,
       },
     })
 
-    if (!anamnesis) {
-      return null
-    }
+    if (!anamnesis) return null
 
     return {
       id: anamnesis.id,
@@ -373,11 +380,9 @@ export async function getAnamnesis(patientProfileId: string): Promise<AnamnesisD
       medication: decryptData(anamnesis.medication || ''),
       diagnosticHypothesis: decryptData(anamnesis.diagnosticHypothesis || ''),
     }
-  } catch (error) {
-    logger.error('Error fetching anamnesis:', error)
-    return null
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
 // ─── Evolutions ─────────────────────────────────────────────────────────────
 
@@ -389,23 +394,16 @@ export type EvolutionData = {
   privateNotes?: string
 }
 
-export async function getEvolutions(patientProfileId: string): Promise<EvolutionData[]> {
-  try {
-    if (!isValidUUID(patientProfileId)) return []
-
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return []
-
-    const psychologistProfile = await prisma.psychologistProfile.findUnique({
+export const getEvolutions = createSafeAction(
+  z.string().uuid(),
+  async (patientProfileId, user) => {
+    const psych = await prisma.psychologistProfile.findUnique({
       where: { userId: user.id },
     })
-    if (!psychologistProfile) return []
+    if (!psych) return []
 
     const evolutions = await prisma.evolution.findMany({
-      where: { patientId: patientProfileId, psychologistId: psychologistProfile.id },
+      where: { patientId: patientProfileId, psychologistId: psych.id },
       orderBy: { date: 'desc' },
       take: 10,
     })
@@ -423,52 +421,9 @@ export async function getEvolutions(patientProfileId: string): Promise<Evolution
       publicSummary: decryptData(e.publicSummary || ''),
       privateNotes: decryptData(e.privateNotes || ''),
     }))
-  } catch (error) {
-    logger.error('Error fetching evolutions:', error)
-    return []
-  }
-}
-
-export async function saveEvolution(
-  patientProfileId: string,
-  data: {
-    mood?: string
-    publicSummary?: string
-    privateNotes?: string
-  }
-) {
-  try {
-    if (!isValidUUID(patientProfileId)) {
-      return { success: false, error: 'ID inválido' }
-    }
-
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return { success: false, error: 'Não autenticado' }
-
-    const psychologistProfile = await prisma.psychologistProfile.findUnique({
-      where: { userId: user.id },
-    })
-    if (!psychologistProfile) return { success: false, error: 'Psicólogo não encontrado' }
-
-    const evolution = await prisma.evolution.create({
-      data: {
-        patientId: patientProfileId,
-        psychologistId: psychologistProfile.id,
-        mood: data.mood,
-        publicSummary: encryptData(data.publicSummary || ''),
-        privateNotes: encryptData(data.privateNotes || ''),
-        date: new Date(),
-      },
-    })
-    return { success: true, data: evolution }
-  } catch (error) {
-    logger.error('Error saving evolution:', error)
-    return { success: false, error: 'Erro ao salvar o registro' }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
 // ─── Session History ─────────────────────────────────────────────────────────
 
@@ -481,24 +436,14 @@ export type SessionHistoryItem = {
   psychologistName: string
 }
 
-export async function getPatientSessionHistory(
-  patientProfileId: string
-): Promise<SessionHistoryItem[]> {
-  try {
-    if (!isValidUUID(patientProfileId)) return []
-
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return []
-
-    const psychologistProfile = await prisma.psychologistProfile.findUnique({
+export const getPatientSessionHistory = createSafeAction(
+  z.string().uuid(),
+  async (patientProfileId, user) => {
+    const psych = await prisma.psychologistProfile.findUnique({
       where: { userId: user.id },
     })
-    if (!psychologistProfile) return []
+    if (!psych) return []
 
-    // Find the user id for this profile
     const profile = await prisma.profile.findUnique({
       where: { id: patientProfileId },
       include: { users: true },
@@ -508,7 +453,7 @@ export async function getPatientSessionHistory(
     const appointments = await prisma.appointment.findMany({
       where: {
         patientId: profile.user_id,
-        psychologistId: psychologistProfile.id,
+        psychologistId: psych.id,
       },
       orderBy: { scheduledAt: 'desc' },
       take: 20,
@@ -539,70 +484,6 @@ export async function getPatientSessionHistory(
         psychologistName: appt.psychologist.user.name || 'Psicólogo',
       }
     })
-  } catch (error) {
-    logger.error('Error fetching session history:', error)
-    return []
-  }
-}
-
-// ─── Anamnesis ───────────────────────────────────────────────────────────────
-
-export async function updateAnamnesis(patientProfileId: string, data: AnamnesisData) {
-  try {
-    if (!isValidUUID(patientProfileId)) {
-      return { success: false, error: 'ID inválido' }
-    }
-
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return { success: false, error: 'Não autenticado' }
-    }
-
-    const psychologistProfile = await prisma.psychologistProfile.findUnique({
-      where: { userId: user.id },
-    })
-
-    if (!psychologistProfile) {
-      return { success: false, error: 'Perfil de psicólogo não encontrado' }
-    }
-
-    const existingAnamnesis = await prisma.anamnesis.findFirst({
-      where: {
-        patientId: patientProfileId,
-        psychologistId: psychologistProfile.id,
-      },
-    })
-
-    if (existingAnamnesis) {
-      const updated = await prisma.anamnesis.update({
-        where: { id: existingAnamnesis.id },
-        data: {
-          mainComplaint: encryptData(data.mainComplaint || ''),
-          familyHistory: encryptData(data.familyHistory || ''),
-          medication: encryptData(data.medication || ''),
-          diagnosticHypothesis: encryptData(data.diagnosticHypothesis || ''),
-        },
-      })
-      return { success: true, data: updated }
-    } else {
-      const created = await prisma.anamnesis.create({
-        data: {
-          patientId: patientProfileId,
-          psychologistId: psychologistProfile.id,
-          mainComplaint: encryptData(data.mainComplaint || ''),
-          familyHistory: encryptData(data.familyHistory || ''),
-          medication: encryptData(data.medication || ''),
-          diagnosticHypothesis: encryptData(data.diagnosticHypothesis || ''),
-        },
-      })
-      return { success: true, data: created }
-    }
-  } catch (error) {
-    logger.error('Error updating anamnesis:', error)
-    return { success: false, error: 'Erro ao salvar a anamnese' }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
