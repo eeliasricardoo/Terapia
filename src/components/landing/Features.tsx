@@ -92,7 +92,7 @@ export function Features() {
               variants={fadeIn}
               className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 font-outfit"
             >
-              Porque escolher a Terapia?
+              Porque escolher a Mind Cares?
             </motion.h2>
             <motion.p
               variants={fadeIn}

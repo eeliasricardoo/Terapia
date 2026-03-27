@@ -90,9 +90,9 @@ export function Mission() {
                 </motion.p>
 
                 <motion.p variants={fadeIn} className="text-slate-500 text-lg leading-relaxed">
-                  A <span className="font-semibold text-slate-700">Terapia</span> nasceu para tornar
-                  esse caminho mais leve. Conectamos você a profissionais acolhedores e preparados,
-                  em um espaço seguro e sem julgamentos — tudo online, no seu ritmo.
+                  A <span className="font-semibold text-slate-700">Mind Cares</span> nasceu para
+                  tornar esse caminho mais leve. Conectamos você a profissionais acolhedores e
+                  preparados, em um espaço seguro e sem julgamentos — tudo online, no seu ritmo.
                 </motion.p>
 
                 <motion.p variants={fadeIn} className="text-slate-500 text-lg leading-relaxed">

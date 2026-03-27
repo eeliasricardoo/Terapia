@@ -58,20 +58,36 @@ export async function POST(req: Request) {
       }
 
       // Fulfill the purchase by updating the pending appointment
-      const updatedAppt = await prisma.appointment.update({
-        where: { id: pendingAppointment.id },
-        data: {
-          patientId: metadata.patientId,
-          psychologistId: metadata.psychologistId,
-          scheduledAt: new Date(metadata.scheduledAt),
-          durationMinutes: parseInt(metadata.durationMinutes),
-          price: Number(metadata.price),
-          status: 'SCHEDULED',
-          paymentMethod: 'Stripe',
-          stripeSessionId: session.id,
-          stripePaymentIntentId:
-            typeof session.payment_intent === 'string' ? session.payment_intent : null,
-        },
+      const updatedAppt = await prisma.$transaction(async (tx) => {
+        const appt = await tx.appointment.update({
+          where: { id: pendingAppointment.id },
+          data: {
+            patientId: metadata.patientId,
+            psychologistId: metadata.psychologistId,
+            scheduledAt: new Date(metadata.scheduledAt),
+            durationMinutes: parseInt(metadata.durationMinutes),
+            price: Number(metadata.price),
+            status: 'SCHEDULED',
+            paymentMethod: 'Stripe',
+            stripeSessionId: session.id,
+            stripePaymentIntentId:
+              typeof session.payment_intent === 'string' ? session.payment_intent : null,
+          },
+        })
+
+        // 3. Sync Coupon Usage if present
+        if (metadata.couponId) {
+          await tx.coupon
+            .update({
+              where: { id: metadata.couponId },
+              data: { used: { increment: 1 } },
+            })
+            .catch((err) =>
+              logger.error(`Error updating coupon usage during fulfillment: ${err.message}`)
+            )
+        }
+
+        return appt
       })
 
       // Send notifications asynchronously

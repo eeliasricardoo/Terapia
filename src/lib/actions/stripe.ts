@@ -51,8 +51,9 @@ export const createStripeCheckoutSession = createSafeAction(
     let finalPrice = price
 
     // 1b. Apply Coupon if exists
+    let coupon = null
     if (data.couponCode) {
-      const coupon = await prisma.coupon.findFirst({
+      coupon = await prisma.coupon.findFirst({
         where: {
           code: data.couponCode.toUpperCase(),
           active: true,
@@ -187,7 +188,7 @@ export const createStripeCheckoutSession = createSafeAction(
           price_data: {
             currency: 'brl',
             product_data: {
-              name: `Sessão de Terapia com ${psychologistName}`,
+              name: `Sessão de Terapia (Mind Cares) com ${psychologistName}`,
               description: `Agendada para ${new Date(data.scheduledAt).toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' })}`,
             },
             unit_amount: stripeAmount,
@@ -203,6 +204,7 @@ export const createStripeCheckoutSession = createSafeAction(
         scheduledAt: data.scheduledAt,
         durationMinutes: data.durationMinutes.toString(),
         price: finalPrice.toString(),
+        couponId: coupon?.id || '',
       },
       payment_intent_data: {
         transfer_data: {

@@ -31,7 +31,7 @@ async function sendEmailInternal({
   // Default to 'onboarding@resend.dev' if no official from e-mail is configured.
   // NOTE: 'onboarding@resend.dev' works only for sends to the resend account owner.
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
-  const fromName = process.env.RESEND_FROM_NAME || 'Terapia Plataforma'
+  const fromName = process.env.RESEND_FROM_NAME || 'Mind Cares'
 
   const { data, error } = await resend.emails.send({
     from: `${fromName} <${fromEmail}>`,

@@ -110,10 +110,10 @@ export function MobileNav() {
         href="/dashboard"
         className="flex items-center gap-2 font-semibold text-lg hover:opacity-80 transition-opacity"
       >
-        <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground text-sm font-bold">
-          T
+        <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground text-xs font-black">
+          MC
         </div>
-        <span className="text-slate-900">Terapia</span>
+        <span className="text-slate-900">Mind Cares</span>
       </Link>
       <Sheet>
         <SheetTrigger asChild>

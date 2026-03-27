@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live;
     font-src 'self' https://fonts.gstatic.com data:;
     img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com https://i.pravatar.cc https://images.unsplash.com;
-    connect-src 'self' http://localhost:* https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.daily.co wss://*.daily.co https://*.upstash.io https://vercel.live wss://ws-*.pusher.com;
+    connect-src 'self' http://localhost:* https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.daily.co wss://*.daily.co https://*.upstash.io https://vercel.live wss://*.pusher.com;
     frame-src 'self' https://js.stripe.com https://*.daily.co https://vercel.live;
     media-src 'self' blob: https://*.daily.co;
     worker-src 'self' blob:;

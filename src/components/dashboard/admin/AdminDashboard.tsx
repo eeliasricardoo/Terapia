@@ -24,7 +24,7 @@ export function AdminDashboard({ userProfile, dashboardData }: Props) {
             Painel Administrativo
           </h1>
           <p className="text-slate-500 mt-2">
-            Bem-vindo(a), {userName}. Gestão global da plataforma Terapia.
+            Bem-vindo(a), {userName}. Gestão global da plataforma Mind Cares.
           </p>
         </div>
         <div className="h-10 w-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground shadow-md transition-colors">

@@ -81,7 +81,7 @@ export default async function RootLayout({
   const nonce = (await headers()).get('x-nonce') ?? undefined
 
   return (
-    <html lang="pt-BR" nonce={nonce}>
+    <html lang="pt-BR" nonce={nonce} suppressHydrationWarning>
       <body className={`${inter.variable} ${outfit.variable} antialiased font-sans`}>
         <AuthProvider>
           <Toaster position="top-center" richColors />

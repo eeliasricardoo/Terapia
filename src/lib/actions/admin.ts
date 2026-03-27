@@ -8,6 +8,7 @@ import { sendEmail } from '@/lib/utils/email'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getApprovalEmailTemplate, getRejectionEmailTemplate } from '@/lib/utils/email-templates'
 import { createAuditLog } from '@/lib/utils/audit'
+import { env } from '@/lib/env'
 
 export async function getPendingPsychologists() {
   try {
@@ -174,7 +175,7 @@ export async function verifyPsychologist(psychologistId: string) {
     // Notify Psychologist
     await sendEmail({
       to: psychologist.user.email,
-      subject: 'Bem-vindo à Terapia! Seu perfil foi aprovado',
+      subject: 'Bem-vindo à Mind Cares! Seu perfil foi aprovado',
       html: getApprovalEmailTemplate(
         psychologist.user.profiles?.fullName || 'Psicólogo',
         psychologist.crp || ''
@@ -238,13 +239,17 @@ export async function getAdminStats() {
       }),
     ])
 
+    const revenue = Number(totalRevenue._sum.price || 0)
+    const profit = revenue * (env.PLATFORM_FEE_PERCENT / 100)
+
     return {
       totalPatients,
       totalPsychologists,
       pendingPsychologists,
       activeAppointments,
       activeUsersToday,
-      totalRevenue: Number(totalRevenue._sum.price || 0),
+      totalRevenue: revenue,
+      platformProfit: profit,
     }
   } catch (error) {
     logger.error('Error fetching admin stats:', error)
@@ -357,7 +362,7 @@ export async function rejectPsychologist(psychologistId: string, reason: string)
     // Send Rejection Email
     await sendEmail({
       to: psychologist.user.email,
-      subject: 'Atualização do seu cadastro na Terapia',
+      subject: 'Atualização do seu cadastro na Mind Cares',
       html: getRejectionEmailTemplate(psychologist.user.profiles?.fullName || 'Psicólogo', reason),
     })
 
@@ -418,16 +423,16 @@ export async function suspendPsychologistAccess(
 
       await sendEmail({
         to: psychologist.user.email,
-        subject: 'Aviso Importante: Acesso Suspenso na Terapia',
+        subject: 'Aviso Importante: Acesso Suspenso na Mind Cares',
         html: `
           <h2>Olá, ${psychologist.user.profiles?.fullName || 'Psicólogo'}.</h2>
-          <p>A equipe de moderação da Terapia suspendeu seu acesso à plataforma.</p>
+          <p>A equipe de moderação da Mind Cares suspendeu seu acesso à plataforma.</p>
           ${customMessageHtml}
           <p>Seu perfil público foi ocultado e você retornou para a fase de análise de cadastro.</p>
           <p>Entre em contato com o suporte para mais informações.</p>
           <br/>
           <p>Atenciosamente,</p>
-          <p>Equipe Terapia</p>
+          <p>Equipe Mind Cares</p>
         `,
       })
     }
