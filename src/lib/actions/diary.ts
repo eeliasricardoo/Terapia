@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { encryptData, decryptData, isValidUUID } from '@/lib/security'
 import { startOfDay, endOfDay } from 'date-fns'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
 
 export type DiaryEntryData = {
   id: string
@@ -15,6 +17,16 @@ export type DiaryEntryData = {
   dateLabel: string
   dayOfWeek: string
 }
+
+const saveDiarySchema = z.object({
+  mood: z.number().int().min(1).max(5),
+  emotions: z.array(z.string()),
+  content: z.string().min(1, 'Conteúdo é obrigatório'),
+})
+
+const deleteDiarySchema = z.object({
+  id: z.string().uuid(),
+})
 
 export async function getDiaryEntries(): Promise<DiaryEntryData[]> {
   try {
@@ -52,25 +64,18 @@ export async function getDiaryEntries(): Promise<DiaryEntryData[]> {
   }
 }
 
-export async function saveDiaryEntry(data: { mood: number; emotions: string[]; content: string }) {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return { success: false, error: 'Não autenticado' }
-
-    // Garante que o usuário existe no Prisma antes de criar a entrada (Ex: pacientes antigos sem registro na tabela users)
+export const saveDiaryEntry = createSafeAction(
+  saveDiarySchema,
+  async (data, user) => {
+    // Garante que o usuário existe no Prisma
     await prisma.user.upsert({
       where: { id: user.id },
-      update: { email: user.email || '' },
+      update: { email: user.email },
       create: {
         id: user.id,
-        email: user.email || '',
-        name: (user.user_metadata?.full_name as string) || 'Paciente',
-        role:
-          (user.user_metadata?.role as 'PATIENT' | 'PSYCHOLOGIST' | 'COMPANY' | 'ADMIN') ||
-          'PATIENT',
+        email: user.email,
+        name: 'Paciente', // Default, would be updated by profile later
+        role: 'PATIENT',
       },
     })
 
@@ -83,35 +88,21 @@ export async function saveDiaryEntry(data: { mood: number; emotions: string[]; c
       },
     })
 
-    return { success: true, id: entry.id }
-  } catch (error) {
-    logger.error('Error saving diary entry:', error)
-    return { success: false, error: 'Erro ao salvar entrada' }
-  }
-}
+    return { id: entry.id }
+  },
+  { requiredRole: 'PATIENT' }
+)
 
-export async function deleteDiaryEntry(id: string) {
-  try {
-    if (!isValidUUID(id)) {
-      return { success: false, error: 'ID inválido' }
-    }
-
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return { success: false, error: 'Não autenticado' }
-
+export const deleteDiaryEntry = createSafeAction(
+  deleteDiarySchema,
+  async (data, user) => {
     await prisma.diaryEntry.delete({
-      where: { id, userId: user.id },
+      where: { id: data.id, userId: user.id },
     })
-
     return { success: true }
-  } catch (error) {
-    logger.error('Error deleting diary entry:', error)
-    return { success: false, error: 'Erro ao deletar entrada' }
-  }
-}
+  },
+  { requiredRole: 'PATIENT' }
+)
 
 export async function getTodayMood() {
   try {

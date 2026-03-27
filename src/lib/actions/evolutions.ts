@@ -6,6 +6,9 @@ import { logger } from '@/lib/utils/logger'
 import { decryptData, encryptData, assertValidUUID } from '@/lib/security'
 import { revalidatePath } from 'next/cache'
 
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
+
 export type PublicEvolution = {
   id: string
   date: string
@@ -14,21 +17,16 @@ export type PublicEvolution = {
   mood: string | null
 }
 
-export async function createSessionEvolution(data: {
-  appointmentId: string
-  mood: string | null
-  publicSummary: string
-  privateNotes: string
-}) {
-  try {
-    assertValidUUID(data.appointmentId, 'ID do agendamento')
+const createEvolutionSchema = z.object({
+  appointmentId: z.string().uuid('ID do agendamento inválido'),
+  mood: z.string().nullable(),
+  publicSummary: z.string().min(1, 'Resumo público é obrigatório'),
+  privateNotes: z.string().min(1, 'Notas privadas são obrigatórias'),
+})
 
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) throw new Error('Não autenticado')
-
+export const createSessionEvolution = createSafeAction(
+  createEvolutionSchema,
+  async (data, user) => {
     // 1. Fetch appointment to get patient and psych info
     const appointment = await prisma.appointment.findUnique({
       where: { id: data.appointmentId },
@@ -47,7 +45,7 @@ export async function createSessionEvolution(data: {
       throw new Error('Você não tem permissão para registrar evoluções para esta sessão.')
     }
 
-    // 3. Get Patient Profile ID (Evolution relates to Profile, not User directly)
+    // 3. Get Patient Profile ID
     const patientProfileId = appointment.patient.profiles?.id
     if (!patientProfileId) {
       throw new Error('Perfil do paciente não encontrado.')
@@ -61,7 +59,7 @@ export async function createSessionEvolution(data: {
     const evolution = await prisma.evolution.create({
       data: {
         patientId: patientProfileId,
-        psychologistId: appointment.psychologistId, // This is the UUID of PsychologistProfile
+        psychologistId: appointment.psychologistId,
         mood: data.mood,
         publicSummary: encryptedPublic,
         privateNotes: encryptedPrivate,
@@ -77,12 +75,10 @@ export async function createSessionEvolution(data: {
 
     revalidatePath(`/dashboard/psicologo/pacientes/${patientProfileId}`)
 
-    return { success: true, id: evolution.id }
-  } catch (error: any) {
-    logger.error('Error creating session evolution:', error)
-    return { success: false, error: error.message || 'Falha ao salvar evolução' }
-  }
-}
+    return { id: evolution.id }
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
 export async function getPatientPublicEvolutions(): Promise<PublicEvolution[]> {
   try {
@@ -95,7 +91,6 @@ export async function getPatientPublicEvolutions(): Promise<PublicEvolution[]> {
       throw new Error('Não autenticado')
     }
 
-    // Find the patient's profile
     const profile = await prisma.profile.findUnique({
       where: { user_id: user.id },
     })
