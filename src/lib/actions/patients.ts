@@ -107,36 +107,29 @@ export async function getPsychologistPatients(): Promise<PatientData[]> {
       return []
     }
 
-    // Get recent appointments (limit to prevent performance issues with large datasets)
-    // This captures the most recent 200 appointments to build the patient list
-    const appointments = await prisma.appointment.findMany({
-      where: {
-        psychologistId: psychologistProfile.id,
-      },
-      include: {
-        patient: {
-          include: {
-            profiles: true,
+    // Run both queries in parallel — they are independent after resolving psychologistProfile
+    const [appointments, explicitLinks] = await Promise.all([
+      // Most recent 200 appointments to build the patient list
+      prisma.appointment.findMany({
+        where: { psychologistId: psychologistProfile.id },
+        include: {
+          patient: {
+            include: { profiles: true },
           },
         },
-      },
-      orderBy: {
-        scheduledAt: 'desc',
-      },
-      take: 200,
-    })
-
-    // Also get explicit links (if they were created directly without appointments)
-    const explicitLinks = await prisma.patientPsychologistLink.findMany({
-      where: { psychologistId: psychologistProfile.id },
-      include: {
-        patient: {
-          include: {
-            users: true,
+        orderBy: { scheduledAt: 'desc' },
+        take: 200,
+      }),
+      // Explicit links (patients added without appointments)
+      prisma.patientPsychologistLink.findMany({
+        where: { psychologistId: psychologistProfile.id },
+        include: {
+          patient: {
+            include: { users: true },
           },
         },
-      },
-    })
+      }),
+    ])
 
     // Combine unique patients
     const patientsMap = new Map<string, any>()
