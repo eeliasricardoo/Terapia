@@ -207,30 +207,37 @@ export const rescheduleSession = createSafeAction(
       throw new Error('Acesso negado.')
     }
 
-    const { hasConflict, type } = await checkAppointmentConflict({
-      psychologistProfileId: appointment.psychologistId,
-      patientId: appointment.patientId,
-      scheduledAt: new Date(data.newScheduledAt),
-      durationMinutes: appointment.durationMinutes,
-      excludeAppointmentId: data.sessionId,
-    })
-
-    if (hasConflict) {
-      throw new Error(
-        type === 'psychologist'
-          ? 'O psicólogo já possui um compromisso neste horário.'
-          : 'Você já possui uma sessão neste horário.'
+    const { updatedSession, previousDate } = await prisma.$transaction(async (tx) => {
+      const { hasConflict, type } = await checkAppointmentConflict(
+        {
+          psychologistProfileId: appointment.psychologistId,
+          patientId: appointment.patientId,
+          scheduledAt: new Date(data.newScheduledAt),
+          durationMinutes: appointment.durationMinutes,
+          excludeAppointmentId: data.sessionId,
+        },
+        tx as any
       )
-    }
 
-    const previousDate = appointment.scheduledAt
+      if (hasConflict) {
+        throw new Error(
+          type === 'psychologist'
+            ? 'O psicólogo já possui um compromisso neste horário.'
+            : 'Você já possui uma sessão neste horário.'
+        )
+      }
 
-    const updatedSession = await prisma.appointment.update({
-      where: { id: data.sessionId },
-      data: {
-        scheduledAt: new Date(data.newScheduledAt),
-        status: 'SCHEDULED',
-      },
+      const prev = appointment.scheduledAt
+
+      const updated = await tx.appointment.update({
+        where: { id: data.sessionId },
+        data: {
+          scheduledAt: new Date(data.newScheduledAt),
+          status: 'SCHEDULED',
+        },
+      })
+
+      return { updatedSession: updated, previousDate: prev }
     })
 
     sendRescheduleNotifications(data.sessionId, user.id, previousDate).catch((e) => logger.error(e))

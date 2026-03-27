@@ -236,7 +236,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             </div>
           </div>
 
-          {!dashboardData.hasStripeAccount && (
+          {(!dashboardData.hasStripeAccount || !dashboardData.stripeOnboardingComplete) && (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 shadow-sm animate-in slide-in-from-top-4 duration-500 mb-6">
               <div className="flex items-start gap-3 sm:gap-4">
                 <div className="h-10 w-10 sm:h-12 sm:w-12 bg-white rounded-xl flex items-center justify-center text-amber-600 shadow-sm border border-amber-100 flex-shrink-0">
@@ -244,12 +244,22 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 </div>
                 <div>
                   <h3 className="text-amber-900 font-bold font-serif italic text-base sm:text-lg tracking-tight">
-                    Faturamento Pendente
+                    Faturamento {!dashboardData.hasStripeAccount ? 'Pendente' : 'Incompleto'}
                   </h3>
                   <p className="text-amber-700/80 text-xs sm:text-sm leading-relaxed max-w-xl font-medium">
-                    Seu perfil está <b>oculto na busca</b> até que você conecte sua conta bancária
-                    via Stripe Connect. Isso é necessário para que você receba os repasses das
-                    sessões automaticamente.
+                    {!dashboardData.hasStripeAccount ? (
+                      <>
+                        Seu perfil está <b>oculto na busca</b> até que você conecte sua conta
+                        bancária via Stripe Connect. Isso é necessário para que você receba os
+                        repasses das sessões automaticamente.
+                      </>
+                    ) : (
+                      <>
+                        Você conectou sua conta, mas <b>ainda não completou o cadastro no Stripe</b>
+                        . Dados obrigatórios estão faltando. Seu perfil continuará oculto até a
+                        finalização.
+                      </>
+                    )}
                   </p>
                 </div>
               </div>
@@ -257,7 +267,9 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 asChild
                 className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl px-6 sm:px-8 shadow-lg shadow-amber-600/20 whitespace-nowrap h-10 sm:h-12 w-full sm:w-auto text-sm"
               >
-                <Link href="/dashboard/financeiro">Conectar Conta Agora</Link>
+                <Link href="/dashboard/financeiro">
+                  {!dashboardData.hasStripeAccount ? 'Conectar Conta Agora' : 'Finalizar Cadastro'}
+                </Link>
               </Button>
             </div>
           )}
