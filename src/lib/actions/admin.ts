@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { revalidatePath } from 'next/cache'
 import { sendEmail } from '@/lib/utils/email'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getApprovalEmailTemplate, getRejectionEmailTemplate } from '@/lib/utils/email-templates'
 
 export async function getPendingPsychologists() {
@@ -25,6 +26,8 @@ export async function getPendingPsychologists() {
       throw new Error('Não autorizado')
     }
 
+    const supabaseAdmin = createAdminClient()
+
     // Self-healing: Check for psychologists in profiles table that are not yet in Users/PsychologistProfile
     // This happens because some signup flows were missing the Prisma sync
     const orphanPsychologists = await prisma.profile.findMany({
@@ -43,19 +46,27 @@ export async function getPendingPsychologists() {
         // Sync User table (public) from Profile/Auth metadata
         // We know they exist in auth.users because profile exists (FK user_id)
         try {
-          await prisma.user.upsert({
-            where: { id: op.user_id },
-            update: {
-              name: op.fullName,
-              role: 'PSYCHOLOGIST',
-            },
-            create: {
-              id: op.user_id,
-              name: op.fullName,
-              email: `user_${op.user_id}@terapia.com`, // Fallback email; it will be corrected on their next login or next step
-              role: 'PSYCHOLOGIST',
-            },
-          })
+          // Fetch real email from Auth Admin since it might be missing in Public Schema
+          const {
+            data: { user: authUser },
+          } = await supabaseAdmin.auth.admin.getUserById(op.user_id)
+
+          if (authUser) {
+            await prisma.user.upsert({
+              where: { id: op.user_id },
+              update: {
+                name: op.fullName || authUser.user_metadata?.full_name,
+                role: 'PSYCHOLOGIST',
+                email: authUser.email || '',
+              },
+              create: {
+                id: op.user_id,
+                name: op.fullName || authUser.user_metadata?.full_name || 'Psicólogo',
+                email: authUser.email || '',
+                role: 'PSYCHOLOGIST',
+              },
+            })
+          }
         } catch (e) {
           logger.error(`Error healing user record for ${op.user_id}:`, e)
         }
@@ -96,14 +107,14 @@ export async function getPendingPsychologists() {
         let licenseSignedUrl = null
 
         if (p.diplomaUrl) {
-          const { data: signData } = await supabase.storage
+          const { data: signData } = await supabaseAdmin.storage
             .from('documents')
             .createSignedUrl(p.diplomaUrl, 3600)
           diplomaSignedUrl = signData?.signedUrl
         }
 
         if (p.licenseUrl) {
-          const { data: signData } = await supabase.storage
+          const { data: signData } = await supabaseAdmin.storage
             .from('documents')
             .createSignedUrl(p.licenseUrl, 3600)
           licenseSignedUrl = signData?.signedUrl
