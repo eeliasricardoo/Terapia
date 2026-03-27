@@ -30,7 +30,7 @@ async function getPsychologistDataInternal(userId: string) {
       },
     })
 
-    if (!psych) {
+    if (!psych || !psych.isVerified) {
       return null
     }
 
