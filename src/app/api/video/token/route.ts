@@ -23,8 +23,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Usuário não autenticado' }, { status: 401 })
     }
 
-    // Apply Rate Limiting per User ID
-    const rateLimit = await checkRateLimit(user.id)
+    // Apply Rate Limiting
+    const rateLimit = await checkRateLimit(`video-token:${user.id}`)
     if (!rateLimit.success) {
       return NextResponse.json(
         { error: 'Muitas requisições. Tente novamente mais tarde.' },
@@ -32,11 +32,11 @@ export async function POST(req: Request) {
       )
     }
 
-    // 1. Fetch appointment details including strict relations
+    // 1. Fetch appointment details
     const appointment = await prisma.appointment.findUnique({
       where: { id: appointmentId },
       include: {
-        psychologist: true,
+        psychologist: { include: { user: true } },
         patient: true,
       },
     })
@@ -45,9 +45,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Agendamento não encontrado' }, { status: 404 })
     }
 
-    // 2. verify user permissions
+    // 2. Verify user permissions
     const isPatient = appointment.patientId === user.id
-    // Check via userId relation on psychologist profile
     const isPsychologist = appointment.psychologist.userId === user.id
 
     if (!isPatient && !isPsychologist) {
@@ -57,26 +56,32 @@ export async function POST(req: Request) {
       )
     }
 
-    // Check appointment time window (15 mins before scheduledAt)
+    // 3. Check appointment time window
     const now = new Date()
     const scheduledAt = new Date(appointment.scheduledAt)
 
-    // Allowed 15 minutes before the appointment
-    const startTime = new Date(scheduledAt.getTime() - 15 * 60 * 1000)
+    // Window: Psychologists 30 min before, Patients 15 min before
+    const leadTimeMinutes = isPsychologist ? 30 : 15
+    const startTime = new Date(scheduledAt.getTime() - leadTimeMinutes * 60 * 1000)
 
-    // Allowed up to the end of the appointment + 20 min buffer
-    const endTime = new Date(scheduledAt.getTime() + (appointment.durationMinutes + 20) * 60 * 1000)
+    // Session ends at scheduledAt + duration + 30 min buffer
+    const endTime = new Date(scheduledAt.getTime() + (appointment.durationMinutes + 30) * 60 * 1000)
 
-    // Only enforce time check for patients, psychologists can prepare earlier if needed (optional, but let's enforce both for now or just follow spec)
-    // if (now < startTime || now > endTime) {
-    //   return NextResponse.json(
-    //     {
-    //       error:
-    //         'Sessão indisponível no momento. Você pode entrar 15 minutos antes do horário agendado.',
-    //     },
-    //     { status: 403 }
-    //   )
-    // }
+    if (now < startTime) {
+      return NextResponse.json(
+        {
+          error: `Muito cedo. A sala estará disponível ${leadTimeMinutes} minutos antes do horário.`,
+        },
+        { status: 403 }
+      )
+    }
+
+    if (now > endTime) {
+      return NextResponse.json(
+        { error: 'Sessão encerrada. O acesso à sala expirou.' },
+        { status: 403 }
+      )
+    }
 
     // 3. Create a Fresh Room for every session attempt to ensure it hasn't expired
     // The previous room URL in appointment.meetingUrl might be stale/expired
