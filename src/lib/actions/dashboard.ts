@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
+import { env } from '@/lib/env'
 import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns'
 
 export type PsychologistDashboardData = {
@@ -533,7 +534,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
     })
 
     const totalRevenue = Number(successfulAgg._sum.price ?? 0)
-    const feePercent = Number(process.env.PLATFORM_FEE_PERCENT) || 15
+    const feePercent = env.PLATFORM_FEE_PERCENT
     const platformProfit = totalRevenue * (feePercent / 100)
 
     return {

@@ -45,6 +45,34 @@ let authEmailRatelimitInstance: Ratelimit | null = null
 let forgotPasswordRatelimitInstance: Ratelimit | null = null
 let appointmentRatelimitInstance: Ratelimit | null = null
 
+/**
+ * Fallback Rate Limiter (Simples, em memória)
+ * Previne "fail-open" se o Redis/Upstash falhar.
+ * Útil para processos críticos (Login, Registro).
+ */
+class MemoryRateLimit {
+  private cache = new Map<string, { count: number; reset: number }>()
+
+  async limit(identifier: string, limit: number, windowMs: number) {
+    const now = Date.now()
+    const entry = this.cache.get(identifier)
+
+    if (!entry || now > entry.reset) {
+      this.cache.set(identifier, { count: 1, reset: now + windowMs })
+      return { success: true, remaining: limit - 1, reset: now + windowMs }
+    }
+
+    if (entry.count >= limit) {
+      return { success: false, remaining: 0, reset: entry.reset }
+    }
+
+    entry.count++
+    return { success: true, remaining: limit - entry.count, reset: entry.reset }
+  }
+}
+
+const memoryFallback = new MemoryRateLimit()
+
 // Só instanciamos se as chaves estiverem presentes
 if (isRedisConfigured) {
   const redis = new Redis({
@@ -101,17 +129,16 @@ const RATE_LIMIT_ALLOWED = { success: true, limit: 20, remaining: 20, reset: 0 }
  */
 export async function checkRateLimit(identifier: string) {
   if (!ratelimitInstance) {
-    logger.warn(
-      '⚠️ [Rate Limiter] Chaves do Upstash ausentes, permitindo requisição por segurança de failover.'
-    )
-    return RATE_LIMIT_ALLOWED
+    logger.warn('⚠️ [Rate Limiter] Upstash Redis down. Using Memory Fallback.')
+    return await memoryFallback.limit(`general:${identifier}`, 20, 60 * 1000)
   }
 
   try {
-    return await ratelimitInstance.limit(identifier)
+    const result = await ratelimitInstance.limit(identifier)
+    return result
   } catch (err) {
-    logger.error('Error in rate limit:', err)
-    return RATE_LIMIT_ALLOWED
+    logger.error('Error in rate limit, using memory fallback:', err)
+    return await memoryFallback.limit(`general:${identifier}`, 10, 60 * 1000) // Restricted on error
   }
 }
 
@@ -124,8 +151,12 @@ export async function checkRateLimit(identifier: string) {
  */
 export async function checkLoginRateLimit(ip: string, email: string) {
   if (!authIpRatelimitInstance || !authEmailRatelimitInstance) {
-    logger.warn('⚠️ [Rate Limiter] Auth limiters unavailable, allowing request.')
-    return RATE_LIMIT_ALLOWED
+    logger.warn('⚠️ [Rate Limiter] Auth limiters down. Using Memory Fallback.')
+    const [ipRes, emailRes] = await Promise.all([
+      memoryFallback.limit(`login_ip:${ip}`, 10, 15 * 60 * 1000),
+      memoryFallback.limit(`login_email:${email.toLowerCase()}`, 5, 60 * 60 * 1000),
+    ])
+    return !ipRes.success ? ipRes : emailRes
   }
 
   try {
@@ -138,8 +169,8 @@ export async function checkLoginRateLimit(ip: string, email: string) {
     if (!emailResult.success) return emailResult
     return ipResult
   } catch (err) {
-    logger.error('Error in auth rate limit:', err)
-    return RATE_LIMIT_ALLOWED
+    logger.error('Error in auth rate limit, using memory fallback:', err)
+    return await memoryFallback.limit(`login_fallback:${ip}`, 5, 15 * 60 * 1000)
   }
 }
 
@@ -148,15 +179,15 @@ export async function checkLoginRateLimit(ip: string, email: string) {
  */
 export async function checkForgotPasswordRateLimit(ip: string) {
   if (!forgotPasswordRatelimitInstance) {
-    logger.warn('⚠️ [Rate Limiter] Forgot password limiter unavailable, allowing request.')
-    return RATE_LIMIT_ALLOWED
+    logger.warn('⚠️ [Rate Limiter] Forgot PW limiter down. Using Memory Fallback.')
+    return await memoryFallback.limit(`forgot_ip:${ip}`, 3, 15 * 60 * 1000)
   }
 
   try {
     return await forgotPasswordRatelimitInstance.limit(`ip:${ip}`)
   } catch (err) {
-    logger.error('Error in forgot password rate limit:', err)
-    return RATE_LIMIT_ALLOWED
+    logger.error('Error in forgot pw rate limit, using memory fallback:', err)
+    return await memoryFallback.limit(`forgot_ip:${ip}`, 2, 15 * 60 * 1000)
   }
 }
 

@@ -25,7 +25,13 @@ const envSchema = z.object({
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z
     .string()
     .min(1, 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is required'),
-  PLATFORM_FEE_PERCENT: z.string().default('15'),
+  PLATFORM_FEE_PERCENT: z
+    .string()
+    .default('15')
+    .transform((val) => Number(val))
+    .refine((n) => !isNaN(n) && n > 0 && n < 100, {
+      message: 'PLATFORM_FEE_PERCENT must be a valid number between 1 and 99',
+    }),
 
   // Daily.co Video Calls
   DAILY_API_KEY: z.string().min(1, 'DAILY_API_KEY is required'),
@@ -73,7 +79,7 @@ export type Env = z.infer<typeof envSchema>
 function parseEnv(): Env {
   // Skip validation in test environment to allow mocking
   if (process.env.NODE_ENV === 'test') {
-    return process.env as Env
+    return process.env as unknown as Env
   }
 
   try {
