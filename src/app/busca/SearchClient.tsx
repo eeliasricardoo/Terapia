@@ -59,6 +59,7 @@ export default function SearchClient({
     specialties: [],
     maxPrice: 500,
     searchQuery: '',
+    genders: [],
   })
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(initialPsychologists.length >= 12)
@@ -139,6 +140,7 @@ export default function SearchClient({
       specialties: [],
       maxPrice: 500,
       searchQuery: '',
+      genders: [],
     })
   }, [])
 
