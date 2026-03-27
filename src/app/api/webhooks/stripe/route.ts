@@ -72,13 +72,13 @@ export async function POST(req: Request) {
           psychologistId: metadata.psychologistId,
           scheduledAt: new Date(metadata.scheduledAt),
           durationMinutes: parseInt(metadata.durationMinutes),
-          price: metadata.price,
+          price: Number(metadata.price),
           paymentMethod: 'Stripe',
           status: 'SCHEDULED',
           stripeSessionId: session.id,
           stripePaymentIntentId:
             typeof session.payment_intent === 'string' ? session.payment_intent : null,
-        } as any,
+        },
       })
 
       // Send notifications asynchronously
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
       // Robust check: details submitted AND charges enabled
       const isComplete = account.details_submitted && account.charges_enabled
 
-      await prisma.psychologistProfile.updateMany({
+      await prisma.psychologistProfile.update({
         where: { stripeAccountId: account.id },
         data: { stripeOnboardingComplete: isComplete },
       })
