@@ -9,28 +9,7 @@ import { checkAppointmentConflict } from './appointments-utils'
 import { stripe } from '@/lib/stripe'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
-
-/**
- * Checks if the current time is within the allowed access window:
- * 10 minutes before the scheduled start until the end of the duration.
- */
-export function isWithinSessionWindow(
-  scheduledAt: Date,
-  durationMinutes: number
-): {
-  allowed: boolean
-  reason?: 'too_early' | 'too_late' | 'not_scheduled'
-} {
-  const now = new Date()
-  const start = new Date(scheduledAt)
-  const windowStart = new Date(start.getTime() - 10 * 60 * 1000)
-  const end = new Date(start.getTime() + durationMinutes * 60 * 1000)
-
-  if (now < windowStart) return { allowed: false, reason: 'too_early' }
-  if (now > end) return { allowed: false, reason: 'too_late' }
-
-  return { allowed: true }
-}
+import { isWithinSessionWindow } from '@/lib/utils/session-utils'
 
 export const getUserSessions = createSafeAction(
   z.object({

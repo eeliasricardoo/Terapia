@@ -25,7 +25,7 @@ jest.mock('@/lib/stripe', () => ({
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     psychologistProfile: { findUnique: jest.fn() },
-    appointment: { findMany: jest.fn(), create: jest.fn() },
+    appointment: { findMany: jest.fn(), findFirst: jest.fn(), create: jest.fn() },
     coupon: { findFirst: jest.fn(), update: jest.fn() },
     patientProfile: { findUnique: jest.fn() },
   },
@@ -49,7 +49,7 @@ import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { createStripeCheckoutSession } from '@/lib/actions/stripe'
 
-const MOCK_USER = { id: 'patient-1', email: 'patient@test.com' }
+const MOCK_USER = { id: '550e8400-e29b-41d4-a716-446655440000', email: 'patient@test.com' }
 
 function mockAuth(user: any) {
   ;(createClient as jest.Mock).mockResolvedValue({
@@ -63,11 +63,12 @@ describe('stripe actions', () => {
     process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
     // Default: no conflict
     ;(prisma.appointment.findMany as jest.Mock).mockResolvedValue([])
+    ;(prisma.appointment.findFirst as jest.Mock).mockResolvedValue(null)
   })
 
   describe('createStripeCheckoutSession', () => {
     const validData = {
-      psychologistId: 'psych-1',
+      psychologistId: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
       scheduledAt: '2026-04-01T14:00:00Z',
       durationMinutes: 50,
     }
@@ -75,7 +76,11 @@ describe('stripe actions', () => {
     it('should return error if user is not authenticated', async () => {
       mockAuth(null)
       const result = await createStripeCheckoutSession(validData)
-      expect(result).toEqual({ error: 'Não autenticado' })
+      expect(result).toEqual({
+        success: false,
+        error: 'Não autenticado.',
+        code: 'UNAUTHENTICATED',
+      })
     })
 
     it('should return error if psychologist is not found', async () => {
@@ -83,26 +88,33 @@ describe('stripe actions', () => {
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue(null)
 
       const result = await createStripeCheckoutSession(validData)
-      expect(result).toEqual({ error: 'Psicólogo não encontrado' })
+      expect(result).toEqual({
+        success: false,
+        error: 'Psicólogo não encontrado',
+        code: 'INTERNAL_ERROR', // safe action catches thrown errors as internal_error
+      })
     })
 
     it('should create appointment directly if price is zero (100% discount)', async () => {
       mockAuth(MOCK_USER)
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue({
-        id: 'psych-1',
+        id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
         pricePerSession: 0,
         user: { name: 'Dr. Zero', profiles: { fullName: 'Dr. Zero' } },
       })
       ;(prisma.appointment.create as jest.Mock).mockResolvedValue({})
 
       const result = await createStripeCheckoutSession(validData)
-      expect(result).toEqual({ url: expect.stringContaining('/dashboard?payment=success') })
+      expect(result).toEqual({
+        success: true,
+        data: { url: expect.stringContaining('/dashboard?payment=success') },
+      })
     })
 
     it('should create Stripe checkout session with correct amount', async () => {
       mockAuth(MOCK_USER)
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue({
-        id: 'psych-1',
+        id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
         pricePerSession: 150,
         user: { name: 'Dra. Ana Silva', profiles: { fullName: 'Dra. Ana Silva' } },
       })
@@ -112,7 +124,10 @@ describe('stripe actions', () => {
 
       const result = await createStripeCheckoutSession(validData)
 
-      expect(result).toEqual({ url: 'https://checkout.stripe.com/session-id' })
+      expect(result).toEqual({
+        success: true,
+        data: { url: 'https://checkout.stripe.com/session-id' },
+      })
 
       // Verify price in cents: R$ 150 = 15000 cents
       expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
@@ -142,7 +157,7 @@ describe('stripe actions', () => {
     it('should include correct success and cancel URLs', async () => {
       mockAuth(MOCK_USER)
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue({
-        id: 'psych-1',
+        id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
         pricePerSession: 100,
         user: { name: 'Dr. Test', profiles: { fullName: 'Dr. Test' } },
       })
@@ -163,7 +178,7 @@ describe('stripe actions', () => {
     it('should handle Stripe API errors gracefully', async () => {
       mockAuth(MOCK_USER)
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue({
-        id: 'psych-1',
+        id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
         pricePerSession: 100,
         user: { name: 'Dr. Test', profiles: { fullName: 'Dr. Test' } },
       })
@@ -172,7 +187,11 @@ describe('stripe actions', () => {
       )
 
       const result = await createStripeCheckoutSession(validData)
-      expect(result).toEqual({ error: 'Stripe API down' })
+      expect(result).toEqual({
+        success: false,
+        error: 'Stripe API down',
+        code: 'INTERNAL_ERROR',
+      })
     })
   })
 })

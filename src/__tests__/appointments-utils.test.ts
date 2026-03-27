@@ -9,11 +9,11 @@ jest.mock('@/lib/utils/logger', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
 }))
 
-const mockPrismaFindMany = jest.fn()
+const mockPrismaFindFirst = jest.fn()
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     appointment: {
-      findMany: (...args: any[]) => mockPrismaFindMany(...args),
+      findFirst: (...args: any[]) => mockPrismaFindFirst(...args),
     },
   },
 }))
@@ -40,8 +40,8 @@ function makeAppt(
   }
 }
 
-const PSYCH_ID = 'psych-profile-1'
-const PATIENT_ID = 'patient-user-1'
+const PSYCH_ID = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
+const PATIENT_ID = '550e8400-e29b-41d4-a716-446655440000'
 
 // ─── tests ───────────────────────────────────────────────────────────────────
 
@@ -53,7 +53,7 @@ describe('checkAppointmentConflict', () => {
   // ── No conflict ──────────────────────────────────────────────────────────
 
   it('should return no conflict when there are no existing appointments', async () => {
-    mockPrismaFindMany.mockResolvedValue([])
+    mockPrismaFindFirst.mockResolvedValue(null)
 
     const result = await checkAppointmentConflict({
       psychologistProfileId: PSYCH_ID,
@@ -67,9 +67,9 @@ describe('checkAppointmentConflict', () => {
 
   it('should return no conflict for adjacent sessions (end of one = start of next)', async () => {
     // Existing: 10:00 – 10:50. New request: 10:50 – 11:40.  No overlap.
-    mockPrismaFindMany.mockResolvedValue([
-      makeAppt('appt-1', PSYCH_ID, 'other-patient', '2024-06-01T10:00:00Z', 50),
-    ])
+    mockPrismaFindFirst.mockResolvedValue(
+      makeAppt('appt-1', PSYCH_ID, 'other-patient', '2024-06-01T10:00:00Z', 50)
+    )
 
     const result = await checkAppointmentConflict({
       psychologistProfileId: PSYCH_ID,
@@ -83,7 +83,7 @@ describe('checkAppointmentConflict', () => {
 
   it('should return no conflict when new session ends exactly when existing one starts', async () => {
     // Existing: 11:00 – 11:50. New request: 10:10 – 11:00.  Adjacent, no overlap.
-    mockPrismaFindMany.mockResolvedValue([
+    mockPrismaFindFirst.mockResolvedValue([
       makeAppt('appt-1', PSYCH_ID, 'other-patient', '2024-06-01T11:00:00Z', 50),
     ])
 
@@ -100,9 +100,9 @@ describe('checkAppointmentConflict', () => {
   // ── Psychologist conflicts ───────────────────────────────────────────────
 
   it('should detect conflict when new session starts at the exact same time as existing (psychologist)', async () => {
-    mockPrismaFindMany.mockResolvedValue([
-      makeAppt('appt-1', PSYCH_ID, 'other-patient', '2024-06-01T10:00:00Z', 50),
-    ])
+    mockPrismaFindFirst.mockResolvedValue(
+      makeAppt('appt-1', PSYCH_ID, 'other-patient', '2024-06-01T10:00:00Z', 50)
+    )
 
     const result = await checkAppointmentConflict({
       psychologistProfileId: PSYCH_ID,
@@ -118,9 +118,9 @@ describe('checkAppointmentConflict', () => {
 
   it('should detect conflict when new session starts during existing session (psychologist)', async () => {
     // Existing: 10:00 – 10:50. New: 10:25 – 11:15.  Overlaps.
-    mockPrismaFindMany.mockResolvedValue([
-      makeAppt('appt-1', PSYCH_ID, 'other-patient', '2024-06-01T10:00:00Z', 50),
-    ])
+    mockPrismaFindFirst.mockResolvedValue(
+      makeAppt('appt-1', PSYCH_ID, 'other-patient', '2024-06-01T10:00:00Z', 50)
+    )
 
     const result = await checkAppointmentConflict({
       psychologistProfileId: PSYCH_ID,
@@ -135,9 +135,9 @@ describe('checkAppointmentConflict', () => {
 
   it('should detect conflict when new session ends during existing session (psychologist)', async () => {
     // Existing: 10:00 – 10:50. New: 09:20 – 10:10. Overlaps by 10 min.
-    mockPrismaFindMany.mockResolvedValue([
-      makeAppt('appt-1', PSYCH_ID, 'other-patient', '2024-06-01T10:00:00Z', 50),
-    ])
+    mockPrismaFindFirst.mockResolvedValue(
+      makeAppt('appt-1', PSYCH_ID, 'other-patient', '2024-06-01T10:00:00Z', 50)
+    )
 
     const result = await checkAppointmentConflict({
       psychologistProfileId: PSYCH_ID,
@@ -152,9 +152,9 @@ describe('checkAppointmentConflict', () => {
 
   it('should detect conflict when new session completely spans over existing session (psychologist)', async () => {
     // Existing: 10:00 – 10:50. New: 09:00 – 12:00. Contains existing.
-    mockPrismaFindMany.mockResolvedValue([
-      makeAppt('appt-1', PSYCH_ID, 'other-patient', '2024-06-01T10:00:00Z', 50),
-    ])
+    mockPrismaFindFirst.mockResolvedValue(
+      makeAppt('appt-1', PSYCH_ID, 'other-patient', '2024-06-01T10:00:00Z', 50)
+    )
 
     const result = await checkAppointmentConflict({
       psychologistProfileId: PSYCH_ID,
@@ -171,9 +171,9 @@ describe('checkAppointmentConflict', () => {
 
   it('should detect conflict when patient already has a session at the same time', async () => {
     // Patient booked with a different psychologist at 10:00
-    mockPrismaFindMany.mockResolvedValue([
-      makeAppt('appt-1', 'other-psych-profile', PATIENT_ID, '2024-06-01T10:00:00Z', 50),
-    ])
+    mockPrismaFindFirst.mockResolvedValue(
+      makeAppt('appt-1', 'other-psych-profile', PATIENT_ID, '2024-06-01T10:00:00Z', 50)
+    )
 
     const result = await checkAppointmentConflict({
       psychologistProfileId: PSYCH_ID,
@@ -189,9 +189,9 @@ describe('checkAppointmentConflict', () => {
 
   it('should detect patient conflict when sessions partially overlap', async () => {
     // Patient existing: 10:00 – 10:50. New request: 10:30 – 11:20. Overlaps.
-    mockPrismaFindMany.mockResolvedValue([
-      makeAppt('appt-1', 'other-psych-profile', PATIENT_ID, '2024-06-01T10:00:00Z', 50),
-    ])
+    mockPrismaFindFirst.mockResolvedValue(
+      makeAppt('appt-1', 'other-psych-profile', PATIENT_ID, '2024-06-01T10:00:00Z', 50)
+    )
 
     const result = await checkAppointmentConflict({
       psychologistProfileId: PSYCH_ID,
@@ -208,7 +208,7 @@ describe('checkAppointmentConflict', () => {
 
   it('should NOT flag a conflict for a CANCELED appointment', async () => {
     // CANCELED appointments should never block new bookings
-    mockPrismaFindMany.mockResolvedValue([]) // DB already filters CANCELED via status != CANCELED
+    mockPrismaFindFirst.mockResolvedValue([]) // DB already filters CANCELED via status != CANCELED
 
     const result = await checkAppointmentConflict({
       psychologistProfileId: PSYCH_ID,
@@ -219,7 +219,7 @@ describe('checkAppointmentConflict', () => {
 
     expect(result.hasConflict).toBe(false)
     // Verify that the Prisma query excludes CANCELED status
-    expect(mockPrismaFindMany).toHaveBeenCalledWith(
+    expect(mockPrismaFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           status: { not: 'CANCELED' },
@@ -232,7 +232,7 @@ describe('checkAppointmentConflict', () => {
 
   it('should not conflict with the appointment being rescheduled (excludeAppointmentId)', async () => {
     // Session appt-1 is being rescheduled. It should not conflict with itself.
-    mockPrismaFindMany.mockResolvedValue([]) // DB excludes the appointment being rescheduled
+    mockPrismaFindFirst.mockResolvedValue([]) // DB excludes the appointment being rescheduled
 
     const result = await checkAppointmentConflict({
       psychologistProfileId: PSYCH_ID,
@@ -244,7 +244,7 @@ describe('checkAppointmentConflict', () => {
 
     expect(result.hasConflict).toBe(false)
     // Verify the exclusion is passed to Prisma
-    expect(mockPrismaFindMany).toHaveBeenCalledWith(
+    expect(mockPrismaFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           id: { not: 'appt-1' },
@@ -255,9 +255,9 @@ describe('checkAppointmentConflict', () => {
 
   it('should still detect OTHER conflicts even when excludeAppointmentId is set', async () => {
     // Rescheduling appt-1, but appt-2 (different) conflicts with the new slot
-    mockPrismaFindMany.mockResolvedValue([
-      makeAppt('appt-2', PSYCH_ID, 'other-patient', '2024-06-01T10:00:00Z', 50),
-    ])
+    mockPrismaFindFirst.mockResolvedValue(
+      makeAppt('appt-2', PSYCH_ID, 'other-patient', '2024-06-01T10:00:00Z', 50)
+    )
 
     const result = await checkAppointmentConflict({
       psychologistProfileId: PSYCH_ID,
@@ -274,7 +274,7 @@ describe('checkAppointmentConflict', () => {
   // ── No patientId (only psychologist checked) ─────────────────────────────
 
   it('should only check psychologist when patientId is not provided', async () => {
-    mockPrismaFindMany.mockResolvedValue([])
+    mockPrismaFindFirst.mockResolvedValue(null)
 
     await checkAppointmentConflict({
       psychologistProfileId: PSYCH_ID,
@@ -282,7 +282,7 @@ describe('checkAppointmentConflict', () => {
       durationMinutes: 50,
     })
 
-    const callArgs = mockPrismaFindMany.mock.calls[0][0]
+    const callArgs = mockPrismaFindFirst.mock.calls[0][0]
     // OR should only contain the psychologist condition (patient condition omitted)
     const orConditions = callArgs.where.OR
     expect(orConditions).toHaveLength(1)
@@ -293,12 +293,10 @@ describe('checkAppointmentConflict', () => {
 
   it('should detect conflict with a PENDING_PAYMENT appointment', async () => {
     // A slot held during payment checkout must block new bookings
-    mockPrismaFindMany.mockResolvedValue([
-      {
-        ...makeAppt('appt-pending', PSYCH_ID, 'paying-patient', '2024-06-01T10:00:00Z', 50),
-        status: 'PENDING_PAYMENT',
-      },
-    ])
+    mockPrismaFindFirst.mockResolvedValue({
+      ...makeAppt('appt-pending', PSYCH_ID, 'paying-patient', '2024-06-01T10:00:00Z', 50),
+      status: 'PENDING_PAYMENT',
+    })
 
     const result = await checkAppointmentConflict({
       psychologistProfileId: PSYCH_ID,
@@ -313,7 +311,7 @@ describe('checkAppointmentConflict', () => {
   // ── DB errors are re-thrown (fail-safe) ──────────────────────────────────
 
   it('should re-throw database errors so callers can fail safely', async () => {
-    mockPrismaFindMany.mockRejectedValue(new Error('Connection lost'))
+    mockPrismaFindFirst.mockRejectedValue(new Error('Connection lost'))
 
     await expect(
       checkAppointmentConflict({
@@ -328,7 +326,7 @@ describe('checkAppointmentConflict', () => {
   // ── Prisma query window ──────────────────────────────────────────────────
 
   it('should query appointments within a ±6 hour window around the requested slot', async () => {
-    mockPrismaFindMany.mockResolvedValue([])
+    mockPrismaFindFirst.mockResolvedValue(null)
     const requestedAt = new Date('2024-06-01T10:00:00Z')
 
     await checkAppointmentConflict({
@@ -338,12 +336,13 @@ describe('checkAppointmentConflict', () => {
       durationMinutes: 50,
     })
 
-    const callArgs = mockPrismaFindMany.mock.calls[0][0]
-    const windowStart = callArgs.where.scheduledAt.gte
-    const windowEnd = callArgs.where.scheduledAt.lte
+    const callArgs = mockPrismaFindFirst.mock.calls[0][0]
+    const andArray = callArgs.where.AND
+    const windowEnd = andArray[0].scheduledAt.lt
+    const windowStart = andArray[1].scheduledAt.gt
 
-    const expectedWindowStart = new Date(requestedAt.getTime() - 6 * 60 * 60 * 1000)
-    const expectedWindowEnd = new Date(requestedAt.getTime() + 6 * 60 * 60 * 1000)
+    const expectedWindowEnd = new Date(requestedAt.getTime() + 50 * 60 * 1000)
+    const expectedWindowStart = new Date(requestedAt.getTime() - 3 * 60 * 60 * 1000)
 
     expect(windowStart.getTime()).toBe(expectedWindowStart.getTime())
     expect(windowEnd.getTime()).toBe(expectedWindowEnd.getTime())
