@@ -6,7 +6,7 @@ import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import type { PsychologistWithProfile } from '@/lib/supabase/types'
-import type { PsychologistAvailability } from '@/lib/actions/availability'
+import type { PsychologistAvailability } from '@/lib/validations/availability'
 
 import { usePsychologistProfile } from './_hooks/use-psychologist-profile'
 import { ProfileHeader } from './_components/profile-header'

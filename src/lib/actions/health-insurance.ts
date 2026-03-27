@@ -1,3 +1,5 @@
+'use server'
+
 import { prisma } from '@/lib/prisma'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'

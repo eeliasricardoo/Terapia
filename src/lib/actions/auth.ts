@@ -1,3 +1,5 @@
+'use server'
+
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { registrationSchema } from '@/lib/validations/registration'
@@ -27,7 +29,7 @@ export const registerPatientSupabase = createSafeAction(
   z.intersection(
     registrationSchema,
     z.object({
-      captchaToken: z.string().min(1, 'Token de segurança é obrigatório'),
+      captcha_token: z.string().min(1, 'Token de segurança é obrigatório'),
     })
   ),
   async (data) => {
@@ -38,7 +40,7 @@ export const registerPatientSupabase = createSafeAction(
       throw new Error('Muitas tentativas de cadastro. Tente novamente mais tarde.')
     }
 
-    const isCaptchaValid = await validateCaptcha(data.captchaToken)
+    const isCaptchaValid = await validateCaptcha(data.captcha_token)
     if (!isCaptchaValid) {
       throw new Error('Falha na verificação de robô. Tente novamente.')
     }
@@ -156,20 +158,20 @@ export const login = createSafeAction(
   { isPublic: true }
 )
 
-export const registerPsychologist = createSafeAction(
+export const registerPsychologistSupabase = createSafeAction(
   z.object({
     name: z.string().min(3),
     email: z.string().email(),
     password: z.string().min(6),
     professionalCard: z.string().min(5),
-    captchaToken: z.string().min(1),
+    captcha_token: z.string().min(1),
   }),
   async (data) => {
     const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
     const rateLimit = await checkRateLimit(`register_psych_${ip}`)
     if (!rateLimit.success) throw new Error('Muitas tentativas de cadastro.')
 
-    const isCaptchaValid = await validateCaptcha(data.captchaToken)
+    const isCaptchaValid = await validateCaptcha(data.captcha_token)
     if (!isCaptchaValid) throw new Error('Falha na verificação de robô.')
 
     const safeName = sanitizeText(data.name) || 'Psicólogo'
@@ -249,15 +251,15 @@ export const registerPsychologist = createSafeAction(
   { isPublic: true }
 )
 
-export const recoverPassword = createSafeAction(
-  z.object({ email: z.string().email() }),
-  async (data) => {
+export const requestPasswordReset = createSafeAction(
+  z.string().email(),
+  async (email) => {
     const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
     const rateLimit = await checkForgotPasswordRateLimit(ip)
     if (!rateLimit.success) throw new Error('Muitas tentativas. Aguarde.')
 
     const supabase = await createClient()
-    await supabase.auth.resetPasswordForEmail(data.email, {
+    await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
     })
 

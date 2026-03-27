@@ -1,16 +1,12 @@
+'use server'
+
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { logger } from '@/lib/utils/logger'
 import { z } from 'zod'
 import { createSafeAction } from '@/lib/safe-action'
 
-export const NotificationSettingsSchema = z.object({
-  email: z.boolean(),
-  push: z.boolean(),
-  whatsapp: z.boolean(),
-})
-
-export type NotificationSettings = z.infer<typeof NotificationSettingsSchema>
+import { NotificationSettingsSchema, NotificationSettings } from '@/lib/validations/settings'
 
 /**
  * Fetches notification settings for the current authenticated user.

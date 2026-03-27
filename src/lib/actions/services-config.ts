@@ -1,8 +1,10 @@
+'use server'
+
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
-import type { TimeSlot } from '@/lib/actions/availability'
+import type { TimeSlot } from '@/lib/validations/availability'
 
 // ─── Types & Schemas ──────────────────────────────────────────────
 

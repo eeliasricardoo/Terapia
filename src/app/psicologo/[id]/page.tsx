@@ -5,7 +5,7 @@ import { unstable_cache } from 'next/cache'
 import { PsychologistWithProfile } from '@/lib/supabase/types'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
-import { PsychologistAvailability, TimeSlot } from '@/lib/actions/availability'
+import { PsychologistAvailability, TimeSlot } from '@/lib/validations/availability'
 
 interface PageProps {
   params: Promise<{
@@ -128,7 +128,8 @@ async function getPsychologistDataInternal(userId: string) {
 
     // 4. Fetch stats (sessions count)
     const { getPsychologistStats } = await import('@/lib/actions/psychologists')
-    const stats = await getPsychologistStats(userId)
+    const statsRes = await getPsychologistStats(userId)
+    const stats = statsRes.success ? statsRes.data : { totalSessions: 0 }
 
     // Return combined payload
     return {

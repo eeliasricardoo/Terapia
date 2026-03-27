@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { format, isBefore, startOfDay, addMinutes } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import type { PsychologistWithProfile } from '@/lib/supabase/types'
-import type { PsychologistAvailability } from '@/lib/actions/availability'
+import type { PsychologistAvailability } from '@/lib/validations/availability'
 
 export function usePsychologistProfile(
   psychologist: PsychologistWithProfile,

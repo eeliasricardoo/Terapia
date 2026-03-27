@@ -34,7 +34,8 @@ import { fromZonedTime } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { getPsychologistAvailability, PsychologistAvailability } from '@/lib/actions/availability'
+import { getPsychologistAvailability } from '@/lib/actions/availability'
+import { PsychologistAvailability } from '@/lib/validations/availability'
 import { getPsychologistById } from '@/lib/actions/psychologists'
 import { rescheduleSession, cancelSession } from '@/lib/actions/sessions'
 import { PsychologistWithProfile } from '@/lib/supabase/types'
@@ -74,13 +75,19 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
       const loadInfo = async () => {
         setLoading(true)
         try {
-          const [pData, aData] = await Promise.all([
+          const [pRes, aRes] = await Promise.all([
             getPsychologistById(session.psychologistId!),
-            getPsychologistAvailability(session.psychologistId!),
+            getPsychologistAvailability({ userId: session.psychologistId! }),
           ])
 
-          setPsychologist(pData)
-          setAvailability(aData)
+          if (pRes.success && aRes.success) {
+            setPsychologist(pRes.data as unknown as PsychologistWithProfile)
+            setAvailability(aRes.data)
+          } else {
+            const error = !pRes.success ? pRes.error : aRes.success ? '' : aRes.error
+            logger.error('Error loading psychologist info:', error)
+            toast.error('Erro ao carregar disponibilidade')
+          }
         } catch (error) {
           logger.error('Error loading psychologist availability:', error)
           toast.error('Erro ao carregar disponibilidade')

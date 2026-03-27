@@ -1,3 +1,5 @@
+'use server'
+
 import { logger } from '@/lib/utils/logger'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'

@@ -1,3 +1,5 @@
+'use server'
+
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { env } from '@/lib/env'
