@@ -87,6 +87,94 @@ export async function getPatientInfoByAppointment(
   }
 }
 
+export async function getPatientById(profileId: string): Promise<PatientData | null> {
+  try {
+    if (!isValidUUID(profileId)) return null
+
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return null
+
+    const psychologistProfile = await prisma.psychologistProfile.findUnique({
+      where: { userId: user.id },
+    })
+    if (!psychologistProfile) return null
+
+    const profile = await prisma.profile.findUnique({
+      where: { id: profileId },
+      include: { users: true },
+    })
+    if (!profile) return null
+
+    const [appointments, link] = await Promise.all([
+      prisma.appointment.findMany({
+        where: {
+          patientId: profile.user_id,
+          psychologistId: psychologistProfile.id,
+        },
+        select: { id: true, scheduledAt: true, status: true },
+        orderBy: { scheduledAt: 'asc' },
+      }),
+      prisma.patientPsychologistLink.findUnique({
+        where: {
+          patientId_psychologistId: {
+            patientId: profileId,
+            psychologistId: psychologistProfile.id,
+          },
+        },
+      }),
+    ])
+
+    // Verify the psychologist has access to this patient
+    if (appointments.length === 0 && !link) return null
+
+    const now = new Date()
+    const pastAppts = appointments.filter((a) => a.scheduledAt < now)
+    const futureAppts = appointments.filter((a) => a.scheduledAt >= now)
+
+    const lastSession =
+      pastAppts.length > 0 ? pastAppts[pastAppts.length - 1].scheduledAt : undefined
+    const nextSession = futureAppts.length > 0 ? futureAppts[0].scheduledAt : undefined
+
+    const formatDate = (date: Date) =>
+      new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date)
+
+    return {
+      id: profile.id,
+      userId: profile.users.id,
+      name: profile.fullName || profile.users.name || 'Paciente',
+      email: profile.users.email,
+      phone: profile.phone || '',
+      image: profile.avatarUrl || profile.users.image || undefined,
+      status: (link?.status ?? 'active') as 'active' | 'inactive' | 'archived',
+      totalSessions: appointments.length,
+      lastSession: lastSession ? formatDate(lastSession) : undefined,
+      nextSession: nextSession ? formatDate(nextSession) : undefined,
+      gender: profile.gender || '',
+      profession: profile.profession || '',
+      document: profile.document || '',
+      birthDate: profile.birth_date ? new Date(profile.birth_date).toLocaleDateString('pt-BR') : '',
+      address: {
+        line: profile.addressLine || '',
+        city: profile.city || '',
+        state: profile.state || '',
+        zip: profile.zipCode || '',
+      },
+    }
+  } catch (error) {
+    logger.error('Error fetching patient by id:', error)
+    return null
+  }
+}
+
 export async function getPsychologistPatients(): Promise<PatientData[]> {
   try {
     const supabase = await createClient()
