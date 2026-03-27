@@ -24,6 +24,7 @@ type Psychologist = {
   suspensionReason?: string | null
   createdAt: string
   avatarUrl?: string | null
+  stripeOnboardingComplete?: boolean
 }
 
 export function PsychologistList({
@@ -33,6 +34,10 @@ export function PsychologistList({
 }) {
   const [psychologists, setPsychologists] = useState(initialPsychologists)
   const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'verified' | 'pending' | 'suspended'>(
+    'all'
+  )
+  const [stripeFilter, setStripeFilter] = useState<'all' | 'complete' | 'incomplete'>('all')
 
   const [loadingId, setLoadingId] = useState<string | null>(null)
 
@@ -47,12 +52,25 @@ export function PsychologistList({
   const [isReasonDialogOpen, setIsReasonDialogOpen] = useState(false)
   const [viewReasonData, setViewReasonData] = useState<Psychologist | null>(null)
 
-  const filtered = psychologists.filter(
-    (p) =>
+  const filtered = psychologists.filter((p) => {
+    const matchesSearch =
       p.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (p.crp && p.crp.includes(searchTerm))
-  )
+
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'verified' && p.isVerified) ||
+      (statusFilter === 'pending' && !p.isVerified && !p.suspensionReason) ||
+      (statusFilter === 'suspended' && p.suspensionReason)
+
+    const matchesStripe =
+      stripeFilter === 'all' ||
+      (stripeFilter === 'complete' && p.stripeOnboardingComplete) ||
+      (stripeFilter === 'incomplete' && !p.stripeOnboardingComplete)
+
+    return matchesSearch && matchesStatus && matchesStripe
+  })
 
   const handleSuspend = async () => {
     if (!selectedPsy) return
@@ -98,16 +116,55 @@ export function PsychologistList({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <input
-          type="text"
-          placeholder="Buscar por nome, email ou CRP"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full sm:max-w-md px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-        />
-        <div className="text-sm text-neutral-500 font-medium">
-          Total: {filtered.length} registrados
+      <div className="flex flex-col md:flex-row gap-4 items-end justify-between">
+        <div className="w-full md:max-w-xs">
+          <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 ml-1">
+            BUSCAR PROFISSIONAL
+          </label>
+          <input
+            type="text"
+            placeholder="Nome, email ou CRP..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-2 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm shadow-sm"
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-4 w-full md:w-auto">
+          <div className="min-w-[140px]">
+            <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 ml-1">
+              STATUS DE VERIFICAÇÃO
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="w-full px-3 py-2 border border-neutral-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm"
+            >
+              <option value="all">Todos os Status</option>
+              <option value="verified">Aprovados</option>
+              <option value="pending">Pendentes</option>
+              <option value="suspended">Suspensos</option>
+            </select>
+          </div>
+
+          <div className="min-w-[140px]">
+            <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 ml-1">
+              STATUS FINANCEIRO
+            </label>
+            <select
+              value={stripeFilter}
+              onChange={(e) => setStripeFilter(e.target.value as any)}
+              className="w-full px-3 py-2 border border-neutral-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm"
+            >
+              <option value="all">Todos (Stripe)</option>
+              <option value="complete">Stripe Concluído</option>
+              <option value="incomplete">Pendente Stripe</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="text-sm text-neutral-500 font-medium pb-2">
+          {filtered.length} registrados
         </div>
       </div>
 
@@ -133,6 +190,12 @@ export function PsychologistList({
                   className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider"
                 >
                   Status
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider"
+                >
+                  Stripe
                 </th>
                 <th
                   scope="col"
@@ -199,6 +262,17 @@ export function PsychologistList({
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap">
                         <ShieldAlert className="w-3.5 h-3.5 mr-1" />
                         Aguardando Aprovação
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {p.stripeOnboardingComplete ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100 uppercase tracking-tight">
+                        Ativo
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-neutral-50 text-neutral-400 border border-neutral-100 uppercase tracking-tight">
+                        Pendente
                       </span>
                     )}
                   </td>

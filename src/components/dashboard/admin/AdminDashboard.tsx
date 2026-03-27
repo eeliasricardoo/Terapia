@@ -33,7 +33,7 @@ export function AdminDashboard({ userProfile, dashboardData }: Props) {
       </div>
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         <StatCard
           title="Total Usuários"
           value={dashboardData.totalUsers}
@@ -57,6 +57,22 @@ export function AdminDashboard({ userProfile, dashboardData }: Props) {
           value={dashboardData.totalAppointments}
           icon={Calendar}
           color="slate"
+        />
+        <StatCard
+          title="Faturamento Bruto"
+          value={new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+            dashboardData.totalRevenue
+          )}
+          icon={Activity}
+          color="primary"
+        />
+        <StatCard
+          title="Receita Plataforma"
+          value={new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+            dashboardData.platformProfit
+          )}
+          icon={ShieldCheck}
+          color="primary"
         />
       </div>
 

@@ -149,6 +149,25 @@ export async function searchPsychologists(
     query = query.lte('price_per_session', filters.maxPrice)
   }
 
+  // Filter by gender
+  if (filters.genders && filters.genders.length > 0) {
+    const { data: matchedProfiles, error: genderError } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .in('gender', filters.genders)
+
+    if (genderError) {
+      logger.error('Error fetching profiles by gender:', genderError)
+    }
+
+    if (matchedProfiles && matchedProfiles.length > 0) {
+      const userIds = matchedProfiles.map((p: { user_id: string }) => p.user_id)
+      query = query.in('userId', userIds)
+    } else {
+      return []
+    }
+  }
+
   // Apply pagination only if searchQuery is NOT provided
   if (!filters.searchQuery) {
     query = query.range(from, to)

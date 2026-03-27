@@ -44,6 +44,7 @@ async function fetchPsychologistDashboard(userId: string): Promise<PsychologistD
       unreadNotifications: 0,
       isVerified: false,
       hasStripeAccount: false,
+      stripeOnboardingComplete: false,
       timezone: 'America/Sao_Paulo',
       upcomingSessions: [],
       futureSessions: [],
@@ -217,6 +218,7 @@ async function fetchPsychologistDashboard(userId: string): Promise<PsychologistD
     unreadNotifications,
     isVerified: psychProfile.isVerified,
     hasStripeAccount: !!psychProfile.stripeAccountId,
+    stripeOnboardingComplete: psychProfile.stripeOnboardingComplete,
     timezone: psychProfile.timezone || 'America/Sao_Paulo',
     upcomingSessions: upcomingSessions.map((s) => ({
       id: s.id,
