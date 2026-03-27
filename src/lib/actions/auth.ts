@@ -500,3 +500,43 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
     }
   }
 }
+
+export async function updatePassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<ActionResult> {
+  try {
+    const supabase = await createClient()
+
+    // Verify current password by trying to sign in again
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user || !user.email) {
+      return { success: false, error: 'Usuário não autenticado.' }
+    }
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    })
+
+    if (signInError) {
+      return { success: false, error: 'Senha atual incorreta.' }
+    }
+
+    // Update with new password
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+    })
+
+    if (updateError) {
+      return { success: false, error: updateError.message }
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    logger.error('updatePassword error:', error)
+    return { success: false, error: 'Erro ao atualizar senha. Tente novamente.' }
+  }
+}

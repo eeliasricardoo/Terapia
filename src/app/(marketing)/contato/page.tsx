@@ -1,15 +1,42 @@
-import { Metadata } from 'next'
+'use client'
+
 import { Mail, Phone, MapPin, MessageCircle, Send } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-
-export const metadata: Metadata = {
-  title: 'Contato | Terapia',
-  description: 'Entre em contato com a equipe da Terapia para suporte ou dúvidas.',
-}
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { sendContactForm } from '@/lib/actions/contact'
 
 export default function ContatoPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    try {
+      const formData = new FormData(e.currentTarget)
+      const result = await sendContactForm(formData)
+
+      if (result.success) {
+        toast.success('Mensagem enviada com sucesso!', {
+          description: 'Nossa equipe entrará em contato em breve.',
+        })
+        const form = e.target as HTMLFormElement
+        form.reset()
+      } else {
+        toast.error('Erro ao enviar mensagem', {
+          description: result.error,
+        })
+      }
+    } catch (err) {
+      toast.error('Ocorreu um erro inesperado. Tente novamente.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className="bg-slate-50 min-h-screen py-20 px-6">
       <div className="container max-w-6xl mx-auto">
@@ -37,10 +64,10 @@ export default function ContatoPage() {
                 <div>
                   <h3 className="font-bold text-slate-900">E-mail</h3>
                   <a
-                    href="mailto:ajuda@terapiaplataforma.com.br"
+                    href="mailto:ajuda@mindcares.com.br"
                     className="text-slate-500 hover:text-blue-600 font-medium text-sm md:text-base"
                   >
-                    ajuda@terapiaplataforma.com.br
+                    ajuda@mindcares.com.br
                   </a>
                 </div>
               </div>
@@ -52,7 +79,9 @@ export default function ContatoPage() {
                 <div>
                   <h3 className="font-bold text-slate-900">WhatsApp Suporte</h3>
                   <a
-                    href="#"
+                    href="https://wa.me/5511987654321"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-slate-500 hover:text-green-600 font-medium text-sm md:text-base"
                   >
                     (11) 98765-4321
@@ -67,7 +96,7 @@ export default function ContatoPage() {
                 <div>
                   <h3 className="font-bold text-slate-900">Localização</h3>
                   <p className="text-slate-500 font-medium text-sm md:text-base">
-                    Rua Digital, 123 - São Paulo, SP
+                    Mind Cares Hub - São Paulo, SP
                   </p>
                 </div>
               </div>
@@ -77,7 +106,7 @@ export default function ContatoPage() {
           {/* Formulário */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-xl shadow-slate-200/50 border border-slate-100">
-              <form className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label htmlFor="name" className="text-sm font-bold text-slate-700 ml-1">
@@ -85,6 +114,8 @@ export default function ContatoPage() {
                     </label>
                     <Input
                       id="name"
+                      name="name"
+                      required
                       placeholder="Seu nome"
                       className="h-14 rounded-2xl bg-slate-50 border-slate-100 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all font-medium"
                     />
@@ -95,7 +126,9 @@ export default function ContatoPage() {
                     </label>
                     <Input
                       id="email"
+                      name="email"
                       type="email"
+                      required
                       placeholder="seu@email.com"
                       className="h-14 rounded-2xl bg-slate-50 border-slate-100 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all font-medium"
                     />
@@ -108,6 +141,8 @@ export default function ContatoPage() {
                   </label>
                   <Input
                     id="subject"
+                    name="subject"
+                    required
                     placeholder="Como podemos ajudar?"
                     className="h-14 rounded-2xl bg-slate-50 border-slate-100 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all font-medium"
                   />
@@ -119,14 +154,20 @@ export default function ContatoPage() {
                   </label>
                   <Textarea
                     id="message"
+                    name="message"
+                    required
                     placeholder="Escreva sua mensagem aqui..."
                     className="min-h-[160px] rounded-2xl bg-slate-50 border-slate-100 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all font-medium resize-none p-4"
                   />
                 </div>
 
-                <Button className="w-full h-16 rounded-2xl bg-slate-900 hover:bg-black text-white font-extrabold text-lg shadow-xl shadow-slate-900/20 group transition-all active:scale-95">
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full h-16 rounded-2xl bg-slate-900 hover:bg-black text-white font-extrabold text-lg shadow-xl shadow-slate-900/20 group transition-all active:scale-95"
+                >
                   <span className="flex items-center gap-2">
-                    Enviar Mensagem
+                    {isSubmitting ? 'Enviando...' : 'Enviar Mensagem'}
                     <Send className="h-5 w-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                   </span>
                 </Button>

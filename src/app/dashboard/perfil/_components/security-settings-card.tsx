@@ -16,6 +16,8 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 
+import { updatePassword } from '@/lib/actions/auth'
+
 export function SecuritySettingsCard() {
   const [isLoading, setIsLoading] = useState(false)
   const [passwords, setPasswords] = useState({
@@ -28,27 +30,20 @@ export function SecuritySettingsCard() {
 
   const validatePassword = (password: string): string[] => {
     const errors: string[] = []
-
-    if (password.length < 8) {
-      errors.push('Senha deve ter pelo menos 8 caracteres')
-    }
-    if (!/[A-Z]/.test(password)) {
-      errors.push('Senha deve conter pelo menos uma letra maiúscula')
-    }
-    if (!/[a-z]/.test(password)) {
-      errors.push('Senha deve conter pelo menos uma letra minúscula')
-    }
-    if (!/[0-9]/.test(password)) {
-      errors.push('Senha deve conter pelo menos um número')
-    }
-    if (!/[\W_]/.test(password)) {
-      errors.push('Senha deve conter pelo menos um caractere especial')
-    }
-
+    if (password.length < 8) errors.push('Senha deve ter pelo menos 8 caracteres')
+    if (!/[A-Z]/.test(password)) errors.push('Senha deve conter pelo menos uma letra maiúscula')
+    if (!/[a-z]/.test(password)) errors.push('Senha deve conter pelo menos uma letra minúscula')
+    if (!/[0-9]/.test(password)) errors.push('Senha deve conter pelo menos um número')
+    if (!/[\W_]/.test(password)) errors.push('Senha deve conter pelo menos um caractere especial')
     return errors
   }
 
-  const handlePasswordChange = () => {
+  const handleCancel = () => {
+    setPasswords({ current: '', new: '', confirm: '' })
+    setPasswordErrors([])
+  }
+
+  const handlePasswordChange = async () => {
     setPasswordErrors([])
 
     if (!passwords.current || !passwords.new || !passwords.confirm) {
@@ -75,16 +70,26 @@ export function SecuritySettingsCard() {
     }
 
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const result = await updatePassword(passwords.current, passwords.new)
+
+      if (result.success) {
+        setPasswords({ current: '', new: '', confirm: '' })
+        setPasswordErrors([])
+        toast.success('Senha alterada com sucesso!', {
+          description: 'Sua senha foi atualizada.',
+          duration: 3000,
+        })
+      } else {
+        toast.error('Erro ao alterar senha', {
+          description: result.error,
+        })
+      }
+    } catch (err) {
+      toast.error('Ocorreu um erro inesperado.')
+    } finally {
       setIsLoading(false)
-      setPasswords({ current: '', new: '', confirm: '' })
-      setPasswordErrors([])
-      toast.success('Senha alterada com sucesso!', {
-        description: 'Sua senha foi atualizada.',
-        duration: 3000,
-      })
-    }, 1000)
+    }
   }
 
   return (
@@ -158,7 +163,7 @@ export function SecuritySettingsCard() {
         </div>
       </CardContent>
       <CardFooter className="flex justify-end border-t p-6">
-        <Button variant="outline" className="mr-4">
+        <Button variant="outline" className="mr-4" onClick={handleCancel} disabled={isLoading}>
           Cancelar
         </Button>
         <Button onClick={handlePasswordChange} disabled={isLoading}>

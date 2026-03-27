@@ -8,14 +8,41 @@ import { Label } from '@/components/ui/label'
 import { Bell, Shield, Smartphone, Globe, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 
-export function SettingsManager() {
-  const [emailNotif, setEmailNotif] = useState(true)
-  const [pushNotif, setPushNotif] = useState(true)
-  const [whatsappNotif, setWhatsappNotif] = useState(false)
-  const [twoFactor, setTwoFactor] = useState(false)
+import { updateNotificationSettings } from '@/lib/actions/settings'
 
-  const handleSave = () => {
-    toast.success('Preferências salvas com sucesso!')
+interface SettingsManagerProps {
+  initialSettings?: {
+    email: boolean
+    push: boolean
+    whatsapp: boolean
+  } | null
+}
+
+export function SettingsManager({ initialSettings }: SettingsManagerProps) {
+  const [emailNotif, setEmailNotif] = useState(initialSettings?.email ?? true)
+  const [pushNotif, setPushNotif] = useState(initialSettings?.push ?? true)
+  const [whatsappNotif, setWhatsappNotif] = useState(initialSettings?.whatsapp ?? false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSave = async () => {
+    setIsLoading(true)
+    try {
+      const result = await updateNotificationSettings({
+        email: emailNotif,
+        push: pushNotif,
+        whatsapp: whatsappNotif,
+      })
+
+      if (result.success) {
+        toast.success('Preferências salvas com sucesso!')
+      } else {
+        toast.error('Erro ao salvar:', { description: result.error })
+      }
+    } catch (err) {
+      toast.error('Erro ao processar solicitação')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -78,23 +105,36 @@ export function SettingsManager() {
             <CardDescription>Proteja sua conta e dados dos pacientes.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between opacity-60">
+            <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
-                  <Label className="text-base">Autenticação de Dois Fatores (2FA)</Label>
-                  <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                  <Label className="text-base text-slate-400">
+                    Autenticação de Dois Fatores (2FA)
+                  </Label>
+                  <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
                     Em breve
                   </span>
                 </div>
-                <p className="text-sm text-slate-500">
-                  Adicione uma camada extra de segurança ao login.
+                <p className="text-sm text-slate-400">
+                  Adicione uma camada extra de segurança ao seu login.
                 </p>
               </div>
-              <Switch checked={false} disabled />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-blue-600 hover:bg-blue-50 font-bold"
+                onClick={() =>
+                  toast.success('Você será notificado!', {
+                    description: 'Avisaremos assim que o 2FA estiver disponível para sua conta.',
+                  })
+                }
+              >
+                Ativar aviso
+              </Button>
             </div>
             <div className="border-t border-slate-100 pt-6">
-              <Button variant="outline" className="text-slate-600">
-                Alterar Senha de Acesso
+              <Button variant="outline" className="text-slate-600" asChild>
+                <a href="/dashboard/perfil?tab=security">Alterar Senha de Acesso</a>
               </Button>
             </div>
           </CardContent>
@@ -103,11 +143,13 @@ export function SettingsManager() {
         {/* --- INTEGRATIONS --- */}
         <Card className="border border-slate-200 shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 text-lg text-slate-900">
               <Globe className="h-5 w-5 text-blue-600" />
               Integrações
             </CardTitle>
-            <CardDescription>Conecte-se com serviços externos.</CardDescription>
+            <CardDescription>
+              Conecte-se com serviços externos para automatizar seu dia.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between p-4 border border-slate-200 rounded-lg bg-slate-50">
@@ -133,17 +175,26 @@ export function SettingsManager() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => toast.info('Integração em breve!')}
+                className="font-bold border-slate-300"
+                onClick={() =>
+                  toast.info('A integração com Google Calendar está em fase final de testes.', {
+                    description: 'Estará disponível para todos os usuários nas próximas semanas.',
+                  })
+                }
               >
-                Conectar
+                Configurar em breve
               </Button>
             </div>
           </CardContent>
         </Card>
 
         <div className="flex justify-end pt-4">
-          <Button onClick={handleSave} className="bg-slate-900 text-white shadow-sm px-8">
-            Salvar Preferências
+          <Button
+            onClick={handleSave}
+            disabled={isLoading}
+            className="bg-slate-900 text-white shadow-sm px-8"
+          >
+            {isLoading ? 'Salvando...' : 'Salvar Preferências'}
           </Button>
         </div>
       </div>

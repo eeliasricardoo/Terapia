@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,6 +7,7 @@ import { Calendar, User, FileText, ChevronRight, MessageCircle, AlertCircle } fr
 import type { PublicEvolution } from '@/lib/actions/evolutions'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { toast } from 'sonner'
 
 interface ProntuarioClientProps {
   evolutions: PublicEvolution[]
@@ -73,6 +73,11 @@ export function ProntuarioClient({ evolutions }: ProntuarioClientProps) {
                     variant="ghost"
                     size="sm"
                     className="text-slate-500 hover:text-slate-900 gap-1"
+                    onClick={() =>
+                      toast.info(
+                        'O resumo atual já contém todas as informações compartilhadas pelo profissional.'
+                      )
+                    }
                   >
                     Ver detalhes <ChevronRight className="h-4 w-4" />
                   </Button>

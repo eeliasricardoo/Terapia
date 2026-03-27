@@ -102,7 +102,7 @@ export function SuccessState({
       </div>
       <p className="text-sm text-slate-400 mt-8">
         Se tiver alguma dúvida, não hesite em{' '}
-        <a href="#" className="underline hover:text-blue-600">
+        <a href="/dashboard/suporte" className="underline hover:text-blue-600">
           contatar o suporte
         </a>
         .

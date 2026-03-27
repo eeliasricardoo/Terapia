@@ -26,6 +26,7 @@ model User {
   notifications       Notification[]
   profiles            Profile?
   psychologistProfile PsychologistProfile?
+  notificationSettings Json?                    @default("{\"email\": true, \"push\": true, \"whatsapp\": false}") @map("notification_settings")
 
   @@map("users")
 }

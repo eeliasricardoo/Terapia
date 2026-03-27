@@ -211,6 +211,11 @@ export function FinancialManager() {
           <Button
             variant="outline"
             className="gap-2 bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+            onClick={() =>
+              toast.info('Recurso de exportação em desenvolvimento', {
+                description: 'Em breve você poderá baixar relatórios em CSV e PDF.',
+              })
+            }
           >
             <Download className="h-4 w-4" />
             Exportar
@@ -456,7 +461,16 @@ export function FinancialManager() {
               <CardTitle className="text-lg">Transações Recentes</CardTitle>
               <CardDescription>Histórico dos últimos atendimentos</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-primary hover:bg-primary/10"
+              onClick={() =>
+                toast.info('Histórico completo em desenvolvimento', {
+                  description: 'Em breve você terá acesso a todas as suas transações passadas.',
+                })
+              }
+            >
               Ver todas
             </Button>
           </div>

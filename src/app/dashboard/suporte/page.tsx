@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { toast } from 'sonner'
 
 export default function SuportePage() {
   return (
@@ -46,7 +47,7 @@ export default function SuportePage() {
               <p className="text-xs text-slate-500 mt-1 italic">Seg à Sex, 09h às 18h</p>
             </div>
             <Button className="w-full bg-emerald-600 hover:bg-emerald-700 rounded-xl" asChild>
-              <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer">
+              <a href="https://wa.me/5511987654321" target="_blank" rel="noopener noreferrer">
                 Falar agora
               </a>
             </Button>
@@ -63,7 +64,7 @@ export default function SuportePage() {
               <p className="text-xs text-slate-500 mt-1 italic">Resposta em até 24h</p>
             </div>
             <Button className="w-full bg-primary hover:bg-primary/90 rounded-xl" asChild>
-              <a href="mailto:suporte@terapia.com">Enviar E-mail</a>
+              <a href="mailto:ajuda@mindcares.com.br">Enviar E-mail</a>
             </Button>
           </CardContent>
         </Card>
@@ -77,10 +78,16 @@ export default function SuportePage() {
               <h3 className="font-bold text-slate-900">Central de Ajuda</h3>
               <p className="text-xs text-slate-500 mt-1 italic">Tutoriais e FAQs</p>
             </div>
-            <Button variant="outline" className="w-full rounded-xl border-slate-200" asChild>
-              <Link href="#">
-                Acessar Wiki <ExternalLink className="h-3 w-3 ml-2" />
-              </Link>
+            <Button
+              variant="outline"
+              className="w-full rounded-xl border-slate-200"
+              onClick={() =>
+                toast.info('Nossa nova Central de Ajuda Mind Cares está sendo preparada.', {
+                  description: 'Em breve você terá acesso a tutoriais completos.',
+                })
+              }
+            >
+              Acessar Wiki <ExternalLink className="h-3 w-3 ml-2" />
             </Button>
           </CardContent>
         </Card>

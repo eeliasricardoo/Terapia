@@ -15,8 +15,11 @@ import { Badge } from '@/components/ui/badge'
 import { Building2, CheckCircle2, ShieldCheck, ArrowRight, Info, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { linkCompanyBenefit, unlinkCompanyBenefit } from '@/lib/actions/company'
+
 interface CompanyBenefitCardProps {
   currentCompany?: {
+    id: string
     name: string
     joinedAt: string
     status: string
@@ -26,20 +29,43 @@ interface CompanyBenefitCardProps {
 export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) {
   const [code, setCode] = useState('')
   const [isValidating, setIsValidating] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleLink = async () => {
     if (!code) return
     setIsValidating(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsValidating(false)
-      if (code.toUpperCase() === 'MILANO-CARE-2024') {
+    try {
+      const result = await linkCompanyBenefit(code)
+      if (result.success) {
         toast.success('Vínculo Confirmado! Você agora possui o benefício.')
+        setCode('')
       } else {
-        toast.error('Código Inválido. Verifique com seu RH.')
+        toast.error('Código Inválido', { description: result.error })
       }
-    }, 1500)
+    } catch (err) {
+      toast.error('Erro ao processar solicitação')
+    } finally {
+      setIsValidating(false)
+    }
+  }
+
+  const handleUnlink = async () => {
+    if (!currentCompany?.id) return
+
+    setIsLoading(true) // Wait, I need to add isLoading state
+    try {
+      const result = await unlinkCompanyBenefit(currentCompany.id)
+      if (result.success) {
+        toast.success('Vínculo removido com sucesso.')
+      } else {
+        toast.error('Erro ao remover vínculo', { description: result.error })
+      }
+    } catch (err) {
+      toast.error('Erro ao processar solicitação')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -82,8 +108,10 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
               <Button
                 variant="outline"
                 className="rounded-xl border-red-100 text-red-500 hover:bg-red-50 hover:text-red-600 font-bold px-6 border-2"
+                onClick={handleUnlink}
+                disabled={isLoading}
               >
-                Remover Vínculo
+                {isLoading ? 'Removendo...' : 'Remover Vínculo'}
               </Button>
             </div>
           ) : (

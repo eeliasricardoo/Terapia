@@ -173,8 +173,9 @@ export const SearchFilters = memo(function SearchFilters({
       <Separator />
 
       <div className="pt-2">
-        <p className="text-[11px] text-slate-400 italic">
-          * Mais filtros (Idiomas e Disponibilidade) serão liberados em breve.
+        <p className="text-[11px] text-slate-400 font-medium">
+          <span className="text-blue-500 font-bold mr-1">Próximas atualizações:</span>
+          Filtros por idiomas e disponibilidade em tempo real.
         </p>
       </div>
     </div>
