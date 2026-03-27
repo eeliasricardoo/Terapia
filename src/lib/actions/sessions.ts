@@ -154,13 +154,26 @@ export const cancelSession = createSafeAction(z.string().uuid(), async (sessionI
 
   if (appointment.status === 'CANCELED') throw new Error('Sessão já cancelada.')
 
-  // Refund logic
   const now = new Date()
   const hoursUntilSession = (appointment.scheduledAt.getTime() - now.getTime()) / (1000 * 60 * 60)
+
+  const isPsychologist = user.id === appointment.psychologist.userId
+  const isPatient = user.id === appointment.patientId
+
+  // Refund eligibility:
+  // 1. Paid via Stripe
+  // 2. Either psych cancelled (always refund) OR patient cancelled more than 24h before
   const isRefundEligible =
     appointment.paymentMethod === 'Stripe' &&
     (appointment as any).stripePaymentIntentId !== null &&
-    hoursUntilSession > 5
+    (isPsychologist || hoursUntilSession > 24)
+
+  if (isPatient && hoursUntilSession <= 24) {
+    logger.warn(
+      `Patient ${user.id} cancelling session ${sessionId} within 24h window. No automatic refund.`,
+      { hours: hoursUntilSession }
+    )
+  }
 
   let refunded = false
   if (isRefundEligible) {
@@ -173,6 +186,9 @@ export const cancelSession = createSafeAction(z.string().uuid(), async (sessionI
       if (!refunded) {
         throw new Error('Falha ao processar estorno no Stripe. A sessão permanece ativa.')
       }
+      logger.info(
+        `Refund issued for session ${sessionId} (${isPsychologist ? 'by psychologist' : 'by patient > 24h'})`
+      )
     } catch (e: any) {
       logger.error(`Refund failed for ${sessionId}:`, e)
       throw new Error(`Erro no estorno: ${e.message}. Tente novamente ou contate o suporte.`)

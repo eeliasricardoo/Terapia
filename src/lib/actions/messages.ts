@@ -140,11 +140,12 @@ export async function sendMessage(conversationId: string, content: string) {
   if (!profile) return { success: false, error: 'Não autorizado' }
 
   try {
+    const encryptedContent = encryptData(content)
     const message = await prisma.message.create({
       data: {
         conversationId,
         senderId: profile.user_id,
-        content: encryptData(content),
+        content: encryptedContent,
       },
     })
 
@@ -152,6 +153,23 @@ export async function sendMessage(conversationId: string, content: string) {
       where: { id: conversationId },
       data: { lastMessageAt: new Date() },
     })
+
+    // Trigger Pusher event for Real-time
+    try {
+      const { pusherServer } = await import('@/lib/pusher')
+      if (process.env.PUSHER_APP_ID && process.env.NEXT_PUBLIC_PUSHER_KEY) {
+        await pusherServer.trigger(`conversation-${conversationId}`, 'new-message', {
+          id: message.id,
+          content: content, // plaintext for client
+          senderId: profile.user_id,
+          senderName: profile.full_name || 'Usuário',
+          createdAt: message.createdAt,
+        })
+      }
+    } catch (pusherError) {
+      logger.error('Failed to trigger Pusher event:', pusherError)
+      // We don't fail the message if Pusher fails, it's a "bonus" (soft failure)
+    }
 
     revalidatePath('/dashboard/mensagens')
     return { success: true, messageId: message.id }
