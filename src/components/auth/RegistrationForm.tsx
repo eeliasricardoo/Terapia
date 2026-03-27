@@ -75,7 +75,15 @@ export function RegistrationForm() {
     formState: { isDirty, isValid, errors },
   } = form
 
+  const [honeypot, setHoneypot] = useState('')
+
   async function onSubmit(values: RegistrationInput) {
+    if (honeypot) {
+      logger.warn('Honeypot filled, rejecting bot.')
+      toast.error('Ocorreu um erro ao processar seu cadastro. Tente novamente.')
+      return
+    }
+
     startTransition(async () => {
       try {
         const formData = new FormData()
@@ -182,6 +190,17 @@ export function RegistrationForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {step === 1 && (
               <div className="space-y-4">
+                {/* Honeypot field for simple bot protection */}
+                <div style={{ display: 'none' }} aria-hidden="true">
+                  <input
+                    type="text"
+                    name="confirm_user_registration_verification"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </div>
                 <FormField
                   control={form.control}
                   name="name"

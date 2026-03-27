@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache'
 import { sendEmail } from '@/lib/utils/email'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getApprovalEmailTemplate, getRejectionEmailTemplate } from '@/lib/utils/email-templates'
+import { createAuditLog } from '@/lib/utils/audit'
 
 export async function getPendingPsychologists() {
   try {
@@ -180,6 +181,15 @@ export async function verifyPsychologist(psychologistId: string) {
       ),
     })
 
+    // Audit Log
+    await createAuditLog({
+      userId: user.id,
+      action: 'VERIFY_PSYCHOLOGIST',
+      entity: 'PsychologistProfile',
+      entityId: psychologistId,
+      newData: { isVerified: true },
+    })
+
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/admin/aprovacoes')
     return { success: true }
@@ -351,6 +361,16 @@ export async function rejectPsychologist(psychologistId: string, reason: string)
       html: getRejectionEmailTemplate(psychologist.user.profiles?.fullName || 'Psicólogo', reason),
     })
 
+    // Audit Log
+    await createAuditLog({
+      userId: user.id,
+      action: 'REJECT_PSYCHOLOGIST',
+      entity: 'PsychologistProfile',
+      entityId: psychologistId,
+      oldData: { psychologistUserId: psychologist.userId },
+      newData: { reason },
+    })
+
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/admin/aprovacoes')
     return { success: true }
@@ -412,6 +432,15 @@ export async function suspendPsychologistAccess(
       })
     }
 
+    // Audit Log
+    await createAuditLog({
+      userId: user.id,
+      action: 'SUSPEND_PSYCHOLOGIST',
+      entity: 'PsychologistProfile',
+      entityId: psychologistId,
+      newData: { reason },
+    })
+
     revalidatePath('/dashboard/admin/psicologos')
     return { success: true }
   } catch (error) {
@@ -455,6 +484,16 @@ export async function createHealthInsurance(name: string) {
     await ensureAdmin()
     const insurance = await prisma.healthInsurance.create({
       data: { name },
+    })
+
+    // Audit Log
+    const user = await ensureAdmin()
+    await createAuditLog({
+      userId: user.id,
+      action: 'CREATE_HEALTH_INSURANCE',
+      entity: 'HealthInsurance',
+      entityId: insurance.id,
+      newData: { name },
     })
     revalidatePath('/dashboard/admin/planos')
     return { success: true, data: insurance }
