@@ -29,10 +29,14 @@ import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 import { maskCRP } from '@/lib/utils/crp'
 import { registerPsychologistSupabase } from '@/lib/actions/auth'
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+import { useRef } from 'react'
 
 export function RegistrationForm() {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const turnstileRef = useRef<TurnstileInstance>(null)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const form = useForm<ProfessionalRegistrationInput>({
     resolver: zodResolver(professionalRegistrationSchema),
     defaultValues: {
@@ -54,12 +58,18 @@ export function RegistrationForm() {
 
     startTransition(async () => {
       try {
+        if (!captchaToken && process.env.NODE_ENV === 'production') {
+          toast.error('Por favor, complete a verificação de segurança.')
+          return
+        }
+
         const formData = new FormData()
         formData.append('name', values.name)
         formData.append('email', values.email)
         formData.append('password', values.password)
         formData.append('professionalCard', values.professionalCard)
         formData.append('terms', 'true')
+        if (captchaToken) formData.append('captcha_token', captchaToken)
 
         const result = await registerPsychologistSupabase(formData)
 
@@ -190,6 +200,19 @@ export function RegistrationForm() {
               </FormItem>
             )}
           />
+
+          <div className="flex justify-center py-2">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+              onSuccess={(token) => setCaptchaToken(token)}
+              onExpire={() => setCaptchaToken(null)}
+              onError={() => setCaptchaToken(null)}
+              options={{
+                theme: 'light',
+              }}
+            />
+          </div>
 
           <Button
             type="submit"

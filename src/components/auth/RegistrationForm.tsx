@@ -36,6 +36,8 @@ import {
 import { maskCPF, cleanCPF, isValidCPF } from '@/lib/utils/cpf'
 import { registerPatientSupabase } from '@/lib/actions/auth'
 import { auth } from '@/lib/supabase/auth'
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+import { useRef } from 'react'
 
 export function RegistrationForm() {
   const router = useRouter()
@@ -44,6 +46,8 @@ export function RegistrationForm() {
   const [step, setStep] = useState(1)
   const [isPending, startTransition] = useTransition()
   const [insurances, setInsurances] = useState<{ id: string; name: string }[]>([])
+  const turnstileRef = useRef<TurnstileInstance>(null)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
 
   useState(() => {
     async function fetchInsurances() {
@@ -84,6 +88,11 @@ export function RegistrationForm() {
       return
     }
 
+    if (!captchaToken && process.env.NODE_ENV === 'production') {
+      toast.error('Por favor, complete a verificação de segurança.')
+      return
+    }
+
     startTransition(async () => {
       try {
         const formData = new FormData()
@@ -95,6 +104,7 @@ export function RegistrationForm() {
         formData.append('password', values.password)
         formData.append('confirmPassword', values.confirmPassword)
         formData.append('terms', String(values.terms))
+        if (captchaToken) formData.append('captcha_token', captchaToken)
         if (values.healthInsuranceId) formData.append('healthInsuranceId', values.healthInsuranceId)
         if (values.healthInsurancePolicy)
           formData.append('healthInsurancePolicy', values.healthInsurancePolicy)
@@ -455,6 +465,21 @@ export function RegistrationForm() {
                     </FormItem>
                   )}
                 />
+
+                <div className="flex justify-center py-2">
+                  <Turnstile
+                    ref={turnstileRef}
+                    siteKey={
+                      process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'
+                    }
+                    onSuccess={(token) => setCaptchaToken(token)}
+                    onExpire={() => setCaptchaToken(null)}
+                    onError={() => setCaptchaToken(null)}
+                    options={{
+                      theme: 'light',
+                    }}
+                  />
+                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Button type="button" variant="outline" onClick={prevStep} className="w-full">

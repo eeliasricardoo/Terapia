@@ -12,6 +12,7 @@ import {
   checkRateLimit,
   checkLoginRateLimit,
   checkForgotPasswordRateLimit,
+  validateCaptcha,
 } from '@/lib/security'
 import { headers } from 'next/headers'
 import { logger } from '@/lib/utils/logger'
@@ -31,6 +32,13 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
     const rateLimit = await checkRateLimit(`register_${ip}`)
     if (!rateLimit.success) {
       return { success: false, error: 'Muitas tentativas de cadastro. Tente novamente mais tarde.' }
+    }
+
+    // Captcha validation
+    const captchaToken = formData.get('captcha_token') as string
+    const isCaptchaValid = await validateCaptcha(captchaToken)
+    if (!isCaptchaValid) {
+      return { success: false, error: 'Falha na verificação de robô. Tente novamente.' }
     }
 
     // Extract data from FormData
@@ -318,6 +326,13 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
         success: false,
         error: 'Muitas tentativas de cadastro. Tente novamente mais tarde.',
       }
+    }
+
+    // Captcha validation
+    const captchaToken = formData.get('captcha_token') as string
+    const isCaptchaValid = await validateCaptcha(captchaToken)
+    if (!isCaptchaValid) {
+      return { success: false, error: 'Falha na verificação de robô. Tente novamente.' }
     }
 
     const rawData = {

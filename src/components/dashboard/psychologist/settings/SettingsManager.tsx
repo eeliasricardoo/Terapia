@@ -78,14 +78,19 @@ export function SettingsManager() {
             <CardDescription>Proteja sua conta e dados dos pacientes.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between opacity-60">
               <div className="space-y-0.5">
-                <Label className="text-base">Autenticação de Dois Fatores (2FA)</Label>
+                <div className="flex items-center gap-2">
+                  <Label className="text-base">Autenticação de Dois Fatores (2FA)</Label>
+                  <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                    Em breve
+                  </span>
+                </div>
                 <p className="text-sm text-slate-500">
                   Adicione uma camada extra de segurança ao login.
                 </p>
               </div>
-              <Switch checked={twoFactor} onCheckedChange={setTwoFactor} />
+              <Switch checked={false} disabled />
             </div>
             <div className="border-t border-slate-100 pt-6">
               <Button variant="outline" className="text-slate-600">

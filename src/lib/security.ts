@@ -197,15 +197,15 @@ export async function checkForgotPasswordRateLimit(ip: string) {
  */
 export async function checkAppointmentRateLimit(userId: string) {
   if (!appointmentRatelimitInstance) {
-    logger.warn('⚠️ [Rate Limiter] Appointment limiter unavailable, allowing request.')
-    return RATE_LIMIT_ALLOWED
+    logger.warn('⚠️ [Rate Limiter] Appointment limiter down. Using Memory Fallback.')
+    return await memoryFallback.limit(`appointment:${userId}`, 5, 60 * 60 * 1000)
   }
 
   try {
     return await appointmentRatelimitInstance.limit(`appointment:${userId}`)
   } catch (err) {
-    logger.error('Error in appointment rate limit:', err)
-    return RATE_LIMIT_ALLOWED
+    logger.error('Error in appointment rate limit, using memory fallback:', err)
+    return await memoryFallback.limit(`appointment:${userId}`, 3, 60 * 60 * 1000) // Restricted on error
   }
 }
 
@@ -279,6 +279,38 @@ export function decryptData(text: string): string {
   } catch (error) {
     logger.error('Falha ao descriptografar dado sensível', error)
     return '🔒 [Dados Criptografados - Chave Inválida]'
+  }
+}
+
+/**
+ * Valida o token do Cloudflare Turnstile
+ */
+export async function validateCaptcha(token: string | null | undefined): Promise<boolean> {
+  if (process.env.NODE_ENV === 'development' && !token) {
+    logger.warn('⚠️ [Captcha] Skip validation in dev because no token was provided.')
+    return true
+  }
+
+  if (!token) return false
+
+  try {
+    const formData = new FormData()
+    formData.append(
+      'secret',
+      process.env.TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA'
+    )
+    formData.append('response', token)
+
+    const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      body: formData,
+      method: 'POST',
+    })
+
+    const outcome = await result.json()
+    return outcome.success
+  } catch (err) {
+    logger.error('Captcha verification error:', err)
+    return false
   }
 }
 
