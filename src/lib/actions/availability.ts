@@ -53,7 +53,8 @@ export async function saveAvailability(
     // Convert the "lun", "mar"... format to the ones used by ScheduleManager
     // Convert supported abbreviations to DB format
     const dayMap: Record<string, string> = {
-      // Spanish (legacy)
+      // Support for various day abbreviations for backwards compatibility
+      // Spanish
       lun: 'monday',
       mar: 'tuesday',
       mie: 'wednesday',
@@ -61,7 +62,7 @@ export async function saveAvailability(
       vie: 'friday',
       sab: 'saturday',
       dom: 'sunday',
-      // Portuguese (new)
+      // Portuguese
       seg: 'monday',
       ter: 'tuesday',
       qua: 'wednesday',
