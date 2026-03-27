@@ -169,8 +169,13 @@ export const cancelSession = createSafeAction(z.string().uuid(), async (sessionI
         payment_intent: (appointment as any).stripePaymentIntentId!,
       })
       refunded = refund.status === 'succeeded' || refund.status === 'pending'
-    } catch (e) {
+
+      if (!refunded) {
+        throw new Error('Falha ao processar estorno no Stripe. A sessão permanece ativa.')
+      }
+    } catch (e: any) {
       logger.error(`Refund failed for ${sessionId}:`, e)
+      throw new Error(`Erro no estorno: ${e.message}. Tente novamente ou contate o suporte.`)
     }
   }
 

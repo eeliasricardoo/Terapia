@@ -27,7 +27,9 @@ const SENSITIVE_KEYS = [
 ]
 
 class Logger {
-  private isDevelopment = process.env.NODE_ENV === 'development'
+  private get isDevelopment() {
+    return process.env.NODE_ENV === 'development'
+  }
 
   /**
    * Remove/mascara recursivamente informações sensíveis de objetos
@@ -49,7 +51,9 @@ class Logger {
       const sanitizedObject: Record<string, unknown> = {}
       for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
         const lowerKey = key.toLowerCase()
-        const isSensitive = SENSITIVE_KEYS.some((sensitiveInfo) => lowerKey.includes(sensitiveInfo))
+        const isSensitive = SENSITIVE_KEYS.some((sensitiveInfo) =>
+          lowerKey.includes(sensitiveInfo.toLowerCase())
+        )
 
         if (isSensitive) {
           sanitizedObject[key] = '[MASCARADO PELO LOGGER (LGPD)]'

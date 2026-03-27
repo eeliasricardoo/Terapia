@@ -38,22 +38,6 @@ export const createStripeCheckoutSession = createSafeAction(
 
     if (!psych) throw new Error('Psicólogo não encontrado')
 
-    // 1c. Conflict check BEFORE starting checkout
-    const { hasConflict, type } = await checkAppointmentConflict({
-      psychologistProfileId: psych.id,
-      patientId: user.id,
-      scheduledAt: new Date(data.scheduledAt),
-      durationMinutes: data.durationMinutes,
-    })
-
-    if (hasConflict) {
-      throw new Error(
-        type === 'psychologist'
-          ? 'Este horário acabou de ser reservado por outro paciente.'
-          : 'Você já possui uma sessão agendada para este mesmo horário.'
-      )
-    }
-
     const price = Number(psych.pricePerSession) || 0
     let finalPrice = price
 
@@ -81,8 +65,6 @@ export const createStripeCheckoutSession = createSafeAction(
         finalPrice = Math.max(0, finalPrice)
 
         // Increment usage (only for free ones here, for paid ones it should happen on webhook)
-        // But the previous implementation did it here.
-        // Better: do it here for free ones only.
         if (finalPrice <= 0) {
           await prisma.coupon.update({
             where: { id: coupon.id },
@@ -94,21 +76,44 @@ export const createStripeCheckoutSession = createSafeAction(
 
     const psychologistName = psych.user.profiles?.fullName || psych.user.name || 'Psicólogo'
 
-    // 2. IF FREE (100% DISCOUNT): Create appointment directly
+    // 1c. Conflict check BEFORE starting checkout
+    // We use a transaction for the free flow to prevent race conditions
     if (finalPrice <= 0) {
-      const newAppt = await prisma.appointment.create({
-        data: {
-          patientId: user.id,
-          psychologistId: psych.id,
-          scheduledAt: new Date(data.scheduledAt),
-          durationMinutes: data.durationMinutes,
-          price: 0,
-          paymentMethod: 'Coupon',
-          status: 'SCHEDULED',
-        },
+      const result = await prisma.$transaction(async (tx) => {
+        const { hasConflict, type } = await checkAppointmentConflict(
+          {
+            psychologistProfileId: psych.id,
+            patientId: user.id,
+            scheduledAt: new Date(data.scheduledAt),
+            durationMinutes: data.durationMinutes,
+          },
+          tx as any
+        )
+
+        if (hasConflict) {
+          throw new Error(
+            type === 'psychologist'
+              ? 'Este horário acabou de ser reservado por outro paciente.'
+              : 'Você já possui uma sessão agendada para este mesmo horário.'
+          )
+        }
+
+        const newAppt = await tx.appointment.create({
+          data: {
+            patientId: user.id,
+            psychologistId: psych.id,
+            scheduledAt: new Date(data.scheduledAt),
+            durationMinutes: data.durationMinutes,
+            price: 0,
+            paymentMethod: 'Coupon',
+            status: 'SCHEDULED',
+          },
+        })
+
+        return newAppt
       })
 
-      sendAppointmentNotifications(newAppt.id).catch((err) =>
+      sendAppointmentNotifications(result.id).catch((err) =>
         logger.error('Error sending appt notifications:', err)
       )
 
@@ -119,6 +124,13 @@ export const createStripeCheckoutSession = createSafeAction(
           ? `${process.env.NEXT_PUBLIC_APP_URL}${data.returnUrl}${data.returnUrl.includes('?') ? '&' : '?'}payment=success`
           : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success`,
       }
+    }
+
+    // 2. Validate Stripe Account for non-free sessions
+    if (!psych.stripeAccountId || !psych.stripeOnboardingComplete) {
+      throw new Error(
+        'Este profissional ainda não concluiu a configuração de pagamentos. Por favor, tente novamente mais tarde.'
+      )
     }
 
     // 3. Create the Checkout Session
@@ -132,7 +144,7 @@ export const createStripeCheckoutSession = createSafeAction(
             currency: 'brl',
             product_data: {
               name: `Sessão de Terapia com ${psychologistName}`,
-              description: `Agendada para ${new Date(data.scheduledAt).toLocaleString('pt-BR')}`,
+              description: `Agendada para ${new Date(data.scheduledAt).toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' })}`,
             },
             unit_amount: stripeAmount,
           },
@@ -149,28 +161,18 @@ export const createStripeCheckoutSession = createSafeAction(
         originalPrice: price.toString(),
         couponCode: data.couponCode || '',
       },
+      payment_intent_data: {
+        transfer_data: {
+          destination: psych.stripeAccountId,
+        },
+        application_fee_amount: Math.round(stripeAmount * 0.11), // 11% fee
+      },
       success_url: data.returnUrl
         ? `${process.env.NEXT_PUBLIC_APP_URL}${data.returnUrl}${data.returnUrl.includes('?') ? '&' : '?'}payment=success&session_id={CHECKOUT_SESSION_ID}`
         : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: data.returnUrl
         ? `${process.env.NEXT_PUBLIC_APP_URL}${data.returnUrl}${data.returnUrl.includes('?') ? '&' : '?'}payment=cancelled`
         : `${process.env.NEXT_PUBLIC_APP_URL}/pagamento?payment=cancelled`,
-    }
-
-    if (psych.stripeAccountId) {
-      // Robustness: Only use transfer_data if onboarding is actually complete
-      if (psych.stripeOnboardingComplete) {
-        sessionConfig.payment_intent_data = {
-          transfer_data: {
-            destination: psych.stripeAccountId,
-          },
-          application_fee_amount: Math.round(stripeAmount * 0.11), // 11% fee
-        }
-      } else {
-        logger.warn(
-          `Psychologist ${psych.id} has account ID but onboarding is incomplete. Holding funds on platform.`
-        )
-      }
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig)

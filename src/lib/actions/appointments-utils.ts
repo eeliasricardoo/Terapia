@@ -6,19 +6,23 @@ import { Appointment } from '@prisma/client'
  * Checks if there is any appointment conflict for a psychologist or a patient
  * at a given time slot.
  */
-export async function checkAppointmentConflict({
-  psychologistProfileId,
-  patientId,
-  scheduledAt,
-  durationMinutes,
-  excludeAppointmentId,
-}: {
-  psychologistProfileId: string
-  patientId?: string
-  scheduledAt: Date
-  durationMinutes: number
-  excludeAppointmentId?: string
-}) {
+export async function checkAppointmentConflict(
+  {
+    psychologistProfileId,
+    patientId,
+    scheduledAt,
+    durationMinutes,
+    excludeAppointmentId,
+  }: {
+    psychologistProfileId: string
+    patientId?: string
+    scheduledAt: Date
+    durationMinutes: number
+    excludeAppointmentId?: string
+  },
+  tx?: any
+) {
+  const db = tx || prisma
   const newSessionStart = new Date(scheduledAt)
   const newSessionEnd = new Date(newSessionStart.getTime() + durationMinutes * 60 * 1000)
 
@@ -29,7 +33,7 @@ export async function checkAppointmentConflict({
   try {
     // We use a more precise query to find conflicts directly in the database
     // to avoid fetching multiple records into memory.
-    const conflict = await prisma.appointment.findFirst({
+    const conflict = await db.appointment.findFirst({
       where: {
         id: excludeAppointmentId ? { not: excludeAppointmentId } : undefined,
         status: { not: 'CANCELED' },
