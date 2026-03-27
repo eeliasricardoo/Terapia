@@ -22,11 +22,35 @@ export default function ProfilePage() {
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full md:w-[600px] grid-cols-1 md:grid-cols-3 h-auto mb-8">
-          <TabsTrigger value="general">Informações Gerais</TabsTrigger>
-          {user?.rawRole !== 'ADMIN' && <TabsTrigger value="plans">Meus Planos</TabsTrigger>}
-          {user?.rawRole === 'PATIENT' && <TabsTrigger value="benefits">Benefícios</TabsTrigger>}
-          <TabsTrigger value="security">Segurança</TabsTrigger>
+        <TabsList className="flex flex-wrap md:flex-nowrap items-center w-full md:w-fit h-auto mb-8 gap-2 bg-slate-100/50 p-1.5 rounded-[1.25rem] border border-slate-200/60 shadow-sm overflow-hidden">
+          <TabsTrigger
+            value="general"
+            className="flex-1 md:flex-initial rounded-xl px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
+          >
+            Informações Gerais
+          </TabsTrigger>
+          {user?.rawRole !== 'ADMIN' && (
+            <TabsTrigger
+              value="plans"
+              className="flex-1 md:flex-initial rounded-xl px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
+            >
+              Meus Planos
+            </TabsTrigger>
+          )}
+          {user?.rawRole === 'PATIENT' && (
+            <TabsTrigger
+              value="benefits"
+              className="flex-1 md:flex-initial rounded-xl px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
+            >
+              Benefícios
+            </TabsTrigger>
+          )}
+          <TabsTrigger
+            value="security"
+            className="flex-1 md:flex-initial rounded-xl px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
+          >
+            Segurança
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">

@@ -70,65 +70,81 @@ export function PersonalInfoCard({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Dados Pessoais</CardTitle>
-        <CardDescription>Atualize seus detalhes básicos e de contato.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nome Completo</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+    <div className="bg-white rounded-[2.5rem] border border-slate-200/60 p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden animate-in fade-in duration-700">
+      {/* Subtle background decoration */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full -mr-32 -mt-32 opacity-50 blur-3xl pointer-events-none" />
+
+      <div className="relative space-y-10">
+        <div className="flex flex-col md:flex-row md:items-center gap-6">
+          <div className="h-16 w-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-200 text-white shrink-0">
+            <UserCircle className="h-8 w-8" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Dados Pessoais</h2>
+            <p className="text-slate-500 font-medium text-sm">
+              Mantenha suas informações básicas sempre atualizadas.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+          <div className="space-y-4">
+            <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+              Nome Completo
+            </Label>
+            <div className="relative group">
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
               <Input
-                id="name"
                 value={user?.name || ''}
                 onChange={(e) =>
                   setUser((prev) => (prev ? { ...prev, name: e.target.value } : null))
                 }
-                className="pl-9"
+                className="pl-12 h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium"
                 disabled={isLoading}
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="document">CPF / Documento</Label>
-            <div className="relative">
-              <FileText className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="space-y-4">
+            <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+              CPF / Documento
+            </Label>
+            <div className="relative group">
+              <FileText className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
               <Input
-                id="document"
                 value={user?.document || ''}
                 onChange={(e) =>
                   setUser((prev) => (prev ? { ...prev, document: e.target.value } : null))
                 }
-                className="pl-9"
+                className="pl-12 h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium"
                 disabled={isLoading}
                 placeholder="000.000.000-00"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="birth_date">Data de Nascimento</Label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="space-y-4">
+            <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+              Data de Nascimento
+            </Label>
+            <div className="relative group">
+              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
               <Input
-                id="birth_date"
                 type="date"
                 value={user?.birth_date ? user.birth_date.substring(0, 10) : ''}
                 onChange={(e) =>
                   setUser((prev) => (prev ? { ...prev, birth_date: e.target.value } : null))
                 }
-                className="pl-9"
+                className="pl-12 h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium"
                 disabled={isLoading}
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="gender">Gênero</Label>
+          <div className="space-y-4">
+            <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+              Gênero
+            </Label>
             <Select
               value={user?.gender || undefined}
               onValueChange={(value) =>
@@ -136,10 +152,10 @@ export function PersonalInfoCard({
               }
               disabled={isLoading}
             >
-              <SelectTrigger id="gender">
+              <SelectTrigger className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium pl-6">
                 <SelectValue placeholder="Selecione seu gênero" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
                 <SelectItem value="Masculino">Masculino</SelectItem>
                 <SelectItem value="Feminino">Feminino</SelectItem>
                 <SelectItem value="Não-binário">Não-binário</SelectItem>
@@ -149,67 +165,79 @@ export function PersonalInfoCard({
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="profession">Profissão</Label>
-            <div className="relative">
-              <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="space-y-4">
+            <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+              Profissão
+            </Label>
+            <div className="relative group">
+              <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
               <Input
-                id="profession"
                 value={user?.profession || ''}
                 onChange={(e) =>
                   setUser((prev) => (prev ? { ...prev, profession: e.target.value } : null))
                 }
-                className="pl-9"
+                className="pl-12 h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium"
                 disabled={isLoading}
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">Telefone</Label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="space-y-4">
+            <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+              Telefone / WhatsApp
+            </Label>
+            <div className="relative group">
+              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
               <Input
-                id="phone"
+                placeholder="(00) 00000-0000"
                 value={user?.phone || ''}
                 onChange={(e) =>
                   setUser((prev) => (prev ? { ...prev, phone: e.target.value } : null))
                 }
-                className="pl-9"
+                className="pl-12 h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium"
                 disabled={isLoading}
               />
             </div>
           </div>
+
+          <div className="md:col-span-2 pt-4">
+            <div className="space-y-4">
+              <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+                Email{' '}
+                <span className="text-[10px] lowercase italic font-normal">(não alterável)</span>
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-200" />
+                <Input
+                  value={user?.email || ''}
+                  disabled
+                  className="pl-12 h-14 rounded-2xl border-slate-100 bg-slate-50 text-slate-400"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="email"
-              value={user?.email || ''}
-              disabled
-              className="pl-9 bg-slate-50 text-muted-foreground"
-            />
-          </div>
-          <p className="text-[0.8rem] text-muted-foreground">
-            Para alterar seu email, entre em contato com o suporte.
-          </p>
+        <div className="pt-6 flex justify-end">
+          <Button
+            onClick={handleSaveProfile}
+            disabled={isLoading}
+            className="rounded-2xl bg-slate-900 text-white hover:bg-slate-800 h-14 px-12 font-bold shadow-2xl shadow-slate-200 transition-all active:scale-95 disabled:opacity-20 flex items-center gap-3"
+          >
+            {isLoading ? (
+              <>
+                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                Salvar Alterações
+              </>
+            )}
+          </Button>
         </div>
-      </CardContent>
-      <CardFooter className="flex justify-end border-t p-6">
-        <Button onClick={handleSaveProfile} disabled={isLoading}>
-          {isLoading ? (
-            <>Salvando...</>
-          ) : (
-            <>
-              <Save className="mr-2 h-4 w-4" />
-              Salvar Alterações
-            </>
-          )}
-        </Button>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   )
 }

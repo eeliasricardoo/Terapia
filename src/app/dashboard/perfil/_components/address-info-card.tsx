@@ -60,84 +60,113 @@ export function AddressInfoCard({ user, setUser, isLoading, setIsLoading }: Addr
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Endereço</CardTitle>
-        <CardDescription>Informações de localização para faturamento e prontuário.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="address_line">Logradouro (Endereço e Número)</Label>
-          <div className="relative">
-            <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="address_line"
-              value={user?.address_line || ''}
-              onChange={(e) =>
-                setUser((prev) => (prev ? { ...prev, address_line: e.target.value } : null))
-              }
-              className="pl-9"
-              disabled={isLoading}
-              placeholder="Ex: Rua das Flores, 123 - Apto 10"
-            />
+    <div className="bg-white rounded-[2.5rem] border border-slate-200/60 p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden animate-in fade-in duration-700">
+      {/* Subtle background decoration */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full -mr-32 -mt-32 opacity-50 blur-3xl pointer-events-none" />
+
+      <div className="relative space-y-10">
+        <div className="flex flex-col md:flex-row md:items-center gap-6">
+          <div className="h-16 w-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-200 text-white shrink-0">
+            <MapPin className="h-8 w-8" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Endereço</h2>
+            <p className="text-slate-500 font-medium text-sm">
+              Informações de localização para faturamento e prontuário.
+            </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-2 md:col-span-1">
-            <Label htmlFor="zip_code">CEP</Label>
-            <div className="relative">
-              <Hash className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+              Logradouro (Endereço e Número)
+            </Label>
+            <div className="relative group">
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
               <Input
-                id="zip_code"
-                value={user?.zip_code || ''}
+                value={user?.address_line || ''}
                 onChange={(e) =>
-                  setUser((prev) => (prev ? { ...prev, zip_code: e.target.value } : null))
+                  setUser((prev) => (prev ? { ...prev, address_line: e.target.value } : null))
                 }
-                className="pl-9"
+                className="pl-12 h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium"
                 disabled={isLoading}
-                placeholder="00000-000"
+                placeholder="Ex: Rua das Flores, 123 - Apto 10"
               />
             </div>
           </div>
 
-          <div className="space-y-2 md:col-span-1">
-            <Label htmlFor="city">Cidade</Label>
-            <Input
-              id="city"
-              value={user?.city || ''}
-              onChange={(e) => setUser((prev) => (prev ? { ...prev, city: e.target.value } : null))}
-              disabled={isLoading}
-            />
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-4">
+              <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+                CEP
+              </Label>
+              <div className="relative group">
+                <Hash className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
+                <Input
+                  value={user?.zip_code || ''}
+                  onChange={(e) =>
+                    setUser((prev) => (prev ? { ...prev, zip_code: e.target.value } : null))
+                  }
+                  className="pl-12 h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium"
+                  disabled={isLoading}
+                  placeholder="00000-000"
+                />
+              </div>
+            </div>
 
-          <div className="space-y-2 md:col-span-1">
-            <Label htmlFor="state">Estado (UF)</Label>
-            <Input
-              id="state"
-              value={user?.state || ''}
-              onChange={(e) =>
-                setUser((prev) => (prev ? { ...prev, state: e.target.value } : null))
-              }
-              disabled={isLoading}
-              placeholder="Ex: SP"
-              maxLength={2}
-            />
+            <div className="space-y-4">
+              <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+                Cidade
+              </Label>
+              <Input
+                value={user?.city || ''}
+                onChange={(e) =>
+                  setUser((prev) => (prev ? { ...prev, city: e.target.value } : null))
+                }
+                className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium px-6"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="space-y-4">
+              <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+                Estado (UF)
+              </Label>
+              <Input
+                value={user?.state || ''}
+                onChange={(e) =>
+                  setUser((prev) => (prev ? { ...prev, state: e.target.value } : null))
+                }
+                className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium px-6 text-center"
+                disabled={isLoading}
+                placeholder="Ex: SP"
+                maxLength={2}
+              />
+            </div>
           </div>
         </div>
-      </CardContent>
-      <CardFooter className="flex justify-end border-t p-6">
-        <Button onClick={handleSaveAddress} disabled={isLoading}>
-          {isLoading ? (
-            <>Salvando...</>
-          ) : (
-            <>
-              <Save className="mr-2 h-4 w-4" />
-              Salvar Endereço
-            </>
-          )}
-        </Button>
-      </CardFooter>
-    </Card>
+
+        <div className="pt-6 flex justify-end">
+          <Button
+            onClick={handleSaveAddress}
+            disabled={isLoading}
+            className="rounded-2xl bg-slate-900 text-white hover:bg-slate-800 h-14 px-12 font-bold shadow-2xl shadow-slate-200 transition-all active:scale-95 disabled:opacity-20 flex items-center gap-3"
+          >
+            {isLoading ? (
+              <>
+                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                Salvar Endereço
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
   )
 }

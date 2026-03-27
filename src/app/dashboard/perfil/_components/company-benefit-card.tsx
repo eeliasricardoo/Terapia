@@ -53,7 +53,7 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
   const handleUnlink = async () => {
     if (!currentCompany?.id) return
 
-    setIsLoading(true) // Wait, I need to add isLoading state
+    setIsLoading(true)
     try {
       const result = await unlinkCompanyBenefit(currentCompany.id)
       if (result.success) {
@@ -69,45 +69,52 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="rounded-3xl border-slate-100 shadow-sm overflow-hidden">
-        <CardHeader className="bg-slate-50/50 pb-8 pt-8">
-          <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm text-blue-600">
-              <Building2 className="h-7 w-7" />
+    <div className="space-y-12 animate-in fade-in duration-700">
+      <div className="bg-white rounded-[2.5rem] border border-slate-200/60 p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+        {/* Subtle background decoration */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full -mr-32 -mt-32 opacity-50 blur-3xl pointer-events-none" />
+
+        <div className="relative space-y-10">
+          <div className="flex flex-col md:flex-row md:items-center gap-6">
+            <div className="h-16 w-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-200 text-white shrink-0">
+              <Building2 className="h-8 w-8" />
             </div>
-            <div>
-              <CardTitle className="text-xl font-bold font-outfit">Benefício Corporativo</CardTitle>
-              <CardDescription className="font-medium">
-                Vincule sua conta a uma empresa para obter subsídios em suas sessões.
-              </CardDescription>
+            <div className="space-y-1">
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+                Benefício Corporativo
+              </h2>
+              <p className="text-slate-500 font-medium text-sm">
+                Vincule sua conta a uma empresa para obter subsídios em suas sessões de terapia.
+              </p>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="pt-8 space-y-8">
+
           {currentCompany ? (
-            <div className="bg-blue-50/50 rounded-3xl p-8 border border-blue-100 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="bg-slate-50/50 rounded-[2rem] p-8 border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-8 transition-all hover:bg-slate-50">
               <div className="flex items-center gap-6">
-                <div className="h-20 w-20 rounded-2xl bg-white flex items-center justify-center shadow-md border border-blue-50">
-                  <span className="text-2xl font-black text-blue-600">
+                <div className="h-24 w-24 rounded-[1.5rem] bg-white flex items-center justify-center shadow-lg border border-slate-100">
+                  <span className="text-3xl font-bold text-slate-900">
                     {currentCompany.name.charAt(0)}
                   </span>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-2xl font-bold text-slate-900">{currentCompany.name}</h3>
-                    <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none font-bold rounded-full text-[10px] uppercase">
-                      Ativo
-                    </Badge>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-2xl font-bold text-slate-900 leading-none">
+                      {currentCompany.name}
+                    </h3>
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100/50">
+                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest">Ativo</span>
+                    </div>
                   </div>
-                  <p className="text-slate-500 font-medium text-sm">
+                  <p className="text-slate-400 font-medium text-xs uppercase tracking-widest">
                     Vinculado em {currentCompany.joinedAt}
                   </p>
                 </div>
               </div>
               <Button
                 variant="outline"
-                className="rounded-xl border-red-100 text-red-500 hover:bg-red-50 hover:text-red-600 font-bold px-6 border-2"
+                className="h-12 rounded-2xl border-slate-200 text-slate-500 hover:bg-red-50 hover:text-red-600 hover:border-red-100 font-bold px-8 transition-all active:scale-95"
                 onClick={handleUnlink}
                 disabled={isLoading}
               >
@@ -115,68 +122,84 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
               </Button>
             </div>
           ) : (
-            <div className="max-w-xl space-y-6">
+            <div className="max-w-2xl space-y-8">
               <div className="space-y-4">
-                <div className="relative">
-                  <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-blue-500" />
+                <div className="relative group">
+                  <div className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within:text-slate-900 transition-colors">
+                    <ShieldCheck />
+                  </div>
                   <Input
-                    placeholder="Insira seu código de convite único"
-                    className="pl-12 h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white text-lg font-bold tracking-tight uppercase"
+                    placeholder="INSERIR SEU CÓDIGO DE CONVITE ÚNICO"
+                    className="pl-14 h-16 rounded-3xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 text-base font-bold tracking-[0.1em] placeholder:text-slate-300 transition-all shadow-sm"
                     value={code}
-                    onChange={(e) => setCode(e.target.value)}
+                    onChange={(e) => setCode(e.target.value.toUpperCase())}
                   />
                 </div>
-                <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 italic">
-                  <Info className="h-5 w-5 text-slate-400 mt-0.5 shrink-0" />
-                  <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                    O código de convite é pessoal e intransferível. **Seu RH enviou este código para
-                    seu e-mail corporativo.** Nenhum conteúdo das suas sessões será compartilhado
-                    com a empresa.
+
+                <div className="flex items-start gap-4 p-5 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                  <div className="h-8 w-8 rounded-xl bg-slate-50 flex items-center justify-center shrink-0">
+                    <Info className="h-4 w-4 text-slate-400" />
+                  </div>
+                  <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                    O código de convite é pessoal e fornecido pelo RH da sua empresa.
+                    <span className="block mt-1 text-slate-400 italic">
+                      Sua privacidade é garantida: nenhum conteúdo das sessões é compartilhado.
+                    </span>
                   </p>
                 </div>
               </div>
+
               <Button
                 onClick={handleLink}
                 disabled={!code || isValidating}
-                className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 h-14 rounded-2xl px-10 font-bold shadow-lg shadow-blue-600/20 text-lg gap-2"
+                className="w-full md:w-auto bg-slate-900 text-white hover:bg-slate-800 h-16 rounded-3xl px-12 font-bold shadow-2xl shadow-slate-200 text-sm uppercase tracking-widest gap-3 transition-all active:scale-95 disabled:opacity-20 translate-y-2 hover:translate-y-0"
               >
                 {isValidating ? 'Validando...' : 'Ativar Benefício'}
-                {!isValidating && <ArrowRight className="h-5 w-5" />}
+                {!isValidating && <ArrowRight className="h-4 w-4" />}
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {!currentCompany && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8">
           {[
             {
-              title: 'Sessões Subsidiadas',
-              desc: 'Sua empresa paga parte ou o total das consultas.',
+              title: 'Subsubsídios',
+              desc: 'Sua empresa paga parte ou o total das suas consultas.',
               icon: CheckCircle2,
               color: 'text-emerald-500',
+              bg: 'bg-emerald-50',
             },
             {
-              title: 'Sigilo Absoluto',
-              desc: 'Privacidade total garantida por contrato e ética.',
+              title: 'Sigilo Total',
+              desc: 'Nenhuma informação sensível é enviada para a empresa.',
               icon: ShieldCheck,
               color: 'text-blue-500',
+              bg: 'bg-blue-50',
             },
             {
-              title: 'Fácil Ativação',
-              desc: 'Basta um código para começar a economizar.',
+              title: 'Simples e Rápido',
+              desc: 'Ative em segundos com seu código corporativo.',
               icon: Building2,
-              color: 'text-indigo-500',
+              color: 'text-slate-900',
+              bg: 'bg-slate-50',
             },
           ].map((item, i) => (
             <div
               key={i}
-              className="bg-white p-6 rounded-3xl border border-slate-100 flex flex-col items-center text-center space-y-3"
+              className="bg-white p-8 rounded-[2rem] border border-slate-100 flex flex-col items-center text-center space-y-4 shadow-sm hover:shadow-md transition-all group"
             >
-              <item.icon className={`h-8 w-8 ${item.color}`} />
-              <h4 className="font-bold text-slate-900">{item.title}</h4>
-              <p className="text-xs text-slate-500 font-medium leading-relaxed">{item.desc}</p>
+              <div
+                className={`h-14 w-14 ${item.bg} rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110`}
+              >
+                <item.icon className={`h-6 w-6 ${item.color}`} />
+              </div>
+              <div className="space-y-1.5">
+                <h4 className="font-bold text-slate-900">{item.title}</h4>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">{item.desc}</p>
+              </div>
             </div>
           ))}
         </div>
