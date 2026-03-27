@@ -21,11 +21,14 @@ export const getPsychologists = createSafeAction(
       orderBy: { createdAt: 'desc' },
     })
 
-    return psychologists.map((psych) => ({
-      ...psych,
-      profile: psych.user.profiles,
-      price_per_session: Number(psych.pricePerSession),
-    }))
+    return psychologists.map((psych) => {
+      const { pricePerSession, ...rest } = psych
+      return {
+        ...rest,
+        profile: psych.user?.profiles || null,
+        price_per_session: pricePerSession ? Number(pricePerSession) : null,
+      }
+    })
   },
   { isPublic: true }
 )
@@ -48,11 +51,12 @@ export const getPsychologistById = createSafeAction(
 
     if (!psych) return null
 
+    const { pricePerSession, ...rest } = psych
     return {
-      ...psych,
-      profile: psych.user.profiles,
-      price_per_session: Number(psych.pricePerSession),
-      acceptedInsurances: psych.acceptedInsurances.map((i) => i.healthInsurance),
+      ...rest,
+      profile: psych.user?.profiles || null,
+      price_per_session: pricePerSession ? Number(pricePerSession) : null,
+      acceptedInsurances: psych.acceptedInsurances.map((i) => i.healthInsurance).filter(Boolean),
     }
   },
   { isPublic: true }
@@ -129,11 +133,14 @@ export const searchPsychologists = createSafeAction(
       take: pageSize,
     })
 
-    return psychologists.map((psych) => ({
-      ...psych,
-      profile: psych.user.profiles,
-      price_per_session: Number(psych.pricePerSession),
-    }))
+    return psychologists.map((psych) => {
+      const { pricePerSession, ...rest } = psych
+      return {
+        ...rest,
+        profile: psych.user?.profiles || null,
+        price_per_session: pricePerSession ? Number(pricePerSession) : null,
+      }
+    })
   },
   { isPublic: true }
 )
