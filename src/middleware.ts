@@ -7,14 +7,15 @@ export async function middleware(request: NextRequest) {
   const isDevelopment = process.env.NODE_ENV === 'development'
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://js.stripe.com https://vercel.live${isDevelopment ? " 'unsafe-eval'" : ''};
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live;
-    font-src 'self' https://fonts.gstatic.com data:;
-    img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com https://i.pravatar.cc https://images.unsplash.com;
-    connect-src 'self'${isDevelopment ? ' http://localhost:*' : ''} https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.daily.co wss://*.daily.co https://*.upstash.io https://vercel.live wss://*.pusher.com;
+    script-src 'self' 'nonce-${nonce}' https://js.stripe.com https://*.daily.co https://*.pluot.blue blob: data: 'wasm-unsafe-eval' https://vercel.live${isDevelopment ? " 'unsafe-inline' 'unsafe-eval'" : ''};
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://vercel.live https://*.daily.co data:;
+    font-src 'self' https://fonts.gstatic.com data: https://*.daily.co;
+    img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com https://i.pravatar.cc https://images.unsplash.com https://*.daily.co;
+    connect-src 'self'${isDevelopment ? ' http://localhost:*' : ''} https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.daily.co wss://*.daily.co https://*.pluot.blue wss://*.pluot.blue https://*.upstash.io https://vercel.live wss://*.pusher.com blob: data:;
     frame-src 'self' https://js.stripe.com https://*.daily.co https://vercel.live;
+    child-src 'self' blob: https://js.stripe.com https://*.daily.co https://vercel.live;
     media-src 'self' blob: https://*.daily.co;
-    worker-src 'self' blob:;
+    worker-src 'self' blob: https://*.daily.co https://*.pluot.blue;
     object-src 'none';
     base-uri 'self';
     form-action 'self';

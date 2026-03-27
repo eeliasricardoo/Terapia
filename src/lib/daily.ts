@@ -55,6 +55,25 @@ export async function createDailyRoom(roomName?: string): Promise<CreateRoomResp
   return res.json()
 }
 
+export async function getDailyRoom(roomName: string): Promise<CreateRoomResponse> {
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${DAILY_API_KEY}`,
+  }
+
+  const res = await fetch(`${DAILY_API_URL}/rooms/${roomName}`, {
+    method: 'GET',
+    headers,
+  })
+
+  if (!res.ok) {
+    const error = await res.text()
+    throw new Error(`Failed to get Daily room: ${error}`)
+  }
+
+  return res.json()
+}
+
 /**
  * Create a secure access token with strict time limits.
  * @param durationInSeconds Max duration for the token validity (default 60 mins)
