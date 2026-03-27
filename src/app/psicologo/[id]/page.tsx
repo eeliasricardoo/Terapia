@@ -145,11 +145,12 @@ async function getPsychologistDataInternal(userId: string) {
   }
 }
 
-const getCachedPsychologistData = unstable_cache(
-  async (userId: string) => getPsychologistDataInternal(userId),
-  ['psychologist-profile-view'],
-  { revalidate: 30, tags: ['appointments', 'psychologists', 'overrides'] }
-)
+const getCachedPsychologistData = (userId: string) =>
+  unstable_cache(
+    async () => getPsychologistDataInternal(userId),
+    ['psychologist-profile-view', userId],
+    { revalidate: 3600, tags: ['appointments', 'psychologists', 'overrides'] }
+  )()
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const data = await getCachedPsychologistData(params.id)
