@@ -20,7 +20,7 @@ export async function middleware(request: NextRequest) {
     base-uri 'self';
     form-action 'self';
     frame-ancestors 'none';
-    upgrade-insecure-requests;
+    ${isDevelopment ? '' : 'upgrade-insecure-requests;'}
   `
     .replace(/\s{2,}/g, ' ')
     .trim()

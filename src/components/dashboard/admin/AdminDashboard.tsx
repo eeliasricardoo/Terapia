@@ -14,7 +14,8 @@ interface Props {
 }
 
 export function AdminDashboard({ userProfile, dashboardData }: Props) {
-  const userName = userProfile?.full_name?.split(' ')[0] || 'Admin'
+  const userName =
+    (userProfile?.full_name || (userProfile as any)?.fullName || '').split(' ')[0] || 'Admin'
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">

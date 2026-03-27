@@ -54,7 +54,8 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
   })
   const [isLoadingAgenda, setIsLoadingAgenda] = useState(false)
 
-  const userName = userProfile?.full_name || 'Doutor(a)'
+  const userName =
+    (userProfile?.full_name || (userProfile as any)?.fullName || '').split(' ')[0] || 'Doutor(a)'
 
   const { stats, upcomingSessions, recentPatients } = dashboardData
 

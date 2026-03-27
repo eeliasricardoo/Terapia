@@ -74,7 +74,8 @@ export default async function DashboardPage() {
     )
   }
 
-  const userName = userProfile?.full_name?.split(' ')[0] || 'Usuário'
+  const userName =
+    (userProfile?.full_name || (userProfile as any)?.fullName || '').split(' ')[0] || 'Usuário'
   const patientData = await getCachedPatientDashboard(userProfile.user_id)
 
   return (

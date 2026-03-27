@@ -35,7 +35,16 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
 
   // If we found it in DB via Prisma, use that data
   if (userInDb?.profiles) {
-    return userInDb.profiles as unknown as Profile
+    const p = userInDb.profiles
+    // Normalize Prisma camelCase back to Supabase snake_case to match Profile type
+    return {
+      ...p,
+      full_name: p.fullName,
+      avatar_url: p.avatarUrl,
+      user_id: p.user_id,
+      created_at: p.createdAt.toISOString(),
+      updated_at: p.updatedAt.toISOString(),
+    } as unknown as Profile
   }
 
   // Fallback to Supabase if Prisma fails (unlikely) or just in case

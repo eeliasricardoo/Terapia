@@ -75,11 +75,30 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
     // Handle 'test' rooms or mock rooms
     if (!appointmentId || appointmentId === 'test' || appointmentId.startsWith('mock_')) {
       await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Persist to a global mock history for this "patient" (based on mock ID)
+      const mockHistoryKey = `mock-history-record`
+      const existing = JSON.parse(localStorage.getItem(mockHistoryKey) || '[]')
+      const newEntry = {
+        id: Math.random().toString(36).substring(7),
+        scheduledAt: new Date().toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }),
+        status: 'COMPLETED',
+        summary: summary || 'Registro de teste realizado.',
+      }
+      localStorage.setItem(mockHistoryKey, JSON.stringify([newEntry, ...existing]))
+
+      // Notify other components to refresh
+      window.dispatchEvent(new Event('mock-evolution-saved'))
+
       setIsSaving(false)
       setIsFinalized(true)
       setLastSaved(new Date())
       toast.success('Registro salvo (Modo de Teste)', {
-        description: 'Em produção, este dado seria enviado ao banco de dados.',
+        description: 'Os dados foram salvos temporariamente no seu navegador para esta simulação.',
       })
       return
     }
