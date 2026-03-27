@@ -10,21 +10,21 @@ test('login flow for patient', async ({ page }) => {
   await expect(page.getByRole('dialog')).toBeVisible()
 
   // Check if dialog title is correct
-  await expect(page.getByText('Como você deseja entrar?')).toBeVisible()
+  await expect(page.getByText('Bem-vindo de volta')).toBeVisible()
 
-  // Click "Cliente"
-  await page.getByText('Cliente').click()
+  // Click "Para Mim"
+  await page.getByText('Para Mim').click()
 
   // Should be on /login/paciente
   await expect(page).toHaveURL(/\/login\/paciente/)
 
   // Check for Login Form
-  await expect(page.getByRole('heading', { name: 'Entrar' })).toBeVisible()
+  await expect(page.getByText('Entrar').first()).toBeVisible()
   await expect(page.getByLabel('Email')).toBeVisible()
   await expect(page.getByLabel('Senha')).toBeVisible()
 
   // Fill form
-  await page.getByLabel('Email').fill('test@example.com')
+  await page.getByLabel('Email').fill('paciente.carlos@test.com')
   await page.getByLabel('Senha').fill('password123')
 
   // Submit - usar .last() para pegar o botão do formulário (não o do header)

@@ -29,7 +29,7 @@ export function SessionHistoryTab({ patientId }: SessionHistoryTabProps) {
     if (!patientId) return
     setIsLoading(true)
     getPatientSessionHistory(patientId)
-      .then(setSessions)
+      .then((res) => setSessions(res.success ? res.data : []))
       .finally(() => setIsLoading(false))
   }, [patientId])
 

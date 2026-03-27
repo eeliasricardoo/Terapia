@@ -33,8 +33,9 @@ export function AnamnesisTab({ patientId }: AnamnesisTabProps) {
     setIsSaved(false)
 
     getAnamnesis(patientId)
-      .then((data) => {
-        if (data) {
+      .then((res) => {
+        if (res.success && res.data) {
+          const data = res.data
           setForm({
             mainComplaint: data.mainComplaint || '',
             familyHistory: data.familyHistory || '',
@@ -42,7 +43,7 @@ export function AnamnesisTab({ patientId }: AnamnesisTabProps) {
             diagnosticHypothesis: data.diagnosticHypothesis || '',
           })
         } else {
-          // No anamnesis yet, reset form
+          // No anamnesis yet or error, reset form
           setForm({
             mainComplaint: '',
             familyHistory: '',
@@ -61,7 +62,7 @@ export function AnamnesisTab({ patientId }: AnamnesisTabProps) {
 
   const handleSave = () => {
     startTransition(async () => {
-      const result = await updateAnamnesis(patientId, form)
+      const result = await updateAnamnesis({ patientProfileId: patientId, data: form })
       if (result.success) {
         setIsSaved(true)
         toast.success('Anamnese atualizada com sucesso!')
