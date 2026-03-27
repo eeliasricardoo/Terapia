@@ -116,40 +116,16 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
     authData = signupResult.data
     authError = signupResult.error
 
-    // Fallback if SMTP fails (Common in Supabase development/free tier)
+    // SMTP failure: surface a clear error instead of bypassing email verification.
+    // email_confirm=true would allow anyone to register with an email they don't own.
     if (authError && authError.message.includes('Error sending confirmation email')) {
-      logger.info(
-        '[AUTH] SMTP failure detected for patient, attempting fallback with Admin Client...'
-      )
-      try {
-        const { createAdminClient } = await import('@/lib/supabase/admin')
-        const adminClient = createAdminClient()
-        const adminResult = await adminClient.auth.admin.createUser({
-          email: data.email,
-          password: data.password,
-          email_confirm: true,
-          user_metadata: {
-            role: 'PATIENT',
-            full_name: safeName,
-            phone: data.phone,
-            birth_date: data.birthDate,
-            document: cleanedDocument,
-          },
-        })
-
-        if (!adminResult.error) {
-          authData = adminResult.data
-          authError = null
-          logger.warn(
-            '[AUTH][SECURITY] Patient registered with email_confirm=true because SMTP failed. ' +
-              'Email verification was BYPASSED. Ensure SMTP is correctly configured in production.',
-            { email: data.email }
-          )
-        } else {
-          authError = adminResult.error
-        }
-      } catch (err) {
-        logger.error('[AUTH] Fallback to Admin Client failed for patient:', err)
+      logger.error('[AUTH] SMTP failure during patient registration — rejecting signup.', {
+        email: data.email,
+      })
+      return {
+        success: false,
+        error:
+          'Erro ao enviar e-mail de confirmação. Verifique sua caixa de entrada ou tente novamente em alguns minutos.',
       }
     }
 
@@ -415,35 +391,16 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
     authData = signupResult.data
     authError = signupResult.error
 
-    // Fallback if SMTP fails (Common in Supabase development/free tier)
+    // SMTP failure: surface a clear error instead of bypassing email verification.
+    // email_confirm=true would allow anyone to register with an email they don't own.
     if (authError && authError.message.includes('Error sending confirmation email')) {
-      logger.info('[AUTH] SMTP failure detected, attempting fallback with Admin Client...')
-      try {
-        const { createAdminClient } = await import('@/lib/supabase/admin')
-        const adminClient = createAdminClient()
-        const adminResult = await adminClient.auth.admin.createUser({
-          email: data.email,
-          password: data.password,
-          email_confirm: true,
-          user_metadata: {
-            role: 'PSYCHOLOGIST',
-            full_name: safeName,
-          },
-        })
-
-        if (!adminResult.error) {
-          authData = adminResult.data
-          authError = null
-          logger.warn(
-            '[AUTH][SECURITY] Psychologist registered with email_confirm=true because SMTP failed. ' +
-              'Email verification was BYPASSED. Ensure SMTP is correctly configured in production.',
-            { email: data.email }
-          )
-        } else {
-          authError = adminResult.error
-        }
-      } catch (err) {
-        logger.error('[AUTH] Fallback to Admin Client failed:', err)
+      logger.error('[AUTH] SMTP failure during psychologist registration — rejecting signup.', {
+        email: data.email,
+      })
+      return {
+        success: false,
+        error:
+          'Erro ao enviar e-mail de confirmação. Verifique sua caixa de entrada ou tente novamente em alguns minutos.',
       }
     }
 
