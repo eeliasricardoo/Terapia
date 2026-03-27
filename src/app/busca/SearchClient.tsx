@@ -67,6 +67,15 @@ export default function SearchClient({
   const loaderRef = useRef<HTMLDivElement>(null)
   const pageSize = 12
 
+  // If no initial results were returned (e.g. cache miss or no verified psychologists),
+  // trigger a fresh search on mount so the user sees results without needing to interact.
+  useEffect(() => {
+    if (initialPsychologists.length === 0) {
+      handleSearch({ specialties: [], searchQuery: '', genders: [] }, 1, false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Trigger search only when filters actually change (not on mount)
   useEffect(() => {
     if (!hasInteracted) return // Skip initial mount
@@ -86,11 +95,14 @@ export default function SearchClient({
     isLoadMore: boolean
   ) => {
     startTransition(async () => {
-      const results = await searchPsychologists({
+      const response = await searchPsychologists({
         ...currentFilters,
         page: currentPage,
         pageSize,
       })
+
+      if (!response.success) return
+      const results = response.data
 
       if (isLoadMore) {
         setPsychologists((prev) => [...prev, ...results])

@@ -15,8 +15,6 @@ interface PageProps {
 
 async function getPsychologistDataInternal(userId: string) {
   try {
-    const { prisma } = await import('@/lib/prisma')
-
     // 1. Fetch psychologist, profile and insurances in a single trip
     const psych = await prisma.psychologistProfile.findUnique({
       where: { userId },
@@ -126,10 +124,14 @@ async function getPsychologistDataInternal(userId: string) {
       .map((item) => item.healthInsurance)
       .filter(Boolean)
 
-    // 4. Fetch stats (sessions count)
-    const { getPsychologistStats } = await import('@/lib/actions/psychologists')
-    const statsRes = await getPsychologistStats(userId)
-    const stats = statsRes.success ? statsRes.data : { totalSessions: 0 }
+    // 4. Fetch stats (sessions count) — direct Prisma query to avoid cookies() inside cache
+    const totalSessions = await prisma.appointment.count({
+      where: {
+        psychologistId: psych.id,
+        status: 'COMPLETED',
+      },
+    })
+    const stats = { totalSessions }
 
     // Return combined payload
     return {

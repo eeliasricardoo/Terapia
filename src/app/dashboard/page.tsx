@@ -22,7 +22,7 @@ import { getAdminDashboardData, getCompanyDashboardData } from '@/lib/actions/da
 import { getCachedPsychologistDashboard, getCachedPatientDashboard } from '@/lib/cache/dashboard'
 
 export default async function DashboardPage() {
-  let userProfile = await getCurrentUserProfile()
+  const userProfile = await getCurrentUserProfile()
 
   if (!userProfile) {
     const supabase = await createClient()
@@ -49,12 +49,24 @@ export default async function DashboardPage() {
   }
 
   if (userProfile.role === 'ADMIN') {
-    const adminData = await getAdminDashboardData()
+    const adminRes = await getAdminDashboardData()
+    const adminData = adminRes.success ? adminRes.data : null
+
+    if (!adminData) {
+      return <div>Erro ao carregar dados do administrador</div>
+    }
+
     return <AdminDashboard userProfile={userProfile} dashboardData={adminData} />
   }
 
   if (userProfile.role === 'COMPANY') {
-    const companyData = await getCompanyDashboardData()
+    const companyRes = await getCompanyDashboardData()
+    const companyData = companyRes.success ? companyRes.data : null
+
+    if (!companyData) {
+      return <div>Erro ao carregar dados da empresa</div>
+    }
+
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <CompanyDashboard userProfile={userProfile} dashboardData={companyData} />

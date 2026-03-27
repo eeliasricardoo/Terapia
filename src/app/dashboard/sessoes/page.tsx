@@ -14,7 +14,8 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 
 export default async function SessionsPage() {
-  const profile = await getCurrentUserProfile()
+  const profileRes = await getCurrentUserProfile()
+  const profile = profileRes.success ? profileRes.data : null
 
   if (!profile) {
     return (

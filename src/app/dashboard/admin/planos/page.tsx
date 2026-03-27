@@ -5,7 +5,8 @@ import { HeartPulse } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 
 export default async function HealthInsurancesPage() {
-  const insurances = await getHealthInsurances()
+  const res = await getHealthInsurances()
+  const insurances = res.success ? res.data : []
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">

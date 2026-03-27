@@ -58,8 +58,8 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     async function loadData() {
-      const data = await getCompanyMembers()
-      setEmployees(data)
+      const res = await getCompanyMembers()
+      setEmployees(res.success ? res.data : [])
       setLoading(false)
     }
     loadData()

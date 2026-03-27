@@ -37,7 +37,6 @@ const getCachedPsychologists = unstable_cache(
       const psychologists = await prisma.psychologistProfile.findMany({
         where: {
           isVerified: true,
-          stripeOnboardingComplete: true,
         },
         orderBy: { createdAt: 'desc' },
         take: 100,

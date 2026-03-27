@@ -1,7 +1,6 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
-import { logger } from '@/lib/utils/logger'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
 
@@ -11,7 +10,6 @@ export const getPsychologists = createSafeAction(
     const psychologists = await prisma.psychologistProfile.findMany({
       where: {
         isVerified: true,
-        stripeOnboardingComplete: true,
       },
       include: {
         user: {
@@ -52,9 +50,25 @@ export const getPsychologistById = createSafeAction(
     if (!psych) return null
 
     const { pricePerSession, ...rest } = psych
+    const rawProfile = psych.user?.profiles || null
+    const profile = rawProfile
+      ? {
+          id: rawProfile.id,
+          user_id: rawProfile.user_id,
+          full_name: rawProfile.fullName,
+          avatar_url: rawProfile.avatarUrl,
+          role: rawProfile.role,
+          birth_date: rawProfile.birth_date ? (rawProfile.birth_date as Date).toISOString() : null,
+          document: rawProfile.document,
+          phone: rawProfile.phone,
+          created_at: (rawProfile.createdAt as Date).toISOString(),
+          updated_at: (rawProfile.updatedAt as Date).toISOString(),
+        }
+      : null
+
     return {
       ...rest,
-      profile: psych.user?.profiles || null,
+      profile,
       price_per_session: pricePerSession ? Number(pricePerSession) : null,
       acceptedInsurances: psych.acceptedInsurances.map((i) => i.healthInsurance).filter(Boolean),
     }
@@ -90,7 +104,6 @@ export const searchPsychologists = createSafeAction(
 
     const where: any = {
       isVerified: true,
-      stripeOnboardingComplete: true,
     }
 
     if (specialties && specialties.length > 0) {

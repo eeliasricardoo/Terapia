@@ -47,7 +47,8 @@ export default function CompanyProfilePage() {
 
   useEffect(() => {
     async function loadData() {
-      const data = await getCompanyProfile()
+      const res = await getCompanyProfile()
+      const data = res.success ? res.data : null
       if (data) {
         setProfile(data)
         const config = data.benefitConfig as any

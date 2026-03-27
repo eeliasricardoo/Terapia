@@ -4,7 +4,8 @@ import { ApprovalList } from '../_components/ApprovalList'
 export const dynamic = 'force-dynamic'
 
 export default async function ApprovalsPage() {
-  const pending = await getPendingPsychologists()
+  const res = await getPendingPsychologists()
+  const pending = res.success ? res.data : []
 
   return (
     <div className="space-y-8">

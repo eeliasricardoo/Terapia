@@ -3,7 +3,8 @@ import { PatientServicesView } from '@/components/dashboard/patient/services/Pat
 import { getCurrentUserProfile } from '@/lib/actions/profile'
 
 export default async function ConfiguracoesPage() {
-  const profile = await getCurrentUserProfile()
+  const profileRes = await getCurrentUserProfile()
+  const profile = profileRes.success ? profileRes.data : null
   const isPsychologist = profile?.role === 'PSYCHOLOGIST'
 
   return (

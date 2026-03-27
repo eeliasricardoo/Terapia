@@ -20,7 +20,7 @@ export function useDiary() {
 
   useEffect(() => {
     getDiaryEntries()
-      .then(setEntries)
+      .then((res) => setEntries(res.success ? res.data : []))
       .finally(() => setIsLoading(false))
   }, [])
 
@@ -46,7 +46,7 @@ export function useDiary() {
       if (result.success) {
         toast.success('Entrada salva com sucesso!')
         const updated = await getDiaryEntries()
-        setEntries(updated)
+        setEntries(updated.success ? updated.data : [])
         setSelectedMood(null)
         setSelectedEmotions([])
         setContent('')

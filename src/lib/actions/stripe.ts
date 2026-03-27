@@ -2,7 +2,6 @@
 
 import { stripe } from '@/lib/stripe'
 import Stripe from 'stripe'
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { revalidateTag } from 'next/cache'
@@ -86,9 +85,9 @@ export const createStripeCheckoutSession = createSafeAction(
 
     const psychologistName = psych.user.profiles?.fullName || psych.user.name || 'Psicólogo'
 
-    // 1c. Conflict check BEFORE starting checkout
-    // We use a transaction for the free flow to prevent race conditions
-    if (finalPrice <= 0) {
+    // 2. Skip Stripe if: session is free (coupon/zero price) OR psychologist hasn't set up Stripe
+    const skipStripe = finalPrice <= 0 || !psych.stripeAccountId || !psych.stripeOnboardingComplete
+    if (skipStripe) {
       const result = await prisma.$transaction(async (tx) => {
         const { hasConflict, type } = await checkAppointmentConflict(
           {
@@ -108,19 +107,17 @@ export const createStripeCheckoutSession = createSafeAction(
           )
         }
 
-        const newAppt = await tx.appointment.create({
+        return await tx.appointment.create({
           data: {
             patientId: user.id,
             psychologistId: psych.id,
             scheduledAt: new Date(data.scheduledAt),
             durationMinutes: data.durationMinutes,
-            price: 0,
-            paymentMethod: 'Coupon',
+            price: finalPrice,
+            paymentMethod: finalPrice <= 0 ? 'Coupon' : 'Direct',
             status: 'SCHEDULED',
           },
         })
-
-        return newAppt
       })
 
       sendAppointmentNotifications(result.id).catch((err) =>
@@ -134,13 +131,6 @@ export const createStripeCheckoutSession = createSafeAction(
           ? `${process.env.NEXT_PUBLIC_APP_URL}${data.returnUrl}${data.returnUrl.includes('?') ? '&' : '?'}payment=success`
           : `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success`,
       }
-    }
-
-    // 2. Validate Stripe Account for non-free sessions
-    if (!psych.stripeAccountId || !psych.stripeOnboardingComplete) {
-      throw new Error(
-        'Este profissional ainda não concluiu a configuração de pagamentos. Por favor, tente novamente mais tarde.'
-      )
     }
 
     // 3. Create a PENDING_PAYMENT appointment as a "Soft Lock"
@@ -208,7 +198,7 @@ export const createStripeCheckoutSession = createSafeAction(
       },
       payment_intent_data: {
         transfer_data: {
-          destination: psych.stripeAccountId,
+          destination: psych.stripeAccountId!,
         },
         // Calculate dynamic platform fee from env or default to 15%
         application_fee_amount: Math.round(stripeAmount * (env.PLATFORM_FEE_PERCENT / 100)),

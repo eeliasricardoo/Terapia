@@ -71,7 +71,8 @@ export function useCheckout() {
       }
 
       if (doctorId) {
-        const psych = await getPsychologistById(doctorId)
+        const psychRes = await getPsychologistById(doctorId)
+        const psych = psychRes.success ? psychRes.data : null
         if (psych) {
           const name = psych.profile?.full_name || 'Psicólogo(a)'
           const nameHasDr =

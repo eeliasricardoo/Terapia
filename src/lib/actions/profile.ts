@@ -26,18 +26,29 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
     return null
   }
 
-  // Get user profile
+  // Try to fetch via Prisma first (since we're already on the server) for better performance and reliability
+  const { prisma } = await import('@/lib/prisma')
+  let userInDb = await prisma.user.findUnique({
+    where: { id: user.id },
+    include: { profiles: true },
+  })
+
+  // If we found it in DB via Prisma, use that data
+  if (userInDb?.profiles) {
+    return userInDb.profiles as unknown as Profile
+  }
+
+  // Fallback to Supabase if Prisma fails (unlikely) or just in case
   let { data, error } = await supabase.from('profiles').select('*').eq('user_id', user.id).single()
 
-  // If profile is missing (e.g. after a DB reset), try to recreate it from Auth metadata
-  if (error && error.code === 'PGRST116') {
+  // If profile is missing everywhere, try to recreate it from Auth metadata
+  if ((!userInDb?.profiles || (error && error.code === 'PGRST116')) && !data) {
     const meta = user.user_metadata
     const role = meta?.role || 'PATIENT'
     const fullName = meta?.full_name || user.email?.split('@')[0] || 'Usuário'
 
     // Create in Prisma first (required for FK constraints)
     try {
-      const { prisma } = await import('@/lib/prisma')
       await prisma.user.upsert({
         where: { id: user.id },
         update: { email: user.email!, name: fullName },
@@ -45,8 +56,11 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
       })
 
       // Create in Supabase profiles table using Prisma to ensure defaults (like ID) are handled
-      const newProfile = await prisma.profile.create({
-        data: {
+      // Using upsert instead of create to avoid P2002 loop
+      const newProfile = await prisma.profile.upsert({
+        where: { user_id: user.id },
+        update: { fullName: fullName },
+        create: {
           user_id: user.id,
           fullName: fullName,
           role: role as UserRole,
@@ -60,9 +74,8 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
     } catch (err) {
       logger.error('Error auto-syncing profile (Prisma/General):', err)
     }
-  } else if (error) {
-    logger.error('Error fetching user profile:', error)
-    return null
+  } else if (error && error.code !== 'PGRST116') {
+    logger.error('Error fetching user profile from Supabase:', error)
   }
 
   // Ensure User role and Profile role are in sync

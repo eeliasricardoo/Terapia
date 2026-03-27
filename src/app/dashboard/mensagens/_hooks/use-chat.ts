@@ -40,8 +40,8 @@ export function useChat() {
       } = await supabase.auth.getUser()
       if (user) setMyUserId(user.id)
 
-      const convs = await getConversations()
-      setConversations(convs)
+      const convsRes = await getConversations()
+      setConversations(convsRes.success ? convsRes.data : [])
       setIsLoadingConvs(false)
 
       if (initialId && !selectedId) {
@@ -54,8 +54,8 @@ export function useChat() {
   const loadMessages = useCallback(
     async (id: string) => {
       setIsLoadingMsgs(true)
-      const msgs = await getMessages(id)
-      setMessages(msgs)
+      const msgsRes = await getMessages(id)
+      setMessages(msgsRes.success ? msgsRes.data : [])
       setIsLoadingMsgs(false)
       setTimeout(() => scrollToBottom('auto'), 100)
     },
@@ -65,8 +65,8 @@ export function useChat() {
   // Refreshes messages without showing the loading spinner — used by realtime updates.
   const refreshMessages = useCallback(
     async (id: string) => {
-      const msgs = await getMessages(id)
-      setMessages(msgs)
+      const msgsRes = await getMessages(id)
+      setMessages(msgsRes.success ? msgsRes.data : [])
       setTimeout(() => scrollToBottom('smooth'), 50)
     },
     [scrollToBottom]
