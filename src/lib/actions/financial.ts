@@ -1,6 +1,5 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
@@ -24,17 +23,12 @@ export type FinancialStats = {
   }[]
 }
 
-export async function getFinancialStats(): Promise<FinancialStats> {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
 
-    if (!user) {
-      throw new Error('Não autenticado')
-    }
-
+export const getFinancialStats = createSafeAction(
+  z.any().optional(),
+  async (_, user): Promise<FinancialStats> => {
     // Find psychologist profile
     const psychologistProfile = await prisma.psychologistProfile.findUnique({
       where: { userId: user.id },
@@ -147,7 +141,6 @@ export async function getFinancialStats(): Promise<FinancialStats> {
     }))
 
     // Calculate payment method breakdown from recent completed appointments
-    // Using last 500 appointments for representative statistics without performance impact
     const allCompletedAppts = await prisma.appointment.findMany({
       where: {
         psychologistId: psychologistProfile.id,
@@ -178,19 +171,9 @@ export async function getFinancialStats(): Promise<FinancialStats> {
       monthlyData,
       paymentMethods,
       recentTransactions,
-      isStripeConnected: !!psychologistProfile.stripeAccountId,
+      isStripeConnected:
+        !!psychologistProfile.stripeAccountId && psychologistProfile.stripeOnboardingComplete,
     }
-  } catch (error) {
-    logger.error('Error fetching financial stats:', error)
-    return {
-      totalRevenue: 0,
-      pendingRevenue: 0,
-      averageTicket: 0,
-      revenueChange: 0,
-      monthlyData: [],
-      paymentMethods: [],
-      recentTransactions: [],
-      isStripeConnected: false,
-    }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)

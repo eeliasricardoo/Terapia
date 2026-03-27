@@ -180,15 +180,9 @@ export const createStripeCheckoutSession = createSafeAction(
   { requiredRole: 'PATIENT' }
 )
 
-export async function createStripeConnectAccountLink() {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('Não autenticado')
-
+export const createStripeConnectAccountLink = createSafeAction(
+  z.any().optional(),
+  async (_, user) => {
     const psych = await prisma.psychologistProfile.findUnique({
       where: { userId: user.id },
     })
@@ -206,7 +200,6 @@ export async function createStripeConnectAccountLink() {
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },
-          boleto_payments: { requested: true },
         },
         business_type: 'individual',
         metadata: {
@@ -233,23 +226,16 @@ export async function createStripeConnectAccountLink() {
     })
 
     return { url: accountLink.url }
-  } catch (error: any) {
-    logger.error('Error creating Stripe Connect link:', error)
-    return { error: error.message || 'Erro ao conectar-se ao Stripe' }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
 /**
  * Sincroniza o status real da conta Connect com o banco de dados.
  */
-export async function syncStripeAccountStatus() {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return { error: 'Não autenticado' }
-
+export const syncStripeAccountStatus = createSafeAction(
+  z.any().optional(),
+  async (_, user) => {
     const psych = await prisma.psychologistProfile.findUnique({
       where: { userId: user.id },
     })
@@ -258,35 +244,30 @@ export async function syncStripeAccountStatus() {
 
     const account = await stripe.accounts.retrieve(psych.stripeAccountId)
 
-    // Aproveitamos para persistir o status no banco (redundância ao webhook)
-    if (account.details_submitted) {
+    // Sync status back to DB (charges_enabled is the real signal)
+    const isComplete = account.details_submitted && account.charges_enabled
+
+    if (psych.stripeOnboardingComplete !== isComplete) {
       await prisma.psychologistProfile.update({
         where: { id: psych.id },
-        data: { stripeOnboardingComplete: true },
+        data: { stripeOnboardingComplete: isComplete },
       })
     }
 
     return {
-      connected: !!psych.stripeAccountId,
+      connected: true,
       detailsSubmitted: account.details_submitted,
       payoutsEnabled: account.payouts_enabled,
+      chargesEnabled: account.charges_enabled,
       email: account.email,
     }
-  } catch (err: any) {
-    logger.error('Error syncing Stripe status:', err)
-    return { error: err.message }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
-export async function getStripeDashboardLink() {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('Não autenticado')
-
+export const getStripeDashboardLink = createSafeAction(
+  z.any().optional(),
+  async (_, user) => {
     const psych = await prisma.psychologistProfile.findUnique({
       where: { userId: user.id },
     })
@@ -297,8 +278,6 @@ export async function getStripeDashboardLink() {
 
     const loginLink = await stripe.accounts.createLoginLink(psych.stripeAccountId)
     return { url: loginLink.url }
-  } catch (error: any) {
-    logger.error('Error getting Stripe Dashboard link:', error)
-    return { error: error.message || 'Erro ao acessar painel do Stripe' }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)

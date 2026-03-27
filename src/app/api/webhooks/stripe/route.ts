@@ -99,19 +99,23 @@ export async function POST(req: Request) {
     const account = event.data.object as Stripe.Account
 
     try {
-      if (account.details_submitted) {
-        await prisma.psychologistProfile.updateMany({
-          where: { stripeAccountId: account.id },
-          data: { stripeOnboardingComplete: true },
-        })
-        logger.info(`Stripe Onboarding completed for account ${account.id}`)
-        revalidateTag('psychologist-profile-view')
+      // Robust check: details submitted AND charges enabled
+      const isComplete = account.details_submitted && account.charges_enabled
+
+      await prisma.psychologistProfile.updateMany({
+        where: { stripeAccountId: account.id },
+        data: { stripeOnboardingComplete: isComplete },
+      })
+
+      if (isComplete) {
+        logger.info(`Stripe Onboarding fully active for account ${account.id} (charges enabled)`)
       } else {
-        await prisma.psychologistProfile.updateMany({
-          where: { stripeAccountId: account.id },
-          data: { stripeOnboardingComplete: false },
-        })
+        logger.warn(
+          `Stripe account ${account.id} updated but charges NOT enabled. Status set to incomplete.`
+        )
       }
+
+      revalidateTag('psychologist-profile-view')
     } catch (error) {
       logger.error(`Error updating stripe onboarding status for ${account.id}:`, error)
     }

@@ -54,11 +54,11 @@ export function FinancialManager() {
   const handleConnectStripe = async () => {
     setIsConnecting(true)
     try {
-      const result = await createStripeConnectAccountLink()
-      if (result.error) {
+      const result = await createStripeConnectAccountLink(undefined)
+      if (!result.success) {
         toast.error(result.error)
-      } else if (result.url) {
-        window.location.href = result.url
+      } else if (result.data?.url) {
+        window.location.href = result.data.url
       }
     } catch (error) {
       toast.error('Erro ao iniciar conexão com Stripe')
@@ -70,11 +70,11 @@ export function FinancialManager() {
   const handleOpenStripeDashboard = async () => {
     setIsConnecting(true)
     try {
-      const result = await getStripeDashboardLink()
-      if (result.error) {
+      const result = await getStripeDashboardLink(undefined)
+      if (!result.success) {
         toast.error(result.error)
-      } else if (result.url) {
-        window.open(result.url, '_blank')
+      } else if (result.data?.url) {
+        window.open(result.data.url, '_blank')
       }
     } catch (error) {
       toast.error('Erro ao acessar painel financeiro')
@@ -86,15 +86,19 @@ export function FinancialManager() {
   useEffect(() => {
     async function loadStats() {
       try {
-        const [data, stripeStatus] = await Promise.all([
-          getFinancialStats(),
-          syncStripeAccountStatus(),
+        const [statsResult, stripeResult] = await Promise.all([
+          getFinancialStats(undefined),
+          syncStripeAccountStatus(undefined),
         ])
-        setStats(data)
-        if (stripeStatus && 'detailsSubmitted' in stripeStatus) {
+
+        if (statsResult.success) {
+          setStats(statsResult.data)
+        }
+
+        if (stripeResult.success && stripeResult.data) {
           setOnboardingStatus({
-            detailsSubmitted: stripeStatus.detailsSubmitted || false,
-            payoutsEnabled: stripeStatus.payoutsEnabled || false,
+            detailsSubmitted: !!stripeResult.data.detailsSubmitted,
+            payoutsEnabled: !!stripeResult.data.payoutsEnabled,
           })
         }
       } catch (error) {
