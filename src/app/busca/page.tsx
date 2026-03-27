@@ -104,7 +104,7 @@ const getCachedPsychologists = unstable_cache(
     }
   },
   ['psychologists-search-list-v6'],
-  { revalidate: 60, tags: ['psychologists'] }
+  { revalidate: 3600, tags: ['psychologists'] }
 )
 
 export default async function SearchPage() {
