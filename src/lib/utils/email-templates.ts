@@ -22,7 +22,7 @@ const containerStyles = `
 
 const footerContent = `
   <div style="padding: 30px; text-align: center; font-size: 12px; color: #94a3b8;">
-    <p>© ${new Date().getFullYear()} Terapia Plataforma. Todos os direitos reservados.</p>
+    <p>© ${new Date().getFullYear()} Mind Cares. Todos os direitos reservados.</p>
     <p>Rua Digital, 123 - São Paulo, SP</p>
     <p><a href="#" style="color: #2563eb; text-decoration: none;">Termos de Uso</a> • <a href="#" style="color: #2563eb; text-decoration: none;">Política de Privacidade</a></p>
   </div>
@@ -33,13 +33,13 @@ export function getWelcomeEmailTemplate(name: string) {
     <div style="${baseStyles}">
       <div style="${containerStyles}">
         <div style="background-color: #2563eb; padding: 40px; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800;">Bem-vindo à Terapia! 🌊</h1>
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800;">Bem-vindo à Mind Cares! 🌊</h1>
         </div>
         
         <div style="padding: 40px;">
           <h2 style="color: #0f172a; margin-top: 0;">Olá, ${name}!</h2>
           <p>Estamos muito felizes em ter você conosco em sua jornada de autocuidado.</p>
-          <p>Na Terapia, nossa missão é conectar você aos melhores profissionais de saúde mental com total segurança e sigilo.</p>
+          <p>Na Mind Cares, nossa missão é conectar você aos melhores profissionais de saúde mental com total segurança e sigilo.</p>
           
           <div style="margin: 30px 0; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; background-color: #f1f5f9;">
             <p style="margin-top: 0; font-weight: bold; color: #1e293b;">O que fazer agora?</p>
@@ -133,7 +133,7 @@ export function getApprovalEmailTemplate(name: string, crp: string) {
         
         <div style="padding: 40px;">
           <h2 style="color: #0f172a; margin-top: 0;">Excelente notícia, ${name}!</h2>
-          <p>A equipe da Terapia verificou e aprovou seu cadastro (CRP: ${crp}).</p>
+          <p>A equipe da Mind Cares verificou e aprovou seu cadastro (CRP: ${crp}).</p>
           <p>A partir de agora, seu perfil já está visível para agendamentos na plataforma.</p>
           
           <div style="margin: 30px 0; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; background-color: #f1f5f9;">
@@ -180,7 +180,7 @@ export function getRejectionEmailTemplate(name: string, reason: string) {
           <p>Você pode tentar se cadastrar novamente após corrigir os apontamentos acima ou entrar em contato com nosso suporte.</p>
           
           <div style="text-align: center; margin-top: 40px;">
-            <a href="mailto:ajuda@terapiaplataforma.com.br" style="background-color: #f1f5f9; color: #475569; padding: 14px 28px; border-radius: 40px; text-decoration: none; font-weight: bold; display: inline-block; border: 1px solid #e2e8f0;">
+            <a href="mailto:ajuda@mindcares.com.br" style="background-color: #f1f5f9; color: #475569; padding: 14px 28px; border-radius: 40px; text-decoration: none; font-weight: bold; display: inline-block; border: 1px solid #e2e8f0;">
               Falar com o Suporte
             </a>
           </div>
