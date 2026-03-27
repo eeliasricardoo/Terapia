@@ -67,27 +67,27 @@ class Logger {
     return data
   }
 
-  private log(level: LogLevel, message: string, data?: unknown) {
+  private log(level: LogLevel, message: string, ...args: any[]) {
     if (!this.isDevelopment && level === 'debug') {
       return // Skip debug logs in production
     }
 
     const timestamp = new Date().toISOString()
-    const safeData = data ? this.sanitizeData(data) : ''
+    const safeData = args.length > 0 ? this.sanitizeData(args) : ''
 
     if (this.isDevelopment) {
       // Em dev: formato amigável para leitura no terminal local
       const prefix = `[${timestamp}] [${level.toUpperCase()}]`
       switch (level) {
         case 'error':
-          console.error(prefix, message, safeData)
+          console.error(prefix, message, ...args)
           break
         case 'warn':
-          console.warn(prefix, message, safeData)
+          console.warn(prefix, message, ...args)
           break
         case 'info':
         case 'debug':
-          console.log(prefix, message, safeData)
+          console.log(prefix, message, ...args)
           break
       }
     } else {
@@ -102,20 +102,47 @@ class Logger {
     }
   }
 
-  info(message: string, data?: unknown) {
-    this.log('info', message, data)
+  info(msg: string, ...args: any[]) {
+    this.log('info', msg, ...args)
   }
 
-  warn(message: string, data?: unknown) {
-    this.log('warn', message, data)
+  warn(msg: string, ...args: any[]) {
+    this.log('warn', msg, ...args)
+    this.syncToRedis('warn', msg, ...args).catch(() => {})
   }
 
-  error(message: string, data?: unknown) {
-    this.log('error', message, data)
+  error(msg: string, ...args: any[]) {
+    this.log('error', msg, ...args)
+    this.syncToRedis('error', msg, ...args).catch(() => {})
   }
 
-  debug(message: string, data?: unknown) {
-    this.log('debug', message, data)
+  debug(msg: string, ...args: any[]) {
+    this.log('debug', msg, ...args)
+  }
+
+  private async syncToRedis(level: LogLevel, msg: string, ...args: any[]) {
+    if (this.isDevelopment) return
+
+    try {
+      // Lazy import to avoid circular dependencies or premature init
+      const { redis } = await import('@/lib/upstash/redis')
+      if (!redis) return
+
+      const sanitized = this.sanitizeData(args)
+      const logEntry = {
+        timestamp: new Date().toISOString(),
+        level,
+        msg,
+        data: sanitized,
+        env: process.env.NODE_ENV,
+      }
+
+      // Keep only last 1000 critical logs to avoid Redis bloat
+      await redis.lpush('terapia:logs:critical', JSON.stringify(logEntry))
+      await redis.ltrim('terapia:logs:critical', 0, 999)
+    } catch (e) {
+      // Do nothing, we don't want logger errors to crash the app
+    }
   }
 }
 
