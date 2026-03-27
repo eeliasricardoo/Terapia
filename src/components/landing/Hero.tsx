@@ -30,9 +30,9 @@ export function Hero() {
               transition={{ duration: 0.6 }}
               className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full border border-slate-200 bg-white shadow-sm"
             >
-              <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <img src="/logo.png" alt="" className="h-4 w-4" />
               <span className="text-xs font-semibold text-slate-600 tracking-wide uppercase">
-                Plataforma Online de Terapia
+                Mind Cares — Sua mente em boas mãos
               </span>
             </motion.div>
 

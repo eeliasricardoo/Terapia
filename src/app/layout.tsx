@@ -20,11 +20,11 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: {
-    default: 'MindCare - Terapia Online | Sua mente, nosso cuidado.',
-    template: '%s | Terapia',
+    default: 'Mind Cares - Terapia Online | Sua mente, nosso cuidado.',
+    template: '%s | Mind Cares',
   },
   description:
-    'A Terapia é uma plataforma que conecta você a psicólogos qualificados para sessões de terapia online com total segurança, sigilo e praticidade.',
+    'A Mind Cares é uma plataforma que conecta você a psicólogos qualificados para sessões de terapia online com total segurança, sigilo e praticidade.',
   keywords: [
     'terapia online',
     'psicólogo online',
@@ -32,30 +32,36 @@ export const metadata: Metadata = {
     'ansiedade',
     'depressão',
     'bem-estar',
+    'mind cares',
   ],
-  authors: [{ name: 'MindCare Team' }],
-  creator: 'Terapia Plataforma',
+  authors: [{ name: 'Mind Cares Team' }],
+  creator: 'Mind Cares Plataforma',
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
   openGraph: {
     type: 'website',
     locale: 'pt_BR',
     url: '/',
-    siteName: 'Terapia',
-    title: 'MindCare - Terapia Online de Alta Qualidade',
+    siteName: 'Mind Cares',
+    title: 'Mind Cares - Terapia Online de Alta Qualidade',
     description: 'Encontre psicólogos qualificados e comece sua jornada de autocuidado hoje mesmo.',
     images: [
       {
-        url: '/og-image.png', // Deverá ser criada na branch de UI/UX
+        url: '/logo.png',
         width: 1200,
         height: 630,
-        alt: 'MindCare Terapia Online',
+        alt: 'Mind Cares Terapia Online',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MindCare - Terapia Online',
+    title: 'Mind Cares - Terapia Online',
     description: 'Sessões de terapia online com total segurança e praticidade.',
-    images: ['/og-image.png'],
+    images: ['/logo.png'],
   },
   robots: {
     index: true,

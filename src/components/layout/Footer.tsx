@@ -15,9 +15,15 @@ export function Footer() {
       <div className="container py-16 md:py-20 mx-auto max-w-5xl px-6">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
           <div className="space-y-4 md:col-span-1">
-            <h3 className="text-lg font-bold font-heading text-slate-900">Terapia</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <img src="/logo.png" alt="" className="h-6 w-6" />
+              <h3 className="text-lg font-bold font-outfit text-slate-900 leading-none">
+                Mind Cares
+              </h3>
+            </div>
             <p className="text-sm text-slate-500 leading-relaxed max-w-xs">
-              Conectamos você aos melhores profissionais de saúde mental.
+              Sua jornada de autocuidado começa aqui. Conectamos você aos melhores profissionais de
+              saúde mental.
             </p>
           </div>
 
@@ -112,7 +118,7 @@ export function Footer() {
 
         <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-slate-400">
-            © {new Date().getFullYear()} Terapia. Todos os direitos reservados.
+            © {new Date().getFullYear()} Mind Cares. Todos os direitos reservados.
           </p>
           <p className="text-xs text-slate-300">Feito com cuidado para quem cuida.</p>
         </div>

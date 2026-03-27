@@ -243,21 +243,33 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
         className
       )}
       role="navigation"
-      aria-label="Menu principal"
+      aria-label="Mind Cares"
     >
-      {/* User Profile */}
-      <div className="flex items-center gap-3 h-20 px-6 border-b border-slate-100">
-        <Avatar className="h-10 w-10 border border-slate-200">
-          <AvatarImage src={user?.avatar_url || '/avatars/user.png'} />
-          <AvatarFallback className="bg-slate-100 text-slate-600 font-medium">
-            {user ? getInitials(user.name) : 'U'}
-          </AvatarFallback>
-        </Avatar>
-        <div className="overflow-hidden">
-          <p className="font-semibold text-sm text-slate-900 truncate" title={user?.name}>
-            {user?.name || 'Carregando...'}
-          </p>
-          <p className="text-xs text-slate-600 font-medium">{user?.role || ''}</p>
+      {/* Brand Logo & Profile Container */}
+      <div className="flex flex-col border-b border-slate-100">
+        <div className="h-16 px-6 flex items-center gap-3">
+          <div className="h-9 w-9 relative rounded-xl overflow-hidden bg-slate-50 border border-slate-100 p-1.5">
+            <img src="/logo.png" alt="Logo" className="object-contain" />
+          </div>
+          <span className="font-outfit font-bold text-slate-900 text-lg tracking-tight">
+            Mind Cares
+          </span>
+        </div>
+
+        {/* User Profile */}
+        <div className="flex items-center gap-3 h-20 px-6 bg-slate-50/50">
+          <Avatar className="h-10 w-10 border border-slate-200">
+            <AvatarImage src={user?.avatar_url || '/avatars/user.png'} />
+            <AvatarFallback className="bg-slate-100 text-slate-600 font-medium">
+              {user ? getInitials(user.name) : 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="overflow-hidden">
+            <p className="font-semibold text-sm text-slate-900 truncate" title={user?.name}>
+              {user?.name || 'Carregando...'}
+            </p>
+            <p className="text-xs text-slate-600 font-medium">{user?.role || ''}</p>
+          </div>
         </div>
       </div>
 

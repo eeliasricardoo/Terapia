@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
  * Helps Google find all our professional profiles automatically.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://terapia.com.br'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mindcares.com.br'
 
   // 1. Static Routes
   const staticRoutes: MetadataRoute.Sitemap = [

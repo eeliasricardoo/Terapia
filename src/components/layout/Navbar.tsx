@@ -101,9 +101,12 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
           <div className="flex items-center gap-8">
             <Link
               href="/"
-              className="flex items-center space-x-2 opacity-50 hover:opacity-100 transition-opacity"
+              className="flex items-center gap-2.5 opacity-50 hover:opacity-100 transition-opacity"
             >
-              <span className="text-xl font-bold tracking-tight font-heading">Terapia</span>
+              <div className="h-6 w-6 relative rounded-md overflow-hidden p-0.5">
+                <img src="/logo.png" alt="Logo" />
+              </div>
+              <span className="text-xl font-bold tracking-tight font-outfit">Mind Cares</span>
             </Link>
           </div>
           <div className="flex items-center gap-4">
@@ -146,9 +149,12 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
     <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-xl border-b border-slate-100">
       <div className="container flex h-20 items-center justify-between">
         <div className="flex items-center gap-10">
-          <Link href={isLoggedIn ? '/dashboard' : '/'} className="flex items-center">
-            <span className="text-xl font-bold tracking-tight font-heading text-slate-900">
-              Terapia
+          <Link href={isLoggedIn ? '/dashboard' : '/'} className="flex items-center gap-2.5">
+            <div className="h-8 w-8 relative rounded-lg overflow-hidden bg-slate-50 border border-slate-100 p-1">
+              <img src="/logo.png" alt="Logo" className="object-contain" />
+            </div>
+            <span className="text-xl font-bold tracking-tight font-outfit text-slate-900 group">
+              Mind Cares
             </span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium">

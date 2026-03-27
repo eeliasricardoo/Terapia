@@ -171,7 +171,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `Psic. ${fullName} - ${specialty}`,
     description: bio,
     openGraph: {
-      title: `Psic. ${fullName} | Terapia Online`,
+      title: `Psic. ${fullName} | Mind Cares`,
       description: bio,
       images: [
         {
@@ -187,7 +187,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary',
-      title: `Psic. ${fullName} - Terapia Online`,
+      title: `Psic. ${fullName} - Mind Cares`,
       description: bio,
       images: [avatarUrl],
     },

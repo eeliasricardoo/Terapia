@@ -15,6 +15,7 @@ import {
 } from '@/lib/security'
 import { headers } from 'next/headers'
 import { logger } from '@/lib/utils/logger'
+import { getStyledEmailTemplate } from '@/lib/utils/email-template'
 
 export type ActionResult = {
   success: boolean
@@ -199,16 +200,21 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
       const { sendEmail } = await import('@/lib/utils/email')
       sendEmail({
         to: data.email,
-        subject: 'Bem-vindo à Terapia! 🌊',
-        html: `
-          <h1>Olá, ${safeName}!</h1>
-          <p>Sua conta na Terapia foi criada com sucesso.</p>
+        subject: 'Bem-vindo à Mind Cares! 🌊',
+        html: getStyledEmailTemplate(
+          `Olá, ${safeName}!`,
+          `
+          <p>Sua conta na <strong>Mind Cares</strong> foi criada com sucesso.</p>
           <p>Estamos muito felizes em ter você conosco em sua jornada de autocuidado.</p>
+          <div style="text-align: center;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/login/paciente" class="button" style="color: #ffffff;">Entrar na Plataforma</a>
+          </div>
           <p>Se você precisar de ajuda, estamos à disposição.</p>
           <br/>
           <p>Atenciosamente,</p>
-          <p>Equipe Terapia</p>
-        `,
+          <p>Equipe Mind Cares</p>
+          `
+        ),
       }).catch((e) => logger.error('Failed to send welcome email:', e))
     }
 
@@ -495,16 +501,21 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
     const { sendEmail } = await import('@/lib/utils/email')
     sendEmail({
       to: data.email,
-      subject: 'Bem-vindo à Terapia! 🌊',
-      html: `
-        <h1>Olá, Prof. ${safeName}!</h1>
-        <p>Sua conta de profissional na Terapia foi criada com sucesso.</p>
+      subject: 'Bem-vindo à Mind Cares! 🌊',
+      html: getStyledEmailTemplate(
+        `Olá, Prof. ${safeName}!`,
+        `
+        <p>Sua conta de profissional na <strong>Mind Cares</strong> foi criada com sucesso.</p>
         <p>Agora você pode completar seu perfil e configurar sua agenda para começar a atender.</p>
         <p>Nosso time revisará seus documentos em breve para ativar sua visibilidade na busca.</p>
+        <div style="text-align: center;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/login/psicologo" class="button" style="color: #ffffff;">Configurar meu Perfil</a>
+        </div>
         <br/>
         <p>Atenciosamente,</p>
-        <p>Equipe Terapia</p>
-      `,
+        <p>Equipe Mind Cares</p>
+        `
+      ),
     }).catch((e) => logger.error('Failed to send psychologist welcome email:', e))
 
     revalidatePath('/dashboard/admin/aprovacoes')

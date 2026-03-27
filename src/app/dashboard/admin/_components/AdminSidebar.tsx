@@ -35,7 +35,7 @@ export function AdminSidebar({ profileName }: { profileName: string }) {
       <div className="p-6 border-b border-neutral-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-6 h-6 text-primary" />
-          <h1 className="text-xl font-bold tracking-tight text-neutral-900">Terapia Admin</h1>
+          <h1 className="text-xl font-bold tracking-tight text-neutral-900">Mind Cares Admin</h1>
         </div>
       </div>
 
