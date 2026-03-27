@@ -55,6 +55,7 @@ model Appointment {
   @@index([patientId])
   @@index([psychologistId])
   @@index([scheduledAt])
+  @@index([psychologistId, scheduledAt, status])
   @@map("appointments")
 }
 
@@ -190,6 +191,8 @@ model PatientPsychologistLink {
   psychologist   Profile  @relation("PsychologistLinks", fields: [psychologistId], references: [id], onDelete: Cascade)
 
   @@unique([patientId, psychologistId])
+  @@index([psychologistId])
+  @@index([psychologistId, status])
   @@map("patient_psychologist_links")
 }
 
@@ -220,6 +223,7 @@ model Evolution {
   updatedAt      DateTime @updatedAt @map("updated_at")
   patient        Profile  @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
+  @@index([patientId, psychologistId])
   @@map("evolutions")
 }
 
@@ -259,6 +263,7 @@ model ConversationParticipant {
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
+  @@index([userId])
   @@map("conversation_participants")
 }
 
