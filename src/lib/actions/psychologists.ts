@@ -20,6 +20,7 @@ export async function getPsychologists(): Promise<PsychologistWithProfile[]> {
     .from('psychologist_profiles')
     .select('*')
     .eq('is_verified', true)
+    .eq('stripe_onboarding_complete', true)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -112,7 +113,11 @@ export async function searchPsychologists(
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
 
-  let query = supabase.from('psychologist_profiles').select('*').eq('is_verified', true)
+  let query = supabase
+    .from('psychologist_profiles')
+    .select('*')
+    .eq('is_verified', true)
+    .eq('stripe_onboarding_complete', true)
 
   // Filter by specialties
   if (filters.specialties && filters.specialties.length > 0) {
