@@ -61,6 +61,11 @@ export async function POST(req: Request) {
       const updatedAppt = await prisma.appointment.update({
         where: { id: pendingAppointment.id },
         data: {
+          patientId: metadata.patientId,
+          psychologistId: metadata.psychologistId,
+          scheduledAt: new Date(metadata.scheduledAt),
+          durationMinutes: parseInt(metadata.durationMinutes),
+          price: Number(metadata.price),
           status: 'SCHEDULED',
           paymentMethod: 'Stripe',
           stripeSessionId: session.id,
@@ -88,7 +93,7 @@ export async function POST(req: Request) {
       // Robust check: details submitted AND charges enabled
       const isComplete = account.details_submitted && account.charges_enabled
 
-      await prisma.psychologistProfile.updateMany({
+      await prisma.psychologistProfile.update({
         where: { stripeAccountId: account.id },
         data: { stripeOnboardingComplete: isComplete },
       })
