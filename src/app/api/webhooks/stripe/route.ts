@@ -78,7 +78,7 @@ export async function POST(req: Request) {
           stripeSessionId: session.id,
           stripePaymentIntentId:
             typeof session.payment_intent === 'string' ? session.payment_intent : null,
-        },
+        } as any,
       })
 
       // Send notifications asynchronously

@@ -56,31 +56,26 @@ export async function POST(req: Request) {
       )
     }
 
-    // 3. Check appointment time window
+    // 3. Check appointment time window (Strict 10-minute lead time)
     const now = new Date()
     const scheduledAt = new Date(appointment.scheduledAt)
-
-    // Window: Psychologists 30 min before, Patients 15 min before
-    const leadTimeMinutes = isPsychologist ? 30 : 15
+    const leadTimeMinutes = 10
     const startTime = new Date(scheduledAt.getTime() - leadTimeMinutes * 60 * 1000)
 
-    // Session ends at scheduledAt + duration + 30 min buffer
-    const endTime = new Date(scheduledAt.getTime() + (appointment.durationMinutes + 30) * 60 * 1000)
+    // Session ends strictly at scheduledAt + duration (we allow 5 min grace period for completion)
+    const endTime = new Date(scheduledAt.getTime() + (appointment.durationMinutes + 5) * 60 * 1000)
 
     if (now < startTime) {
       return NextResponse.json(
         {
-          error: `Muito cedo. A sala estará disponível ${leadTimeMinutes} minutos antes do horário.`,
+          error: `O acesso à sala de vídeo será liberado 10 minutos antes do início (às ${startTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}).`,
         },
         { status: 403 }
       )
     }
 
     if (now > endTime) {
-      return NextResponse.json(
-        { error: 'Sessão encerrada. O acesso à sala expirou.' },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: 'Esta sessão já foi encerrada.' }, { status: 403 })
     }
 
     // 3. Create a Fresh Room for every session attempt to ensure it hasn't expired
