@@ -27,6 +27,34 @@ export async function saveProfessionalData(formData: FormData) {
   }
   const diplomaFile = formData.get('diploma') as File | null
   const licenseFile = formData.get('license') as File | null
+
+  // File Validation Constants
+  const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+  const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
+
+  // Validate Diploma
+  if (diplomaFile && diplomaFile.size > 0) {
+    if (diplomaFile.size > MAX_FILE_SIZE) {
+      return { success: false, error: 'O diploma deve ter no máximo 5MB' }
+    }
+    if (!ALLOWED_TYPES.includes(diplomaFile.type)) {
+      return { success: false, error: 'O diploma deve ser um PDF ou imagem (JPG/PNG)' }
+    }
+  }
+
+  // Validate License
+  if (licenseFile && licenseFile.size > 0) {
+    if (licenseFile.size > MAX_FILE_SIZE) {
+      return { success: false, error: 'A carteira profissional deve ter no máximo 5MB' }
+    }
+    if (!ALLOWED_TYPES.includes(licenseFile.type)) {
+      return {
+        success: false,
+        error: 'A carteira profissional deve ser um PDF ou imagem (JPG/PNG)',
+      }
+    }
+  }
+
   const supabase = await createClient()
 
   const {
