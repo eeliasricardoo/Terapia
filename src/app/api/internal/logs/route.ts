@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { redis } from '@/lib/upstash/redis'
+import { timingSafeCompare } from '@/lib/security'
 
 /**
  * Internal API to view critical logs from Redis.
@@ -8,7 +9,7 @@ export async function GET(req: NextRequest) {
   const secret = req.headers.get('x-internal-secret')
   const envSecret = process.env.INTERNAL_API_SECRET
 
-  if (!envSecret || secret !== envSecret) {
+  if (!timingSafeCompare(secret, envSecret ?? '')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -34,7 +35,7 @@ export async function DELETE(req: NextRequest) {
   const secret = req.headers.get('x-internal-secret')
   const envSecret = process.env.INTERNAL_API_SECRET
 
-  if (!envSecret || secret !== envSecret) {
+  if (!timingSafeCompare(secret, envSecret ?? '')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sendEmail } from '@/lib/utils/email'
 import { logger } from '@/lib/utils/logger'
 import { env } from '@/lib/env'
+import { timingSafeCompare } from '@/lib/security'
 
 type EmailPayload = {
   to: string
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
   // Validate the shared secret to block external requests
   const secret = req.headers.get('x-internal-secret')
 
-  if (secret !== env.INTERNAL_API_SECRET) {
+  if (!timingSafeCompare(secret, env.INTERNAL_API_SECRET)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

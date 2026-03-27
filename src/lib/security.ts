@@ -152,7 +152,24 @@ export async function checkForgotPasswordRateLimit(ip: string) {
 }
 
 // ==========================================
-// 3. Criptografia em Repouso (Para Dados de Saúde / LGPD)
+// 3. Comparação de Segredos Resistente a Timing Attack
+// ==========================================
+import { timingSafeEqual, createHash } from 'crypto'
+
+/**
+ * Compara dois segredos em tempo constante para prevenir timing attacks.
+ * Usa SHA-256 em ambos para normalizar o comprimento antes da comparação,
+ * evitando vazamento de informação pelo tamanho da string.
+ */
+export function timingSafeCompare(received: string | null | undefined, expected: string): boolean {
+  if (!received) return false
+  const bufA = createHash('sha256').update(received).digest()
+  const bufB = createHash('sha256').update(expected).digest()
+  return timingSafeEqual(bufA, bufB)
+}
+
+// ==========================================
+// 4. Criptografia em Repouso (Para Dados de Saúde / LGPD)
 // ==========================================
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto'
 
@@ -208,7 +225,7 @@ export function decryptData(text: string): string {
 }
 
 // ==========================================
-// 4. Validação de IDs (Prevenção de Injection)
+// 5. Validação de IDs (Prevenção de Injection)
 // ==========================================
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
