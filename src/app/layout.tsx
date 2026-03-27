@@ -4,6 +4,7 @@ import './globals.css'
 import { AuthProvider } from '@/components/providers/auth-provider'
 import { Toaster } from 'sonner'
 import { headers } from 'next/headers'
+import { env } from '@/lib/env'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -18,7 +19,7 @@ const outfit = Outfit({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   title: {
     default: 'Mind Cares - Terapia Online | Sua mente, nosso cuidado.',
     template: '%s | Mind Cares',

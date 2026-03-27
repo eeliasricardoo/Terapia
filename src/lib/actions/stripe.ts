@@ -9,6 +9,7 @@ import { revalidateTag } from 'next/cache'
 import { sendAppointmentNotifications } from './notifications'
 import { checkAppointmentConflict } from './appointments-utils'
 import { createSafeAction } from '@/lib/safe-action'
+import { env } from '@/lib/env'
 import { z } from 'zod'
 
 const createCheckoutSchema = z.object({
@@ -274,8 +275,8 @@ export const createStripeConnectAccountLink = createSafeAction(
     // 2. Create the Account Link for onboarding
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/financeiro?stripe=refresh`,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/financeiro?stripe=success`,
+      refresh_url: `${env.NEXT_PUBLIC_APP_URL}/dashboard/financeiro?stripe=refresh`,
+      return_url: `${env.NEXT_PUBLIC_APP_URL}/dashboard/financeiro?stripe=success`,
       type: 'account_onboarding',
     })
 
