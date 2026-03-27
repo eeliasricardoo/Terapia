@@ -43,6 +43,7 @@ let ratelimitInstance: Ratelimit | null = null
 let authIpRatelimitInstance: Ratelimit | null = null
 let authEmailRatelimitInstance: Ratelimit | null = null
 let forgotPasswordRatelimitInstance: Ratelimit | null = null
+let appointmentRatelimitInstance: Ratelimit | null = null
 
 // Só instanciamos se as chaves estiverem presentes
 if (isRedisConfigured) {
@@ -80,6 +81,14 @@ if (isRedisConfigured) {
     limiter: Ratelimit.slidingWindow(3, '15 m'),
     analytics: true,
     prefix: '@terapia/forgot-pw',
+  })
+
+  // Criação de agendamentos: 5 por hora por usuário (evita flood de agendamentos falsos)
+  appointmentRatelimitInstance = new Ratelimit({
+    redis: redis,
+    limiter: Ratelimit.slidingWindow(5, '1 h'),
+    analytics: true,
+    prefix: '@terapia/appointment',
   })
 }
 
@@ -147,6 +156,24 @@ export async function checkForgotPasswordRateLimit(ip: string) {
     return await forgotPasswordRatelimitInstance.limit(`ip:${ip}`)
   } catch (err) {
     logger.error('Error in forgot password rate limit:', err)
+    return RATE_LIMIT_ALLOWED
+  }
+}
+
+/**
+ * Rate limiting para criação de agendamentos: 5 por hora por userId.
+ * Previne flood de agendamentos falsos / spam contra psicólogos.
+ */
+export async function checkAppointmentRateLimit(userId: string) {
+  if (!appointmentRatelimitInstance) {
+    logger.warn('⚠️ [Rate Limiter] Appointment limiter unavailable, allowing request.')
+    return RATE_LIMIT_ALLOWED
+  }
+
+  try {
+    return await appointmentRatelimitInstance.limit(`appointment:${userId}`)
+  } catch (err) {
+    logger.error('Error in appointment rate limit:', err)
     return RATE_LIMIT_ALLOWED
   }
 }
