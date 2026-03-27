@@ -60,6 +60,18 @@ export const SearchFilters = memo(function SearchFilters({
     [filters, onFilterChange]
   )
 
+  const handleGenderToggle = useCallback(
+    (gender: string, checked: boolean) => {
+      const currentGenders = filters.genders || []
+      const nextGenders = checked
+        ? [...currentGenders, gender]
+        : currentGenders.filter((g) => g !== gender)
+
+      onFilterChange({ ...filters, genders: nextGenders })
+    },
+    [filters, onFilterChange]
+  )
+
   return (
     <div className="space-y-5">
       <div className="space-y-2.5">
@@ -111,6 +123,8 @@ export const SearchFilters = memo(function SearchFilters({
 
       <Separator />
 
+      <Separator />
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-medium leading-none text-slate-900">Preço Máximo</h4>
@@ -132,9 +146,35 @@ export const SearchFilters = memo(function SearchFilters({
 
       <Separator />
 
+      <div className="space-y-2.5">
+        <h4 className="text-sm font-medium leading-none text-slate-900">Gênero</h4>
+        <div className="grid grid-cols-1 gap-2">
+          {[
+            { id: 'Feminino', label: 'Feminino' },
+            { id: 'Masculino', label: 'Masculino' },
+          ].map((item) => (
+            <div key={item.id} className="flex items-center space-x-2">
+              <Checkbox
+                id={`filter-gender-${item.id}`}
+                checked={filters.genders?.includes(item.id)}
+                onCheckedChange={(checked) => handleGenderToggle(item.id, !!checked)}
+              />
+              <label
+                htmlFor={`filter-gender-${item.id}`}
+                className="text-sm font-normal leading-none cursor-pointer text-slate-600 hover:text-slate-900"
+              >
+                {item.label}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
+
       <div className="pt-2">
         <p className="text-[11px] text-slate-400 italic">
-          * Mais filtros (Idiomas, Gênero e Disponibilidade) serão liberados em breve.
+          * Mais filtros (Idiomas e Disponibilidade) serão liberados em breve.
         </p>
       </div>
     </div>
