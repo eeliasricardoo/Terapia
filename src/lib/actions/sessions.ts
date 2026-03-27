@@ -251,36 +251,6 @@ export const rescheduleSession = createSafeAction(
   }
 )
 
-export const getSecureMeetingUrl = createSafeAction(z.string().uuid(), async (sessionId, user) => {
-  const appt = await prisma.appointment.findUnique({
-    where: { id: sessionId },
-    include: { psychologist: true },
-  })
-
-  if (!appt) throw new Error('Sessão não encontrada')
-
-  // 1. Authorization
-  if (user.id !== appt.patientId && user.id !== appt.psychologist.userId) {
-    throw new Error('Acesso negado.')
-  }
-
-  // 2. Time Window Check
-  const { allowed, reason } = isWithinSessionWindow(appt.scheduledAt, appt.durationMinutes)
-  if (!allowed) {
-    throw new Error(
-      reason === 'too_early'
-        ? 'O acesso à sala de vídeo será liberado 10 minutos antes do início da sessão.'
-        : 'Esta sessão já foi encerrada.'
-    )
-  }
-
-  if (!appt.meetingUrl) {
-    throw new Error('Link da reunião ainda não gerado. Por favor, aguarde.')
-  }
-
-  return { meetingUrl: appt.meetingUrl }
-})
-
 export const getSessionSummary = createSafeAction(z.string().uuid(), async (sessionId, user) => {
   const appointment = await prisma.appointment.findUnique({
     where: { id: sessionId },

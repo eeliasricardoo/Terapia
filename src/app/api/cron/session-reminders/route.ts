@@ -54,8 +54,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ sent: 0 })
     }
 
+    const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
     let sent = 0
 
+    // Process in smaller batches if necessary to avoid timeouts,
+    // though dispatchEmailAsync is now extremely fast via Redis.
     for (const appt of appointments) {
       const patientEmail = appt.patient.email
       const psychEmail = appt.psychologist.user.email
@@ -66,6 +69,7 @@ export async function GET(req: NextRequest) {
       const dateFormatted = format(appt.scheduledAt, "EEEE, dd 'de' MMMM", { locale: ptBR })
       const time = format(appt.scheduledAt, 'HH:mm')
 
+      // 1. Dispatch to Patient
       dispatchEmailAsync({
         to: patientEmail,
         subject: 'Lembrete: sua sessão é amanhã 🗓️',
@@ -74,10 +78,11 @@ export async function GET(req: NextRequest) {
           psychologistName: psychName,
           dateFormatted,
           time,
-          meetingUrl: appt.meetingUrl ?? undefined,
+          meetingUrl: dashboardUrl, // Link to dashboard, which will route to video
         }),
       })
 
+      // 2. Dispatch to Psychologist
       dispatchEmailAsync({
         to: psychEmail,
         subject: 'Lembrete: você tem uma sessão amanhã 🗓️',
@@ -89,6 +94,7 @@ export async function GET(req: NextRequest) {
         }),
       })
 
+      // Update in DB (could be further optimized with updateMany if needed)
       await prisma.appointment.update({
         where: { id: appt.id },
         data: { reminderSentAt: now },
@@ -97,7 +103,7 @@ export async function GET(req: NextRequest) {
       sent++
     }
 
-    logger.info(`[CRON] Session reminders sent: ${sent}`)
+    logger.info(`[CRON] Session reminders processed: ${sent}`)
     return NextResponse.json({ sent })
   } catch (error: any) {
     logger.error('[CRON] session-reminders error:', error)
