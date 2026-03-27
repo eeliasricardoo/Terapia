@@ -26,37 +26,49 @@ export async function checkAppointmentConflict({
   // (Most sessions are 50-60 mins, so 6h is plenty)
   const windowStart = new Date(newSessionStart.getTime() - 6 * 60 * 60 * 1000)
   const windowEnd = new Date(newSessionStart.getTime() + 6 * 60 * 60 * 1000)
-
   try {
-    const existingConflicts = await prisma.appointment.findMany({
+    // We use a more precise query to find conflicts directly in the database
+    // to avoid fetching multiple records into memory.
+    const conflict = await prisma.appointment.findFirst({
       where: {
         id: excludeAppointmentId ? { not: excludeAppointmentId } : undefined,
         status: { not: 'CANCELED' },
-        scheduledAt: {
-          gte: windowStart,
-          lte: windowEnd,
-        },
         OR: [
           { psychologistId: psychologistProfileId },
           patientId ? { patientId: patientId } : {},
         ].filter((cond) => Object.keys(cond).length > 0),
+        // Overlap Logic:
+        // A session conflicts if it starts before our new session ends
+        // AND ends after our new session starts.
+        // Since we don't have the end time stored, we check:
+        // 1. Session starts during our interval [newSessionStart, newSessionEnd)
+        // 2. Session starts before our interval and potentially covers it
+        //    (we assume max session duration is 3 hours for this check)
+        AND: [
+          {
+            scheduledAt: { lt: newSessionEnd },
+          },
+          {
+            // If it started more than 3h ago, it's definitely ended (buffer).
+            // We'll filter the edge cases in JS if needed or trust the findFirst.
+            scheduledAt: { gt: new Date(newSessionStart.getTime() - 3 * 60 * 60 * 1000) },
+          },
+        ],
       },
     })
 
-    const conflict = existingConflicts.find((appt: Appointment) => {
-      const apptStart = new Date(appt.scheduledAt)
-      const apptEnd = new Date(apptStart.getTime() + appt.durationMinutes * 60000)
-
-      // Overlap formula: (StartA < EndB) and (EndB > StartA)
-      return newSessionStart < apptEnd && newSessionEnd > apptStart
-    })
-
     if (conflict) {
-      const isPsychConflict = conflict.psychologistId === psychologistProfileId
-      return {
-        hasConflict: true,
-        type: isPsychConflict ? 'psychologist' : 'patient',
-        conflictingWith: conflict.id,
+      // Final confirmation in JS to handle varying durations (like 50 vs 90 min)
+      const apptStart = new Date(conflict.scheduledAt)
+      const apptEnd = new Date(apptStart.getTime() + conflict.durationMinutes * 60000)
+
+      if (newSessionStart < apptEnd && newSessionEnd > apptStart) {
+        const isPsychConflict = conflict.psychologistId === psychologistProfileId
+        return {
+          hasConflict: true,
+          type: isPsychConflict ? 'psychologist' : 'patient',
+          conflictingWith: conflict.id,
+        }
       }
     }
 
