@@ -133,7 +133,41 @@ export const createStripeCheckoutSession = createSafeAction(
       )
     }
 
-    // 3. Create the Checkout Session
+    // 3. Create a PENDING_PAYMENT appointment as a "Soft Lock"
+    // This blocks the time slot for other patients during the checkout process (up to 24h by default in Stripe)
+    const pendingAppt = await prisma.$transaction(async (tx) => {
+      const { hasConflict, type } = await checkAppointmentConflict(
+        {
+          psychologistProfileId: psych.id,
+          patientId: user.id,
+          scheduledAt: new Date(data.scheduledAt),
+          durationMinutes: data.durationMinutes,
+        },
+        tx as any
+      )
+
+      if (hasConflict) {
+        throw new Error(
+          type === 'psychologist'
+            ? 'Este horário acabou de ser reservado por outro paciente.'
+            : 'Você já possui uma sessão agendada para este mesmo horário.'
+        )
+      }
+
+      return await tx.appointment.create({
+        data: {
+          patientId: user.id,
+          psychologistId: psych.id,
+          scheduledAt: new Date(data.scheduledAt),
+          durationMinutes: data.durationMinutes,
+          price: finalPrice,
+          paymentMethod: 'Stripe',
+          status: 'PENDING_PAYMENT',
+        },
+      })
+    })
+
+    // 4. Create the Checkout Session
     const stripeAmount = Math.round(finalPrice * 100)
 
     const sessionConfig: Stripe.Checkout.SessionCreateParams = {
@@ -153,13 +187,12 @@ export const createStripeCheckoutSession = createSafeAction(
       ],
       mode: 'payment',
       metadata: {
+        appointmentId: pendingAppt.id, // Reference the soft lock
         patientId: user.id,
         psychologistId: psych.id,
         scheduledAt: data.scheduledAt,
         durationMinutes: data.durationMinutes.toString(),
         price: finalPrice.toString(),
-        originalPrice: price.toString(),
-        couponCode: data.couponCode || '',
       },
       payment_intent_data: {
         transfer_data: {
@@ -176,6 +209,12 @@ export const createStripeCheckoutSession = createSafeAction(
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig)
+
+    // Update the pending appointment with the session ID for the webhook to find it
+    await prisma.appointment.update({
+      where: { id: pendingAppt.id },
+      data: { stripeSessionId: session.id },
+    })
 
     return { url: session.url }
   },

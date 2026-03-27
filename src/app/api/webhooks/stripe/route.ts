@@ -38,57 +38,43 @@ export async function POST(req: Request) {
     }
 
     try {
-      // Idempotency check: verify if appointment already exists for this session
-      const existingAppointment = await prisma.appointment.findUnique({
-        where: { stripeSessionId: session.id },
+      // Find the pending appointment created during checkout initiation
+      const pendingAppointment = await prisma.appointment.findFirst({
+        where: {
+          OR: [{ stripeSessionId: session.id }, { id: metadata.appointmentId }],
+        },
       })
 
-      if (existingAppointment) {
-        logger.info(
-          `Appointment already exists for session ${session.id}, skipping duplicate creation`
-        )
-        return NextResponse.json({ received: true, duplicate: true })
-      }
-
-      // Final Conflict Check (Safety Guard)
-      const { hasConflict } = await checkAppointmentConflict({
-        psychologistProfileId: metadata.psychologistId,
-        patientId: metadata.patientId,
-        scheduledAt: new Date(metadata.scheduledAt),
-        durationMinutes: parseInt(metadata.durationMinutes),
-      })
-
-      if (hasConflict) {
+      if (!pendingAppointment) {
         logger.error(
-          `CRITICAL: Overlapping appointment detected during webhook for session ${session.id}. Payment received but slot taken.`
+          `CRITICAL: No pending appointment found for session ${session.id}. Data loss risk!`
         )
-        return NextResponse.json({ error: 'Time slot occupied during payment' }, { status: 409 })
+        return NextResponse.json({ error: 'Fulfillment target not found' }, { status: 404 })
       }
 
-      // Fulfill the purchase
-      const newAppt = await prisma.appointment.create({
+      if (pendingAppointment.status === 'SCHEDULED') {
+        logger.info(`Appointment ${pendingAppointment.id} already fulfilled, skipping.`)
+        return NextResponse.json({ received: true })
+      }
+
+      // Fulfill the purchase by updating the pending appointment
+      const updatedAppt = await prisma.appointment.update({
+        where: { id: pendingAppointment.id },
         data: {
-          patientId: metadata.patientId,
-          psychologistId: metadata.psychologistId,
-          scheduledAt: new Date(metadata.scheduledAt),
-          durationMinutes: parseInt(metadata.durationMinutes),
-          price: metadata.price,
-          paymentMethod: 'Stripe',
           status: 'SCHEDULED',
+          paymentMethod: 'Stripe',
           stripeSessionId: session.id,
           stripePaymentIntentId:
             typeof session.payment_intent === 'string' ? session.payment_intent : null,
-        } as any,
+        },
       })
 
       // Send notifications asynchronously
-      sendAppointmentNotifications(newAppt.id).catch((err) =>
+      sendAppointmentNotifications(updatedAppt.id).catch((err) =>
         logger.error('Error sending appt notifications:', err)
       )
 
-      logger.info(
-        `Appointment created for patient ${metadata.patientId} via Stripe session ${session.id}`
-      )
+      logger.info(`Appointment ${updatedAppt.id} fulfilled for patient ${metadata.patientId}`)
       revalidateTag('appointments')
       revalidateTag('psychologist-profile-view')
     } catch (error) {
