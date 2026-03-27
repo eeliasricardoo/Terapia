@@ -27,31 +27,36 @@ export function ChatSidebar({
   onSelect,
 }: ChatSidebarProps) {
   return (
-    <Card className="w-full md:w-80 flex flex-col h-[400px] md:h-full border bg-card/50 backdrop-blur-sm overflow-hidden rounded-2xl shadow-sm">
-      <div className="p-4 border-b bg-muted/30 space-y-4">
-        <h2 className="font-heading font-bold text-xl text-foreground">Mensagens</h2>
+    <div className="w-full md:w-80 lg:w-96 flex flex-col h-[400px] md:h-full border border-slate-200/60 bg-white overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all">
+      <div className="p-6 border-b border-slate-100 space-y-5">
+        <h2 className="text-xl font-bold tracking-tight text-slate-900">Conversas</h2>
         <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
           <Input
             placeholder="Buscar conversas..."
-            className="pl-9 h-10 rounded-xl bg-background border-border/50 focus-visible:ring-primary/20 focus-visible:border-primary/50 transition-all"
+            className="pl-10 h-11 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all placeholder:text-slate-400 font-medium text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 scrollbar-thin scrollbar-thumb-slate-100">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            <p className="text-xs text-muted-foreground font-medium">Carregando chats...</p>
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Carregando...
+            </p>
           </div>
         ) : conversations.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center px-4 gap-2">
-            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-              <MessageSquare className="h-6 w-6 text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center py-16 text-center px-4 gap-4">
+            <div className="h-14 w-14 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100">
+              <MessageSquare className="h-6 w-6 text-slate-300" />
             </div>
-            <p className="text-sm font-medium text-muted-foreground">Nenhuma conversa encontrada</p>
+            <p className="text-xs font-semibold text-slate-400 leading-relaxed uppercase tracking-widest">
+              Nenhuma conversa
+            </p>
           </div>
         ) : (
           conversations.map((chat) => (
@@ -59,42 +64,55 @@ export function ChatSidebar({
               key={chat.id}
               onClick={() => onSelect(chat.id)}
               className={cn(
-                'flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 border border-transparent',
+                'flex items-center gap-4 p-4 rounded-3xl cursor-pointer transition-all duration-300 border group items-stretch',
                 selectedId === chat.id
-                  ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20 border-primary/20'
-                  : 'hover:bg-muted/50 text-foreground'
+                  ? 'bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-200'
+                  : 'hover:bg-slate-50 border-transparent text-slate-600'
               )}
             >
-              <div className="relative flex-shrink-0">
+              <div className="relative flex-shrink-0 self-center">
                 <Avatar
                   className={cn(
-                    'h-11 w-11 border-2 shadow-sm',
-                    selectedId === chat.id ? 'border-primary-foreground/20' : 'border-background'
+                    'h-12 w-12 border-2 transition-transform duration-500 group-hover:scale-105',
+                    selectedId === chat.id ? 'border-white/20' : 'border-white shadow-sm'
                   )}
                 >
                   <AvatarImage src={chat.avatar || undefined} />
                   <AvatarFallback
                     className={cn(
-                      'font-medium',
+                      'font-bold text-xs',
                       selectedId === chat.id
-                        ? 'bg-primary-foreground/10 text-primary-foreground'
-                        : 'bg-muted text-muted-foreground'
+                        ? 'bg-white/10 text-white'
+                        : 'bg-slate-100 text-slate-400'
                     )}
                   >
                     {chat.name.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-background" />
+                <div
+                  className={cn(
+                    'absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2',
+                    selectedId === chat.id
+                      ? 'bg-emerald-400 border-slate-900'
+                      : 'bg-emerald-500 border-white'
+                  )}
+                />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start mb-0.5">
-                  <p className="font-bold text-sm truncate">{chat.name}</p>
+
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <div className="flex justify-between items-baseline mb-0.5">
+                  <p
+                    className={cn(
+                      'font-bold text-sm truncate tracking-tight',
+                      selectedId === chat.id ? 'text-white' : 'text-slate-900'
+                    )}
+                  >
+                    {chat.name}
+                  </p>
                   <span
                     className={cn(
-                      'text-[10px] font-medium whitespace-nowrap',
-                      selectedId === chat.id
-                        ? 'text-primary-foreground/70'
-                        : 'text-muted-foreground'
+                      'text-[10px] font-bold uppercase tracking-widest whitespace-nowrap opacity-60 ml-2',
+                      selectedId === chat.id ? 'text-white' : 'text-slate-400'
                     )}
                   >
                     {chat.lastMessageAt ? format(new Date(chat.lastMessageAt), 'HH:mm') : ''}
@@ -102,29 +120,25 @@ export function ChatSidebar({
                 </div>
                 <p
                   className={cn(
-                    'text-xs truncate',
-                    selectedId === chat.id ? 'text-primary-foreground/80' : 'text-muted-foreground'
+                    'text-xs truncate font-medium',
+                    selectedId === chat.id ? 'text-white/70' : 'text-slate-400'
                   )}
                 >
                   {chat.lastMessage || 'Inicie uma conversa'}
                 </p>
               </div>
-              {chat.unreadCount > 0 && (
-                <Badge
-                  className={cn(
-                    'h-5 min-w-[20px] rounded-full p-1 flex items-center justify-center text-[10px] font-bold border-none transition-transform group-hover:scale-110',
-                    selectedId === chat.id
-                      ? 'bg-primary-foreground text-primary'
-                      : 'bg-destructive text-white shadow-sm shadow-destructive/20'
-                  )}
-                >
-                  {chat.unreadCount}
-                </Badge>
+
+              {chat.unreadCount > 0 && selectedId !== chat.id && (
+                <div className="flex items-center ml-2">
+                  <Badge className="h-5 min-w-[20px] rounded-full p-1 flex items-center justify-center text-[10px] font-bold bg-slate-900 text-white border-none">
+                    {chat.unreadCount}
+                  </Badge>
+                </div>
               )}
             </div>
           ))
         )}
       </div>
-    </Card>
+    </div>
   )
 }

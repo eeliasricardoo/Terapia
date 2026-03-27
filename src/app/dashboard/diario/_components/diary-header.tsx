@@ -12,7 +12,7 @@ export function DiaryHeader({ entriesLength, avgMood, commonEmotion }: DiaryHead
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 py-4">
       <div className="space-y-1">
-        <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           Diário Emocional
         </h1>
         <p className="text-sm font-medium text-slate-500">
@@ -25,20 +25,20 @@ export function DiaryHeader({ entriesLength, avgMood, commonEmotion }: DiaryHead
           <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl ring-1 ring-slate-100/10 shadow-sm">
             <Smile className="h-4 w-4 text-emerald-500" />
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-0.5">
                 Humor Médio
               </span>
-              <span className="text-sm font-bold text-slate-900">{avgMood}</span>
+              <span className="text-sm font-semibold text-slate-900">{avgMood}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl ring-1 ring-slate-100/10 shadow-sm">
             <Heart className="h-4 w-4 text-pink-500" />
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-0.5">
                 Predominante
               </span>
-              <span className="text-sm font-bold text-slate-900 truncate max-w-[100px]">
+              <span className="text-sm font-semibold text-slate-900 truncate max-w-[100px]">
                 {commonEmotion}
               </span>
             </div>

@@ -56,7 +56,7 @@ export function DiaryForm({
             ))}
           </div>
           {selectedMood && (
-            <span className="text-xs font-black text-slate-400 uppercase tracking-widest animate-in fade-in slide-in-from-left-2">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-in fade-in slide-in-from-left-2">
               {MOODS.find((m) => m.value === selectedMood)?.label}
             </span>
           )}
@@ -64,7 +64,7 @@ export function DiaryForm({
 
         <div className="flex items-center gap-2 text-slate-400 px-3 py-1.5 bg-slate-100/50 rounded-full border border-slate-100/50">
           <Calendar className="h-3.5 w-3.5" />
-          <span className="text-[10px] font-black uppercase tracking-widest">
+          <span className="text-[10px] font-bold uppercase tracking-widest">
             {format(today, "EEEE, dd 'de' MMMM", { locale: ptBR })}
           </span>
         </div>
@@ -83,7 +83,7 @@ export function DiaryForm({
                 <button
                   key={emotion.label}
                   onClick={() => toggleEmotion(emotion.label)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all text-xs font-bold leading-none ${
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all text-xs font-semibold leading-none ${
                     isSelected
                       ? `bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-200`
                       : 'border-slate-100 bg-white hover:border-slate-200 text-slate-500'
@@ -107,14 +107,14 @@ export function DiaryForm({
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-          <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+          <div className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
             {content.length} caracteres
           </div>
 
           <Button
             onClick={handleSave}
             disabled={isPending || !selectedMood || !content}
-            className="rounded-2xl bg-slate-900 text-white hover:bg-slate-800 h-12 px-8 font-black text-xs uppercase tracking-widest gap-3 shadow-xl shadow-slate-200 transition-all hover:shadow-2xl active:scale-95 disabled:opacity-30"
+            className="rounded-2xl bg-slate-900 text-white hover:bg-slate-800 h-12 px-8 font-bold text-xs uppercase tracking-widest gap-3 shadow-xl shadow-slate-200 transition-all hover:shadow-2xl active:scale-95 disabled:opacity-30"
           >
             {isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />

@@ -1,35 +1,35 @@
 'use client'
 
-import { MessageSquare } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { MessageSquare, ShieldCheck } from 'lucide-react'
 
 export function EmptyChatState() {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center gap-6 bg-muted/10 relative overflow-hidden">
+    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center gap-8 bg-slate-50/30 relative overflow-hidden">
       {/* Background decoration to match the platform's aesthetics */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-slate-100/50 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="relative">
-        <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20 shadow-sm">
-          <MessageSquare className="h-10 w-10 text-primary" />
+      <div className="relative group transition-transform duration-700 hover:scale-105">
+        <div className="h-24 w-24 rounded-[2rem] bg-white flex items-center justify-center border border-slate-100 shadow-xl shadow-slate-200/50 relative z-10">
+          <MessageSquare className="h-10 w-10 text-slate-900" />
         </div>
-        <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-background border-2 border-muted flex items-center justify-center">
-          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+        <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-white border-4 border-slate-50 flex items-center justify-center shadow-md z-20">
+          <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
         </div>
       </div>
 
-      <div className="max-w-xs relative z-10">
-        <h3 className="text-2xl font-heading font-bold text-foreground mb-3">Seu Chat Direto</h3>
-        <p className="text-muted-foreground text-sm leading-relaxed">
+      <div className="max-w-sm relative z-10 space-y-4">
+        <h3 className="text-3xl font-bold tracking-tight text-slate-900 leading-tight">
+          Seu Chat Direto
+        </h3>
+        <p className="text-slate-500 text-sm font-medium leading-relaxed">
           Selecione uma conversa ao lado para começar a trocar mensagens seguras com seu terapeuta
-          ou paciente.
+          ou paciente. Nossa plataforma garante total privacidade.
         </p>
       </div>
 
-      <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-bold text-muted-foreground/50 mt-4">
-        <div className="h-px w-8 bg-border" />
+      <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest font-bold text-slate-300 mt-6 bg-white px-4 py-2 rounded-full border border-slate-100 shadow-sm">
+        <ShieldCheck className="h-3 w-3" />
         Mensagens Criptografadas
-        <div className="h-px w-8 bg-border" />
       </div>
     </div>
   )

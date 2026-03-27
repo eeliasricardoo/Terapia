@@ -35,7 +35,6 @@ const PATIENT_MENU = [
   { href: '/dashboard/prontuario', label: 'Meu Prontuário', icon: FileText },
   { href: '/dashboard/diario', label: 'Diário Emocional', icon: BookOpen },
   { href: '/dashboard/mensagens', label: 'Mensagens', icon: MessageSquare },
-  { href: '/dashboard/configuracoes', label: 'Serviços & Tarifas', icon: DollarSign },
   { href: '/dashboard/perfil', label: 'Meu Perfil', icon: User },
 ]
 
