@@ -6,9 +6,9 @@ test.describe('Core Platform Flows (Simulação QA)', () => {
     await page.goto('/cadastro/profissional')
 
     // 2. Passo 1: Informações Básicas
-    await expect(page.getByText(/Vamos começar pelo básico/i)).toBeVisible()
-    await page.getByLabel(/Nome Profissional Completo/i).fill('Dra. QA Teste Almeida')
-    await page.getByLabel(/Registro CRP Ativo/i).fill('06/987654')
+    await expect(page.getByText(/Junte-se à nossa rede profissional/i)).toBeVisible()
+    await page.getByLabel(/Nome Completo/i).fill('Dra. QA Teste Almeida')
+    await page.getByLabel(/Número da Carteira Profissional/i).fill('06/987654')
     await page.getByRole('button', { name: /Continuar/i }).click()
 
     // 3. Passo 2: KYC (Simulado via botões que habilitam após "upload")
