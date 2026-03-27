@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { popFromEmailQueue } from '@/lib/utils/email-queue'
 import { logger } from '@/lib/utils/logger'
+import { timingSafeCompare } from '@/lib/security'
 
 /**
  * Worker endpoint to process the email queue from Redis.
@@ -10,9 +11,8 @@ import { logger } from '@/lib/utils/logger'
  */
 export async function POST(req: NextRequest) {
   const secret = req.headers.get('x-internal-secret')
-  const envSecret = process.env.INTERNAL_API_SECRET
 
-  if (!envSecret || secret !== envSecret) {
+  if (!timingSafeCompare(secret, process.env.INTERNAL_API_SECRET ?? '')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'x-internal-secret': envSecret,
+              'x-internal-secret': process.env.INTERNAL_API_SECRET ?? '',
             },
             body: JSON.stringify({
               to: item.to,
