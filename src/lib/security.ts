@@ -93,7 +93,7 @@ const RATE_LIMIT_ALLOWED = { success: true, limit: 20, remaining: 20, reset: 0 }
 export async function checkRateLimit(identifier: string) {
   if (!ratelimitInstance) {
     logger.warn(
-      '[Rate Limiter] Chaves do Upstash ausentes, permitindo requisição por segurança de failover.'
+      '⚠️ [Rate Limiter] Chaves do Upstash ausentes, permitindo requisição por segurança de failover.'
     )
     return RATE_LIMIT_ALLOWED
   }
@@ -115,7 +115,7 @@ export async function checkRateLimit(identifier: string) {
  */
 export async function checkLoginRateLimit(ip: string, email: string) {
   if (!authIpRatelimitInstance || !authEmailRatelimitInstance) {
-    logger.warn('[Rate Limiter] Auth limiters unavailable, allowing request.')
+    logger.warn('⚠️ [Rate Limiter] Auth limiters unavailable, allowing request.')
     return RATE_LIMIT_ALLOWED
   }
 
@@ -139,7 +139,7 @@ export async function checkLoginRateLimit(ip: string, email: string) {
  */
 export async function checkForgotPasswordRateLimit(ip: string) {
   if (!forgotPasswordRatelimitInstance) {
-    logger.warn('[Rate Limiter] Forgot password limiter unavailable, allowing request.')
+    logger.warn('⚠️ [Rate Limiter] Forgot password limiter unavailable, allowing request.')
     return RATE_LIMIT_ALLOWED
   }
 
