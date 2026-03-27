@@ -14,8 +14,7 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 
 export default async function SessionsPage() {
-  const profileRes = await getCurrentUserProfile()
-  const profile = profileRes.success ? profileRes.data : null
+  const profile = await getCurrentUserProfile()
 
   if (!profile) {
     return (
@@ -121,7 +120,13 @@ export default async function SessionsPage() {
 
                     {/* Session Info */}
                     <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <Avatar className="h-10 w-10 flex-shrink-0">
+                          <AvatarImage src={otherParty?.avatar_url || undefined} />
+                          <AvatarFallback>
+                            {(otherParty?.full_name || 'U').charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                         <h3 className="font-semibold text-lg">
                           {otherParty?.full_name || 'Usuário'}
                         </h3>

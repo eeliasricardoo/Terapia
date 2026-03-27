@@ -11,6 +11,17 @@ import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
 import { isWithinSessionWindow } from '@/lib/utils/session-utils'
 
+function mapProfile(
+  profiles: { fullName: string | null; avatarUrl: string | null; role: string } | null | undefined
+) {
+  if (!profiles) return null
+  return {
+    full_name: profiles.fullName,
+    avatar_url: profiles.avatarUrl,
+    role: profiles.role,
+  }
+}
+
 export const getUserSessions = createSafeAction(
   z.object({
     limit: z.number().int().min(1).max(50).optional().default(20),
@@ -61,10 +72,8 @@ export const getUserSessions = createSafeAction(
       duration_minutes: appt.durationMinutes,
       status: appt.status,
       price: Number(appt.price),
-      patient: appt.patient?.profiles ? (appt.patient.profiles as any) : null,
-      psychologist: appt.psychologist?.user?.profiles
-        ? (appt.psychologist.user.profiles as any)
-        : null,
+      patient: mapProfile(appt.patient?.profiles),
+      psychologist: mapProfile(appt.psychologist?.user?.profiles),
     }))
 
     return { sessions, nextCursor, total }
@@ -131,10 +140,8 @@ export const getSessionHistory = createSafeAction(
       scheduled_at: appt.scheduledAt.toISOString(),
       status: appt.status,
       price: Number(appt.price),
-      patient: appt.patient?.profiles ? (appt.patient.profiles as any) : null,
-      psychologist: appt.psychologist?.user?.profiles
-        ? (appt.psychologist.user.profiles as any)
-        : null,
+      patient: mapProfile(appt.patient?.profiles),
+      psychologist: mapProfile(appt.psychologist?.user?.profiles),
     }))
   }
 )
