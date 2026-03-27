@@ -1,12 +1,10 @@
-'use server'
-
+import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { registrationSchema } from '@/lib/validations/registration'
 import { cleanCPF } from '@/lib/utils/cpf'
 import { cleanCRP } from '@/lib/utils/crp'
 import { loginSchema } from '@/lib/validations/auth'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import {
   sanitizeText,
   checkRateLimit,
@@ -17,97 +15,52 @@ import {
 import { headers } from 'next/headers'
 import { logger } from '@/lib/utils/logger'
 import { getStyledEmailTemplate } from '@/lib/utils/email-template'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
+import { env } from '@/lib/env'
 
-export type ActionResult = {
-  success: boolean
-  error?: string
-  fieldErrors?: Record<string, string[]>
-  data?: any
-}
+/**
+ * Public Actions (isPublic: true)
+ */
 
-export async function registerPatientSupabase(formData: FormData): Promise<ActionResult> {
-  try {
-    // Rate limiting by IP
+export const registerPatientAction = createSafeAction(
+  z.intersection(
+    registrationSchema,
+    z.object({
+      captchaToken: z.string().min(1, 'Token de segurança é obrigatório'),
+    })
+  ),
+  async (data) => {
+    // 1. Security checks
     const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
     const rateLimit = await checkRateLimit(`register_${ip}`)
     if (!rateLimit.success) {
-      return { success: false, error: 'Muitas tentativas de cadastro. Tente novamente mais tarde.' }
+      throw new Error('Muitas tentativas de cadastro. Tente novamente mais tarde.')
     }
 
-    // Captcha validation
-    const captchaToken = formData.get('captcha_token') as string
-    const isCaptchaValid = await validateCaptcha(captchaToken)
+    const isCaptchaValid = await validateCaptcha(data.captchaToken)
     if (!isCaptchaValid) {
-      return { success: false, error: 'Falha na verificação de robô. Tente novamente.' }
+      throw new Error('Falha na verificação de robô. Tente novamente.')
     }
 
-    // Extract data from FormData
-    const rawData = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      document: formData.get('document') as string,
-      phone: formData.get('phone') as string,
-      birthDate: formData.get('birthDate') as string,
-      password: formData.get('password') as string,
-      confirmPassword: formData.get('confirmPassword') as string,
-      terms: formData.get('terms') === 'true',
-    }
-
-    // Validate with Zod
-    const validation = registrationSchema.safeParse(rawData)
-
-    if (!validation.success) {
-      const fieldErrors: Record<string, string[]> = {}
-      validation.error.errors.forEach((error) => {
-        const field = error.path[0] as string
-        if (!fieldErrors[field]) {
-          fieldErrors[field] = []
-        }
-        fieldErrors[field].push(error.message)
-      })
-      return {
-        success: false,
-        fieldErrors,
-      }
-    }
-
-    const data = validation.data
-    const supabase = await createClient()
-
-    // Anti-XSS nas informações que serão visíveis em perfis/telas
+    // 2. Data Preparation
     const safeName = sanitizeText(data.name) || 'Anônimo'
     const cleanedDocument = cleanCPF(data.document)
 
-    // 1. Check if document or email already exists locally (Prisma)
-    const { prisma } = await import('@/lib/prisma')
-
+    // 3. Validation against DB
     const existingUserByEmail = await prisma.user.findUnique({
       where: { email: data.email },
     })
-
-    if (existingUserByEmail) {
-      return {
-        success: false,
-        error: 'Este e-mail já está cadastrado no sistema.',
-      }
-    }
+    if (existingUserByEmail) throw new Error('Este e-mail já está cadastrado no sistema.')
 
     const existingProfile = await prisma.profile.findUnique({
       where: { document: cleanedDocument },
     })
+    if (existingProfile) throw new Error('Este CPF já está cadastrado no sistema.')
 
-    if (existingProfile) {
-      return {
-        success: false,
-        error: 'Este CPF já está cadastrado no sistema.',
-      }
-    }
-
-    let authData: any = null
-    let authError: any = null
-
-    // Sign up with Supabase Auth
-    const signupResult = await supabase.auth.signUp({
+    // 4. Supabase Auth Signup
+    const supabase = await createClient()
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
@@ -121,66 +74,37 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
       },
     })
 
-    authData = signupResult.data
-    authError = signupResult.error
-
-    // SMTP failure: surface a clear error instead of bypassing email verification.
-    // email_confirm=true would allow anyone to register with an email they don't own.
-    if (authError && authError.message.includes('Error sending confirmation email')) {
-      logger.error('[AUTH] SMTP failure during patient registration — rejecting signup.', {
-        email: data.email,
-      })
-      return {
-        success: false,
-        error:
-          'Erro ao enviar e-mail de confirmação. Verifique sua caixa de entrada ou tente novamente em alguns minutos.',
-      }
-    }
-
     if (authError) {
-      return {
-        success: false,
-        error:
-          authError.message === 'User already registered'
-            ? 'E-mail já cadastrado. Tente fazer login ou recuperar sua senha.'
-            : authError.message,
+      if (authError.message.includes('Error sending confirmation email')) {
+        throw new Error('Erro ao enviar e-mail de confirmação. Tente novamente mais tarde.')
       }
+      throw new Error(
+        authError.message === 'User already registered'
+          ? 'E-mail já cadastrado. Tente fazer login.'
+          : authError.message
+      )
     }
 
-    // Create profile in database if needed
+    // 5. Prisma Sync
     if (authData.user) {
-      // Sincronizar com a tabela de usuários do Prisma para evitar erros de FK em outras tabelas (Ex: Diario)
-      try {
-        const { prisma } = await import('@/lib/prisma')
-        await prisma.user.upsert({
-          where: { id: authData.user.id },
-          update: {
-            email: data.email,
-            name: safeName,
-          },
-          create: {
-            id: authData.user.id,
-            email: data.email,
-            name: safeName,
-            role: 'PATIENT',
-          },
-        })
-      } catch (err) {
-        logger.error('Error syncing user to Prisma during registration:', err)
-        // Não falhamos o registro se o Prisma falhar, mas logamos
-      }
+      await prisma.user.upsert({
+        where: { id: authData.user.id },
+        update: { email: data.email, name: safeName },
+        create: {
+          id: authData.user.id,
+          email: data.email,
+          name: safeName,
+          role: 'PATIENT',
+        },
+      })
 
-      const { error: profileError } = await supabase.from('profiles').insert({
+      await supabase.from('profiles').insert({
         user_id: authData.user.id,
         full_name: safeName,
         avatar_url: null,
       })
 
-      if (profileError) {
-        logger.error('Profile creation error:', profileError)
-      }
-
-      // 4. Send Welcome Email via Resend (Parallel, don't block registration)
+      // 6. Welcome Email
       const { sendEmail } = await import('@/lib/utils/email')
       sendEmail({
         to: data.email,
@@ -191,9 +115,8 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
           <p>Sua conta na <strong>Mind Cares</strong> foi criada com sucesso.</p>
           <p>Estamos muito felizes em ter você conosco em sua jornada de autocuidado.</p>
           <div style="text-align: center;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/login/paciente" class="button" style="color: #ffffff;">Entrar na Plataforma</a>
+            <a href="${env.NEXT_PUBLIC_APP_URL}/login/paciente" class="button" style="color: #ffffff;">Entrar na Plataforma</a>
           </div>
-          <p>Se você precisar de ajuda, estamos à disposição.</p>
           <br/>
           <p>Atenciosamente,</p>
           <p>Equipe Mind Cares</p>
@@ -203,242 +126,78 @@ export async function registerPatientSupabase(formData: FormData): Promise<Actio
     }
 
     revalidatePath('/')
+    return { success: true }
+  },
+  { isPublic: true }
+)
 
-    return {
-      success: true,
-    }
-  } catch (error: any) {
-    logger.error('Registration error:', error)
-    return {
-      success: false,
-      error: error.message || 'Erro ao criar conta. Tente novamente mais tarde.',
-    }
-  }
-}
-
-export async function loginSupabase(formData: FormData): Promise<ActionResult> {
-  try {
-    const rawData = {
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-    }
-
-    // Rate limiting: 10 tentativas / 15 min por IP + 5 / hora por email
+export const loginAction = createSafeAction(
+  loginSchema,
+  async (data) => {
     const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
-    const rateLimit = await checkLoginRateLimit(ip, rawData.email || 'unknown')
+    const rateLimit = await checkLoginRateLimit(ip, data.email)
     if (!rateLimit.success) {
-      return { success: false, error: 'Muitas tentativas de login. Tente novamente mais tarde.' }
+      throw new Error('Muitas tentativas de login. Tente novamente mais tarde.')
     }
 
-    // Validate with Zod
-    const validation = loginSchema.safeParse(rawData)
-
-    if (!validation.success) {
-      const fieldErrors: Record<string, string[]> = {}
-      validation.error.errors.forEach((error) => {
-        const field = error.path[0] as string
-        if (!fieldErrors[field]) {
-          fieldErrors[field] = []
-        }
-        fieldErrors[field].push(error.message)
-      })
-      return {
-        success: false,
-        fieldErrors,
-      }
-    }
-
-    const { email, password } = validation.data
     const supabase = await createClient()
-
     const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+      email: data.email,
+      password: data.password,
     })
 
     if (error) {
-      return {
-        success: false,
-        error: 'Credenciais inválidas. Verifique seu e-mail e senha.',
-      }
+      throw new Error('Credenciais inválidas. Verifique seu e-mail e senha.')
     }
 
     revalidatePath('/')
-
-    return {
-      success: true,
-    }
-  } catch (error) {
-    logger.error('Login error:', error)
-    return {
-      success: false,
-      error: 'Erro ao fazer login. Tente novamente mais tarde.',
-    }
-  }
-}
-
-export async function requestPasswordReset(email: string): Promise<ActionResult> {
-  try {
-    const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
-    const rateLimit = await checkForgotPasswordRateLimit(ip)
-    if (!rateLimit.success) {
-      return {
-        success: false,
-        error: 'Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.',
-      }
-    }
-
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return { success: false, error: 'E-mail inválido.' }
-    }
-
-    const supabase = await createClient()
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
-    })
-
-    if (error) {
-      logger.error('Password reset error:', error)
-      // Não revelamos se o e-mail existe ou não (user enumeration prevention)
-    }
-
-    // Sempre retorna sucesso para não revelar se o e-mail está cadastrado
     return { success: true }
-  } catch (error: any) {
-    logger.error('requestPasswordReset error:', error)
-    return { success: false, error: 'Erro ao processar solicitação. Tente novamente.' }
-  }
-}
+  },
+  { isPublic: true }
+)
 
-export async function signOutSupabase() {
-  const supabase = await createClient()
-  await supabase.auth.signOut()
-  revalidatePath('/')
-  redirect('/login/paciente')
-}
-
-export async function registerPsychologistSupabase(formData: FormData): Promise<ActionResult> {
-  try {
+export const registerPsychologistAction = createSafeAction(
+  z.object({
+    name: z.string().min(3),
+    email: z.string().email(),
+    password: z.string().min(6),
+    professionalCard: z.string().min(5),
+    captchaToken: z.string().min(1),
+  }),
+  async (data) => {
     const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
     const rateLimit = await checkRateLimit(`register_psych_${ip}`)
-    if (!rateLimit.success) {
-      return {
-        success: false,
-        error: 'Muitas tentativas de cadastro. Tente novamente mais tarde.',
-      }
-    }
+    if (!rateLimit.success) throw new Error('Muitas tentativas de cadastro.')
 
-    // Captcha validation
-    const captchaToken = formData.get('captcha_token') as string
-    const isCaptchaValid = await validateCaptcha(captchaToken)
-    if (!isCaptchaValid) {
-      return { success: false, error: 'Falha na verificação de robô. Tente novamente.' }
-    }
-
-    const rawData = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-      professionalCard: formData.get('professionalCard') as string,
-      terms: formData.get('terms') === 'true',
-    }
-
-    const { professionalRegistrationSchema } =
-      await import('@/lib/validations/professional-registration')
-    const validation = professionalRegistrationSchema.safeParse(rawData)
-
-    if (!validation.success) {
-      const fieldErrors: Record<string, string[]> = {}
-      validation.error.errors.forEach((error) => {
-        const field = error.path[0] as string
-        if (!fieldErrors[field]) fieldErrors[field] = []
-        fieldErrors[field].push(error.message)
-      })
-      return { success: false, fieldErrors }
-    }
-
-    const data = validation.data
-    const supabase = await createClient()
+    const isCaptchaValid = await validateCaptcha(data.captchaToken)
+    if (!isCaptchaValid) throw new Error('Falha na verificação de robô.')
 
     const safeName = sanitizeText(data.name) || 'Psicólogo'
     const cleanedCRP = cleanCRP(data.professionalCard)
 
-    // 1. Check if CRP or email already exists
-    const { prisma } = await import('@/lib/prisma')
-
-    const existingUserByEmail = await prisma.user.findUnique({
-      where: { email: data.email },
-    })
-
-    if (existingUserByEmail) {
-      return {
-        success: false,
-        error: 'Este e-mail já está cadastrado no sistema.',
-      }
-    }
+    const existingUser = await prisma.user.findUnique({ where: { email: data.email } })
+    if (existingUser) throw new Error('Este e-mail já está cadastrado.')
 
     const existingPsych = await prisma.psychologistProfile.findUnique({
       where: { crp: cleanedCRP },
     })
+    if (existingPsych) throw new Error('Este CRP já está cadastrado.')
 
-    if (existingPsych) {
-      return {
-        success: false,
-        error: 'Este CRP já está cadastrado no sistema.',
-      }
-    }
-
-    let authData: any = null
-    let authError: any = null
-
-    // Attempt normal signup first
-    const signupResult = await supabase.auth.signUp({
+    const supabase = await createClient()
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
-        data: {
-          role: 'PSYCHOLOGIST',
-          full_name: safeName,
-        },
+        data: { role: 'PSYCHOLOGIST', full_name: safeName },
       },
     })
 
-    authData = signupResult.data
-    authError = signupResult.error
-
-    // SMTP failure: surface a clear error instead of bypassing email verification.
-    // email_confirm=true would allow anyone to register with an email they don't own.
-    if (authError && authError.message.includes('Error sending confirmation email')) {
-      logger.error('[AUTH] SMTP failure during psychologist registration — rejecting signup.', {
-        email: data.email,
-      })
-      return {
-        success: false,
-        error:
-          'Erro ao enviar e-mail de confirmação. Verifique sua caixa de entrada ou tente novamente em alguns minutos.',
-      }
-    }
-
-    if (authError) {
-      return {
-        success: false,
-        error: authError.message.toLowerCase().includes('already registered')
-          ? 'E-mail já cadastrado. Tente fazer login.'
-          : authError.message,
-      }
-    }
+    if (authError) throw new Error(authError.message)
 
     if (authData.user) {
-      const { prisma } = await import('@/lib/prisma')
-
-      // 1. Sync User to Prisma (CRITICAL for Admin views)
       await prisma.user.upsert({
         where: { id: authData.user.id },
-        update: {
-          email: data.email,
-          name: safeName,
-          role: 'PSYCHOLOGIST',
-        },
+        update: { email: data.email, name: safeName, role: 'PSYCHOLOGIST' },
         create: {
           id: authData.user.id,
           email: data.email,
@@ -447,7 +206,6 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
         },
       })
 
-      // 2. Initialize profiles entry (handled by trigger but we ensure it's correct)
       await supabase.from('profiles').upsert({
         user_id: authData.user.id,
         full_name: safeName,
@@ -455,88 +213,92 @@ export async function registerPsychologistSupabase(formData: FormData): Promise<
         updated_at: new Date().toISOString(),
       })
 
-      // 3. Initialize PsychologistProfile (Enables visibility in Admin)
       await prisma.psychologistProfile.upsert({
         where: { userId: authData.user.id },
-        update: {
-          crp: cleanedCRP,
-        },
+        update: { crp: cleanedCRP },
         create: {
           userId: authData.user.id,
           crp: cleanedCRP,
           isVerified: false,
         },
       })
-    }
 
-    // 4. Send Welcome Email via Resend (Parallel)
-    const { sendEmail } = await import('@/lib/utils/email')
-    sendEmail({
-      to: data.email,
-      subject: 'Bem-vindo à Mind Cares! 🌊',
-      html: getStyledEmailTemplate(
-        `Olá, Prof. ${safeName}!`,
-        `
-        <p>Sua conta de profissional na <strong>Mind Cares</strong> foi criada com sucesso.</p>
-        <p>Agora você pode completar seu perfil e configurar sua agenda para começar a atender.</p>
-        <p>Nosso time revisará seus documentos em breve para ativar sua visibilidade na busca.</p>
-        <div style="text-align: center;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/login/psicologo" class="button" style="color: #ffffff;">Configurar meu Perfil</a>
-        </div>
-        <br/>
-        <p>Atenciosamente,</p>
-        <p>Equipe Mind Cares</p>
-        `
-      ),
-    }).catch((e) => logger.error('Failed to send psychologist welcome email:', e))
+      // Welcome Email
+      const { sendEmail } = await import('@/lib/utils/email')
+      sendEmail({
+        to: data.email,
+        subject: 'Bem-vindo à Mind Cares! 🌊',
+        html: getStyledEmailTemplate(
+          `Olá, Prof. ${safeName}!`,
+          `
+          <p>Sua conta de profissional na <strong>Mind Cares</strong> foi criada com sucesso.</p>
+          <p>Nosso time revisará seus documentos em breve para ativar sua visibilidade.</p>
+          <div style="text-align: center;">
+            <a href="${env.NEXT_PUBLIC_APP_URL}/login/psicologo" class="button" style="color: #ffffff;">Configurar meu Perfil</a>
+          </div>
+          <br/>
+          <p>Equipe Mind Cares</p>
+          `
+        ),
+      }).catch((e) => logger.error('Failed to send psychologist welcome email:', e))
+    }
 
     revalidatePath('/dashboard/admin/aprovacoes')
     return { success: true }
-  } catch (error: any) {
-    logger.error('Psychologist registration error:', error)
-    return {
-      success: false,
-      error: error.message || 'Erro ao criar conta. Tente novamente mais tarde.',
-    }
-  }
-}
+  },
+  { isPublic: true }
+)
 
-export async function updatePassword(
-  currentPassword: string,
-  newPassword: string
-): Promise<ActionResult> {
-  try {
+export const recoverPasswordAction = createSafeAction(
+  z.object({ email: z.string().email() }),
+  async (data) => {
+    const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
+    const rateLimit = await checkForgotPasswordRateLimit(ip)
+    if (!rateLimit.success) throw new Error('Muitas tentativas. Aguarde.')
+
+    const supabase = await createClient()
+    await supabase.auth.resetPasswordForEmail(data.email, {
+      redirectTo: `${env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
+    })
+
+    return { success: true } // Always return success for security
+  },
+  { isPublic: true }
+)
+
+/**
+ * Authenticated Actions
+ */
+
+export const signOutAction = createSafeAction(z.void().optional(), async () => {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  revalidatePath('/')
+  return { success: true }
+})
+
+export const updatePasswordAction = createSafeAction(
+  z.object({
+    currentPassword: z.string(),
+    newPassword: z.string().min(6),
+  }),
+  async (data, user) => {
     const supabase = await createClient()
 
-    // Verify current password by trying to sign in again
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user || !user.email) {
-      return { success: false, error: 'Usuário não autenticado.' }
-    }
-
+    // Re-verify current password
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: user.email,
-      password: currentPassword,
+      password: data.currentPassword,
     })
 
-    if (signInError) {
-      return { success: false, error: 'Senha atual incorreta.' }
-    }
+    if (signInError) throw new Error('Senha atual incorreta.')
 
-    // Update with new password
     const { error: updateError } = await supabase.auth.updateUser({
-      password: newPassword,
+      password: data.newPassword,
     })
 
-    if (updateError) {
-      return { success: false, error: updateError.message }
-    }
+    if (updateError) throw new Error(updateError.message)
 
     return { success: true }
-  } catch (error: any) {
-    logger.error('updatePassword error:', error)
-    return { success: false, error: 'Erro ao atualizar senha. Tente novamente.' }
   }
-}
+)

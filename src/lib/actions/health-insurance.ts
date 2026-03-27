@@ -1,18 +1,16 @@
-'use server'
-
 import { prisma } from '@/lib/prisma'
-import { logger } from '@/lib/utils/logger'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
 
-export async function getHealthInsurances() {
-  try {
-    const insurances = await prisma.healthInsurance.findMany({
-      orderBy: {
-        name: 'asc',
-      },
+/**
+ * Fetches alphabetical list of all supported health insurances.
+ */
+export const getHealthInsurancesAction = createSafeAction(
+  z.void().optional(),
+  async () => {
+    return await prisma.healthInsurance.findMany({
+      orderBy: { name: 'asc' },
     })
-    return { success: true, data: insurances }
-  } catch (error) {
-    logger.error('Error fetching health insurances:', error)
-    return { success: false, error: 'Erro ao buscar planos de saúde' }
-  }
-}
+  },
+  { isPublic: true }
+)

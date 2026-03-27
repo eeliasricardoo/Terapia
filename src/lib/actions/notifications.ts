@@ -13,6 +13,8 @@ import { prisma } from '../prisma'
 import { logger } from '../utils/logger'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
 
 export async function sendAppointmentNotifications(appointmentId: string) {
   try {
@@ -286,62 +288,35 @@ export async function sendRescheduleNotifications(
 /**
  * Busca as notificações do usuário logado
  */
-export async function getUserNotifications() {
-  try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) return []
-
-    return await prisma.notification.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-      take: 20,
-    })
-  } catch (error) {
-    logger.error('[NOTIFICATION] Error fetching notifications:', error)
-    return []
-  }
-}
+export const getUserNotificationsAction = createSafeAction(z.void().optional(), async (_, user) => {
+  return await prisma.notification.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: 'desc' },
+    take: 20,
+  })
+})
 
 /**
  * Marca uma notificação específica como lida
  */
-export async function markNotificationAsRead(notificationId: string) {
-  try {
+export const markNotificationAsReadAction = createSafeAction(
+  z.object({ notificationId: z.string().uuid() }),
+  async (data) => {
     await prisma.notification.update({
-      where: { id: notificationId },
+      where: { id: data.notificationId },
       data: { read: true },
     })
     return { success: true }
-  } catch (error) {
-    logger.error('[NOTIFICATION] Error marking as read:', error)
-    return { error: 'Falha ao atualizar notificação' }
   }
-}
+)
 
 /**
  * Marca TODAS as notificações do usuário como lidas
  */
-export async function markAllAsRead() {
-  try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) return { error: 'Não autenticado' }
-
-    await prisma.notification.updateMany({
-      where: { userId: user.id, read: false },
-      data: { read: true },
-    })
-    return { success: true }
-  } catch (error) {
-    return { error: 'Falha ao limpar notificações' }
-  }
-}
+export const markAllAsReadAction = createSafeAction(z.void().optional(), async (_, user) => {
+  await prisma.notification.updateMany({
+    where: { userId: user.id, read: false },
+    data: { read: true },
+  })
+  return { success: true }
+})

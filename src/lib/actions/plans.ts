@@ -1,9 +1,8 @@
-'use server'
-
 import { prisma } from '@/lib/prisma'
-import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/utils/logger'
 import { revalidatePath } from 'next/cache'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
 
 export type PlanData = {
   id: string
@@ -14,55 +13,45 @@ export type PlanData = {
   active: boolean
 }
 
-async function getPsychologistProfile() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+const planSchema = z.object({
+  name: z.string().min(1),
+  sessions: z.number().int().positive(),
+  price: z.number().positive(),
+  discount: z.number().min(0).max(100),
+})
 
-  if (!user) return null
-
-  return prisma.psychologistProfile.findUnique({ where: { userId: user.id } })
-}
-
-export async function getPlans(): Promise<
-  { success: true; data: PlanData[] } | { success: false; error: string }
-> {
-  try {
-    const profile = await getPsychologistProfile()
-    if (!profile) return { success: false, error: 'Perfil não encontrado' }
+export const getPlansAction = createSafeAction(
+  z.void().optional(),
+  async (_, user) => {
+    const profile = await prisma.psychologistProfile.findUnique({
+      where: { userId: user.id },
+    })
+    if (!profile) throw new Error('Perfil não encontrado')
 
     const plans = await prisma.plan.findMany({
       where: { psychologistId: profile.id },
       orderBy: { createdAt: 'asc' },
     })
 
-    return {
-      success: true,
-      data: plans.map((p) => ({
-        id: p.id,
-        name: p.name,
-        sessions: p.sessions,
-        price: Number(p.price),
-        discount: p.discount,
-        active: p.active,
-      })),
-    }
-  } catch (error) {
-    logger.error('Error fetching plans', { error })
-    return { success: false, error: 'Erro ao carregar pacotes' }
-  }
-}
+    return plans.map((p) => ({
+      id: p.id,
+      name: p.name,
+      sessions: p.sessions,
+      price: Number(p.price),
+      discount: p.discount,
+      active: p.active,
+    }))
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
-export async function createPlan(data: {
-  name: string
-  sessions: number
-  price: number
-  discount: number
-}): Promise<{ success: true; data: PlanData } | { success: false; error: string }> {
-  try {
-    const profile = await getPsychologistProfile()
-    if (!profile) return { success: false, error: 'Perfil não encontrado' }
+export const createPlanAction = createSafeAction(
+  planSchema,
+  async (data, user) => {
+    const profile = await prisma.psychologistProfile.findUnique({
+      where: { userId: user.id },
+    })
+    if (!profile) throw new Error('Perfil não encontrado')
 
     const plan = await prisma.plan.create({
       data: {
@@ -77,76 +66,73 @@ export async function createPlan(data: {
 
     revalidatePath('/dashboard/configuracoes')
     return {
-      success: true,
-      data: {
-        id: plan.id,
-        name: plan.name,
-        sessions: plan.sessions,
-        price: Number(plan.price),
-        discount: plan.discount,
-        active: plan.active,
-      },
+      id: plan.id,
+      name: plan.name,
+      sessions: plan.sessions,
+      price: Number(plan.price),
+      discount: plan.discount,
+      active: plan.active,
     }
-  } catch (error) {
-    logger.error('Error creating plan', { error })
-    return { success: false, error: 'Erro ao criar pacote' }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
-export async function updatePlan(
-  id: string,
-  data: { name: string; sessions: number; price: number; discount: number }
-): Promise<{ success: true } | { success: false; error: string }> {
-  try {
-    const profile = await getPsychologistProfile()
-    if (!profile) return { success: false, error: 'Perfil não encontrado' }
+export const updatePlanAction = createSafeAction(
+  z.object({ id: z.string().uuid(), data: planSchema }),
+  async (input, user) => {
+    const profile = await prisma.psychologistProfile.findUnique({
+      where: { userId: user.id },
+    })
+    if (!profile) throw new Error('Perfil não encontrado')
 
     await prisma.plan.update({
-      where: { id, psychologistId: profile.id },
+      where: { id: input.id, psychologistId: profile.id },
       data: {
-        name: data.name,
-        sessions: data.sessions,
-        price: data.price,
-        discount: data.discount,
+        name: input.data.name,
+        sessions: input.data.sessions,
+        price: input.data.price,
+        discount: input.data.discount,
       },
     })
 
     revalidatePath('/dashboard/configuracoes')
     return { success: true }
-  } catch (error) {
-    logger.error('Error updating plan', { error })
-    return { success: false, error: 'Erro ao atualizar pacote' }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
-export async function togglePlan(
-  id: string,
-  active: boolean
-): Promise<{ success: true } | { success: false; error: string }> {
-  try {
-    const profile = await getPsychologistProfile()
-    if (!profile) return { success: false, error: 'Perfil não encontrado' }
+export const togglePlanAction = createSafeAction(
+  z.object({ id: z.string().uuid(), active: z.boolean() }),
+  async (data, user) => {
+    const profile = await prisma.psychologistProfile.findUnique({
+      where: { userId: user.id },
+    })
+    if (!profile) throw new Error('Perfil não encontrado')
 
-    await prisma.plan.update({ where: { id, psychologistId: profile.id }, data: { active } })
+    await prisma.plan.update({
+      where: { id: data.id, psychologistId: profile.id },
+      data: { active: data.active },
+    })
+
     return { success: true }
-  } catch (error) {
-    logger.error('Error toggling plan', { error })
-    return { success: false, error: 'Erro ao atualizar pacote' }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
-export async function deletePlan(
-  id: string
-): Promise<{ success: true } | { success: false; error: string }> {
-  try {
-    const profile = await getPsychologistProfile()
-    if (!profile) return { success: false, error: 'Perfil não encontrado' }
+export const deletePlanAction = createSafeAction(
+  z.string().uuid(),
+  async (id, user) => {
+    const profile = await prisma.psychologistProfile.findUnique({
+      where: { userId: user.id },
+    })
+    if (!profile) throw new Error('Perfil não encontrado')
 
-    await prisma.plan.delete({ where: { id, psychologistId: profile.id } })
+    await prisma.plan.delete({
+      where: { id, psychologistId: profile.id },
+    })
+
     revalidatePath('/dashboard/configuracoes')
     return { success: true }
-  } catch (error) {
-    logger.error('Error deleting plan', { error })
-    return { success: false, error: 'Erro ao excluir pacote' }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)

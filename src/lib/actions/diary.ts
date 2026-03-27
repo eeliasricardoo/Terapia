@@ -1,9 +1,6 @@
-'use server'
-
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
-import { encryptData, decryptData, isValidUUID } from '@/lib/security'
+import { encryptData, decryptData } from '@/lib/security'
 import { startOfDay, endOfDay } from 'date-fns'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
@@ -28,53 +25,52 @@ const deleteDiarySchema = z.object({
   id: z.string().uuid(),
 })
 
-export async function getDiaryEntries(): Promise<DiaryEntryData[]> {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return []
+const quickMoodSchema = z.object({
+  mood: z.number().int().min(1).max(5),
+})
 
-    const entries = await prisma.diaryEntry.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-    })
+/**
+ * Fetches diary entries for the current user.
+ */
+export const getDiaryEntries = createSafeAction(z.void(), async (_, user) => {
+  const entries = await prisma.diaryEntry.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+  })
 
-    return entries.map((e) => {
-      const date = new Date(e.createdAt)
-      return {
-        id: e.id,
-        mood: e.mood,
-        emotions: e.emotions,
-        content: decryptData(e.content),
-        createdAt: e.createdAt.toISOString(),
-        dateLabel: new Intl.DateTimeFormat('pt-BR', {
-          day: '2-digit',
-          month: 'long',
-          year: 'numeric',
-        }).format(date),
-        dayOfWeek: new Intl.DateTimeFormat('pt-BR', { weekday: 'long' }).format(date),
-      }
-    })
-  } catch (error) {
-    logger.error('Error fetching diary entries:', error)
-    return []
-  }
-}
+  return entries.map((e) => {
+    const date = new Date(e.createdAt)
+    return {
+      id: e.id,
+      mood: e.mood,
+      emotions: e.emotions,
+      content: decryptData(e.content),
+      createdAt: e.createdAt.toISOString(),
+      dateLabel: new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      }).format(date),
+      dayOfWeek: new Intl.DateTimeFormat('pt-BR', { weekday: 'long' }).format(date),
+    }
+  })
+})
 
+/**
+ * Saves or updates a full diary entry.
+ */
 export const saveDiaryEntry = createSafeAction(
   saveDiarySchema,
   async (data, user) => {
-    // Garante que o usuário existe no Prisma
+    // Upsert user reference if needed
     await prisma.user.upsert({
       where: { id: user.id },
       update: { email: user.email },
       create: {
         id: user.id,
         email: user.email,
-        name: 'Paciente', // Default, would be updated by profile later
+        name: 'Paciente',
         role: 'PATIENT',
       },
     })
@@ -93,6 +89,9 @@ export const saveDiaryEntry = createSafeAction(
   { requiredRole: 'PATIENT' }
 )
 
+/**
+ * Deletes a diary entry.
+ */
 export const deleteDiaryEntry = createSafeAction(
   deleteDiarySchema,
   async (data, user) => {
@@ -104,38 +103,29 @@ export const deleteDiaryEntry = createSafeAction(
   { requiredRole: 'PATIENT' }
 )
 
-export async function getTodayMood() {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return null
+/**
+ * Gets the mood entry for today, if it exists.
+ */
+export const getTodayMood = createSafeAction(z.void(), async (_, user) => {
+  const start = startOfDay(new Date())
+  const end = endOfDay(new Date())
 
-    const start = startOfDay(new Date())
-    const end = endOfDay(new Date())
+  const entry = await prisma.diaryEntry.findFirst({
+    where: {
+      userId: user.id,
+      createdAt: { gte: start, lte: end },
+    },
+  })
 
-    const entry = await prisma.diaryEntry.findFirst({
-      where: {
-        userId: user.id,
-        createdAt: { gte: start, lte: end },
-      },
-    })
+  return entry
+})
 
-    return entry
-  } catch (error) {
-    return null
-  }
-}
-
-export async function saveQuickMood(mood: number) {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return { success: false, error: 'Não autenticado' }
-
+/**
+ * Rapidly records today's mood from the dashboard.
+ */
+export const saveQuickMood = createSafeAction(
+  quickMoodSchema,
+  async (data, user) => {
     const start = startOfDay(new Date())
     const end = endOfDay(new Date())
 
@@ -147,24 +137,22 @@ export async function saveQuickMood(mood: number) {
     })
 
     if (existing) {
-      await prisma.diaryEntry.update({
+      const updated = await prisma.diaryEntry.update({
         where: { id: existing.id },
-        data: { mood },
+        data: { mood: data.mood },
       })
+      return { id: updated.id, updated: true }
     } else {
-      await prisma.diaryEntry.create({
+      const entry = await prisma.diaryEntry.create({
         data: {
           userId: user.id,
-          mood,
+          mood: data.mood,
           content: encryptData('Sentimento registrado via Dashboard'),
           emotions: [],
         },
       })
+      return { id: entry.id, updated: false }
     }
-
-    return { success: true }
-  } catch (error) {
-    logger.error('Error saving quick mood:', error)
-    return { success: false, error: 'Erro ao salvar humor' }
-  }
-}
+  },
+  { requiredRole: 'PATIENT' }
+)

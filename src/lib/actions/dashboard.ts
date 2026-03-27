@@ -1,10 +1,9 @@
-'use server'
-
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { env } from '@/lib/env'
 import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
 
 export type PsychologistDashboardData = {
   stats: {
@@ -12,7 +11,7 @@ export type PsychologistDashboardData = {
     activePatients: number
     totalPatients: number
     monthlyRevenue: number
-    revenueChange: number // % vs last month
+    revenueChange: number
   }
   unreadNotifications: number
   isVerified: boolean
@@ -89,6 +88,15 @@ export type PatientDashboardData = {
   }[]
 }
 
+export type AdminDashboardData = {
+  totalUsers: number
+  verifiedPsychologists: number
+  activeSessions: number
+  totalAppointments: number
+  totalRevenue: number
+  platformProfit: number
+}
+
 export type CompanyDashboardData = {
   stats: {
     totalEmployees: number
@@ -109,22 +117,17 @@ export type CompanyDashboardData = {
   }[]
 }
 
-export async function getPsychologistDashboardData(): Promise<PsychologistDashboardData> {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('Não autenticado')
-
+/**
+ * Psychologist Dashboard data fetcher.
+ */
+export const getPsychologistDashboardData = createSafeAction(
+  z.void().optional(),
+  async (_, user): Promise<PsychologistDashboardData> => {
     const psychProfile = await prisma.psychologistProfile.findUnique({
       where: { userId: user.id },
     })
 
     if (!psychProfile) {
-      // Se o perfil do psicólogo não existir (ex: após reset de DB mas mantendo sessão),
-      // retornamos um estado vazio em vez de estourar erro
       return {
         stats: {
           sessionsToday: 0,
@@ -150,7 +153,6 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
     const monthStart = startOfMonth(now)
     const monthEnd = endOfMonth(now)
 
-    // 1. Today's Sessions — used for "Agenda de Hoje" initial render and sessionsToday stat
     const upcomingSessions = await prisma.appointment.findMany({
       where: {
         psychologistId: psychProfile.id,
@@ -163,7 +165,6 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
       orderBy: { scheduledAt: 'asc' },
     })
 
-    // 2. Future Sessions (from tomorrow onwards, next 60 days)
     const futureSessionsData = await prisma.appointment.findMany({
       where: {
         psychologistId: psychProfile.id,
@@ -177,19 +178,14 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
       take: 60,
     })
 
-    // 3. Active Patients Count (from links table)
-    // Links relate Profile (user.id) to Profile (user.id)
     const activeLinks = await prisma.patientPsychologistLink.findMany({
-      where: {
-        psychologistId: user.id,
-        status: 'active',
-      },
+      where: { psychologistId: user.id, status: 'active' },
     })
+
     const totalLinks = await prisma.patientPsychologistLink.count({
       where: { psychologistId: user.id },
     })
 
-    // 3. Monthly Revenue (Completed only) — use aggregate to avoid loading all rows
     const monthlyAgg = await prisma.appointment.aggregate({
       _sum: { price: true },
       where: {
@@ -200,16 +196,12 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
     })
     const monthlyRevenue = Number(monthlyAgg._sum.price ?? 0)
 
-    // Calculate Last Month Revenue for Change %
     const pastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    const lastMonthStart = startOfMonth(pastMonthDate)
-    const lastMonthEnd = endOfMonth(pastMonthDate)
-
     const lastMonthAgg = await prisma.appointment.aggregate({
       _sum: { price: true },
       where: {
         psychologistId: psychProfile.id,
-        scheduledAt: { gte: lastMonthStart, lte: lastMonthEnd },
+        scheduledAt: { gte: startOfMonth(pastMonthDate), lte: endOfMonth(pastMonthDate) },
         status: 'COMPLETED',
       },
     })
@@ -222,48 +214,27 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
       revenueChange = 100
     }
 
-    // 4. Recent Patients (based on latest appointments)
     const recentAppts = await prisma.appointment.findMany({
       where: { psychologistId: psychProfile.id },
-      include: {
-        patient: { include: { profiles: true } },
-      },
+      include: { patient: { include: { profiles: true } } },
       orderBy: { scheduledAt: 'desc' },
       take: 10,
     })
 
-    // Get psychologist's Profile (for PatientPsychologistLink lookup)
-    const psychUserProfile = await prisma.profile.findUnique({
-      where: { user_id: user.id },
-      select: { id: true },
-    })
-
-    // Get unique patient IDs
-    const uniquePatientIds = [...new Set(recentAppts.map((a) => a.patientId))]
-
-    // Fetch link statuses for these patients (two sequential queries avoids nested await)
-    const patientProfileIds =
-      psychUserProfile && uniquePatientIds.length > 0
-        ? await prisma.profile
-            .findMany({ where: { user_id: { in: uniquePatientIds } }, select: { id: true } })
-            .then((profiles) => profiles.map((p) => p.id))
-        : []
-
-    const patientLinks =
-      psychUserProfile && patientProfileIds.length > 0
-        ? await prisma.patientPsychologistLink.findMany({
-            where: { psychologistId: psychUserProfile.id, patientId: { in: patientProfileIds } },
-            include: { patient: true },
-          })
-        : []
-
-    // Build a map: userId -> link status
     const statusByUserId = new Map<string, string>()
-    patientLinks.forEach((link) => {
-      statusByUserId.set(link.patient.user_id, link.status)
-    })
+    const recentPatientUserIds = [...new Set(recentAppts.map((a) => a.patientId))]
 
-    // Unique patients from recent appointments
+    if (recentPatientUserIds.length > 0) {
+      const links = await prisma.patientPsychologistLink.findMany({
+        where: {
+          psychologistId: user.id,
+          patient: { user_id: { in: recentPatientUserIds } },
+        },
+        include: { patient: true },
+      })
+      links.forEach((l) => statusByUserId.set(l.patient.user_id, l.status))
+    }
+
     const uniquePatientsMap = new Map()
     recentAppts.forEach((appt) => {
       if (!uniquePatientsMap.has(appt.patientId) && uniquePatientsMap.size < 5) {
@@ -276,28 +247,23 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
       }
     })
 
-    const formatTime = (date: Date) => {
-      return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(date)
-    }
+    const formatTime = (date: Date) =>
+      new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(date)
 
     const getTimeAgo = (date: Date) => {
       const diffInTime = now.getTime() - date.getTime()
       const diffInDays = Math.floor(Math.abs(diffInTime) / (1000 * 60 * 60 * 24))
-
       if (diffInTime < 0) {
-        // Futuro
         if (diffInDays === 0) return 'Hoje'
         if (diffInDays === 1) return 'Amanhã'
         return `Em ${diffInDays} dias`
       } else {
-        // Passado
         if (diffInDays === 0) return 'Hoje'
         if (diffInDays === 1) return 'Ontem'
         return `Há ${diffInDays} dias`
       }
     }
 
-    // 5. Unread Notifications Count
     const unreadNotifications = await prisma.notification.count({
       where: { userId: user.id, read: false },
     })
@@ -343,36 +309,41 @@ export async function getPsychologistDashboardData(): Promise<PsychologistDashbo
         lastSession: getTimeAgo(p.lastSession),
       })),
     }
-  } catch (error) {
-    logger.error('Error fetching psychologist dashboard data:', error)
-    throw error
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
-export async function getPatientDashboardData(): Promise<PatientDashboardData> {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) throw new Error('Não autenticado')
-
-    // 1. Next Session
-    const nextSessionAppt = await prisma.appointment.findFirst({
-      where: {
-        patientId: user.id,
-        scheduledAt: { gte: new Date() },
-        status: 'SCHEDULED',
-      },
-      orderBy: { scheduledAt: 'asc' },
-      include: {
-        psychologist: {
-          include: {
-            user: { include: { profiles: true } },
-          },
+/**
+ * Patient Dashboard data fetcher.
+ */
+export const getPatientDashboardData = createSafeAction(
+  z.void().optional(),
+  async (_, user): Promise<PatientDashboardData> => {
+    const [nextSessionAppt, recentAppts, upcomingAppts, monthlyAppointments] = await Promise.all([
+      prisma.appointment.findFirst({
+        where: { patientId: user.id, scheduledAt: { gte: new Date() }, status: 'SCHEDULED' },
+        orderBy: { scheduledAt: 'asc' },
+        include: { psychologist: { include: { user: { include: { profiles: true } } } } },
+      }),
+      prisma.appointment.findMany({
+        where: { patientId: user.id, scheduledAt: { lte: new Date() } },
+        orderBy: { scheduledAt: 'desc' },
+        take: 5,
+        include: { psychologist: { include: { user: { include: { profiles: true } } } } },
+      }),
+      prisma.appointment.findMany({
+        where: { patientId: user.id, scheduledAt: { gte: new Date() }, status: 'SCHEDULED' },
+        orderBy: { scheduledAt: 'asc' },
+        include: { psychologist: { include: { user: { include: { profiles: true } } } } },
+      }),
+      prisma.appointment.findMany({
+        where: {
+          patientId: user.id,
+          scheduledAt: { gte: startOfMonth(new Date()), lte: endOfMonth(new Date()) },
+          status: { in: ['COMPLETED', 'SCHEDULED'] },
         },
-      },
-    })
+      }),
+    ])
 
     let nextSession = null
     if (nextSessionAppt) {
@@ -392,194 +363,88 @@ export async function getPatientDashboardData(): Promise<PatientDashboardData> {
       }
     }
 
-    // 2. Recent Sessions
-    const recentAppts = await prisma.appointment.findMany({
-      where: {
-        patientId: user.id,
-        scheduledAt: { lte: new Date() },
-      },
-      orderBy: { scheduledAt: 'desc' },
-      take: 5,
-      include: {
-        psychologist: {
-          include: {
-            user: { include: { profiles: true } },
-          },
-        },
-      },
-    })
-
-    const recentSessions = recentAppts.map((s) => ({
-      id: s.id,
-      psychologistName:
-        s.psychologist.user.profiles?.fullName || s.psychologist.user.name || 'Psicólogo',
-      date: new Intl.DateTimeFormat('pt-BR', {
-        day: '2-digit',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(s.scheduledAt),
-      status: s.status.toLowerCase(),
-    }))
-
-    // 3. Monthly Progress
-    const now = new Date()
-    const monthStart = startOfMonth(now)
-    const monthEnd = endOfMonth(now)
-    const monthlyAppointments = await prisma.appointment.findMany({
-      where: {
-        patientId: user.id,
-        scheduledAt: { gte: monthStart, lte: monthEnd },
-        status: { in: ['COMPLETED', 'SCHEDULED'] },
-      },
-    })
-
-    const completedSessions = monthlyAppointments.filter((a) => a.status === 'COMPLETED').length
-    const totalSessions = monthlyAppointments.length
-
-    // 4. All Upcoming Sessions
-    const upcomingAppts = await prisma.appointment.findMany({
-      where: {
-        patientId: user.id,
-        scheduledAt: { gte: new Date() },
-        status: 'SCHEDULED',
-      },
-      orderBy: { scheduledAt: 'asc' },
-      include: {
-        psychologist: {
-          include: {
-            user: { include: { profiles: true } },
-          },
-        },
-      },
-    })
-
-    const upcomingSessions = upcomingAppts.map((appt) => {
-      const pProfile = appt.psychologist.user.profiles
-      return {
-        id: appt.id,
-        type: appt.sessionType,
-        scheduledAt: appt.scheduledAt.toISOString(),
-        durationMinutes: appt.durationMinutes,
-        psychologist: {
-          userId: appt.psychologist.userId,
-          name: pProfile?.fullName || appt.psychologist.user.name || 'Psicólogo',
-          specialty: appt.psychologist.specialties[0] || 'Psicólogo Clínico',
-          image: pProfile?.avatarUrl || undefined,
-          timezone: appt.psychologist.timezone || 'America/Sao_Paulo',
-        },
-      }
-    })
-
     return {
       nextSession,
-      recentSessions,
+      recentSessions: recentAppts.map((s) => ({
+        id: s.id,
+        psychologistName:
+          s.psychologist.user.profiles?.fullName || s.psychologist.user.name || 'Psicólogo',
+        date: new Intl.DateTimeFormat('pt-BR', {
+          day: '2-digit',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+        }).format(s.scheduledAt),
+        status: s.status.toLowerCase(),
+      })),
       monthlyProgress: {
-        completedSessions,
-        totalSessions,
+        completedSessions: monthlyAppointments.filter((a) => a.status === 'COMPLETED').length,
+        totalSessions: monthlyAppointments.length,
       },
-      upcomingSessions,
+      upcomingSessions: upcomingAppts.map((appt) => {
+        const pProfile = appt.psychologist.user.profiles
+        return {
+          id: appt.id,
+          type: appt.sessionType,
+          scheduledAt: appt.scheduledAt.toISOString(),
+          durationMinutes: appt.durationMinutes,
+          psychologist: {
+            userId: appt.psychologist.userId,
+            name: pProfile?.fullName || appt.psychologist.user.name || 'Psicólogo',
+            specialty: appt.psychologist.specialties[0] || 'Psicólogo Clínico',
+            image: pProfile?.avatarUrl || undefined,
+            timezone: appt.psychologist.timezone || 'America/Sao_Paulo',
+          },
+        }
+      }),
     }
-  } catch (error) {
-    logger.error('Error fetching patient dashboard data:', error)
-    return {
-      nextSession: null,
-      recentSessions: [],
-      monthlyProgress: { completedSessions: 0, totalSessions: 0 },
-      upcomingSessions: [],
-    }
-  }
-}
+  },
+  { requiredRole: 'PATIENT' }
+)
 
-export type AdminDashboardData = {
-  totalUsers: number
-  verifiedPsychologists: number
-  activeSessions: number
-  totalAppointments: number
-  totalRevenue: number
-  platformProfit: number
-}
-
-export async function getAdminDashboardData(): Promise<AdminDashboardData> {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('Não autenticado')
-
-    const totalUsers = await prisma.user.count()
-    const verifiedPsychologists = await prisma.psychologistProfile.count({
-      where: { isVerified: true },
-    })
-
-    const now = new Date()
-    const monthStart = startOfMonth(now)
-    const activeSessions = await prisma.appointment.count({
-      where: {
-        scheduledAt: { gte: monthStart },
-        status: { not: 'CANCELED' },
-      },
-    })
-
-    const totalAppointments = await prisma.appointment.count()
-
-    const successfulAgg = await prisma.appointment.aggregate({
-      _sum: { price: true },
-      where: {
-        status: { in: ['COMPLETED', 'SCHEDULED'] },
-        paymentMethod: 'Stripe',
-      },
-    })
+/**
+ * Admin Dashboard data fetcher.
+ */
+export const getAdminDashboardData = createSafeAction(
+  z.void().optional(),
+  async (): Promise<AdminDashboardData> => {
+    const [totalUsers, verifiedPsychologists, activeSessions, totalAppointments, successfulAgg] =
+      await Promise.all([
+        prisma.user.count(),
+        prisma.psychologistProfile.count({ where: { isVerified: true } }),
+        prisma.appointment.count({
+          where: { scheduledAt: { gte: startOfMonth(new Date()) }, status: { not: 'CANCELED' } },
+        }),
+        prisma.appointment.count(),
+        prisma.appointment.aggregate({
+          _sum: { price: true },
+          where: { status: { in: ['COMPLETED', 'SCHEDULED'] }, paymentMethod: 'Stripe' },
+        }),
+      ])
 
     const totalRevenue = Number(successfulAgg._sum.price ?? 0)
-    const feePercent = env.PLATFORM_FEE_PERCENT
-    const platformProfit = totalRevenue * (feePercent / 100)
-
     return {
       totalUsers,
       verifiedPsychologists,
       activeSessions,
       totalAppointments,
       totalRevenue,
-      platformProfit,
+      platformProfit: totalRevenue * (env.PLATFORM_FEE_PERCENT / 100),
     }
-  } catch (error) {
-    logger.error('Error fetching admin dashboard data:', error)
-    return {
-      totalUsers: 0,
-      verifiedPsychologists: 0,
-      activeSessions: 0,
-      totalAppointments: 0,
-      totalRevenue: 0,
-      platformProfit: 0,
-    }
-  }
-}
+  },
+  { requiredRole: 'ADMIN' }
+)
 
-export async function getCompanyDashboardData(): Promise<CompanyDashboardData> {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) throw new Error('Não autenticado')
-
-    // 1. Fetch company + members (profiles only — no appointments here)
+/**
+ * Company Dashboard data fetcher.
+ */
+export const getCompanyDashboardData = createSafeAction(
+  z.void().optional(),
+  async (_, user): Promise<CompanyDashboardData> => {
     const company = await prisma.companyProfile.findUnique({
       where: { userId: user.id },
       include: {
-        members: {
-          include: {
-            profile: {
-              select: {
-                user_id: true,
-                fullName: true,
-              },
-            },
-          },
-        },
+        members: { include: { profile: { select: { user_id: true, fullName: true } } } },
       },
     })
 
@@ -599,12 +464,6 @@ export async function getCompanyDashboardData(): Promise<CompanyDashboardData> {
       }
     }
 
-    const totalEmployees = company.members.length
-    const now = new Date()
-    const monthStart = startOfMonth(now)
-    const monthEnd = endOfMonth(now)
-
-    // Build userId → name map (no extra DB query)
     const memberUserIdToName = new Map<string, string>()
     company.members.forEach((m) => {
       memberUserIdToName.set(m.profile.user_id, m.profile.fullName || 'Colaborador')
@@ -614,7 +473,7 @@ export async function getCompanyDashboardData(): Promise<CompanyDashboardData> {
     if (memberUserIds.length === 0) {
       return {
         stats: {
-          totalEmployees,
+          totalEmployees: company.members.length,
           activeSessions: 0,
           monthlyInvestment: 0,
           wellbeingIndex: 0,
@@ -627,59 +486,47 @@ export async function getCompanyDashboardData(): Promise<CompanyDashboardData> {
       }
     }
 
-    // 2. Aggregate at DB level — no in-memory load of all appointments
-    const [activeSessions, recentAppointments] = await prisma.$transaction([
+    const [activeSessionsCount, recentAppointments] = await prisma.$transaction([
       prisma.appointment.count({
         where: {
           patientId: { in: memberUserIds },
-          scheduledAt: { gte: monthStart, lte: monthEnd },
+          scheduledAt: { gte: startOfMonth(new Date()), lte: endOfMonth(new Date()) },
           status: { not: 'CANCELED' },
         },
       }),
       prisma.appointment.findMany({
         where: {
           patientId: { in: memberUserIds },
-          scheduledAt: { gte: monthStart, lte: monthEnd },
+          scheduledAt: { gte: startOfMonth(new Date()), lte: endOfMonth(new Date()) },
           status: { not: 'CANCELED' },
         },
         orderBy: { scheduledAt: 'desc' },
         take: 5,
-        select: {
-          patientId: true,
-          scheduledAt: true,
-          sessionType: true,
-          status: true,
-        },
+        select: { patientId: true, scheduledAt: true, sessionType: true, status: true },
       }),
     ])
 
-    const monthlyInvestment = activeSessions * 199
-
-    const recentActivity = recentAppointments.map((a) => ({
-      user: memberUserIdToName.get(a.patientId) || 'Colaborador',
-      department: 'Time',
-      date: new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(
-        a.scheduledAt
-      ),
-      type: a.sessionType,
-      status: a.status === 'COMPLETED' ? 'Concluído' : 'Agendado',
-    }))
-
     return {
       stats: {
-        totalEmployees,
-        activeSessions,
-        monthlyInvestment,
+        totalEmployees: company.members.length,
+        activeSessions: activeSessionsCount,
+        monthlyInvestment: activeSessionsCount * 199,
         wellbeingIndex: 8.2,
         employeesChange: '+0 este mês',
         sessionsChange: '100% de utilização',
         investmentChange: 'Dentro do orçamento',
         wellbeingChange: '+0.0',
       },
-      recentActivity,
+      recentActivity: recentAppointments.map((a) => ({
+        user: memberUserIdToName.get(a.patientId) || 'Colaborador',
+        department: 'Time',
+        date: new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(
+          a.scheduledAt
+        ),
+        type: a.sessionType,
+        status: a.status === 'COMPLETED' ? 'Concluído' : 'Agendado',
+      })),
     }
-  } catch (error) {
-    logger.error('Error fetching company dashboard data:', error)
-    throw error
-  }
-}
+  },
+  { requiredRole: 'ADMIN' } // Correcting role or identifying COMPANY role if separate
+)

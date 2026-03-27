@@ -1,10 +1,11 @@
-'use server'
-
 import { createClient } from '@/lib/supabase/server'
 import type { Profile } from '@/lib/supabase/types'
 import type { UserRole } from '@prisma/client'
 import { cache } from 'react'
 import { logger } from '@/lib/utils/logger'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
+import { revalidatePath } from 'next/cache'
 
 /**
  * Get the current logged-in user's profile
@@ -89,36 +90,42 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
   return data as Profile
 })
 
+const updateProfileSchema = z.object({
+  fullName: z.string().min(1, 'Nome completo é obrigatório').optional(),
+  avatarUrl: z.string().url('URL inválida').optional().or(z.literal('')),
+  phone: z.string().optional(),
+})
+
 /**
  * Update current user's profile
  */
-export async function updateUserProfile(updates: {
-  full_name?: string
-  avatar_url?: string
-  phone?: string
-}) {
-  const supabase = await createClient()
+export const updateUserProfileAction = createSafeAction(
+  updateProfileSchema,
+  async (updates, user) => {
+    const { prisma } = await import('@/lib/prisma')
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    // Update in transaction to maintain sync between profiles and users
+    await prisma.$transaction([
+      prisma.profile.update({
+        where: { user_id: user.id },
+        data: {
+          fullName: updates.fullName,
+          avatarUrl: updates.avatarUrl,
+          phone: updates.phone,
+        },
+      }),
+      ...(updates.fullName
+        ? [
+            prisma.user.update({
+              where: { id: user.id },
+              data: { name: updates.fullName },
+            }),
+          ]
+        : []),
+    ])
 
-  if (!user) {
-    return { success: false, error: 'Not authenticated' }
+    revalidatePath('/dashboard/configuracoes')
+    revalidatePath('/dashboard', 'layout')
+    return { success: true }
   }
-
-  const { error } = await supabase
-    .from('profiles')
-    .update({
-      ...updates,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('user_id', user.id)
-
-  if (error) {
-    logger.error('Error updating profile:', error)
-    return { success: false, error: error.message }
-  }
-
-  return { success: true }
-}
+)

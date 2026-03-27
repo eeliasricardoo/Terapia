@@ -1,205 +1,38 @@
-'use server'
-
-import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
+import { format, isBefore, startOfDay, addMinutes } from 'date-fns'
+import { toZonedTime } from 'date-fns-tz'
 
-export type ScheduleItem = {
-  id: string
-  day: string
-  startTime: string
-  endTime: string
-}
+export const TimeSlotSchema = z.object({
+  start: z.string(),
+  end: z.string(),
+})
 
-export type SpecificDateSchedule = {
-  id: string
-  date: Date | string
-  startTime: string
-  endTime: string
-}
+export type TimeSlot = z.infer<typeof TimeSlotSchema>
 
-export async function saveAvailability(
-  sessionDuration: string,
-  recurringSchedules: ScheduleItem[],
-  specificDateSchedules: SpecificDateSchedule[],
-  unavailableDays: string[],
-  unavailableDates: Date[] | string[]
-) {
-  const supabase = await createClient()
+export const DayScheduleSchema = z.object({
+  enabled: z.boolean(),
+  slots: z.array(TimeSlotSchema),
+})
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
+export type DaySchedule = z.infer<typeof DayScheduleSchema>
 
-  if (authError || !user) {
-    return { success: false, error: 'Usuário não autenticado' }
-  }
+export const WeeklyScheduleSchema = z.object({
+  sessionDuration: z.string(),
+  breakDuration: z.string().optional(),
+  monday: DayScheduleSchema,
+  tuesday: DayScheduleSchema,
+  wednesday: DayScheduleSchema,
+  thursday: DayScheduleSchema,
+  friday: DayScheduleSchema,
+  saturday: DayScheduleSchema,
+  sunday: DayScheduleSchema,
+})
 
-  try {
-    // 1. Get the psychologist profile ID based on userId
-    const { data: profileObj, error: fetchErr } = await supabase
-      .from('psychologist_profiles')
-      .select('id')
-      .eq('userId', user.id)
-      .single()
-
-    if (fetchErr || !profileObj) {
-      logger.error('Error fetching psychologist profile:', fetchErr)
-      return { success: false, error: 'Perfil de psicólogo não encontrado' }
-    }
-
-    // Convert the "lun", "mar"... format to the ones used by ScheduleManager
-    // Convert supported abbreviations to DB format
-    const dayMap: Record<string, string> = {
-      // Support for various day abbreviations for backwards compatibility
-      // Spanish
-      lun: 'monday',
-      mar: 'tuesday',
-      mie: 'wednesday',
-      jue: 'thursday',
-      vie: 'friday',
-      sab: 'saturday',
-      dom: 'sunday',
-      // Portuguese
-      seg: 'monday',
-      ter: 'tuesday',
-      qua: 'wednesday',
-      qui: 'thursday',
-      sex: 'friday',
-      // sab and dom are the same in both
-    }
-
-    const parseTimeTo24h = (time12: string) => {
-      const [time, period] = time12.split(' ')
-      const [hours, minutes] = time.split(':')
-      let hour = parseInt(hours)
-      if (period === 'PM' && hour !== 12) hour += 12
-      if (period === 'AM' && hour === 12) hour = 0
-      return `${hour.toString().padStart(2, '0')}:${minutes}`
-    }
-
-    const formattedWeeklySchedule: WeeklyScheduleData = {
-      sessionDuration,
-      monday: { enabled: false, slots: [] },
-      tuesday: { enabled: false, slots: [] },
-      wednesday: { enabled: false, slots: [] },
-      thursday: { enabled: false, slots: [] },
-      friday: { enabled: false, slots: [] },
-      saturday: { enabled: false, slots: [] },
-      sunday: { enabled: false, slots: [] },
-    }
-
-    // Apply schedules
-    recurringSchedules.forEach((schedule) => {
-      const dayKey = dayMap[schedule.day] as keyof WeeklyScheduleData
-      if (dayKey && dayKey !== 'sessionDuration') {
-        formattedWeeklySchedule[dayKey].enabled = true
-        formattedWeeklySchedule[dayKey].slots.push({
-          start: parseTimeTo24h(schedule.startTime),
-          end: parseTimeTo24h(schedule.endTime),
-        })
-      }
-    })
-
-    const { error: profileError } = await supabase
-      .from('psychologist_profiles')
-      .update({
-        weekly_schedule: formattedWeeklySchedule,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('userId', user.id)
-
-    if (profileError) {
-      logger.error('Error updating psychologist profile schedule:', profileError)
-      return { success: false, error: 'Erro ao salvar horários regulares' }
-    }
-
-    // 3. Clear existing future overrides to insert the new ones clean
-    const todayStr = new Date().toISOString().split('T')[0]
-    const { error: deleteErr } = await supabase
-      .from('schedule_overrides')
-      .delete()
-      .eq('psychologist_id', profileObj.id)
-      .gte('date', todayStr)
-
-    if (deleteErr) {
-      logger.error('Error deleting old overrides:', deleteErr)
-      // Não vamos falhar, pode ser que seja apenas na dev ou algo menor
-    }
-
-    // 4. Insert new specific dates
-    const mappedAvailable = specificDateSchedules.map((schedule) => {
-      const dateStr = new Date(schedule.date).toISOString().split('T')[0]
-      return {
-        psychologist_id: profileObj.id,
-        date: dateStr,
-        type: 'custom',
-        slots: [
-          {
-            start: parseTimeTo24h(schedule.startTime),
-            end: parseTimeTo24h(schedule.endTime),
-          },
-        ],
-      }
-    })
-
-    const mappedUnavailable = unavailableDates.map((date) => {
-      const dateStr = new Date(date).toISOString().split('T')[0]
-      return {
-        psychologist_id: profileObj.id,
-        date: dateStr,
-        type: 'blocked',
-        slots: [],
-      }
-    })
-
-    const allOverrides = [...mappedAvailable, ...mappedUnavailable]
-
-    if (allOverrides.length > 0) {
-      const { error: overrideError } = await supabase
-        .from('schedule_overrides')
-        .insert(allOverrides)
-
-      if (overrideError) {
-        logger.error('Error inserting schedule overrides:', overrideError)
-        return { success: false, error: 'Erro ao salvar datas específicas' }
-      }
-    }
-
-    // Revalidate the pages that might display this
-    revalidatePath('/dashboard')
-    revalidatePath('/psicologo/[id]', 'page')
-    revalidatePath('/busca')
-
-    return { success: true }
-  } catch (error) {
-    logger.error('Unexpected error:', error)
-    return { success: false, error: 'Erro interno no servidor' }
-  }
-}
-
-export type TimeSlot = {
-  start: string
-  end: string
-}
-
-export type DaySchedule = {
-  enabled: boolean
-  slots: TimeSlot[]
-}
-
-export type WeeklyScheduleData = {
-  sessionDuration: string
-  monday: DaySchedule
-  tuesday: DaySchedule
-  wednesday: DaySchedule
-  thursday: DaySchedule
-  friday: DaySchedule
-  saturday: DaySchedule
-  sunday: DaySchedule
-}
+export type WeeklyScheduleData = z.infer<typeof WeeklyScheduleSchema>
 
 export type PsychologistAvailability = {
   timezone: string
@@ -208,50 +41,64 @@ export type PsychologistAvailability = {
   appointments: { id: string; scheduled_at: string; duration_minutes: number }[]
 }
 
-export async function getPsychologistAvailability(
-  userId: string
-): Promise<PsychologistAvailability | null> {
-  const supabase = await createClient()
+const getAvailabilitySchema = z.object({
+  userId: z.string().uuid(),
+})
 
-  // 1. O perfil do psicólogo que contém o weekly_schedule e timezone
-  // Tentamos buscar por ID (UUID do perfil) ou userId (UUID do usuário)
-  const { data: profile, error: profileError } = await supabase
-    .from('psychologist_profiles')
-    .select('id, weekly_schedule, timezone, userId')
-    .or(`id.eq.${userId},userId.eq.${userId}`)
-    .single()
+const getAvailableSlotsSchema = z.object({
+  userId: z.string().uuid(),
+  dateStr: z.string(), // YYYY-MM-DD
+})
 
-  if (profileError || !profile) {
-    if (profileError?.code !== 'PGRST116') {
-      logger.error('Error fetching psychologist availability:', profileError)
-    }
-    return null
-  }
+const updateAvailabilitySchema = z.object({
+  weeklySchedule: WeeklyScheduleSchema,
+  sessionDuration: z.string(),
+  breakDuration: z.string(),
+  timezone: z.string(),
+  overrides: z.record(
+    z.object({
+      type: z.enum(['blocked', 'custom']),
+      slots: z.array(TimeSlotSchema),
+    })
+  ),
+})
+
+/**
+ * Fetches psychologist availability including weekly schedule, overrides and appointments.
+ */
+export const getPsychologistAvailability = createSafeAction(getAvailabilitySchema, async (data) => {
+  const profile = await prisma.psychologistProfile.findFirst({
+    where: {
+      OR: [{ id: data.userId }, { userId: data.userId }],
+    },
+    select: {
+      id: true,
+      weeklySchedule: true,
+      timezone: true,
+      userId: true,
+    },
+  })
+
+  if (!profile) return null
 
   const psychologistProfileId = profile.id
-
-  // Pegamos overrides de alguns dias atrás até o futuro
   const recentPastDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-  const { data: overridesList, error: overridesError } = await supabase
-    .from('schedule_overrides')
-    .select('date, type, slots')
-    .eq('psychologist_id', psychologistProfileId) // Usa o ID interno da tabela psychologist_profiles
-    .gte('date', recentPastDate)
+  const overridesList = await prisma.scheduleOverride.findMany({
+    where: {
+      psychologistId: psychologistProfileId,
+      date: { gte: recentPastDate },
+    },
+  })
 
   const overridesMap: Record<string, { type: 'blocked' | 'custom'; slots: TimeSlot[] }> = {}
+  overridesList.forEach((o) => {
+    overridesMap[o.date] = {
+      type: o.type as 'blocked' | 'custom',
+      slots: (o.slots as unknown as TimeSlot[]) || [],
+    }
+  })
 
-  if (overridesList && !overridesError) {
-    overridesList.forEach((o) => {
-      overridesMap[o.date] = {
-        type: o.type as 'blocked' | 'custom',
-        slots: (o.slots as unknown as TimeSlot[]) || [],
-      }
-    })
-  }
-
-  // 3. Os agendamentos futuros para evitar conflitos
-  // Bypass RLS here so patients see blocked slots correctly
   const appointmentList = await prisma.appointment.findMany({
     where: {
       psychologistId: psychologistProfileId,
@@ -265,44 +112,37 @@ export async function getPsychologistAvailability(
     },
   })
 
-  const appointmentsMap = appointmentList
-    ? appointmentList.map((a) => ({
-        id: a.id,
-        scheduled_at: a.scheduledAt.toISOString(),
-        duration_minutes: a.durationMinutes,
-      }))
-    : []
-
   return {
     timezone: profile.timezone || 'America/Sao_Paulo',
-    weeklySchedule: (profile.weekly_schedule as unknown as WeeklyScheduleData) || null,
+    weeklySchedule: (profile.weeklySchedule as unknown as WeeklyScheduleData) || null,
     overrides: overridesMap,
-    appointments: appointmentsMap,
+    appointments: appointmentList.map((a) => ({
+      id: a.id,
+      scheduled_at: a.scheduledAt.toISOString(),
+      duration_minutes: a.durationMinutes,
+    })),
   }
-}
+})
 
-import { format, isBefore, startOfDay, addMinutes } from 'date-fns'
-import { toZonedTime } from 'date-fns-tz'
+/**
+ * Generates available time slots for a specific date.
+ */
+export const getAvailableTimeSlots = createSafeAction(getAvailableSlotsSchema, async (data) => {
+  const availabilityRes = await getPsychologistAvailability({ userId: data.userId })
+  if (!availabilityRes.success || !availabilityRes.data) return []
 
-export async function getAvailableTimeSlots(
-  userId: string,
-  dateStr: string // YYYY-MM-DD
-): Promise<string[]> {
-  const availability = await getPsychologistAvailability(userId)
-  if (!availability) return []
-
-  const date = new Date(dateStr)
+  const availability = availabilityRes.data
+  const date = new Date(data.dateStr)
   const timezone = availability.timezone || 'America/Sao_Paulo'
   const today = toZonedTime(new Date(), timezone)
 
-  // 1. Is Day Available
   if (isBefore(date, startOfDay(today))) return []
 
   let isAvailable = false
-  if (availability.overrides[dateStr]) {
+  if (availability.overrides[data.dateStr]) {
     isAvailable =
-      availability.overrides[dateStr].type === 'custom' &&
-      availability.overrides[dateStr].slots.length > 0
+      availability.overrides[data.dateStr].type === 'custom' &&
+      availability.overrides[data.dateStr].slots.length > 0
   } else if (availability.weeklySchedule) {
     const daysMap = [
       'sunday',
@@ -322,10 +162,12 @@ export async function getAvailableTimeSlots(
 
   if (!isAvailable) return []
 
-  // 2. Generate Slots
   let slotsDef: TimeSlot[] = []
-  if (availability.overrides[dateStr] && availability.overrides[dateStr].type === 'custom') {
-    slotsDef = availability.overrides[dateStr].slots
+  if (
+    availability.overrides[data.dateStr] &&
+    availability.overrides[data.dateStr].type === 'custom'
+  ) {
+    slotsDef = availability.overrides[data.dateStr].slots
   } else if (availability.weeklySchedule) {
     const daysMap = [
       'sunday',
@@ -348,11 +190,11 @@ export async function getAvailableTimeSlots(
 
   const apptsOnThisDay = availability.appointments.filter((appt) => {
     const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
-    return format(zonedAppt, 'yyyy-MM-dd') === dateStr
+    return format(zonedAppt, 'yyyy-MM-dd') === data.dateStr
   })
 
   const nowZoned = toZonedTime(new Date(), timezone)
-  const isToday = format(nowZoned, 'yyyy-MM-dd') === dateStr
+  const isToday = format(nowZoned, 'yyyy-MM-dd') === data.dateStr
   const nowMinutes = nowZoned.getHours() * 60 + nowZoned.getMinutes()
 
   slotsDef.forEach((slot) => {
@@ -384,45 +226,26 @@ export async function getAvailableTimeSlots(
   })
 
   return generatedSlots
-}
-export type UpdateAvailabilityParams = {
-  weeklySchedule: any
-  sessionDuration: string
-  breakDuration: string
-  timezone: string
-  overrides: Record<string, { type: 'blocked' | 'custom'; slots: TimeSlot[] }>
-}
+})
 
 /**
- * Atualiza a disponibilidade do psicólogo (rotina, exceções e configurações de sessão).
- * Usa uma transação Prisma para garantir que todas as mudanças sejam aplicadas juntas.
+ * Updates the psychologist's availability (routine, exceptions and session settings).
  */
-export async function updatePsychologistAvailability(params: UpdateAvailabilityParams) {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return { success: false, error: 'Usuário não autenticado.' }
-    }
-
-    // 1. Localizar o perfil pelo userId (UUID do Auth)
+export const updatePsychologistAvailability = createSafeAction(
+  updateAvailabilitySchema,
+  async (params, user) => {
     const profile = await prisma.psychologistProfile.findUnique({
       where: { userId: user.id },
       select: { id: true, userId: true },
     })
 
     if (!profile) {
-      return { success: false, error: 'Perfil profissional não encontrado.' }
+      throw new Error('Perfil profissional não encontrado.')
     }
 
     const durationInt = parseInt(params.sessionDuration) || 50
 
-    // 2. Transação atômica para garantir consistência
     await prisma.$transaction(async (tx) => {
-      // 2a. Atualizar o perfil e o JSON da agenda
       await tx.psychologistProfile.update({
         where: { id: profile.id },
         data: {
@@ -436,10 +259,8 @@ export async function updatePsychologistAvailability(params: UpdateAvailabilityP
         },
       })
 
-      // 2b. Gerenciar Overrides (Exceções)
       const newStateDates = Object.keys(params.overrides)
 
-      // Remover o que não está mais no estado atual enviado pelo frontend
       await tx.scheduleOverride.deleteMany({
         where: {
           psychologistId: profile.id,
@@ -447,7 +268,6 @@ export async function updatePsychologistAvailability(params: UpdateAvailabilityP
         },
       })
 
-      // Upsert das exceções atuais
       for (const date of newStateDates) {
         const override = params.overrides[date]
         await tx.scheduleOverride.upsert({
@@ -471,23 +291,14 @@ export async function updatePsychologistAvailability(params: UpdateAvailabilityP
       }
     })
 
-    // 3. Revalidação de Cache
     revalidatePath('/dashboard/agenda')
     revalidatePath(`/psicologo/${user.id}`)
     revalidatePath('/busca')
-
-    // Revalida tags para garantir que a página pública do profissional atualize imediatamente
     revalidateTag('overrides')
     revalidateTag('psychologists')
     revalidateTag('appointments')
 
     return { success: true }
-  } catch (error) {
-    logger.error('Error in updatePsychologistAvailability:', error)
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Erro interno ao salvar configurações da agenda.',
-    }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)

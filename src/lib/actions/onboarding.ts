@@ -1,100 +1,67 @@
-'use server'
-
-import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { sanitizeText, sanitizeHtml } from '@/lib/security'
-import { logger } from '@/lib/utils/logger'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
 
-export type PsychologistOnboardingData = {
-  fullName: string
-  crp: string
-  specialties: string[]
-  approaches: string[] // We might store this in bio or a new column, for now let's combine with specialties or bio if schema doesn't support it directly.
-  // Checking schema: PsychologistProfile has `specialties String[]`. It doesn't have `approaches`.
-  // We can just append approaches to specialties or store them there.
-  // Actually, let's look at schema again.
-  // `specialties String[]`.
-  // I can put both in specialties or add approaches to bio.
-  // For now I will merge them into specialties array as they are "tags" essentially.
+const psychologistOnboardingSchema = z.object({
+  fullName: z.string().min(3),
+  crp: z.string().min(5),
+  specialties: z.array(z.string()),
+  approaches: z.array(z.string()),
+  bio: z.string().min(10),
+  price: z.number().min(0),
+  videoUrl: z.string().url().optional().or(z.literal('')),
+})
 
-  bio: string
-  price: number
-  videoUrl?: string
-}
+export const savePsychologistProfile = createSafeAction(
+  psychologistOnboardingSchema,
+  async (data, user) => {
+    // SANITIZAÇÃO
+    const sanitizedName = sanitizeText(data.fullName) || 'Anônimo'
+    const sanitizedCrp = sanitizeText(data.crp)
+    const sanitizedBio = sanitizeHtml(data.bio)
+    const sanitizedVideoUrl = data.videoUrl ? sanitizeText(data.videoUrl) : null
 
-export async function savePsychologistProfile(data: PsychologistOnboardingData) {
-  const supabase = await createClient()
+    const allSpecialties = Array.from(new Set([...data.specialties, ...data.approaches])).map((s) =>
+      sanitizeText(s)
+    )
 
-  // 1. Get current user
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    if (process.env.NODE_ENV === 'development') {
-      logger.warn('Simulated success for savePsychologistProfile (unauthenticated)')
-      return { success: true }
-    }
-    return { success: false, error: 'Usuário não autenticado' }
-  }
-
-  // SANITIZAÇÃO (XSS Prevention)
-  const sanitizedName = sanitizeText(data.fullName) || 'Anônimo'
-  const sanitizedCrp = sanitizeText(data.crp)
-  const sanitizedBio = sanitizeHtml(data.bio)
-  const sanitizedVideoUrl = sanitizeText(data.videoUrl)
-
-  // Arrays de strings
-  const sanitizedSpecialties = data.specialties.map((s) => sanitizeText(s)).filter(Boolean)
-  const sanitizedApproaches = data.approaches.map((s) => sanitizeText(s)).filter(Boolean)
-
-  try {
-    // 2. Update Profile (Base role and name)
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({
-        full_name: sanitizedName,
+    // 1. Update Profile (Base role and name)
+    await prisma.profile.update({
+      where: { user_id: user.id },
+      data: {
+        fullName: sanitizedName,
         role: 'PSYCHOLOGIST',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', user.id)
+      },
+    })
 
-    if (profileError) {
-      logger.error('Error updating profile:', profileError)
-      return { success: false, error: 'Erro ao atualizar perfil básico' }
-    }
-
-    // 3. Create or Update Psychologist Profile
-    // Note: Approaches are merged into specialties for now as strict schema doesn't have approaches column yet.
-    const allSpecialties = Array.from(new Set([...sanitizedSpecialties, ...sanitizedApproaches]))
-
-    const { error: psychError } = await supabase.from('psychologist_profiles').upsert(
-      {
+    // 2. Upsert Psychologist Profile
+    await prisma.psychologistProfile.upsert({
+      where: { userId: user.id },
+      update: {
+        crp: sanitizedCrp,
+        bio: sanitizedBio,
+        specialties: allSpecialties,
+        pricePerSession: data.price,
+        videoPresentationUrl: sanitizedVideoUrl,
+        isVerified: false,
+      },
+      create: {
         userId: user.id,
         crp: sanitizedCrp,
         bio: sanitizedBio,
         specialties: allSpecialties,
-        price_per_session: data.price,
-        video_presentation_url: sanitizedVideoUrl,
-        is_verified: false, // Default false to enable Admin Verification flow
-        updated_at: new Date().toISOString(),
+        pricePerSession: data.price,
+        videoPresentationUrl: sanitizedVideoUrl,
+        isVerified: false,
       },
-      { onConflict: 'userId' }
-    )
-
-    if (psychError) {
-      logger.error('Error creating psychologist profile:', psychError)
-      // It might fail if column name is wrong.
-      return { success: false, error: 'Erro ao criar perfil de psicólogo.' + psychError.message }
-    }
+    })
 
     revalidatePath('/dashboard')
     revalidatePath('/busca')
 
     return { success: true }
-  } catch (error) {
-    logger.error('Unexpected error:', error)
-    return { success: false, error: 'Erro interno no servidor' }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)

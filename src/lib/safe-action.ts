@@ -6,17 +6,35 @@ export type ActionResponse<T> =
   | { success: true; data: T }
   | { success: false; error: string; code?: string }
 
+export type UserContext = { id: string; email: string; role: string }
+
 /**
- * A secure wrapper for Server Actions that enforces authentication,
- * validation, and standardized error handling.
+ * Overload for PUBLIC actions: authentication is NOT enforced.
+ * The handler receives `UserContext | null`.
  */
 export function createSafeAction<Schema extends z.ZodTypeAny, T>(
   schema: Schema,
-  handler: (
-    input: z.infer<Schema>,
-    user: { id: string; email: string; role: string }
-  ) => Promise<T>,
-  options?: { requiredRole?: 'PATIENT' | 'PSYCHOLOGIST' | 'COMPANY' | 'ADMIN' }
+  handler: (input: z.infer<Schema>, user: UserContext | null) => Promise<T>,
+  options: { isPublic: true; requiredRole?: string | string[] }
+): (input: z.infer<Schema>) => Promise<ActionResponse<T>>
+
+/**
+ * Overload for PROTECTED actions: authentication IS enforced.
+ * The handler receives a guaranteed `UserContext`.
+ */
+export function createSafeAction<Schema extends z.ZodTypeAny, T>(
+  schema: Schema,
+  handler: (input: z.infer<Schema>, user: UserContext) => Promise<T>,
+  options?: { isPublic?: false; requiredRole?: string | string[] }
+): (input: z.infer<Schema>) => Promise<ActionResponse<T>>
+
+/**
+ * Implementation of createSafeAction.
+ */
+export function createSafeAction<Schema extends z.ZodTypeAny, T>(
+  schema: Schema,
+  handler: (input: z.infer<Schema>, user: any) => Promise<T>,
+  options?: { isPublic?: boolean; requiredRole?: string | string[] }
 ) {
   return async (input: z.infer<Schema>): Promise<ActionResponse<T>> => {
     try {
@@ -33,10 +51,10 @@ export function createSafeAction<Schema extends z.ZodTypeAny, T>(
       // 2. Check Authentication
       const supabase = await createClient()
       const {
-        data: { user },
+        data: { user: authUser },
       } = await supabase.auth.getUser()
 
-      if (!user) {
+      if (!authUser && !options?.isPublic) {
         return {
           success: false,
           error: 'Não autenticado.',
@@ -44,23 +62,36 @@ export function createSafeAction<Schema extends z.ZodTypeAny, T>(
         }
       }
 
-      const role = (user.app_metadata?.role as string) || 'PATIENT'
+      const role =
+        (authUser?.user_metadata?.role as string) ||
+        (authUser?.app_metadata?.role as string) ||
+        'PATIENT'
+
+      const userContext: UserContext | null = authUser
+        ? {
+            id: authUser.id,
+            email: authUser.email!,
+            role: role,
+          }
+        : null
 
       // 3. Optional Role Check
-      if (options?.requiredRole && role !== options.requiredRole) {
-        return {
-          success: false,
-          error: 'Acesso negado: permissão insuficiente.',
-          code: 'FORBIDDEN',
+      if (options?.requiredRole && authUser) {
+        const requiredRoles = Array.isArray(options.requiredRole)
+          ? options.requiredRole
+          : [options.requiredRole]
+
+        if (!requiredRoles.includes(role)) {
+          return {
+            success: false,
+            error: 'Acesso negado: permissão insuficiente.',
+            code: 'FORBIDDEN',
+          }
         }
       }
 
       // 4. Execute Handler
-      const result = await handler(validationResult.data, {
-        id: user.id,
-        email: user.email!,
-        role: role,
-      })
+      const result = await handler(validationResult.data, userContext)
 
       return { success: true, data: result }
     } catch (error: any) {

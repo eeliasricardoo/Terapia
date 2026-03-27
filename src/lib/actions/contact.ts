@@ -1,24 +1,27 @@
-'use server'
-
 import { logger } from '@/lib/utils/logger'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
 
-export async function sendContactForm(formData: FormData) {
-  try {
-    const name = formData.get('name')
-    const email = formData.get('email')
-    const subject = formData.get('subject')
-    const message = formData.get('message')
+const contactFormSchema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+  subject: z.string().min(5),
+  message: z.string().min(10),
+})
 
-    if (!name || !email || !subject || !message) {
-      return { success: false, error: 'Todos os campos são obrigatórios' }
-    }
+export const sendContactAction = createSafeAction(
+  contactFormSchema,
+  async (data) => {
+    // Audit submission in logger
+    logger.info('Contact Form Submission received:', {
+      name: data.name,
+      email: data.email,
+      subject: data.subject,
+    })
 
-    // In a real app, you would send an email here using Resend or similar
-    logger.info('Contact Form Submission:', { name, email, subject, message })
-
+    // In a production environment, dispatch email via Resend/SendGrid.
+    // For now, return success.
     return { success: true }
-  } catch (error: any) {
-    logger.error('Error sending contact form:', error)
-    return { success: false, error: 'Erro ao enviar mensagem. Tente novamente mais tarde.' }
-  }
-}
+  },
+  { isPublic: true }
+)

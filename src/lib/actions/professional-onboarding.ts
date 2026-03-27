@@ -1,243 +1,165 @@
-'use server'
-
-import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { logger } from '@/lib/utils/logger'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
+import { createClient } from '@/lib/supabase/server'
 
-export async function saveProfessionalData(formData: FormData) {
-  const university = formData.get('university') as string
-  const academicLevel = formData.get('academicLevel') as string
-  const title = formData.get('title') as string
-  const registrationNumber = formData.get('registrationNumber') as string
-  const expirationDate = formData.get('expirationDate') as string | null
-  const yearsOfExperience = formData.get('yearsOfExperience') as string
+export const saveProfessionalData = createSafeAction(
+  z.instanceof(FormData),
+  async (formData, user) => {
+    const university = formData.get('university') as string
+    const academicLevel = formData.get('academicLevel') as string
+    const title = formData.get('title') as string
+    const registrationNumber = formData.get('registrationNumber') as string
+    const expirationDate = formData.get('expirationDate') as string | null
+    const yearsOfExperience = formData.get('yearsOfExperience') as string
 
-  let specializations: string[] = []
-  let healthInsurances: string[] = []
-  try {
-    const rawSpec = formData.get('specializations') as string
-    const rawInsur = formData.get('healthInsurances') as string
-    const parsedSpec = JSON.parse(rawSpec || '[]')
-    const parsedInsur = JSON.parse(rawInsur || '[]')
-    if (Array.isArray(parsedSpec)) specializations = parsedSpec.filter((x) => typeof x === 'string')
-    if (Array.isArray(parsedInsur))
-      healthInsurances = parsedInsur.filter((x) => typeof x === 'string')
-  } catch {
-    return { success: false, error: 'Formato de dados inválido.' }
-  }
-  const diplomaFile = formData.get('diploma') as File | null
-  const licenseFile = formData.get('license') as File | null
-
-  // File Validation Constants
-  const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
-  const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
-
-  // Validate Diploma
-  if (diplomaFile && diplomaFile.size > 0) {
-    if (diplomaFile.size > MAX_FILE_SIZE) {
-      return { success: false, error: 'O diploma deve ter no máximo 5MB' }
-    }
-    if (!ALLOWED_TYPES.includes(diplomaFile.type)) {
-      return { success: false, error: 'O diploma deve ser um PDF ou imagem (JPG/PNG)' }
-    }
-  }
-
-  // Validate License
-  if (licenseFile && licenseFile.size > 0) {
-    if (licenseFile.size > MAX_FILE_SIZE) {
-      return { success: false, error: 'A carteira profissional deve ter no máximo 5MB' }
-    }
-    if (!ALLOWED_TYPES.includes(licenseFile.type)) {
-      return {
-        success: false,
-        error: 'A carteira profissional deve ser um PDF ou imagem (JPG/PNG)',
-      }
-    }
-  }
-
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    return { success: false, error: 'Usuário não autenticado' }
-  }
-
-  try {
-    // 1. Update Profile (Base role)
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({
-        role: 'PSYCHOLOGIST',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', user.id)
-
-    if (profileError) {
-      logger.error('Error updating profile:', profileError)
-      return { success: false, error: 'Erro ao atualizar perfil básico' }
+    let specializations: string[] = []
+    let healthInsurances: string[] = []
+    try {
+      const rawSpec = formData.get('specializations') as string
+      const rawInsur = formData.get('healthInsurances') as string
+      specializations = JSON.parse(rawSpec || '[]')
+      healthInsurances = JSON.parse(rawInsur || '[]')
+    } catch {
+      throw new Error('Formato de dados inválido.')
     }
 
-    // 3. Handle File Uploads
+    const diplomaFile = formData.get('diploma') as File | null
+    const licenseFile = formData.get('license') as File | null
+
+    const MAX_FILE_SIZE = 5 * 1024 * 1024
+    const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
+
+    if (diplomaFile && diplomaFile.size > 0) {
+      if (diplomaFile.size > MAX_FILE_SIZE) throw new Error('O diploma deve ter no máximo 5MB')
+      if (!ALLOWED_TYPES.includes(diplomaFile.type))
+        throw new Error('O diploma deve ser um PDF ou imagem')
+    }
+
+    if (licenseFile && licenseFile.size > 0) {
+      if (licenseFile.size > MAX_FILE_SIZE)
+        throw new Error('A carteira profissional deve ter no máximo 5MB')
+      if (!ALLOWED_TYPES.includes(licenseFile.type))
+        throw new Error('A carteira profissional deve ser um PDF ou imagem')
+    }
+
+    const supabase = await createClient()
+
+    // 1. Update Profile role
+    await prisma.profile.update({
+      where: { user_id: user.id },
+      data: { role: 'PSYCHOLOGIST' },
+    })
+
+    // 2. Handle File Uploads via Supabase Storage
     let diplomaUrl = null
     let licenseUrl = null
 
-    if (diplomaFile) {
-      const { data: uploadData, error: uploadError } = await supabase.storage
+    if (diplomaFile && diplomaFile.size > 0) {
+      const { data: uploadData } = await supabase.storage
         .from('documents')
         .upload(`${user.id}/diploma_${Date.now()}`, diplomaFile)
       if (uploadData) diplomaUrl = uploadData.path
     }
 
-    if (licenseFile) {
-      const { data: uploadData, error: uploadError } = await supabase.storage
+    if (licenseFile && licenseFile.size > 0) {
+      const { data: uploadData } = await supabase.storage
         .from('documents')
         .upload(`${user.id}/license_${Date.now()}`, licenseFile)
       if (uploadData) licenseUrl = uploadData.path
     }
 
-    // 4. Create or Update Psychologist Profile
-    const { data: psychData, error: psychError } = await supabase
-      .from('psychologist_profiles')
-      .upsert(
-        {
-          userId: user.id,
-          crp: registrationNumber,
-          specialties: specializations,
-          university,
-          academicLevel,
-          title,
-          crpExpiration: expirationDate ? new Date(expirationDate).toISOString() : null,
-          yearsOfExperience: parseInt(yearsOfExperience) || 0,
-          diploma_url: diplomaUrl,
-          license_url: licenseUrl,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'userId' }
-      )
-      .select('id')
-      .single()
+    // 3. Upsert Psychologist Profile via Prisma
+    const psych = await prisma.psychologistProfile.upsert({
+      where: { userId: user.id },
+      update: {
+        crp: registrationNumber,
+        specialties: specializations,
+        university,
+        academicLevel,
+        title,
+        crpExpiration: expirationDate ? new Date(expirationDate) : null,
+        yearsOfExperience: parseInt(yearsOfExperience) || 0,
+        diplomaUrl: diplomaUrl || undefined,
+        licenseUrl: licenseUrl || undefined,
+      },
+      create: {
+        userId: user.id,
+        crp: registrationNumber,
+        specialties: specializations,
+        university,
+        academicLevel,
+        title,
+        crpExpiration: expirationDate ? new Date(expirationDate) : null,
+        yearsOfExperience: parseInt(yearsOfExperience) || 0,
+        diplomaUrl: diplomaUrl || '',
+        licenseUrl: licenseUrl || '',
+      },
+    })
 
-    if (psychError) {
-      logger.error('Error creating psychologist profile:', psychError)
-      return { success: false, error: 'Erro ao salvar dados profissionais.' }
-    }
+    // 4. Link Health Insurances
+    if (healthInsurances.length > 0) {
+      await prisma.psychologistInsurance.deleteMany({
+        where: { psychologistId: psych.id },
+      })
 
-    // 5. Link Health Insurances
-    if (healthInsurances && healthInsurances.length > 0) {
-      try {
-        // Delete existing links first to avoid duplicates or outdated info
-        await supabase.from('psychologist_insurances').delete().eq('psychologist_id', psychData.id)
-
-        const insuranceLinks = healthInsurances.map((insuranceId: string) => ({
-          psychologist_id: psychData.id,
-          health_insurance_id: insuranceId,
-        }))
-
-        const { error: linkError } = await supabase
-          .from('psychologist_insurances')
-          .insert(insuranceLinks)
-
-        if (linkError) {
-          logger.error('Error linking health insurances:', linkError)
-          // We don't return error here because the main profile was saved,
-          // but we should probably log it.
-        }
-      } catch (linkCatchError) {
-        logger.error('Unexpected error linking health insurances:', linkCatchError)
-      }
+      await prisma.psychologistInsurance.createMany({
+        data: healthInsurances.map((id) => ({
+          psychologistId: psych.id,
+          healthInsuranceId: id,
+        })),
+      })
     }
 
     return { success: true }
-  } catch (error) {
-    logger.error('Unexpected error:', error)
-    return { success: false, error: 'Erro interno no servidor' }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
-export async function savePaymentConfig(data: {
-  bank: string
-  accountNumber: string
-  accountType: string
-  taxIdType: string
-  taxIdNumber: string
-}) {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    return { success: false, error: 'Usuário não autenticado' }
-  }
-
-  try {
-    const { error: psychError } = await supabase
-      .from('psychologist_profiles')
-      .update({
+export const savePaymentConfig = createSafeAction(
+  z.object({
+    bank: z.string(),
+    accountNumber: z.string(),
+    accountType: z.string(),
+    taxIdType: z.string(),
+    taxIdNumber: z.string(),
+  }),
+  async (data, user) => {
+    await prisma.psychologistProfile.update({
+      where: { userId: user.id },
+      data: {
         bank: data.bank,
         accountNumber: data.accountNumber,
         accountType: data.accountType,
         taxIdType: data.taxIdType,
         taxIdNumber: data.taxIdNumber,
-        video_presentation_url: '',
-        is_verified: false, // Must be approved by an Admin
-        updated_at: new Date().toISOString(),
-      })
-      .eq('userId', user.id)
-
-    if (psychError) {
-      logger.error('Error updating payment config:', psychError)
-      return { success: false, error: 'Erro ao salvar configurações de pagamento.' }
-    }
+        isVerified: false, // Reset verification on payment change for safety if needed, or keep same
+      },
+    })
 
     return { success: true }
-  } catch (error) {
-    logger.error('Unexpected error:', error)
-    return { success: false, error: 'Erro interno no servidor' }
-  }
-}
+  },
+  { requiredRole: 'PSYCHOLOGIST' }
+)
 
-export async function savePatientPreferences(data: {
-  selectedAreas: string[]
-  preferences: { gender: string; age: string; style: string }
-  availability: { days: string[]; times: string[] }
-  history: { previousTherapy: string; medication: string; bio: string }
-}) {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    return { success: false, error: 'Usuário não autenticado' }
-  }
-
-  try {
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({
-        onboarding_data: data,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', user.id)
-
-    if (profileError) {
-      logger.error('Error updating patient preferences:', profileError)
-      return { success: false, error: 'Erro ao salvar preferências.' }
-    }
+export const savePatientPreferences = createSafeAction(
+  z.object({
+    selectedAreas: z.array(z.string()),
+    preferences: z.object({ gender: z.string(), age: z.string(), style: z.string() }),
+    availability: z.object({ days: z.array(z.string()), times: z.array(z.string()) }),
+    history: z.object({ previousTherapy: z.string(), medication: z.string(), bio: z.string() }),
+  }),
+  async (data, user) => {
+    await prisma.profile.update({
+      where: { user_id: user.id },
+      data: {
+        onboardingData: data as any,
+      },
+    })
 
     revalidatePath('/busca')
     return { success: true }
-  } catch (error) {
-    logger.error('Unexpected error:', error)
-    return { success: false, error: 'Erro interno no servidor' }
   }
-}
+)

@@ -1,240 +1,150 @@
-'use server'
-
-import { createClient } from '@/lib/supabase/server'
-import type {
-  PsychologistWithProfile,
-  PsychologistSearchFilters,
-  PsychologistProfile,
-  Profile,
-} from '@/lib/supabase/types'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
 
-/**
- * Get all verified psychologists
- */
-export async function getPsychologists(): Promise<PsychologistWithProfile[]> {
-  const supabase = await createClient()
+export const getPsychologists = createSafeAction(
+  z.void().optional(),
+  async () => {
+    const psychologists = await prisma.psychologistProfile.findMany({
+      where: {
+        isVerified: true,
+        stripeOnboardingComplete: true,
+      },
+      include: {
+        user: {
+          include: { profiles: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
 
-  const { data: psychologists, error } = await supabase
-    .from('psychologist_profiles')
-    .select('*')
-    .eq('is_verified', true)
-    .eq('stripe_onboarding_complete', true)
-    .order('created_at', { ascending: false })
+    return psychologists.map((psych) => ({
+      ...psych,
+      profile: psych.user.profiles,
+      price_per_session: Number(psych.pricePerSession),
+    }))
+  },
+  { isPublic: true }
+)
 
-  if (error) {
-    logger.error('Error fetching psychologists:', error)
-    return []
-  }
+export const getPsychologistByIdAction = createSafeAction(
+  z.string().uuid(),
+  async (userId) => {
+    // Try by userId or profileId
+    const psych = await prisma.psychologistProfile.findFirst({
+      where: {
+        OR: [{ id: userId }, { userId }],
+      },
+      include: {
+        user: { include: { profiles: true } },
+        acceptedInsurances: {
+          include: { healthInsurance: true },
+        },
+      },
+    })
 
-  if (!psychologists || psychologists.length === 0) return []
+    if (!psych) return null
 
-  // Fetch related profiles
-  const userIds = psychologists.map((p: PsychologistProfile) => p.userId)
-  const { data: profiles, error: profilesError } = await supabase
-    .from('profiles')
-    .select('*')
-    .in('user_id', userIds)
-
-  if (profilesError) {
-    logger.error('Error fetching psychologist profiles:', profilesError)
-    return []
-  }
-
-  // Merge manual join
-  return psychologists.map((psych: PsychologistProfile) => {
-    const profileInfo = (profiles as Profile[])?.find((profile) => profile.user_id === psych.userId)
     return {
       ...psych,
-      profile: profileInfo || null,
+      profile: psych.user.profiles,
+      price_per_session: Number(psych.pricePerSession),
+      acceptedInsurances: psych.acceptedInsurances.map((i) => i.healthInsurance),
     }
-  }) as PsychologistWithProfile[]
-}
+  },
+  { isPublic: true }
+)
 
-/**
- * Get a single psychologist by user ID
- */
-export async function getPsychologistById(userId: string): Promise<PsychologistWithProfile | null> {
-  const supabase = await createClient()
+const searchFiltersSchema = z.object({
+  page: z.number().int().min(1).optional().default(1),
+  pageSize: z.number().int().min(1).max(50).optional().default(12),
+  specialties: z.array(z.string()).optional(),
+  healthInsurances: z.array(z.string().uuid()).optional(),
+  minPrice: z.number().optional(),
+  maxPrice: z.number().optional(),
+  genders: z.array(z.string()).optional(),
+  searchQuery: z.string().optional(),
+})
 
-  const { data: psych, error } = await supabase
-    .from('psychologist_profiles')
-    .select('*')
-    .or(`id.eq.${userId},userId.eq.${userId}`)
-    .single()
+export const searchPsychologistsAction = createSafeAction(
+  searchFiltersSchema,
+  async (filters) => {
+    const {
+      page,
+      pageSize,
+      specialties,
+      healthInsurances,
+      minPrice,
+      maxPrice,
+      genders,
+      searchQuery,
+    } = filters
+    const skip = (page - 1) * pageSize
 
-  if (error || !psych) {
-    if (error) logger.error('Error fetching psychologist:', error)
-    return null
-  }
-
-  const { data: profileData, error: profileError } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('user_id', psych.userId)
-    .single()
-
-  if (profileError) {
-    logger.error('Error fetching psychologist profile:', profileError)
-    return null
-  }
-
-  const { data: insurancesRes } = await supabase
-    .from('psychologist_insurances')
-    .select('health_insurance:health_insurances(id, name)')
-    .eq('psychologist_id', psych.id)
-
-  const acceptedInsurances = insurancesRes
-    ? insurancesRes
-        .map((item) => {
-          const hi = (item as any).health_insurance
-          return Array.isArray(hi) ? hi[0] : hi
-        })
-        .filter(Boolean)
-    : []
-
-  return {
-    ...psych,
-    profile: profileData || null,
-    acceptedInsurances,
-  } as PsychologistWithProfile & { acceptedInsurances: { id: string; name: string }[] }
-}
-
-/**
- * Search psychologists with filters
- */
-export async function searchPsychologists(
-  filters: PsychologistSearchFilters = {}
-): Promise<PsychologistWithProfile[]> {
-  const supabase = await createClient()
-
-  const { page = 1, pageSize = 12 } = filters
-  const from = (page - 1) * pageSize
-  const to = from + pageSize - 1
-
-  let query = supabase
-    .from('psychologist_profiles')
-    .select('*')
-    .eq('is_verified', true)
-    .eq('stripe_onboarding_complete', true)
-
-  // Filter by specialties
-  if (filters.specialties && filters.specialties.length > 0) {
-    query = query.overlaps('specialties', filters.specialties)
-  }
-
-  // Filter by health insurances
-  if (filters.healthInsurances && filters.healthInsurances.length > 0) {
-    const { data: linkedPsychs, error: insuranceError } = await supabase
-      .from('psychologist_insurances')
-      .select('psychologist_id')
-      .in('health_insurance_id', filters.healthInsurances)
-
-    if (insuranceError) {
-      logger.error('Error fetching linked psychologists by insurance:', insuranceError)
+    const where: any = {
+      isVerified: true,
+      stripeOnboardingComplete: true,
     }
 
-    if (linkedPsychs && linkedPsychs.length > 0) {
-      const psychIds = Array.from(
-        new Set(linkedPsychs.map((hp: { psychologist_id: string }) => hp.psychologist_id))
-      )
-      query = query.in('id', psychIds)
-    } else {
-      // If no psychologists match the insurance filter, return empty
-      return []
-    }
-  }
-
-  // Filter by price range
-  if (filters.minPrice !== undefined) {
-    query = query.gte('price_per_session', filters.minPrice)
-  }
-  if (filters.maxPrice !== undefined) {
-    query = query.lte('price_per_session', filters.maxPrice)
-  }
-
-  // Filter by gender
-  if (filters.genders && filters.genders.length > 0) {
-    const { data: matchedProfiles, error: genderError } = await supabase
-      .from('profiles')
-      .select('user_id')
-      .in('gender', filters.genders)
-
-    if (genderError) {
-      logger.error('Error fetching profiles by gender:', genderError)
+    if (specialties && specialties.length > 0) {
+      where.specialties = { hasSome: specialties }
     }
 
-    if (matchedProfiles && matchedProfiles.length > 0) {
-      const userIds = matchedProfiles.map((p: { user_id: string }) => p.user_id)
-      query = query.in('userId', userIds)
-    } else {
-      return []
+    if (healthInsurances && healthInsurances.length > 0) {
+      where.acceptedInsurances = {
+        some: { healthInsuranceId: { in: healthInsurances } },
+      }
     }
-  }
 
-  // Apply pagination only if searchQuery is NOT provided
-  if (!filters.searchQuery) {
-    query = query.range(from, to)
-  }
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.pricePerSession = {}
+      if (minPrice !== undefined) where.pricePerSession.gte = minPrice
+      if (maxPrice !== undefined) where.pricePerSession.lte = maxPrice
+    }
 
-  const { data: psychologists, error } = await query.order('created_at', { ascending: false })
+    if ((genders && genders.length > 0) || searchQuery) {
+      where.user = {
+        profiles: {
+          AND: [],
+        },
+      }
+      if (genders && genders.length > 0) {
+        where.user.profiles.AND.push({ gender: { in: genders } })
+      }
+      if (searchQuery) {
+        where.user.profiles.AND.push({ fullName: { contains: searchQuery, mode: 'insensitive' } })
+      }
+    }
 
-  if (error) {
-    logger.error('Error searching psychologists:', error)
-    return []
-  }
+    const psychologists = await prisma.psychologistProfile.findMany({
+      where,
+      include: {
+        user: { include: { profiles: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: pageSize,
+    })
 
-  if (!psychologists || psychologists.length === 0) return []
-
-  const userIds = psychologists.map((p: PsychologistProfile) => p.userId)
-
-  // Fetch profiles
-  let profilesQuery = supabase.from('profiles').select('*').in('user_id', userIds)
-
-  // Filter by search query (name) here since it's in the profiles table
-  if (filters.searchQuery) {
-    profilesQuery = profilesQuery.ilike('full_name', `%${filters.searchQuery}%`)
-  }
-
-  const { data: profiles, error: profilesError } = await profilesQuery
-
-  if (profilesError) {
-    logger.error('Error fetching psychologist profiles in search:', profilesError)
-    return []
-  }
-
-  // Merge manual join and optionally filter if searchQuery was used
-  let merged = psychologists.map((psych: PsychologistProfile) => {
-    const profileInfo = (profiles as Profile[]).find((profile) => profile.user_id === psych.userId)
-    return {
+    return psychologists.map((psych) => ({
       ...psych,
-      profile: profileInfo || null,
-    }
-  })
+      profile: psych.user.profiles,
+      price_per_session: Number(psych.pricePerSession),
+    }))
+  },
+  { isPublic: true }
+)
 
-  if (filters.searchQuery) {
-    merged = merged.filter((item) => item.profile !== null)
-    // Manually paginate the filtered results if searchQuery was used
-    merged = merged.slice(from, to + 1)
-  }
-
-  return merged as PsychologistWithProfile[]
-}
-
-/**
- * Get psychologist statistics
- */
-export async function getPsychologistStats(userId: string) {
-  try {
+export const getPsychologistStatsAction = createSafeAction(
+  z.string().uuid(),
+  async (userId) => {
     const profile = await prisma.psychologistProfile.findUnique({
       where: { userId },
       select: { id: true },
     })
 
-    if (!profile) {
-      return { totalSessions: 0 }
-    }
+    if (!profile) return { totalSessions: 0 }
 
     const totalSessions = await prisma.appointment.count({
       where: {
@@ -244,8 +154,6 @@ export async function getPsychologistStats(userId: string) {
     })
 
     return { totalSessions }
-  } catch (error) {
-    logger.error('Error fetching psychologist stats:', error)
-    return { totalSessions: 0 }
-  }
-}
+  },
+  { isPublic: true }
+)

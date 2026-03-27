@@ -1,6 +1,3 @@
-'use server'
-
-import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { revalidatePath } from 'next/cache'
@@ -9,46 +6,31 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getApprovalEmailTemplate, getRejectionEmailTemplate } from '@/lib/utils/email-templates'
 import { createAuditLog } from '@/lib/utils/audit'
 import { env } from '@/lib/env'
+import { createSafeAction } from '@/lib/safe-action'
+import { z } from 'zod'
 
-export async function getPendingPsychologists() {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('Não autenticado')
-
-    // Check ADMIN role
-    const profile = await prisma.profile.findUnique({
-      where: { user_id: user.id },
-    })
-
-    if (!profile || profile.role !== 'ADMIN') {
-      throw new Error('Não autorizado')
-    }
-
+/**
+ * Fetches psychologists awaiting manual verification.
+ * Includes "self-healing" logic to sync missing Prisma records.
+ */
+export const getPendingPsychologists = createSafeAction(
+  z.void(),
+  async (_, user) => {
     const supabaseAdmin = createAdminClient()
 
-    // Self-healing: Check for psychologists in profiles table that are not yet in Users/PsychologistProfile
-    // This happens because some signup flows were missing the Prisma sync
+    // 1. Self-healing: Ensure profile roles match User/PsychologistProfile tables
     const orphanPsychologists = await prisma.profile.findMany({
       where: { role: 'PSYCHOLOGIST' },
       include: {
         users: {
-          include: {
-            psychologistProfile: true,
-          },
+          include: { psychologistProfile: true },
         },
       },
     })
 
     for (const op of orphanPsychologists) {
       if (!op.users) {
-        // Sync User table (public) from Profile/Auth metadata
-        // We know they exist in auth.users because profile exists (FK user_id)
         try {
-          // Fetch real email from Auth Admin since it might be missing in Public Schema
           const {
             data: { user: authUser },
           } = await supabaseAdmin.auth.admin.getUserById(op.user_id)
@@ -74,7 +56,6 @@ export async function getPendingPsychologists() {
         }
       }
 
-      // Ensure they have a PsychologistProfile record if they don't yet
       if (!op.users?.psychologistProfile) {
         try {
           await prisma.psychologistProfile.upsert({
@@ -94,11 +75,7 @@ export async function getPendingPsychologists() {
     const pending = await prisma.psychologistProfile.findMany({
       where: { isVerified: false },
       include: {
-        user: {
-          include: {
-            profiles: true,
-          },
-        },
+        user: { include: { profiles: true } },
       },
       orderBy: { createdAt: 'desc' },
     })
@@ -141,38 +118,24 @@ export async function getPendingPsychologists() {
         }
       })
     )
-  } catch (error) {
-    logger.error('Error fetching pending psychologists:', error)
-    return []
-  }
-}
+  },
+  { requiredRole: 'ADMIN' }
+)
 
-export async function verifyPsychologist(psychologistId: string) {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('Não autenticado')
-
-    const profile = await prisma.profile.findUnique({
-      where: { user_id: user.id },
-    })
-
-    if (!profile || profile.role !== 'ADMIN') {
-      throw new Error('Não autorizado')
-    }
-
+/**
+ * Approves a psychologist profile.
+ */
+export const verifyPsychologist = createSafeAction(
+  z.object({ psychologistId: z.string().uuid() }),
+  async (data, user) => {
     const psychologist = await prisma.psychologistProfile.update({
-      where: { id: psychologistId },
+      where: { id: data.psychologistId },
       data: { isVerified: true, suspensionReason: null },
       include: {
         user: { include: { profiles: true } },
       },
     })
 
-    // Notify Psychologist
     await sendEmail({
       to: psychologist.user.email,
       subject: 'Bem-vindo à Mind Cares! Seu perfil foi aprovado',
@@ -182,41 +145,133 @@ export async function verifyPsychologist(psychologistId: string) {
       ),
     })
 
-    // Audit Log
     await createAuditLog({
       userId: user.id,
       action: 'VERIFY_PSYCHOLOGIST',
       entity: 'PsychologistProfile',
-      entityId: psychologistId,
+      entityId: data.psychologistId,
       newData: { isVerified: true },
     })
 
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/admin/aprovacoes')
     return { success: true }
-  } catch (error) {
-    logger.error('Error verifying psychologist:', error)
-    return { success: false, error: 'Falha ao verificar psicólogo' }
-  }
-}
+  },
+  { requiredRole: 'ADMIN' }
+)
 
-export async function getAdminStats() {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('Não autenticado')
-
-    const profile = await prisma.profile.findUnique({
-      where: { user_id: user.id },
+/**
+ * Rejects a psychologist profile, reverting their role.
+ */
+export const rejectPsychologist = createSafeAction(
+  z.object({ psychologistId: z.string().uuid(), reason: z.string().min(5) }),
+  async (data, user) => {
+    const psychologist = await prisma.psychologistProfile.findUnique({
+      where: { id: data.psychologistId },
+      include: { user: { include: { profiles: true } } },
     })
 
-    if (!profile || profile.role !== 'ADMIN') {
-      throw new Error('Não autorizado')
+    if (!psychologist) throw new Error('Psicólogo não encontrado')
+
+    await prisma.psychologistProfile.delete({
+      where: { id: data.psychologistId },
+    })
+
+    await prisma.user.update({
+      where: { id: psychologist.userId },
+      data: {
+        role: 'PATIENT',
+        profiles: {
+          update: { role: 'PATIENT' },
+        },
+      },
+    })
+
+    await sendEmail({
+      to: psychologist.user.email,
+      subject: 'Atualização do seu cadastro na Mind Cares',
+      html: getRejectionEmailTemplate(
+        psychologist.user.profiles?.fullName || 'Psicólogo',
+        data.reason
+      ),
+    })
+
+    await createAuditLog({
+      userId: user.id,
+      action: 'REJECT_PSYCHOLOGIST',
+      entity: 'PsychologistProfile',
+      entityId: data.psychologistId,
+      oldData: { psychologistUserId: psychologist.userId },
+      newData: { reason: data.reason },
+    })
+
+    revalidatePath('/dashboard')
+    revalidatePath('/dashboard/admin/aprovacoes')
+    return { success: true }
+  },
+  { requiredRole: 'ADMIN' }
+)
+
+/**
+ * Suspends psychologist access with a specific reason.
+ */
+export const suspendPsychologistAccess = createSafeAction(
+  z.object({
+    psychologistId: z.string().uuid(),
+    reason: z.string().min(5),
+    sendEmailNotification: z.boolean().default(true),
+    emailMessage: z.string().optional(),
+  }),
+  async (data, user) => {
+    const psychologist = await prisma.psychologistProfile.update({
+      where: { id: data.psychologistId },
+      data: { isVerified: false, suspensionReason: data.reason },
+      include: {
+        user: { include: { profiles: true } },
+      },
+    })
+
+    if (data.sendEmailNotification) {
+      const customMessageHtml = data.emailMessage
+        ? `<p><strong>Mensagem da Moderação:</strong> ${data.emailMessage}</p>`
+        : `<p><strong>Motivo:</strong> ${data.reason}</p>`
+
+      await sendEmail({
+        to: psychologist.user.email,
+        subject: 'Aviso Importante: Acesso Suspenso na Mind Cares',
+        html: `
+          <h2>Olá, ${psychologist.user.profiles?.fullName || 'Psicólogo'}.</h2>
+          <p>A equipe de moderação da Mind Cares suspendeu seu acesso à plataforma.</p>
+          ${customMessageHtml}
+          <p>Seu perfil público foi ocultado e você retornou para a fase de análise de cadastro.</p>
+          <p>Entre em contato com o suporte para mais informações.</p>
+          <br/>
+          <p>Atenciosamente,</p>
+          <p>Equipe Mind Cares</p>
+        `,
+      })
     }
 
+    await createAuditLog({
+      userId: user.id,
+      action: 'SUSPEND_PSYCHOLOGIST',
+      entity: 'PsychologistProfile',
+      entityId: data.psychologistId,
+      newData: { reason: data.reason },
+    })
+
+    revalidatePath('/dashboard/admin/psicologos')
+    return { success: true }
+  },
+  { requiredRole: 'ADMIN' }
+)
+
+/**
+ * Admin overview stats.
+ */
+export const getAdminStats = createSafeAction(
+  z.void(),
+  async (_, user) => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
@@ -251,48 +306,26 @@ export async function getAdminStats() {
       totalRevenue: revenue,
       platformProfit: profit,
     }
-  } catch (error) {
-    logger.error('Error fetching admin stats:', error)
-    return {
-      totalPatients: 0,
-      totalPsychologists: 0,
-      pendingPsychologists: 0,
-      activeAppointments: 0,
-      activeUsersToday: 0,
-      totalRevenue: 0,
-    }
-  }
-}
+  },
+  { requiredRole: 'ADMIN' }
+)
 
-export async function getAllPsychologists(page: number = 1, pageSize: number = 50) {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('Não autenticado')
-
-    const profile = await prisma.profile.findUnique({
-      where: { user_id: user.id },
-    })
-
-    if (!profile || profile.role !== 'ADMIN') {
-      throw new Error('Não autorizado')
-    }
-
-    // Pagination with reasonable default (50 per page)
-    const skip = (page - 1) * pageSize
+/**
+ * Paginated list of all psychologists for admin management.
+ */
+export const getAllPsychologists = createSafeAction(
+  z.object({
+    page: z.number().int().min(1).default(1),
+    pageSize: z.number().int().min(1).max(100).default(50),
+  }),
+  async (data, user) => {
+    const skip = (data.page - 1) * data.pageSize
     const psychologists = await prisma.psychologistProfile.findMany({
       include: {
-        user: {
-          include: {
-            profiles: true,
-          },
-        },
+        user: { include: { profiles: true } },
       },
       orderBy: { createdAt: 'desc' },
-      take: pageSize,
+      take: data.pageSize,
       skip: skip,
     })
 
@@ -309,230 +342,64 @@ export async function getAllPsychologists(page: number = 1, pageSize: number = 5
       avatarUrl: p.user.profiles?.avatarUrl,
       stripeOnboardingComplete: p.stripeOnboardingComplete,
     }))
-  } catch (error) {
-    logger.error('Error fetching all psychologists:', error)
-    return []
-  }
-}
+  },
+  { requiredRole: 'ADMIN' }
+)
 
-export async function rejectPsychologist(psychologistId: string, reason: string) {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('Não autenticado')
-
-    const profile = await prisma.profile.findUnique({
-      where: { user_id: user.id },
-    })
-
-    if (!profile || profile.role !== 'ADMIN') {
-      throw new Error('Não autorizado')
-    }
-
-    const psychologist = await prisma.psychologistProfile.findUnique({
-      where: { id: psychologistId },
-      include: {
-        user: { include: { profiles: true } },
-      },
-    })
-
-    if (!psychologist) throw new Error('Psicólogo não encontrado')
-
-    // Atualmente estamos apenas deletando o perfil de psicólogo, ele pode recriar.
-    await prisma.psychologistProfile.delete({
-      where: { id: psychologistId },
-    })
-
-    // Atualiza o papel para PATIENT tanto no User quanto no Profile
-    await prisma.user.update({
-      where: { id: psychologist.userId },
-      data: {
-        role: 'PATIENT',
-        profiles: {
-          update: {
-            role: 'PATIENT',
-          },
-        },
-      },
-    })
-
-    // Send Rejection Email
-    await sendEmail({
-      to: psychologist.user.email,
-      subject: 'Atualização do seu cadastro na Mind Cares',
-      html: getRejectionEmailTemplate(psychologist.user.profiles?.fullName || 'Psicólogo', reason),
-    })
-
-    // Audit Log
-    await createAuditLog({
-      userId: user.id,
-      action: 'REJECT_PSYCHOLOGIST',
-      entity: 'PsychologistProfile',
-      entityId: psychologistId,
-      oldData: { psychologistUserId: psychologist.userId },
-      newData: { reason },
-    })
-
-    revalidatePath('/dashboard')
-    revalidatePath('/dashboard/admin/aprovacoes')
-    return { success: true }
-  } catch (error) {
-    logger.error('Error rejecting psychologist:', error)
-    return { success: false, error: 'Falha ao rejeitar psicólogo' }
-  }
-}
-
-export async function suspendPsychologistAccess(
-  psychologistId: string,
-  reason: string,
-  sendEmailNotification: boolean = true,
-  emailMessage?: string
-) {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) throw new Error('Não autenticado')
-
-    const profile = await prisma.profile.findUnique({
-      where: { user_id: user.id },
-    })
-
-    if (!profile || profile.role !== 'ADMIN') {
-      throw new Error('Não autorizado')
-    }
-
-    const psychologist = await prisma.psychologistProfile.update({
-      where: { id: psychologistId },
-      data: { isVerified: false, suspensionReason: reason }, // Suspende o acesso público e trava a conta
-      include: {
-        user: { include: { profiles: true } },
-      },
-    })
-
-    if (sendEmailNotification) {
-      // Notify Psychologist
-      const customMessageHtml = emailMessage
-        ? `<p><strong>Mensagem da Moderação:</strong> ${emailMessage}</p>`
-        : `<p><strong>Motivo:</strong> ${reason}</p>`
-
-      await sendEmail({
-        to: psychologist.user.email,
-        subject: 'Aviso Importante: Acesso Suspenso na Mind Cares',
-        html: `
-          <h2>Olá, ${psychologist.user.profiles?.fullName || 'Psicólogo'}.</h2>
-          <p>A equipe de moderação da Mind Cares suspendeu seu acesso à plataforma.</p>
-          ${customMessageHtml}
-          <p>Seu perfil público foi ocultado e você retornou para a fase de análise de cadastro.</p>
-          <p>Entre em contato com o suporte para mais informações.</p>
-          <br/>
-          <p>Atenciosamente,</p>
-          <p>Equipe Mind Cares</p>
-        `,
-      })
-    }
-
-    // Audit Log
-    await createAuditLog({
-      userId: user.id,
-      action: 'SUSPEND_PSYCHOLOGIST',
-      entity: 'PsychologistProfile',
-      entityId: psychologistId,
-      newData: { reason },
-    })
-
-    revalidatePath('/dashboard/admin/psicologos')
-    return { success: true }
-  } catch (error) {
-    logger.error('Error suspending psychologist:', error)
-    return { success: false, error: 'Falha ao suspender acesso' }
-  }
-}
-
-async function ensureAdmin() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) throw new Error('Não autenticado')
-
-  const profile = await prisma.profile.findUnique({
-    where: { user_id: user.id },
-  })
-
-  if (!profile || profile.role !== 'ADMIN') {
-    throw new Error('Não autorizado')
-  }
-  return user
-}
-
-export async function getHealthInsurances() {
-  try {
-    await ensureAdmin()
+/**
+ * Insurance management actions.
+ */
+export const getHealthInsurances = createSafeAction(
+  z.void(),
+  async () => {
     return await prisma.healthInsurance.findMany({
       orderBy: { name: 'asc' },
     })
-  } catch (error) {
-    logger.error('Error fetching health insurances:', error)
-    return []
-  }
-}
+  },
+  { requiredRole: 'ADMIN' }
+)
 
-export async function createHealthInsurance(name: string) {
-  try {
-    await ensureAdmin()
+export const createHealthInsurance = createSafeAction(
+  z.object({ name: z.string().min(2) }),
+  async (data, user) => {
     const insurance = await prisma.healthInsurance.create({
-      data: { name },
+      data: { name: data.name },
     })
 
-    // Audit Log
-    const user = await ensureAdmin()
     await createAuditLog({
       userId: user.id,
       action: 'CREATE_HEALTH_INSURANCE',
       entity: 'HealthInsurance',
       entityId: insurance.id,
-      newData: { name },
+      newData: { name: data.name },
     })
     revalidatePath('/dashboard/admin/planos')
     return { success: true, data: insurance }
-  } catch (error) {
-    logger.error('Error creating health insurance:', error)
-    return { success: false, error: 'Falha ao criar plano de saúde' }
-  }
-}
+  },
+  { requiredRole: 'ADMIN' }
+)
 
-export async function updateHealthInsurance(id: string, name: string) {
-  try {
-    await ensureAdmin()
+export const updateHealthInsurance = createSafeAction(
+  z.object({ id: z.string().uuid(), name: z.string().min(2) }),
+  async (data, user) => {
     const insurance = await prisma.healthInsurance.update({
-      where: { id },
-      data: { name },
+      where: { id: data.id },
+      data: { name: data.name },
     })
     revalidatePath('/dashboard/admin/planos')
     return { success: true, data: insurance }
-  } catch (error) {
-    logger.error('Error updating health insurance:', error)
-    return { success: false, error: 'Falha ao atualizar plano de saúde' }
-  }
-}
+  },
+  { requiredRole: 'ADMIN' }
+)
 
-export async function deleteHealthInsurance(id: string) {
-  try {
-    await ensureAdmin()
+export const deleteHealthInsurance = createSafeAction(
+  z.object({ id: z.string().uuid() }),
+  async (data, user) => {
     await prisma.healthInsurance.delete({
-      where: { id },
+      where: { id: data.id },
     })
     revalidatePath('/dashboard/admin/planos')
     return { success: true }
-  } catch (error) {
-    logger.error('Error deleting health insurance:', error)
-    return { success: false, error: 'Falha ao excluir plano de saúde' }
-  }
-}
+  },
+  { requiredRole: 'ADMIN' }
+)

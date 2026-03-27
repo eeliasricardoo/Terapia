@@ -8,14 +8,10 @@ import { Label } from '@/components/ui/label'
 import { Bell, Shield, Smartphone, Globe, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { updateNotificationSettings } from '@/lib/actions/settings'
+import { updateNotificationSettings, type NotificationSettings } from '@/lib/actions/settings'
 
 interface SettingsManagerProps {
-  initialSettings?: {
-    email: boolean
-    push: boolean
-    whatsapp: boolean
-  } | null
+  initialSettings?: NotificationSettings | null
 }
 
 export function SettingsManager({ initialSettings }: SettingsManagerProps) {
@@ -34,12 +30,18 @@ export function SettingsManager({ initialSettings }: SettingsManagerProps) {
       })
 
       if (result.success) {
-        toast.success('Preferências salvas com sucesso!')
+        toast.success('Alterações salvas!', {
+          description: 'Suas preferências de notificação foram atualizadas com sucesso.',
+        })
       } else {
-        toast.error('Erro ao salvar:', { description: result.error })
+        toast.error('Erro ao salvar', {
+          description: result.error || 'Não foi possível salvar suas preferências.',
+        })
       }
     } catch (err) {
-      toast.error('Erro ao processar solicitação')
+      toast.error('Erro inesperado', {
+        description: 'Ocorreu um problema ao processar sua solicitação.',
+      })
     } finally {
       setIsLoading(false)
     }
