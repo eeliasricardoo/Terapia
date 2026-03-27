@@ -2,13 +2,26 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 
+// Above-fold: static imports for fastest LCP
 import { Hero } from '@/components/landing/Hero'
 import { Marquee } from '@/components/landing/Marquee'
-import { SearchHighlight } from '@/components/landing/SearchHighlight'
-import { HowItWorks } from '@/components/landing/HowItWorks'
-import { Features } from '@/components/landing/Features'
-import { Testimonials } from '@/components/landing/Testimonials'
-import { CTA } from '@/components/landing/CTA'
+
+// Below-fold: dynamic imports for JS bundle splitting
+import dynamic from 'next/dynamic'
+
+const SearchHighlight = dynamic(() =>
+  import('@/components/landing/SearchHighlight').then((m) => ({ default: m.SearchHighlight }))
+)
+const HowItWorks = dynamic(() =>
+  import('@/components/landing/HowItWorks').then((m) => ({ default: m.HowItWorks }))
+)
+const Features = dynamic(() =>
+  import('@/components/landing/Features').then((m) => ({ default: m.Features }))
+)
+const Testimonials = dynamic(() =>
+  import('@/components/landing/Testimonials').then((m) => ({ default: m.Testimonials }))
+)
+const CTA = dynamic(() => import('@/components/landing/CTA').then((m) => ({ default: m.CTA })))
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
