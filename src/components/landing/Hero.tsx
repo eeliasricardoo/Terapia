@@ -12,13 +12,13 @@ import { BRAND_NAME, BRAND_SLOGAN } from '@/lib/constants/branding'
 
 export function Hero() {
   return (
-    <section className="w-full min-h-screen flex items-center bg-background relative overflow-hidden">
+    <section className="w-full min-h-[75vh] flex items-center bg-background relative overflow-hidden">
       {/* Dynamic background accents - Sentirz Style */}
       <div className="absolute top-20 left-10 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] bg-sentirz-teal/10 rounded-full blur-[80px] sm:blur-[120px] pointer-events-none animate-blob" />
       <div className="absolute bottom-20 right-20 w-[250px] h-[250px] sm:w-[500px] sm:h-[500px] bg-sentirz-green/10 rounded-full blur-[60px] sm:blur-[100px] pointer-events-none animate-blob animation-delay-2000" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] sm:w-[400px] sm:h-[400px] bg-sentirz-orange/5 rounded-full blur-[60px] sm:blur-[100px] pointer-events-none animate-blob animation-delay-4000" />
 
-      <div className="container px-4 sm:px-6 relative z-10 mx-auto max-w-7xl py-12 sm:py-16 lg:py-0">
+      <div className="container relative z-10 mx-auto py-12 sm:py-16 lg:py-0">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
           {/* Text content */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-8 sm:space-y-10">
@@ -29,7 +29,6 @@ export function Hero() {
               transition={{ duration: 0.6 }}
               className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full border border-sentirz-teal/20 bg-sentirz-teal-pastel shadow-sm"
             >
-              <Logo size="sm" showText={false} iconOnly />
               <span className="text-xs font-bold text-primary tracking-widest uppercase">
                 {BRAND_NAME} — {BRAND_SLOGAN}
               </span>
