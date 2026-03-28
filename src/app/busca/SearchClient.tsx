@@ -105,7 +105,11 @@ export default function SearchClient({
       const results = response.data
 
       if (isLoadMore) {
-        setPsychologists((prev) => [...prev, ...results])
+        setPsychologists((prev) => {
+          // Filter out any results that are already in the previous list to avoid duplicate keys
+          const newResults = results.filter((newPsych) => !prev.some((p) => p.id === newPsych.id))
+          return [...prev, ...newResults]
+        })
       } else {
         setPsychologists(results)
       }
@@ -161,10 +165,10 @@ export default function SearchClient({
       {/* Search Bar - Premium Hero Style */}
       <motion.div
         variants={itemVars}
-        className="relative overflow-hidden bg-white p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-xl shadow-blue-900/5"
+        className="relative overflow-hidden bg-white p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-xl shadow-sentirz/10"
       >
-        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-96 h-96 bg-blue-50/80 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-96 h-96 bg-orange-50/80 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-96 h-96 bg-sentirz-teal-pastel/80 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-96 h-96 bg-sentirz-orange-pastel/80 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 space-y-4 sm:space-y-6 max-w-3xl mx-auto text-center">
           <div>
@@ -178,8 +182,8 @@ export default function SearchClient({
           </div>
 
           <div className="relative max-w-2xl mx-auto group">
-            <div className="absolute inset-0 bg-blue-500/5 rounded-full blur-md group-hover:bg-blue-500/10 transition-colors duration-500" />
-            <Search className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 h-5 w-5 sm:h-6 sm:w-6 text-slate-400 group-hover:text-blue-500 transition-colors duration-300 z-10" />
+            <div className="absolute inset-0 bg-primary/5 rounded-full blur-md group-hover:bg-primary/10 transition-colors duration-500" />
+            <Search className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 h-5 w-5 sm:h-6 sm:w-6 text-slate-400 group-hover:text-primary transition-colors duration-300 z-10" />
             <Input
               value={filters.searchQuery}
               onChange={(e) => {
@@ -187,7 +191,7 @@ export default function SearchClient({
                 setFilters({ ...filters, searchQuery: e.target.value })
               }}
               placeholder="Busque por especialidade ou nome..."
-              className="pl-12 sm:pl-16 pr-4 sm:pr-6 h-12 sm:h-16 text-base sm:text-lg shadow-sm w-full rounded-full border-2 border-slate-200 focus:border-blue-500 hover:border-slate-300 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 relative z-0 bg-white/80 backdrop-blur-sm"
+              className="pl-12 sm:pl-16 pr-4 sm:pr-6 h-12 sm:h-16 text-base sm:text-lg shadow-sm w-full rounded-full border-2 border-slate-200 focus:border-primary hover:border-slate-300 focus:ring-4 focus:ring-primary/10 transition-all duration-300 relative z-0 bg-white/80 backdrop-blur-sm"
             />
           </div>
         </div>
@@ -234,7 +238,7 @@ export default function SearchClient({
           <div className="bg-white p-6 rounded-3xl border border-slate-200/60 shadow-lg shadow-slate-200/40 sticky top-24">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
               <h3 className="font-extrabold text-lg flex items-center gap-2 text-slate-900">
-                <ListFilter className="w-5 h-5 text-blue-600" />
+                <ListFilter className="w-5 h-5 text-primary" />
                 Filtros
               </h3>
               <Button
@@ -308,7 +312,7 @@ export default function SearchClient({
               <div ref={loaderRef} className="h-20 flex items-center justify-center mt-8">
                 {isPending && hasMore && (
                   <div className="flex items-center gap-2 text-slate-500 font-medium">
-                    <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     Carregando mais...
                   </div>
                 )}

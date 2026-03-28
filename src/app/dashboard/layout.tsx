@@ -7,12 +7,7 @@ import { cn } from '@/lib/utils'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const profile = await getCurrentUserProfile()
-  const themeClass =
-    profile?.role === 'PSYCHOLOGIST'
-      ? 'professional-theme'
-      : profile?.role === 'ADMIN'
-        ? 'admin-theme'
-        : ''
+  const themeClass = profile?.role === 'ADMIN' ? 'admin-theme' : ''
 
   return (
     <div className={cn('min-h-screen bg-slate-50/50', themeClass)}>

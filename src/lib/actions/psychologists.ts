@@ -3,6 +3,50 @@
 import { prisma } from '@/lib/prisma'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
+import { PsychologistWithProfile } from '@/lib/supabase/types'
+
+function mapPsychologist(psych: any): PsychologistWithProfile {
+  const userProfile = psych.user?.profiles || null
+
+  const profile = userProfile
+    ? {
+        id: userProfile.id,
+        user_id: userProfile.user_id,
+        full_name: userProfile.fullName,
+        avatar_url: userProfile.avatarUrl,
+        role: userProfile.role,
+        birth_date: userProfile.birth_date ? (userProfile.birth_date as Date).toISOString() : null,
+        document: userProfile.document,
+        phone: userProfile.phone,
+        created_at: (userProfile.createdAt as Date).toISOString(),
+        updated_at: (userProfile.updatedAt as Date).toISOString(),
+      }
+    : null
+
+  return {
+    id: psych.id,
+    userId: psych.userId,
+    crp: psych.crp,
+    bio: psych.bio,
+    specialties: psych.specialties,
+    price_per_session: psych.pricePerSession ? Number(psych.pricePerSession) : null,
+    video_presentation_url: psych.videoPresentationUrl,
+    is_verified: psych.isVerified,
+    weekly_schedule: psych.weeklySchedule as any,
+    timezone: psych.timezone,
+    academic_level: psych.academicLevel,
+    session_duration: psych.sessionDuration,
+    years_of_experience: psych.yearsOfExperience,
+    university: psych.university,
+    external_scheduling_url: psych.externalSchedulingUrl,
+    monthly_plan_discount: psych.monthlyPlanDiscount,
+    monthly_plan_enabled: psych.monthlyPlanEnabled,
+    monthly_plan_sessions: psych.monthlyPlanSessions,
+    created_at: psych.createdAt.toISOString(),
+    updated_at: psych.updatedAt.toISOString(),
+    profile,
+  } as unknown as PsychologistWithProfile
+}
 
 export const getPsychologists = createSafeAction(
   z.void().optional(),
@@ -19,14 +63,7 @@ export const getPsychologists = createSafeAction(
       orderBy: { createdAt: 'desc' },
     })
 
-    return psychologists.map((psych) => {
-      const { pricePerSession, ...rest } = psych
-      return {
-        ...rest,
-        profile: psych.user?.profiles || null,
-        price_per_session: pricePerSession ? Number(pricePerSession) : null,
-      }
-    })
+    return psychologists.map(mapPsychologist)
   },
   { isPublic: true }
 )
@@ -49,28 +86,11 @@ export const getPsychologistById = createSafeAction(
 
     if (!psych) return null
 
-    const { pricePerSession, ...rest } = psych
-    const rawProfile = psych.user?.profiles || null
-    const profile = rawProfile
-      ? {
-          id: rawProfile.id,
-          user_id: rawProfile.user_id,
-          full_name: rawProfile.fullName,
-          avatar_url: rawProfile.avatarUrl,
-          role: rawProfile.role,
-          birth_date: rawProfile.birth_date ? (rawProfile.birth_date as Date).toISOString() : null,
-          document: rawProfile.document,
-          phone: rawProfile.phone,
-          created_at: (rawProfile.createdAt as Date).toISOString(),
-          updated_at: (rawProfile.updatedAt as Date).toISOString(),
-        }
-      : null
-
     return {
-      ...rest,
-      profile,
-      price_per_session: pricePerSession ? Number(pricePerSession) : null,
-      acceptedInsurances: psych.acceptedInsurances.map((i) => i.healthInsurance).filter(Boolean),
+      ...mapPsychologist(psych),
+      acceptedInsurances: psych.acceptedInsurances
+        .map((i: any) => i.healthInsurance)
+        .filter(Boolean),
     }
   },
   { isPublic: true }
@@ -146,14 +166,7 @@ export const searchPsychologists = createSafeAction(
       take: pageSize,
     })
 
-    return psychologists.map((psych) => {
-      const { pricePerSession, ...rest } = psych
-      return {
-        ...rest,
-        profile: psych.user?.profiles || null,
-        price_per_session: pricePerSession ? Number(pricePerSession) : null,
-      }
-    })
+    return psychologists.map(mapPsychologist)
   },
   { isPublic: true }
 )

@@ -241,10 +241,10 @@ export function PsychologistOnboardingWizard() {
           <div className="flex-1 mr-6">
             <Progress
               value={(step / 6) * 100}
-              className="h-2 transition-all duration-700 bg-slate-100 [&>div]:bg-blue-600 rounded-full"
+              className="h-2 transition-all duration-700 bg-slate-100 [&>div]:bg-primary rounded-full"
             />
           </div>
-          <span className="text-[10px] font-black text-blue-700 bg-blue-100/50 px-3 py-1.5 rounded-full uppercase tracking-tighter ring-1 ring-blue-500/10">
+          <span className="text-[10px] font-black text-primary bg-sentirz-teal-pastel px-3 py-1.5 rounded-full uppercase tracking-tighter ring-1 ring-primary/10">
             Passo {step}/6
           </span>
         </div>
@@ -298,9 +298,9 @@ export function PsychologistOnboardingWizard() {
                       />
                     </div>
 
-                    <div className="flex bg-blue-50/50 p-4 rounded-2xl items-start gap-3 border border-blue-100/50">
-                      <Lock className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
-                      <p className="text-xs text-blue-700/80 font-medium leading-relaxed">
+                    <div className="flex bg-sentirz-teal-pastel p-4 rounded-2xl items-start gap-3 border border-primary/10">
+                      <Lock className="h-5 w-5 text-primary/60 shrink-0 mt-0.5" />
+                      <p className="text-xs text-primary/80 font-medium leading-relaxed">
                         Estas informações são confidenciais e usadas exclusivamente para a criação
                         do seu perfil na plataforma caso aprovado.
                       </p>
@@ -330,9 +330,9 @@ export function PsychologistOnboardingWizard() {
                       className={cn(
                         'border-2 border-dashed rounded-3xl p-6 text-center transition-all relative overflow-hidden flex flex-col justify-center h-[200px]',
                         docUploadStatus === 'idle'
-                          ? 'border-slate-300 hover:border-blue-500 hover:bg-blue-50 cursor-pointer'
+                          ? 'border-slate-300 hover:border-primary hover:bg-sentirz-teal-pastel cursor-pointer'
                           : docUploadStatus === 'analyzing'
-                            ? 'border-blue-400 bg-blue-50/50'
+                            ? 'border-primary/40 bg-sentirz-teal-pastel'
                             : 'border-emerald-500 bg-emerald-50'
                       )}
                     >
@@ -347,7 +347,7 @@ export function PsychologistOnboardingWizard() {
 
                       {docUploadStatus === 'idle' && (
                         <div className="flex flex-col items-center justify-center gap-2">
-                          <UploadCloud className="h-8 w-8 text-blue-600 mb-2" />
+                          <UploadCloud className="h-8 w-8 text-primary mb-2" />
                           <p className="font-bold text-slate-700 text-sm">Foto do CRP</p>
                           <p className="text-[10px] text-slate-500">Versão física ou e-CIP</p>
                         </div>
@@ -355,7 +355,7 @@ export function PsychologistOnboardingWizard() {
 
                       {docUploadStatus === 'analyzing' && (
                         <div className="flex flex-col items-center justify-center gap-3">
-                          <Search className="h-6 w-6 text-blue-600 animate-pulse" />
+                          <Search className="h-6 w-6 text-primary animate-pulse" />
                           <p className="font-bold text-slate-800 text-sm">Analisando CRP...</p>
                         </div>
                       )}
@@ -422,7 +422,7 @@ export function PsychologistOnboardingWizard() {
                       id="terms"
                       checked={formData.acceptTerms}
                       onChange={(e) => updateField('acceptTerms', e.target.checked)}
-                      className="mt-1 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-600 transition-all cursor-pointer"
+                      className="mt-1 h-5 w-5 rounded border-slate-300 text-primary focus:ring-primary transition-all cursor-pointer"
                     />
                     <label
                       htmlFor="terms"
@@ -449,8 +449,8 @@ export function PsychologistOnboardingWizard() {
                         className={cn(
                           'flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all duration-300 group',
                           formData.specialties.includes(spec.label)
-                            ? 'border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-600/20 scale-[0.98]'
-                            : 'border-slate-100 bg-white hover:border-blue-300 hover:shadow-md'
+                            ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20 scale-[0.98]'
+                            : 'border-slate-100 bg-white hover:border-primary/30 hover:shadow-md'
                         )}
                       >
                         <div
@@ -458,7 +458,7 @@ export function PsychologistOnboardingWizard() {
                             'p-2 rounded-lg transition-all',
                             formData.specialties.includes(spec.label)
                               ? 'bg-white/20'
-                              : 'bg-slate-50 group-hover:bg-blue-50 group-hover:text-blue-600'
+                              : 'bg-slate-50 group-hover:bg-sentirz-teal-pastel group-hover:text-primary'
                           )}
                         >
                           <spec.icon className="h-5 w-5" />
@@ -490,8 +490,8 @@ export function PsychologistOnboardingWizard() {
                       className={cn(
                         'flex flex-col items-start p-5 rounded-2xl border-2 text-left transition-all w-full relative group',
                         formData.approaches.includes(approach.label)
-                          ? 'border-blue-600 bg-blue-50/40 ring-4 ring-blue-600/10'
-                          : 'border-slate-100 bg-white hover:border-blue-200'
+                          ? 'border-primary bg-sentirz-teal-pastel ring-4 ring-primary/10'
+                          : 'border-slate-100 bg-white hover:border-primary/20'
                       )}
                     >
                       <div className="flex justify-between w-full mb-2">
@@ -500,7 +500,7 @@ export function PsychologistOnboardingWizard() {
                         </span>
                         {formData.approaches.includes(approach.label) && (
                           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                            <CheckCircle2 className="h-5 w-5 text-blue-600" />
+                            <CheckCircle2 className="h-5 w-5 text-primary" />
                           </motion.div>
                         )}
                       </div>
@@ -524,7 +524,7 @@ export function PsychologistOnboardingWizard() {
                       placeholder="Conte um pouco sobre sua trajetória clínica, valores e como você conduz o processo terapêutico..."
                       value={formData.bio}
                       onChange={(e) => updateField('bio', e.target.value)}
-                      className="min-h-[180px] text-base leading-relaxed resize-none p-5 rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white shadow-sm focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                      className="min-h-[180px] text-base leading-relaxed resize-none p-5 rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white shadow-sm focus:ring-primary/20 focus:border-primary transition-all"
                     />
                     <div className="flex justify-between items-center px-2 pt-1">
                       <span className="text-[10px] uppercase font-black text-slate-400">
@@ -533,7 +533,7 @@ export function PsychologistOnboardingWizard() {
                       <span
                         className={cn(
                           'text-xs font-bold transition-colors',
-                          formData.bio.length < 50 ? 'text-amber-500' : 'text-blue-600'
+                          formData.bio.length < 50 ? 'text-amber-500' : 'text-primary'
                         )}
                       >
                         {formData.bio.length} chars
@@ -546,7 +546,7 @@ export function PsychologistOnboardingWizard() {
                       htmlFor="video"
                       className="text-sm font-bold text-slate-700 flex items-center gap-2"
                     >
-                      <Video className="h-4 w-4 text-blue-500" /> Pitch de Vídeo (Opcional)
+                      <Video className="h-4 w-4 text-primary" /> Pitch de Vídeo (Opcional)
                     </Label>
                     <Input
                       id="video"
@@ -581,7 +581,7 @@ export function PsychologistOnboardingWizard() {
 
                   <div className="max-w-[280px] mx-auto space-y-5">
                     <div className="relative group">
-                      <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 font-black text-2xl group-focus-within:text-blue-600 transition-colors">
+                      <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 font-black text-2xl group-focus-within:text-primary transition-colors">
                         R$
                       </span>
                       <Input
@@ -590,16 +590,16 @@ export function PsychologistOnboardingWizard() {
                         placeholder="0,00"
                         value={formData.price}
                         onChange={(e) => updateField('price', e.target.value)}
-                        className="h-24 pl-16 pr-6 text-4xl font-black text-center border-2 border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 rounded-[2rem] transition-all bg-white shadow-sm"
+                        className="h-24 pl-16 pr-6 text-4xl font-black text-center border-2 border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 rounded-[2rem] transition-all bg-white shadow-sm"
                       />
                     </div>
 
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="bg-blue-50/80 p-5 rounded-3xl flex flex-col items-center border border-blue-100/50 shadow-sm"
+                      className="bg-sentirz-teal-pastel p-5 rounded-3xl flex flex-col items-center border border-primary/10 shadow-sm"
                     >
-                      <div className="flex items-center gap-2 text-blue-600 mb-2">
+                      <div className="flex items-center gap-2 text-primary mb-2">
                         <ShieldCheck className="h-4 w-4" />
                         <span className="text-[10px] font-black uppercase tracking-widest">
                           Proteção Financeira
@@ -641,7 +641,7 @@ export function PsychologistOnboardingWizard() {
               'px-8 h-14 text-sm font-black shadow-xl transition-all duration-300 rounded-2xl hover:scale-[1.03] active:scale-[0.97]',
               step === 6
                 ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/25 text-white ring-2 ring-emerald-600/20 ring-offset-2'
-                : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/25 text-white'
+                : 'bg-primary hover:bg-primary/90 shadow-primary/20 text-white'
             )}
             disabled={!isStepValid() || isSubmitting}
           >
