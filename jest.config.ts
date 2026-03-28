@@ -14,9 +14,12 @@ const config: Config = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    uncrypto: '<rootDir>/node_modules/uncrypto/dist/crypto.node.cjs',
   },
   testPathIgnorePatterns: ['<rootDir>/e2e/', '<rootDir>/node_modules/'],
-  transformIgnorePatterns: ['node_modules/(?!(uncrypto)/)'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(uncrypto|@upstash|@lucia-auth|framer-motion|@marsidev/react-turnstile)/)',
+  ],
   collectCoverageFrom: [
     'src/lib/**/*.{ts,tsx}',
     '!src/lib/**/*.d.ts',

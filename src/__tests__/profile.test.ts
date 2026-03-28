@@ -15,8 +15,15 @@ jest.mock('@/lib/prisma', () => ({
     },
     profile: {
       create: jest.fn(),
+      upsert: jest.fn(),
+      update: jest.fn(),
     },
+    $transaction: jest.fn((calls) => Promise.all(calls)),
   },
+}))
+
+jest.mock('next/cache', () => ({
+  revalidatePath: jest.fn(),
 }))
 
 jest.mock('react', () => ({
@@ -78,7 +85,7 @@ describe('profile actions', () => {
 
       const newProfile = { id: 'new-prof', role: 'PATIENT', fullName: 'Test User' }
       ;(prisma.user.upsert as jest.Mock).mockResolvedValue({ id: 'user-1' })
-      ;(prisma.profile.create as jest.Mock).mockResolvedValue(newProfile)
+      ;(prisma.profile.upsert as jest.Mock).mockResolvedValue(newProfile)
       ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'user-1', role: 'PATIENT' })
 
       const result = await getCurrentUserProfile()
@@ -91,10 +98,11 @@ describe('profile actions', () => {
         })
       )
 
-      // Prisma create should have been called for the profile
-      expect(prisma.profile.create).toHaveBeenCalledWith(
+      // Prisma upsert should have been called for the profile
+      expect(prisma.profile.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({
+          where: { user_id: mockUser.id },
+          create: expect.objectContaining({
             user_id: mockUser.id,
             fullName: 'Test User',
             role: 'PATIENT',
@@ -126,23 +134,23 @@ describe('profile actions', () => {
 
   describe('updateUserProfile', () => {
     it('should return error if not authenticated', async () => {
-      mockSupabase.auth.getUser.mockResolvedValueOnce({ data: { user: null }, error: null })
+      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: null }, error: null })
       const result = await updateUserProfile({ fullName: 'New Name' })
       expect(result.success).toBe(false)
       expect(result.success === false && result.error).toBeTruthy()
     })
 
     it('should update profile and return success', async () => {
-      mockSupabase.auth.getUser.mockResolvedValueOnce({ data: { user: mockUser }, error: null })
-      mockSupabase.eq.mockResolvedValueOnce({ error: null }) // final update step
+      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: mockUser }, error: null })
+      mockSupabase.eq.mockResolvedValue({ error: null }) // final update step
 
       const result = await updateUserProfile({ fullName: 'New Name' })
       expect(result.success).toBe(true)
     })
 
     it('should return error on DB failure', async () => {
-      mockSupabase.auth.getUser.mockResolvedValueOnce({ data: { user: mockUser }, error: null })
-      mockSupabase.eq.mockResolvedValueOnce({ error: { message: 'DB Issue' } })
+      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: mockUser }, error: null })
+      ;(prisma.$transaction as jest.Mock).mockRejectedValueOnce(new Error('DB Issue'))
 
       const result = await updateUserProfile({ fullName: 'New Name' })
       expect(result.success).toBe(false)

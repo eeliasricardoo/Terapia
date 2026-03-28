@@ -23,7 +23,7 @@ jest.mock('@/lib/prisma', () => ({
     appointment: {
       findMany: jest.fn(),
       findFirst: jest.fn(),
-      create: jest.fn(),
+      create: jest.fn().mockResolvedValue({ id: 'appt-123' }),
       update: jest.fn(),
       delete: jest.fn(),
       findUnique: jest.fn(),
@@ -31,6 +31,11 @@ jest.mock('@/lib/prisma', () => ({
     coupon: { findFirst: jest.fn(), update: jest.fn() },
     user: { findUnique: jest.fn(), update: jest.fn() },
     notification: { create: jest.fn() },
+    evolution: { findFirst: jest.fn() },
+    $transaction: jest.fn((callback) => {
+      if (typeof callback === 'function') return callback(require('@/lib/prisma').prisma)
+      return Promise.all(callback)
+    }),
   },
 }))
 
@@ -42,6 +47,7 @@ jest.mock('@/lib/security', () => ({
   encryptData: jest.fn((data) => `encrypted-val-${data}`),
   decryptData: jest.fn((data) => data.replace('encrypted-val-', '')),
   isValidUUID: jest.fn(() => true),
+  checkAppointmentRateLimit: jest.fn().mockResolvedValue({ success: true }),
 }))
 
 jest.mock('next/cache', () => ({
@@ -81,9 +87,10 @@ describe('Deep Resilience Tests', () => {
         price: 150,
         paymentMethod: 'Stripe',
         stripePaymentIntentId: 'pi_test',
-        scheduledAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        // Make it 25h away and owned by the psychologist to ensure refund eligibility
+        scheduledAt: new Date(Date.now() + 25 * 60 * 60 * 1000),
         status: 'SCHEDULED',
-        psychologist: { userId: '6ba7b810-9dad-11d1-80b4-00c04fd43222' },
+        psychologist: { userId: MOCK_USER.id }, // Make user the owner or psych
       })
 
       // Simulate Stripe failure
@@ -138,8 +145,9 @@ describe('Deep Resilience Tests', () => {
       realLogger.info('Testing LGPD mask', sensitiveObj)
 
       const lastCallArgs = JSON.parse(spy.mock.calls[0][0])
-      expect(lastCallArgs.data.publicSummary).toBe('[MASCARADO PELO LOGGER (LGPD)]')
-      expect(lastCallArgs.data.patient.document).toBe('[MASCARADO PELO LOGGER (LGPD)]')
+      // Logger wraps args in an array called 'data' in production/JSON mode
+      expect(lastCallArgs.data[0].publicSummary).toBe('[MASCARADO PELO LOGGER (LGPD)]')
+      expect(lastCallArgs.data[0].patient.document).toBe('[MASCARADO PELO LOGGER (LGPD)]')
 
       Object.defineProperty(process.env, 'NODE_ENV', { value: originalEnv })
       spy.mockRestore()

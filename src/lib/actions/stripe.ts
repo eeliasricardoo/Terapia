@@ -85,8 +85,14 @@ export const createStripeCheckoutSession = createSafeAction(
 
     const psychologistName = psych.user.profiles?.fullName || psych.user.name || 'Psicólogo'
 
-    // 2. Skip Stripe if: session is free (coupon/zero price) OR psychologist hasn't set up Stripe
-    const skipStripe = finalPrice <= 0 || !psych.stripeAccountId || !psych.stripeOnboardingComplete
+    // 2. Decide if we skip Stripe or use it
+    const isFreeSession = finalPrice <= 0
+    const skipStripe = isFreeSession
+
+    if (!isFreeSession && (!psych.stripeAccountId || !psych.stripeOnboardingComplete)) {
+      throw new Error('Este psicólogo ainda não completou a configuração de pagamentos.')
+    }
+
     if (skipStripe) {
       const result = await prisma.$transaction(async (tx) => {
         const { hasConflict, type } = await checkAppointmentConflict(

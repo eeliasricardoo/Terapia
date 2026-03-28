@@ -17,6 +17,13 @@ jest.mock('@/lib/supabase/auth', () => ({
   },
 }))
 
+jest.mock('@marsidev/react-turnstile', () => ({
+  Turnstile: ({ onSuccess }: any) => {
+    // Automatically trigger success for tests if needed, or just render nothing
+    return <div data-testid="turnstile-mock" />
+  },
+}))
+
 describe('Registration Page', () => {
   const mockPush = jest.fn()
 
