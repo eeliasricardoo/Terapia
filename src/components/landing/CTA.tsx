@@ -13,11 +13,11 @@ const fadeIn: Variants = {
 
 export function CTA() {
   return (
-    <section className="w-full py-32 md:py-40 bg-slate-50 relative overflow-hidden">
+    <section className="w-full py-32 md:py-40 bg-background relative overflow-hidden">
       {/* Decorative organic dots */}
-      <div className="absolute top-16 left-[10%] w-2 h-2 rounded-full bg-blue-200/60" />
-      <div className="absolute bottom-20 right-[15%] w-3 h-3 rounded-full bg-indigo-200/50" />
-      <div className="absolute top-1/3 right-[8%] w-2 h-2 rounded-full bg-amber-200/40" />
+      <div className="absolute top-16 left-[10%] w-2 h-2 rounded-full bg-sentirz-teal/60" />
+      <div className="absolute bottom-20 right-[15%] w-3 h-3 rounded-full bg-sentirz-green/50" />
+      <div className="absolute top-1/3 right-[8%] w-2 h-2 rounded-full bg-sentirz-orange/40" />
 
       <div className="container px-6 relative z-10 mx-auto max-w-5xl">
         <motion.div
@@ -29,7 +29,7 @@ export function CTA() {
           {/* Background card */}
           <motion.div
             variants={fadeIn}
-            className="relative bg-white border border-slate-100 rounded-[2.5rem] p-12 md:p-20 overflow-hidden shadow-sm"
+            className="relative bg-sentirz-teal-pastel border border-sentirz-teal/10 rounded-[2.5rem] p-12 md:p-20 overflow-hidden shadow-sm"
           >
             {/* Illustration decorations */}
             <div className="absolute -right-10 -bottom-10 md:right-8 md:bottom-8 w-[280px] md:w-[360px] opacity-[0.08] pointer-events-none">
@@ -44,21 +44,21 @@ export function CTA() {
             </div>
 
             {/* Subtle gradient overlay */}
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-50/30 via-transparent to-indigo-50/20 pointer-events-none rounded-[2.5rem]" />
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-sentirz-teal/5 via-transparent to-sentirz-green/10 pointer-events-none rounded-[2.5rem]" />
 
             <div className="relative z-10 space-y-8 max-w-2xl">
               <div className="space-y-6">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em]">
+                <p className="text-xs font-semibold text-primary uppercase tracking-[0.2em]">
                   Comece sua jornada
                 </p>
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-tight font-outfit">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-tight font-outfit">
                   Pronto para dar o
                   <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 relative">
+                  <span className="text-sentirz-gradient relative">
                     primeiro passo?
                     {/* Decorative underline */}
                     <svg
-                      className="absolute -bottom-2 left-0 w-full h-3 text-blue-200/60"
+                      className="absolute -bottom-2 left-0 w-full h-3 text-secondary/60"
                       viewBox="0 0 200 12"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
@@ -73,8 +73,8 @@ export function CTA() {
                     </svg>
                   </span>
                 </h2>
-                <p className="text-lg text-slate-500 max-w-md leading-relaxed">
-                  Cuidar da mente não precisa ser um luxo. Descubra uma terapia profunda e
+                <p className="text-lg text-foreground/80 max-w-md leading-relaxed">
+                  Cuidar da mente não precisa ser um luxo. Descubra uma terapia profunda, humana e
                   acessível.
                 </p>
               </div>
@@ -83,7 +83,7 @@ export function CTA() {
                 <Button
                   asChild
                   size="lg"
-                  className="h-14 px-10 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-lg shadow-slate-900/10 transition-all hover:-translate-y-0.5 group"
+                  className="h-14 px-10 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg shadow-primary/10 transition-all hover:-translate-y-0.5 group border-none"
                 >
                   <Link href="/busca" className="flex items-center gap-2">
                     Encontrar Meu Psicólogo
@@ -94,7 +94,7 @@ export function CTA() {
                   asChild
                   variant="ghost"
                   size="lg"
-                  className="h-14 px-10 text-base font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-full transition-all"
+                  className="h-14 px-10 text-base font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 rounded-full transition-all"
                 >
                   <Link href="/cadastro?role=psychologist">Sou profissional</Link>
                 </Button>

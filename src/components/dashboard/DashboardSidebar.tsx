@@ -1,6 +1,5 @@
 'use client'
 import { logger } from '@/lib/utils/logger'
-
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -27,6 +26,7 @@ import {
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/lib/supabase/types'
+import { Logo } from '@/components/ui/Logo'
 
 const PATIENT_MENU = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
@@ -43,17 +43,11 @@ const PSYCHOLOGIST_MENU = [
   { href: '/dashboard/agenda', label: 'Minha Agenda', icon: Calendar },
   { href: '/dashboard/pacientes', label: 'Meus Pacientes', icon: Users },
   { href: '/dashboard/mensagens', label: 'Mensagens', icon: MessageSquare },
-  // Gestão
   { href: '/dashboard/configuracoes', label: 'Serviços & Tarifas', icon: DollarSign },
   { href: '/dashboard/financeiro', label: 'Financeiro', icon: BarChart3 },
   { href: '/dashboard/perfil', label: 'Meu Perfil', icon: User },
   { href: '/dashboard/ajustes', label: 'Ajustes', icon: Settings },
 ]
-
-interface DashboardSidebarProps {
-  className?: string
-  initialProfile?: Profile | null
-}
 
 const ADMIN_MENU = [
   { href: '/dashboard', label: 'Visão Geral', icon: LayoutGrid },
@@ -72,12 +66,16 @@ const COMPANY_MENU = [
   { href: '/dashboard/ajustes', label: 'Configurações', icon: Settings },
 ]
 
+interface DashboardSidebarProps {
+  className?: string
+  initialProfile?: Profile | null
+}
+
 export function DashboardSidebar({ className, initialProfile }: DashboardSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
 
-  // Set initial state from server-fetched profile to avoid CSR loading flash
   const [user, setUser] = useState<{
     name: string
     email: string
@@ -106,7 +104,6 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
 
   useEffect(() => {
     let channel: any
-
     async function loadUser() {
       try {
         const {
@@ -122,7 +119,6 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
           const metaRole = authUser.user_metadata?.role as string | undefined
           const finalRole =
             profile?.role || (metaRole === 'PSYCHOLOGIST' ? 'PSYCHOLOGIST' : 'PATIENT')
-
           const displayRole =
             finalRole === 'ADMIN'
               ? 'Administrador'
@@ -148,7 +144,6 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
             })
           }
 
-          // Realtime subscription
           channel = supabase
             .channel(`sidebar-profile-${authUser.id}`)
             .on(
@@ -161,14 +156,15 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
               },
               (payload) => {
                 const newProfile = payload.new as any
-                setUser((prev) => {
-                  if (!prev) return null
-                  return {
-                    ...prev,
-                    name: newProfile.full_name || prev.name,
-                    avatar_url: newProfile.avatar_url,
-                  }
-                })
+                setUser((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        name: newProfile.full_name || prev.name,
+                        avatar_url: newProfile.avatar_url,
+                      }
+                    : null
+                )
               }
             )
             .subscribe()
@@ -180,21 +176,18 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
       }
     }
     loadUser()
-
     return () => {
       if (channel) supabase.removeChannel(channel)
     }
-  }, [supabase])
+  }, [supabase, initialProfile])
 
-  const getInitials = (name: string) => {
-    return name
+  const getInitials = (name: string) =>
+    name
       .split(' ')
       .map((n) => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2)
-  }
-
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.refresh()
@@ -209,23 +202,18 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
           className
         )}
       >
-        <div className="h-20 px-6 border-b flex items-center gap-3 animate-pulse">
-          <div className="h-10 w-10 bg-slate-200 rounded-full"></div>
-          <div className="space-y-2 flex-1">
-            <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-            <div className="h-3 bg-slate-200 rounded w-1/2"></div>
-          </div>
+        <div className="h-16 px-6 border-b flex items-center animate-pulse">
+          <div className="h-8 bg-slate-100 w-32 rounded"></div>
         </div>
         <div className="p-4 space-y-4">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-10 bg-slate-100 rounded-lg animate-pulse"></div>
+            <div key={i} className="h-10 bg-slate-50 rounded-lg animate-pulse"></div>
           ))}
         </div>
       </aside>
     )
   }
 
-  // Special case: if user is ADMIN, they shouldn't see regular features.
   const isAdmin = user?.rawRole === 'ADMIN'
   const menuItems = isAdmin
     ? ADMIN_MENU
@@ -242,12 +230,15 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
         className
       )}
       role="navigation"
-      aria-label="Mind Cares"
+      aria-label="Sentirz"
     >
-      {/* Brand Logo & Profile Container */}
       <div className="flex flex-col border-b border-slate-100">
-        {/* User Profile */}
-        <div className="flex items-center gap-3 h-20 px-6 bg-slate-50/50">
+        <div className="h-16 px-6 flex items-center border-b border-slate-100/50 bg-slate-50/30">
+          <Link href="/dashboard">
+            <Logo size="sm" />
+          </Link>
+        </div>
+        <div className="flex items-center gap-3 h-20 px-6">
           <Avatar className="h-10 w-10 border border-slate-200">
             <AvatarImage src={user?.avatar_url || '/avatars/user.png'} />
             <AvatarFallback className="bg-slate-100 text-slate-600 font-medium">
@@ -263,7 +254,6 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 space-y-1 p-4" aria-label="Navegação do dashboard">
         {menuItems.map((item) => {
           const isActive = pathname === item.href
@@ -294,7 +284,6 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
         })}
       </nav>
 
-      {/* Logout */}
       <div className="p-4 border-t border-slate-100">
         <Button
           variant="ghost"

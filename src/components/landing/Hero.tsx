@@ -7,17 +7,16 @@ import { RoleSelectionDialog } from '@/components/auth/RoleSelectionDialog'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 
+import { Logo } from '@/components/ui/Logo'
+import { BRAND_NAME, BRAND_SLOGAN } from '@/lib/constants/branding'
+
 export function Hero() {
   return (
-    <section className="w-full min-h-[92vh] flex items-center bg-white relative overflow-hidden">
-      {/* Subtle background accents */}
-      <div className="absolute top-20 left-10 w-64 h-64 bg-blue-50/60 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-20 right-20 w-48 h-48 bg-indigo-50/50 rounded-full blur-[80px] pointer-events-none" />
-
-      {/* Decorative organic dots */}
-      <div className="absolute top-1/4 right-[15%] w-3 h-3 rounded-full bg-blue-200/60" />
-      <div className="absolute top-[60%] left-[8%] w-2 h-2 rounded-full bg-indigo-200/80" />
-      <div className="absolute bottom-[30%] right-[10%] w-2.5 h-2.5 rounded-full bg-amber-200/60" />
+    <section className="w-full min-h-[92vh] flex items-center bg-background relative overflow-hidden">
+      {/* Dynamic background accents - Sentirz Style */}
+      <div className="absolute top-20 left-10 w-[600px] h-[600px] bg-sentirz-teal/10 rounded-full blur-[120px] pointer-events-none animate-blob" />
+      <div className="absolute bottom-20 right-20 w-[500px] h-[500px] bg-sentirz-green/10 rounded-full blur-[100px] pointer-events-none animate-blob animation-delay-2000" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-sentirz-orange/5 rounded-full blur-[100px] pointer-events-none animate-blob animation-delay-4000" />
 
       <div className="container px-6 relative z-10 mx-auto max-w-7xl">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center">
@@ -28,11 +27,11 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full border border-slate-200 bg-white shadow-sm"
+              className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full border border-sentirz-teal/20 bg-sentirz-teal-pastel shadow-sm"
             >
-              <img src="/logo.png" alt="" className="h-4 w-4" />
-              <span className="text-xs font-semibold text-slate-600 tracking-wide uppercase">
-                Mind Cares — Sua mente em boas mãos
+              <Logo size="sm" showText={false} iconOnly />
+              <span className="text-xs font-bold text-primary tracking-widest uppercase">
+                {BRAND_NAME} — {BRAND_SLOGAN}
               </span>
             </motion.div>
 
@@ -43,13 +42,13 @@ export function Hero() {
               transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="space-y-6"
             >
-              <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[0.95] text-slate-900 font-outfit">
-                Encontre seu <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 relative">
-                  equilíbrio.
+              <h1 className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tight leading-[0.9] text-foreground font-outfit">
+                Sinta a sua <br />
+                <span className="text-sentirz-gradient relative">
+                  evolução.
                   {/* Decorative underline */}
                   <svg
-                    className="absolute -bottom-2 left-0 w-full h-3 text-blue-200/60"
+                    className="absolute -bottom-2 left-0 w-full h-3 text-secondary/60"
                     viewBox="0 0 200 12"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -58,15 +57,16 @@ export function Hero() {
                     <path
                       d="M2 8C30 3 60 2 100 6C140 10 170 4 198 7"
                       stroke="currentColor"
-                      strokeWidth="3"
+                      strokeWidth="4"
                       strokeLinecap="round"
                     />
                   </svg>
                 </span>
               </h1>
-              <p className="text-lg md:text-xl text-slate-500 max-w-lg leading-relaxed font-light">
-                Conectamos você a psicólogos acolhedores para sessões online seguras. Cuidar da
-                mente nunca foi tão simples.
+              <p className="text-lg md:text-xl text-foreground/80 max-w-lg leading-relaxed font-medium">
+                Conectamos você aos melhores psicólogos para uma jornada de autodescoberta segura,
+                humana e moderna. Transforme sua mente com a{' '}
+                <span className="text-foreground font-bold">Sentirz</span>.
               </p>
             </motion.div>
 
@@ -75,23 +75,23 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4"
+              className="flex flex-col sm:flex-row gap-5"
             >
               <Button
                 asChild
                 size="lg"
-                className="h-14 px-10 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-lg shadow-slate-900/10 transition-all hover:-translate-y-0.5 group"
+                className="h-16 px-12 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-2xl shadow-primary/20 transition-all hover:-translate-y-1 group border-none"
               >
                 <Link href="/busca" className="flex items-center gap-2">
-                  Começar agora
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  Começar Jornada
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
               <RoleSelectionDialog mode="register">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="lg"
-                  className="h-14 px-10 text-base font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-full transition-all"
+                  className="h-16 px-12 text-base font-bold border-2 border-primary/30 hover:bg-primary/5 rounded-full transition-all text-primary"
                 >
                   Sou Psicólogo(a)
                 </Button>
@@ -103,18 +103,18 @@ export function Hero() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="flex flex-wrap items-center justify-center lg:justify-start gap-6 text-sm text-slate-400 pt-4"
+              className="flex flex-wrap items-center justify-center lg:justify-start gap-8 text-sm text-foreground/60 pt-4"
             >
-              <span className="flex items-center gap-1.5">
-                <span className="font-semibold text-slate-600">500+</span> profissionais
+              <span className="flex items-center gap-2">
+                <span className="font-extrabold text-foreground text-base">500+</span> profissionais
               </span>
-              <span className="w-px h-4 bg-slate-200 hidden sm:block" />
-              <span className="flex items-center gap-1.5">
-                <span className="font-semibold text-slate-600">4.9</span> avaliação média
+              <span className="w-px h-5 bg-border hidden sm:block" />
+              <span className="flex items-center gap-2">
+                <span className="font-extrabold text-foreground text-base">4.9</span> estrelas
               </span>
-              <span className="w-px h-4 bg-slate-200 hidden sm:block" />
-              <span className="flex items-center gap-1.5">
-                <span className="font-semibold text-slate-600">2k+</span> vidas impactadas
+              <span className="w-px h-5 bg-border hidden sm:block" />
+              <span className="flex items-center gap-2">
+                <span className="font-extrabold text-foreground text-base">2k+</span> evoluções
               </span>
             </motion.div>
           </div>
@@ -140,19 +140,20 @@ export function Hero() {
               />
 
               {/* Floating accent card */}
+              {/* Floating accent card 1 - Session */}
               <motion.div
                 animate={{ y: [-8, 8, -8] }}
                 transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -left-6 bottom-1/4 bg-white/95 backdrop-blur-xl border border-slate-100 px-5 py-4 rounded-2xl shadow-xl z-20"
+                className="absolute -left-6 bottom-1/4 bg-sentirz-green-pastel backdrop-blur-xl border border-sentirz-green/20 px-5 py-4 rounded-2xl shadow-xl z-20"
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                  <div className="h-10 w-10 rounded-xl bg-sentirz-green/20 flex items-center justify-center">
                     <svg
-                      className="h-5 w-5 text-emerald-600"
+                      className="h-5 w-5 text-sentirz-green"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2"
+                      strokeWidth="2.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     >
@@ -161,28 +162,28 @@ export function Hero() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    <p className="text-[10px] font-bold text-sentirz-green/60 uppercase tracking-widest">
                       Sessão
                     </p>
-                    <p className="text-sm font-bold text-slate-900">100% Online</p>
+                    <p className="text-sm font-black text-foreground">100% Online</p>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Floating accent card 2 */}
+              {/* Floating accent card 2 - Sigilo */}
               <motion.div
                 animate={{ y: [8, -8, 8] }}
                 transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-                className="absolute -right-4 top-1/4 bg-slate-900/95 backdrop-blur-xl border border-white/10 px-5 py-4 rounded-2xl shadow-xl z-20"
+                className="absolute -right-4 top-1/4 bg-sentirz-teal-pastel backdrop-blur-xl border border-sentirz-teal/20 px-5 py-4 rounded-2xl shadow-xl z-20"
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
+                  <div className="h-10 w-10 rounded-xl bg-sentirz-teal/20 flex items-center justify-center">
                     <svg
-                      className="h-5 w-5 text-blue-400"
+                      className="h-5 w-5 text-sentirz-teal"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2"
+                      strokeWidth="2.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     >
@@ -190,10 +191,10 @@ export function Hero() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    <p className="text-[10px] font-bold text-sentirz-teal/60 uppercase tracking-widest">
                       Sigilo
                     </p>
-                    <p className="text-sm font-bold text-white">Garantido</p>
+                    <p className="text-sm font-black text-foreground">Garantido</p>
                   </div>
                 </div>
               </motion.div>
