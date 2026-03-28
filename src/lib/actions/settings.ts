@@ -8,6 +8,8 @@ import { createSafeAction } from '@/lib/safe-action'
 
 import { NotificationSettingsSchema, NotificationSettings } from '@/lib/validations/settings'
 
+export type { NotificationSettings }
+
 /**
  * Fetches notification settings for the current authenticated user.
  */

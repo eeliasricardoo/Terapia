@@ -60,7 +60,7 @@ export function ApprovalList({ initialPending }: { initialPending: PendingPsycho
 
   const handleApprove = async (id: string, name: string) => {
     setLoadingId(id)
-    const result = await verifyPsychologist(id)
+    const result = await verifyPsychologist({ psychologistId: id })
 
     if (result.success) {
       toast.success(`Psicólogo ${name} aprovado com sucesso!`)
@@ -79,7 +79,7 @@ export function ApprovalList({ initialPending }: { initialPending: PendingPsycho
     }
 
     setLoadingId(id)
-    const result = await rejectPsychologist(id, rejectReason)
+    const result = await rejectPsychologist({ psychologistId: id, reason: rejectReason })
 
     if (result.success) {
       toast.success(`Cadastro de ${name} rejeitado.`)

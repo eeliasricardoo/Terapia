@@ -81,9 +81,9 @@ export function PatientProfilePage({ patient }: Props) {
                     className="bg-blue-600 hover:bg-blue-700 text-white gap-2 ml-auto sm:ml-0"
                     onClick={async () => {
                       const { startOrGetConversation } = await import('@/lib/actions/messages')
-                      const convId = await startOrGetConversation(patient.userId)
-                      if (convId) {
-                        window.location.href = `/dashboard/mensagens?id=${convId}`
+                      const res = await startOrGetConversation({ otherUserId: patient.userId })
+                      if (res.success && res.data) {
+                        window.location.href = `/dashboard/mensagens?id=${res.data}`
                       }
                     }}
                   >

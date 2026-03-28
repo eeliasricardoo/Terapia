@@ -376,7 +376,7 @@ export const createHealthInsurance = createSafeAction(
       newData: { name: data.name },
     })
     revalidatePath('/dashboard/admin/planos')
-    return { success: true, data: insurance }
+    return insurance
   },
   { requiredRole: 'ADMIN' }
 )
@@ -389,7 +389,7 @@ export const updateHealthInsurance = createSafeAction(
       data: { name: data.name },
     })
     revalidatePath('/dashboard/admin/planos')
-    return { success: true, data: insurance }
+    return insurance
   },
   { requiredRole: 'ADMIN' }
 )

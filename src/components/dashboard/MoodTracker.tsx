@@ -30,9 +30,9 @@ export function MoodTracker({ monthlyProgress }: MoodTrackerProps) {
 
   useEffect(() => {
     async function loadMood() {
-      const todayEntry = await getTodayMood()
-      if (todayEntry) {
-        setSelectedMood(todayEntry.mood)
+      const res = await getTodayMood()
+      if (res.success && res.data) {
+        setSelectedMood(res.data.mood)
       }
       setIsLoading(false)
     }
@@ -44,7 +44,7 @@ export function MoodTracker({ monthlyProgress }: MoodTrackerProps) {
     setSelectedMood(value)
     setIsSaving(true)
 
-    const result = await saveQuickMood(value)
+    const result = await saveQuickMood({ mood: value })
 
     if (result.success) {
       const moodLabel = MOODS.find((m) => m.value === value)?.label || ''

@@ -4,7 +4,7 @@ import { PsychologistList } from '../_components/PsychologistList'
 export const dynamic = 'force-dynamic'
 
 export default async function PsychologistsPage() {
-  const res = await getAllPsychologists()
+  const res = await getAllPsychologists({ page: 1, pageSize: 50 })
   const allPsychologists = res.success ? res.data : []
 
   return (

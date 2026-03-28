@@ -54,7 +54,7 @@ export function useChat() {
   const loadMessages = useCallback(
     async (id: string) => {
       setIsLoadingMsgs(true)
-      const msgsRes = await getMessages(id)
+      const msgsRes = await getMessages({ conversationId: id, limit: 100 })
       setMessages(msgsRes.success ? msgsRes.data : [])
       setIsLoadingMsgs(false)
       setTimeout(() => scrollToBottom('auto'), 100)
@@ -65,7 +65,7 @@ export function useChat() {
   // Refreshes messages without showing the loading spinner — used by realtime updates.
   const refreshMessages = useCallback(
     async (id: string) => {
-      const msgsRes = await getMessages(id)
+      const msgsRes = await getMessages({ conversationId: id, limit: 100 })
       setMessages(msgsRes.success ? msgsRes.data : [])
       setTimeout(() => scrollToBottom('smooth'), 50)
     },
@@ -104,7 +104,7 @@ export function useChat() {
     if (!newMessage.trim() || !selectedId || isSending) return
 
     setIsSending(true)
-    const result = await sendMessage(selectedId, newMessage.trim())
+    const result = await sendMessage({ conversationId: selectedId, content: newMessage.trim() })
     if (result.success) {
       setNewMessage('')
       // The realtime INSERT event will trigger refreshMessages, so no explicit reload needed.

@@ -80,12 +80,12 @@ export function PsychologistList({
     }
 
     setLoadingId(selectedPsy.id)
-    const result = await suspendPsychologistAccess(
-      selectedPsy.id,
-      suspendReason,
+    const result = await suspendPsychologistAccess({
+      psychologistId: selectedPsy.id,
+      reason: suspendReason,
       sendEmailNotification,
-      emailMessage
-    )
+      emailMessage,
+    })
 
     if (result.success) {
       toast.success(`O acesso de ${selectedPsy.fullName} foi suspenso com sucesso.`)

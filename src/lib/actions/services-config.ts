@@ -4,9 +4,29 @@ import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
-import type { TimeSlot } from '@/lib/validations/availability'
+import type { TimeSlot, PsychologistAvailability } from '@/lib/validations/availability'
+import type { PsychologistWithProfile } from '@/lib/supabase/types'
 
 // ─── Types & Schemas ──────────────────────────────────────────────
+
+export type PatientBookingData = {
+  psychologist: PsychologistWithProfile
+  availability: PsychologistAvailability | null
+}
+
+export type PatientServicesData = {
+  psychologistUserId: string
+  psychologistName: string
+  sessionPrice: number | null
+  sessionDuration: number
+  monthly: {
+    pricePerSession: number
+    total: number
+    discountPercent: number
+    sessions: number
+  } | null
+  plans: { id: string; name: string; sessions: number; price: number; discount: number }[]
+}
 
 export type ServicesConfigData = {
   sessionPrice: string
@@ -64,6 +84,108 @@ export const getServicesConfig = createSafeAction(
     }
   },
   { requiredRole: 'PSYCHOLOGIST' }
+)
+
+export const getPatientBookingData = createSafeAction(
+  z.void().optional(),
+  async (_, user): Promise<PatientBookingData> => {
+    const appointment = await prisma.appointment.findFirst({
+      where: { patientId: user.id },
+      orderBy: { scheduledAt: 'desc' },
+      select: { psychologistId: true },
+    })
+
+    if (!appointment) throw new Error('Nenhum psicólogo encontrado')
+
+    const psych = await prisma.psychologistProfile.findUnique({
+      where: { id: appointment.psychologistId },
+      include: {
+        user: { include: { profiles: true } },
+      },
+    })
+
+    if (!psych) throw new Error('Psicólogo não encontrado')
+
+    const userProfile = psych.user?.profiles || null
+    const profile = userProfile
+      ? {
+          id: userProfile.id,
+          user_id: userProfile.user_id,
+          full_name: userProfile.fullName,
+          avatar_url: userProfile.avatarUrl,
+          role: userProfile.role,
+          birth_date: userProfile.birth_date ? userProfile.birth_date.toISOString() : null,
+          document: userProfile.document,
+          phone: userProfile.phone,
+          created_at: userProfile.createdAt.toISOString(),
+          updated_at: userProfile.updatedAt.toISOString(),
+        }
+      : null
+
+    const psychologist = {
+      id: psych.id,
+      userId: psych.userId,
+      crp: psych.crp,
+      bio: psych.bio,
+      specialties: psych.specialties,
+      price_per_session: psych.pricePerSession ? Number(psych.pricePerSession) : null,
+      video_presentation_url: psych.videoPresentationUrl,
+      is_verified: psych.isVerified,
+      weekly_schedule: psych.weeklySchedule as any,
+      timezone: psych.timezone,
+      academic_level: psych.academicLevel,
+      session_duration: psych.sessionDuration,
+      years_of_experience: psych.yearsOfExperience,
+      university: psych.university,
+      external_scheduling_url: psych.externalSchedulingUrl,
+      monthly_plan_discount: psych.monthlyPlanDiscount,
+      monthly_plan_enabled: psych.monthlyPlanEnabled,
+      monthly_plan_sessions: psych.monthlyPlanSessions,
+      created_at: psych.createdAt.toISOString(),
+      updated_at: psych.updatedAt.toISOString(),
+      profile,
+    } as unknown as PsychologistWithProfile
+
+    const recentPastDateStr = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0]
+
+    const [overridesList, appointmentList] = await Promise.all([
+      prisma.scheduleOverride.findMany({
+        where: { psychologistId: psych.id, date: { gte: recentPastDateStr } },
+        select: { date: true, type: true, slots: true },
+      }),
+      prisma.appointment.findMany({
+        where: {
+          psychologistId: psych.id,
+          status: { notIn: ['CANCELED'] },
+          scheduledAt: { gte: new Date(recentPastDateStr) },
+        },
+        select: { id: true, scheduledAt: true, durationMinutes: true },
+      }),
+    ])
+
+    const overrides: Record<string, { type: 'blocked' | 'custom'; slots: TimeSlot[] }> = {}
+    overridesList.forEach((o) => {
+      overrides[o.date] = {
+        type: o.type as 'blocked' | 'custom',
+        slots: (o.slots as unknown as TimeSlot[]) || [],
+      }
+    })
+
+    const availability: PsychologistAvailability = {
+      timezone: psych.timezone || 'America/Sao_Paulo',
+      weeklySchedule: psych.weeklySchedule as any,
+      overrides,
+      appointments: appointmentList.map((a) => ({
+        id: a.id,
+        scheduled_at: a.scheduledAt.toISOString(),
+        duration_minutes: a.durationMinutes,
+      })),
+    }
+
+    return { psychologist, availability }
+  }
 )
 
 export const getPatientServicesView = createSafeAction(z.void().optional(), async (_, user) => {

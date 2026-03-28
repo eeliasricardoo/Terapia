@@ -67,8 +67,8 @@ export function useServicesConfig() {
   }, [])
 
   const loadPlans = useCallback(async () => {
-    const { getPlans } = await import('@/lib/actions/plans')
-    const result = await getPlans()
+    const { getPlansAction } = await import('@/lib/actions/plans')
+    const result = await getPlansAction()
     if (result.success) {
       setPlans(result.data)
     }
@@ -76,8 +76,8 @@ export function useServicesConfig() {
 
   const loadCoupons = useCallback(async () => {
     setIsFetchingCoupons(true)
-    const { getCoupons } = await import('@/lib/actions/coupons')
-    const result = await getCoupons()
+    const { getCouponsAction } = await import('@/lib/actions/coupons')
+    const result = await getCouponsAction()
     if (result.success) {
       setCoupons(result.data)
     }
@@ -93,10 +93,14 @@ export function useServicesConfig() {
   // ─── Save General Config ──────────────────────────────────────
   const handleSaveGeneral = async () => {
     setIsSaving(true)
-    const result = await saveGeneralConfig(sessionPrice, sessionDuration, {
-      enabled: monthlyPlanEnabled,
-      sessions: monthlyPlanSessions,
-      discount: monthlyPlanDiscount,
+    const result = await saveGeneralConfig({
+      sessionPrice,
+      sessionDuration,
+      monthlyPlan: {
+        enabled: monthlyPlanEnabled,
+        sessions: monthlyPlanSessions,
+        discount: monthlyPlanDiscount,
+      },
     })
     setIsSaving(false)
 
@@ -137,12 +141,10 @@ export function useServicesConfig() {
     setIsSavingPlan(true)
 
     if (editingPlanId) {
-      const { updatePlan } = await import('@/lib/actions/plans')
-      const result = await updatePlan(editingPlanId, {
-        name: newPlan.name,
-        sessions,
-        price,
-        discount: discountValue,
+      const { updatePlanAction } = await import('@/lib/actions/plans')
+      const result = await updatePlanAction({
+        id: editingPlanId,
+        data: { name: newPlan.name, sessions, price, discount: discountValue },
       })
 
       if (result.success) {
@@ -158,8 +160,8 @@ export function useServicesConfig() {
         toast.error('Erro ao atualizar pacote', { description: result.error })
       }
     } else {
-      const { createPlan } = await import('@/lib/actions/plans')
-      const result = await createPlan({
+      const { createPlanAction } = await import('@/lib/actions/plans')
+      const result = await createPlanAction({
         name: newPlan.name,
         sessions,
         price,
@@ -200,8 +202,8 @@ export function useServicesConfig() {
     const plan = plans.find((p) => p.id === id)
     if (!plan) return
 
-    const { togglePlan } = await import('@/lib/actions/plans')
-    const result = await togglePlan(id, !plan.active)
+    const { togglePlanAction } = await import('@/lib/actions/plans')
+    const result = await togglePlanAction({ id, active: !plan.active })
 
     if (result.success) {
       setPlans(plans.map((p) => (p.id === id ? { ...p, active: !p.active } : p)))
@@ -211,8 +213,8 @@ export function useServicesConfig() {
   }
 
   const handleDeletePlan = async (id: string) => {
-    const { deletePlan } = await import('@/lib/actions/plans')
-    const result = await deletePlan(id)
+    const { deletePlanAction } = await import('@/lib/actions/plans')
+    const result = await deletePlanAction(id)
 
     if (result.success) {
       setPlans(plans.filter((p) => p.id !== id))
@@ -224,7 +226,7 @@ export function useServicesConfig() {
 
   // ─── Coupons Handlers ───────────────────────────────────────
   const handleAddCoupon = async () => {
-    const { createCoupon } = await import('@/lib/actions/coupons')
+    const { createCouponAction: createCoupon } = await import('@/lib/actions/coupons')
     const result = await createCoupon({
       code: newCoupon.code,
       type: newCoupon.type,
@@ -246,8 +248,8 @@ export function useServicesConfig() {
     const coupon = coupons.find((c) => c.id === id)
     if (!coupon) return
 
-    const { toggleCoupon } = await import('@/lib/actions/coupons')
-    const result = await toggleCoupon(id, !coupon.active)
+    const { toggleCouponAction } = await import('@/lib/actions/coupons')
+    const result = await toggleCouponAction({ id, active: !coupon.active })
 
     if (result.success) {
       setCoupons(coupons.map((c) => (c.id === id ? { ...c, active: !c.active } : c)))
@@ -257,8 +259,8 @@ export function useServicesConfig() {
   }
 
   const handleDeleteCoupon = async (id: string) => {
-    const { deleteCoupon } = await import('@/lib/actions/coupons')
-    const result = await deleteCoupon(id)
+    const { deleteCouponAction } = await import('@/lib/actions/coupons')
+    const result = await deleteCouponAction(id)
 
     if (result.success) {
       setCoupons(coupons.filter((c) => c.id !== id))

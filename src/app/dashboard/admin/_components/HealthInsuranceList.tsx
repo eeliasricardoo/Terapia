@@ -50,7 +50,7 @@ export function HealthInsuranceList({
     }
 
     setIsSubmitting(true)
-    const result = await createHealthInsurance(newName)
+    const result = await createHealthInsurance({ name: newName })
 
     if (result.success && result.data) {
       toast.success('Plano de saúde cadastrado com sucesso!')
@@ -60,7 +60,7 @@ export function HealthInsuranceList({
       setNewName('')
       setIsAddDialogOpen(false)
     } else {
-      toast.error(result.error || 'Erro ao cadastrar plano de saúde.')
+      toast.error(!result.success ? result.error : 'Erro ao cadastrar plano de saúde.')
     }
     setIsSubmitting(false)
   }
@@ -72,7 +72,7 @@ export function HealthInsuranceList({
     }
 
     setIsSubmitting(true)
-    const result = await updateHealthInsurance(selectedInsurance.id, editName)
+    const result = await updateHealthInsurance({ id: selectedInsurance.id, name: editName })
 
     if (result.success && result.data) {
       toast.success('Plano de saúde atualizado com sucesso!')
@@ -83,7 +83,7 @@ export function HealthInsuranceList({
       setSelectedInsurance(null)
       setEditName('')
     } else {
-      toast.error(result.error || 'Erro ao atualizar plano de saúde.')
+      toast.error(!result.success ? result.error : 'Erro ao atualizar plano de saúde.')
     }
     setIsSubmitting(false)
   }
@@ -104,7 +104,7 @@ export function HealthInsuranceList({
     }
 
     setIsDeleting(id)
-    const result = await deleteHealthInsurance(id)
+    const result = await deleteHealthInsurance({ id })
 
     if (result.success) {
       toast.success('Plano de saúde excluído com sucesso.')

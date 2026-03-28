@@ -142,8 +142,8 @@ export function useCheckout() {
 
     setIsValidatingCoupon(true)
     try {
-      const { validateCoupon } = await import('@/lib/actions/coupons')
-      const result = await validateCoupon(couponCode, doctorId)
+      const { validateCouponAction } = await import('@/lib/actions/coupons')
+      const result = await validateCouponAction({ code: couponCode, psychologistId: doctorId })
 
       if (result.success) {
         setAppliedCoupon({

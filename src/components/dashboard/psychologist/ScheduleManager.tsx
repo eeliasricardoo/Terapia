@@ -440,7 +440,7 @@ export function ScheduleManager() {
       const { updatePsychologistAvailability } = await import('@/lib/actions/availability')
 
       const result = await updatePsychologistAvailability({
-        weeklySchedule,
+        weeklySchedule: weeklySchedule as any,
         sessionDuration,
         breakDuration,
         timezone,

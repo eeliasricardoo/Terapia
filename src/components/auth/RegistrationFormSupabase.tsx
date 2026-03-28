@@ -57,7 +57,7 @@ export function RegistrationFormSupabase() {
       submissionData.append('confirmPassword', formData.confirmPassword)
       submissionData.append('terms', String(formData.terms))
 
-      const result = await registerPatientSupabase(submissionData)
+      const result = await registerPatientSupabase(submissionData as any)
 
       if (!result.success) {
         toast.error(result.error || 'Erro ao criar conta. Verifique os dados.')

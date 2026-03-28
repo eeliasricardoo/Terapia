@@ -50,8 +50,8 @@ export function AdminVerificationManager() {
   async function loadPending() {
     setIsLoading(true)
     try {
-      const data = await getPendingPsychologists()
-      setPending(data)
+      const res = await getPendingPsychologists()
+      setPending(res.success ? res.data : [])
     } catch (error) {
       toast.error('Erro ao carregar psicólogos pendentes')
     } finally {
@@ -62,7 +62,7 @@ export function AdminVerificationManager() {
   async function handleVerify(id: string) {
     setVerifyingId(id)
     try {
-      const result = await verifyPsychologist(id)
+      const result = await verifyPsychologist({ psychologistId: id })
       if (result.success) {
         toast.success('Psicólogo verificado com sucesso!')
         setPending((prev) => prev.filter((p) => p.id !== id))
@@ -85,7 +85,7 @@ export function AdminVerificationManager() {
 
     setVerifyingId(id)
     try {
-      const result = await rejectPsychologist(id, rejectReason)
+      const result = await rejectPsychologist({ psychologistId: id, reason: rejectReason })
       if (result.success) {
         toast.success(`Cadastro de ${name} rejeitado.`)
         setPending((prev) => prev.filter((p) => p.id !== id))
