@@ -85,7 +85,7 @@ export function DiaryForm({
                   onClick={() => toggleEmotion(emotion.label)}
                   className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all text-xs font-semibold leading-none ${
                     isSelected
-                      ? `bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-200`
+                      ? `bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-900/20`
                       : 'border-slate-100 bg-white hover:border-slate-200 text-slate-500'
                   }`}
                 >
@@ -114,7 +114,7 @@ export function DiaryForm({
           <Button
             onClick={handleSave}
             disabled={isPending || !selectedMood || !content}
-            className="rounded-2xl bg-slate-900 text-white hover:bg-slate-800 h-12 px-8 font-bold text-xs uppercase tracking-widest gap-3 shadow-xl shadow-slate-200 transition-all hover:shadow-2xl active:scale-95 disabled:opacity-30"
+            className="rounded-2xl bg-slate-900 text-white hover:bg-slate-800 h-12 px-8 font-bold text-xs uppercase tracking-widest gap-3 shadow-xl shadow-slate-900/20 transition-all hover:shadow-2xl active:scale-95 disabled:opacity-30"
           >
             {isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />

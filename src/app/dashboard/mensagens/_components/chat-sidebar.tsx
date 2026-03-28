@@ -66,7 +66,7 @@ export function ChatSidebar({
               className={cn(
                 'flex items-center gap-4 p-4 rounded-3xl cursor-pointer transition-all duration-300 border group items-stretch',
                 selectedId === chat.id
-                  ? 'bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-200'
+                  ? 'bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/20'
                   : 'hover:bg-slate-50 border-transparent text-slate-600'
               )}
             >

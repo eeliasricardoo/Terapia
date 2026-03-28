@@ -76,7 +76,7 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
 
         <div className="relative space-y-10">
           <div className="flex flex-col md:flex-row md:items-center gap-6">
-            <div className="h-16 w-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-200 text-white shrink-0">
+            <div className="h-16 w-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20 text-white shrink-0">
               <Building2 className="h-8 w-8" />
             </div>
             <div className="space-y-1">
@@ -152,7 +152,7 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
               <Button
                 onClick={handleLink}
                 disabled={!code || isValidating}
-                className="w-full md:w-auto bg-slate-900 text-white hover:bg-slate-800 h-16 rounded-3xl px-12 font-bold shadow-2xl shadow-slate-200 text-sm uppercase tracking-widest gap-3 transition-all active:scale-95 disabled:opacity-20 translate-y-2 hover:translate-y-0"
+                className="w-full md:w-auto bg-slate-900 text-white hover:bg-slate-800 h-16 rounded-3xl px-12 font-bold shadow-2xl shadow-slate-900/20 text-sm uppercase tracking-widest gap-3 transition-all active:scale-95 disabled:opacity-20 translate-y-2 hover:translate-y-0"
               >
                 {isValidating ? 'Validando...' : 'Ativar Benefício'}
                 {!isValidating && <ArrowRight className="h-4 w-4" />}

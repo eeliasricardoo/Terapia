@@ -58,7 +58,7 @@ export function DashboardCalendar({
               'h-10 w-10 p-0 font-medium transition-all flex flex-col items-center justify-center rounded-lg border border-transparent hover:bg-slate-100 relative'
             ),
             day_selected:
-              'bg-slate-900 text-white hover:bg-slate-900 hover:text-white shadow-md font-bold z-10 !border-slate-900',
+              'bg-slate-900 text-white hover:bg-slate-700 hover:text-white shadow-md font-bold z-10 !border-slate-900',
             day_today: 'bg-slate-50 text-slate-900 font-bold border border-slate-200',
             day_outside: 'invisible pointer-events-none',
           }}

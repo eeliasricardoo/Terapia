@@ -66,7 +66,7 @@ export function AddressInfoCard({ user, setUser, isLoading, setIsLoading }: Addr
 
       <div className="relative space-y-10">
         <div className="flex flex-col md:flex-row md:items-center gap-6">
-          <div className="h-16 w-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-200 text-white shrink-0">
+          <div className="h-16 w-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20 text-white shrink-0">
             <MapPin className="h-8 w-8" />
           </div>
           <div className="space-y-1">
@@ -151,7 +151,7 @@ export function AddressInfoCard({ user, setUser, isLoading, setIsLoading }: Addr
           <Button
             onClick={handleSaveAddress}
             disabled={isLoading}
-            className="rounded-2xl bg-slate-900 text-white hover:bg-slate-800 h-14 px-12 font-bold shadow-2xl shadow-slate-200 transition-all active:scale-95 disabled:opacity-20 flex items-center gap-3"
+            className="rounded-2xl bg-slate-900 text-white hover:bg-slate-800 h-14 px-12 font-bold shadow-2xl shadow-slate-900/20 transition-all active:scale-95 disabled:opacity-20 flex items-center gap-3"
           >
             {isLoading ? (
               <>

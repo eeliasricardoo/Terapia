@@ -96,7 +96,7 @@ export function PaymentMethods({
                   <Button
                     onClick={handlePayment}
                     disabled={isProcessing}
-                    className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-bold text-lg rounded-2xl transition-all hover:shadow-lg hover:shadow-slate-200"
+                    className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-bold text-lg rounded-2xl transition-all hover:shadow-lg hover:shadow-slate-900/20"
                   >
                     {isProcessing ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
