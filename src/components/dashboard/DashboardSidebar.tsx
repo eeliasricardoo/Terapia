@@ -226,35 +226,21 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
   return (
     <aside
       className={cn(
-        'hidden lg:flex w-64 flex-col fixed inset-y-0 z-50 bg-white border-r',
+        'hidden lg:flex w-64 flex-col fixed inset-y-0 z-50 bg-white border-r border-primary/10 shadow-sm',
         className
       )}
       role="navigation"
       aria-label="Sentirz"
     >
-      <div className="flex flex-col border-b border-slate-100">
-        <div className="h-16 px-6 flex items-center border-b border-slate-100/50 bg-slate-50/30">
+      <div className="flex flex-col">
+        <div className="h-20 px-6 flex items-center border-b border-primary/5 bg-sentirz-teal-pastel/30">
           <Link href="/dashboard">
             <Logo size="sm" />
           </Link>
         </div>
-        <div className="flex items-center gap-3 h-20 px-6">
-          <Avatar className="h-10 w-10 border border-slate-200">
-            <AvatarImage src={user?.avatar_url || '/avatars/user.png'} />
-            <AvatarFallback className="bg-slate-100 text-slate-600 font-medium">
-              {user ? getInitials(user.name) : 'U'}
-            </AvatarFallback>
-          </Avatar>
-          <div className="overflow-hidden">
-            <p className="font-semibold text-sm text-slate-900 truncate" title={user?.name}>
-              {user?.name || 'Carregando...'}
-            </p>
-            <p className="text-xs text-slate-600 font-medium">{user?.role || ''}</p>
-          </div>
-        </div>
       </div>
 
-      <nav className="flex-1 space-y-1 p-4" aria-label="Navegação do dashboard">
+      <nav className="flex-1 space-y-1.5 p-4 overflow-y-auto" aria-label="Navegação do dashboard">
         {menuItems.map((item) => {
           const isActive = pathname === item.href
           return (
@@ -263,18 +249,18 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
               href={item.href}
               aria-current={isActive ? 'page' : undefined}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group',
+                'flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-2xl transition-all duration-200 group mb-1',
                 isActive
-                  ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02]'
+                  : 'text-foreground/60 hover:bg-sentirz-teal-pastel hover:text-primary'
               )}
             >
               <item.icon
                 className={cn(
-                  'h-4 w-4 transition-colors',
+                  'h-4.5 w-4.5 transition-colors',
                   isActive
-                    ? 'text-primary-foreground/80'
-                    : 'text-slate-500 group-hover:text-slate-600'
+                    ? 'text-primary-foreground'
+                    : 'text-foreground/40 group-hover:text-primary'
                 )}
                 aria-hidden="true"
               />
@@ -284,14 +270,32 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
         })}
       </nav>
 
-      <div className="p-4 border-t border-slate-100">
+      {/* User Session & Logout at Bottom */}
+      <div className="p-4 mt-auto border-t border-primary/10 bg-sentirz-teal-pastel/20 space-y-4">
+        <div className="flex items-center gap-3 px-2 py-1">
+          <Avatar className="h-10 w-10 border-2 border-white shadow-sm ring-2 ring-primary/5">
+            <AvatarImage src={user?.avatar_url || '/avatars/user.png'} />
+            <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+              {user ? getInitials(user.name) : 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="overflow-hidden">
+            <p className="font-bold text-sm text-foreground truncate" title={user?.name}>
+              {user?.name || 'Carregando...'}
+            </p>
+            <p className="text-[10px] text-foreground/50 font-bold uppercase tracking-wider">
+              {user?.role || ''}
+            </p>
+          </div>
+        </div>
+
         <Button
           variant="ghost"
-          className="w-full justify-start gap-3 text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors pl-3"
+          className="w-full justify-start gap-3 h-12 text-foreground/60 hover:text-destructive hover:bg-destructive/5 font-bold rounded-2xl transition-all pl-4 group"
           onClick={handleLogout}
         >
-          <LogOut className="h-4 w-4" />
-          Sair
+          <LogOut className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+          Sair da Conta
         </Button>
       </div>
     </aside>
