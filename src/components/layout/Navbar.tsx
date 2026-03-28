@@ -170,9 +170,9 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
             {!isLoggedIn ? (
               <>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   onClick={() => setLoginOpen(true)}
-                  className="text-foreground/90 hover:text-primary font-bold rounded-full"
+                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bold rounded-full px-6 transition-all"
                 >
                   Entrar
                 </Button>
