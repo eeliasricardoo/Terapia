@@ -14,10 +14,10 @@ export function InsuranceSection({ insurances = [] }: InsuranceSectionProps) {
   if (insurances.length === 0) return null
 
   return (
-    <Card className="shadow-sm border-slate-100 overflow-hidden">
-      <CardHeader className="bg-slate-50/50 pb-3">
-        <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-800">
-          <ShieldCheck className="h-5 w-5 text-pink-500" />
+    <Card className="shadow-sm border-border overflow-hidden">
+      <CardHeader className="bg-muted/30 pb-3">
+        <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+          <ShieldCheck className="h-5 w-5 text-secondary" />
           Planos de Saúde Aceitos
         </CardTitle>
       </CardHeader>
@@ -26,14 +26,14 @@ export function InsuranceSection({ insurances = [] }: InsuranceSectionProps) {
           {insurances.map((ins) => (
             <div
               key={ins.id}
-              className="px-4 py-2 bg-white border border-slate-100 rounded-lg text-sm font-medium text-slate-700 shadow-sm hover:shadow-md hover:border-pink-200 transition-all cursor-default flex items-center gap-2"
+              className="px-4 py-2 bg-white border border-border rounded-lg text-sm font-medium text-foreground shadow-sm hover:shadow-md hover:border-secondary/40 transition-all cursor-default flex items-center gap-2"
             >
-              <div className="w-1.5 h-1.5 rounded-full bg-pink-400" />
+              <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
               {ins.name}
             </div>
           ))}
         </div>
-        <p className="mt-4 text-sm text-slate-500 italic">
+        <p className="mt-4 text-sm text-muted-foreground italic">
           * A vinculação com o plano de saúde permite que as sessões sejam realizadas sem custo
           direto para o paciente, conforme as regras da operadora.
         </p>

@@ -32,15 +32,15 @@ export function PresentationVideo({ videoUrl }: PresentationVideoProps) {
   const embedUrl = getEmbedUrl(videoUrl)
 
   return (
-    <section className="bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
-      <h2 className="text-xl font-bold text-slate-900">Apresentação</h2>
-      <div className="aspect-video bg-slate-100 rounded-xl overflow-hidden shadow-inner border border-slate-200">
+    <section className="bg-white rounded-2xl p-6 md:p-8 border border-border shadow-sm space-y-6">
+      <h2 className="text-xl font-bold text-foreground">Apresentação</h2>
+      <div className="aspect-video bg-muted rounded-xl overflow-hidden shadow-inner border border-border">
         <iframe
           src={embedUrl || ''}
           className="w-full h-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
-        ></iframe>
+        />
       </div>
     </section>
   )

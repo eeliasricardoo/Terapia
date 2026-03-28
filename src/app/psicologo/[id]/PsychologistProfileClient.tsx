@@ -138,20 +138,20 @@ export function PsychologistProfileClient({ psychologist, availability, stats }:
       </main>
 
       {/* Mobile Sticky Booking Bar */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-200 lg:hidden z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-border lg:hidden z-50 shadow-[0_-4px_20px_-1px_rgba(0,0,0,0.08)]">
         <div className="flex items-center gap-4 max-w-7xl mx-auto">
           <div className="flex-1">
             <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
               {selectedPlan === 'single' ? 'Sessão Avulsa' : 'Pacote Mensal'}
             </p>
             <div className="flex items-baseline gap-2">
-              <span className="text-xl font-bold text-slate-900">
+              <span className="text-xl font-bold text-foreground">
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
                   pricing.displayPrice
                 )}
               </span>
               {selectedPlan === 'monthly' && (
-                <span className="text-xs text-slate-400 line-through">
+                <span className="text-xs text-muted-foreground line-through">
                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
                     pricing.price
                   )}
@@ -160,12 +160,7 @@ export function PsychologistProfileClient({ psychologist, availability, stats }:
             </div>
           </div>
           <Button
-            className={cn(
-              'h-12 px-8 font-bold shadow-lg transition-all rounded-xl',
-              selectedPlan === 'monthly'
-                ? 'bg-blue-700 hover:bg-blue-800 shadow-blue-700/20'
-                : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'
-            )}
+            className="h-12 px-8 font-bold shadow-lg transition-all rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20"
             onClick={() => {
               if (selectedTime) {
                 handleBooking()
