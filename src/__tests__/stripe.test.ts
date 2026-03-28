@@ -22,12 +22,38 @@ jest.mock('@/lib/stripe', () => ({
   },
 }))
 
+const mockAppointmentCreate = jest.fn()
+const mockAppointmentFindFirst = jest.fn()
+const mockAppointmentUpdate = jest.fn()
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     psychologistProfile: { findUnique: jest.fn() },
-    appointment: { findMany: jest.fn(), findFirst: jest.fn(), create: jest.fn() },
+    appointment: {
+      findMany: jest.fn(),
+      findFirst: (...args: any[]) => mockAppointmentFindFirst(...args),
+      create: (...args: any[]) => mockAppointmentCreate(...args),
+      update: (...args: any[]) => mockAppointmentUpdate(...args),
+    },
     coupon: { findFirst: jest.fn(), update: jest.fn() },
     patientProfile: { findUnique: jest.fn() },
+    $transaction: jest.fn((cb: any) => {
+      const tx = {
+        appointment: {
+          findFirst: (...args: any[]) => mockAppointmentFindFirst(...args),
+          create: (...args: any[]) => mockAppointmentCreate(...args),
+          update: (...args: any[]) => mockAppointmentUpdate(...args),
+        },
+      }
+      return cb(tx)
+    }),
+  },
+}))
+
+jest.mock('@/lib/env', () => ({
+  env: {
+    PLATFORM_FEE_PERCENT: 15,
+    NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key',
   },
 }))
 
@@ -42,6 +68,7 @@ jest.mock('@/lib/security', () => ({
   encryptData: jest.fn((data) => `encrypted-${data}`),
   decryptData: jest.fn((data) => data.replace('encrypted-', '')),
   isValidUUID: jest.fn(() => true),
+  checkAppointmentRateLimit: jest.fn().mockResolvedValue({ success: true }),
 }))
 
 import { createClient } from '@/lib/supabase/server'
@@ -49,7 +76,11 @@ import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { createStripeCheckoutSession } from '@/lib/actions/stripe'
 
-const MOCK_USER = { id: '550e8400-e29b-41d4-a716-446655440000', email: 'patient@test.com' }
+const MOCK_USER = {
+  id: '550e8400-e29b-41d4-a716-446655440000',
+  email: 'patient@test.com',
+  app_metadata: { role: 'PATIENT' },
+}
 
 function mockAuth(user: any) {
   ;(createClient as jest.Mock).mockResolvedValue({
@@ -63,7 +94,9 @@ describe('stripe actions', () => {
     process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
     // Default: no conflict
     ;(prisma.appointment.findMany as jest.Mock).mockResolvedValue([])
-    ;(prisma.appointment.findFirst as jest.Mock).mockResolvedValue(null)
+    mockAppointmentFindFirst.mockResolvedValue(null)
+    mockAppointmentCreate.mockResolvedValue({ id: 'appt-id' })
+    mockAppointmentUpdate.mockResolvedValue({ id: 'appt-id' })
   })
 
   describe('createStripeCheckoutSession', () => {
@@ -102,7 +135,7 @@ describe('stripe actions', () => {
         pricePerSession: 0,
         user: { name: 'Dr. Zero', profiles: { fullName: 'Dr. Zero' } },
       })
-      ;(prisma.appointment.create as jest.Mock).mockResolvedValue({})
+      mockAppointmentCreate.mockResolvedValue({ id: 'appt-free' })
 
       const result = await createStripeCheckoutSession(validData)
       expect(result).toEqual({
@@ -116,6 +149,8 @@ describe('stripe actions', () => {
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue({
         id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
         pricePerSession: 150,
+        stripeAccountId: 'acct_test123',
+        stripeOnboardingComplete: true,
         user: { name: 'Dra. Ana Silva', profiles: { fullName: 'Dra. Ana Silva' } },
       })
       ;(stripe.checkout.sessions.create as jest.Mock).mockResolvedValue({
@@ -159,6 +194,8 @@ describe('stripe actions', () => {
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue({
         id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
         pricePerSession: 100,
+        stripeAccountId: 'acct_test123',
+        stripeOnboardingComplete: true,
         user: { name: 'Dr. Test', profiles: { fullName: 'Dr. Test' } },
       })
       ;(stripe.checkout.sessions.create as jest.Mock).mockResolvedValue({
@@ -180,6 +217,8 @@ describe('stripe actions', () => {
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue({
         id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
         pricePerSession: 100,
+        stripeAccountId: 'acct_test123',
+        stripeOnboardingComplete: true,
         user: { name: 'Dr. Test', profiles: { fullName: 'Dr. Test' } },
       })
       ;(stripe.checkout.sessions.create as jest.Mock).mockRejectedValue(

@@ -38,7 +38,17 @@ jest.mock('@/lib/utils/logger', () => ({
 }))
 
 describe('dashboard actions', () => {
-  const mockUser = { id: 'user-1', email: 'test@test.com' }
+  const mockPsychUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    app_metadata: { role: 'PSYCHOLOGIST' },
+  }
+  const mockPatientUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    app_metadata: { role: 'PATIENT' },
+  }
+  const mockUser = mockPsychUser
   const mockSupabase = {
     auth: {
       getUser: jest.fn(),
@@ -56,6 +66,12 @@ describe('dashboard actions', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(createClient as jest.Mock).mockResolvedValue(mockSupabase)
+    ;(prisma.notification.count as jest.Mock).mockResolvedValue(0)
+    ;(prisma.appointment.findMany as jest.Mock).mockResolvedValue([])
+    ;(prisma.appointment.findFirst as jest.Mock).mockResolvedValue(null)
+    ;(prisma.appointment.aggregate as jest.Mock).mockResolvedValue({ _sum: { price: 0 } })
+    ;(prisma.patientPsychologistLink.findMany as jest.Mock).mockResolvedValue([])
+    ;(prisma.patientPsychologistLink.count as jest.Mock).mockResolvedValue(0)
   })
 
   describe('getPsychologistDashboardData', () => {
@@ -152,7 +168,7 @@ describe('dashboard actions', () => {
     })
 
     it('should fetch next session and recent sessions', async () => {
-      mockSupabase.auth.getUser.mockResolvedValueOnce({ data: { user: mockUser } })
+      mockSupabase.auth.getUser.mockResolvedValueOnce({ data: { user: mockPatientUser } })
 
       const now = new Date()
 

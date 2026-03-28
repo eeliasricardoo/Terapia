@@ -141,18 +141,19 @@ describe('diary actions', () => {
       mockPrismaDiaryFindFirst.mockResolvedValue(entry)
 
       const result = await getTodayMood()
-      expect(result).toEqual(entry)
+      expect(result.success).toBe(true)
+      expect(result.success && result.data).toEqual(entry)
     })
   })
 
   describe('saveQuickMood', () => {
     it('should update existing entry if mood already saved today', async () => {
       mockPrismaDiaryFindFirst.mockResolvedValue({ id: 'existing-entry' })
-      mockPrismaDiaryUpdate.mockResolvedValue({})
+      mockPrismaDiaryUpdate.mockResolvedValue({ id: 'existing-entry' })
 
       const result = await saveQuickMood({ mood: 3 })
 
-      expect(result).toEqual({ success: true })
+      expect(result.success).toBe(true)
       expect(mockPrismaDiaryUpdate).toHaveBeenCalledWith({
         where: { id: 'existing-entry' },
         data: { mood: 3 },

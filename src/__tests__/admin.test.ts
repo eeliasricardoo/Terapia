@@ -40,10 +40,38 @@ jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }))
 
+jest.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: jest.fn(() => ({
+    auth: { admin: { getUserById: jest.fn() } },
+    storage: { from: jest.fn(() => ({ createSignedUrl: jest.fn() })) },
+  })),
+}))
+
+jest.mock('@/lib/utils/audit', () => ({
+  createAuditLog: jest.fn().mockResolvedValue(undefined),
+}))
+
+jest.mock('@/lib/utils/email-templates', () => ({
+  getApprovalEmailTemplate: jest.fn().mockReturnValue('<html>approval</html>'),
+  getRejectionEmailTemplate: jest.fn().mockReturnValue('<html>rejection</html>'),
+}))
+
+jest.mock('@/lib/env', () => ({
+  env: {
+    PLATFORM_FEE_PERCENT: 20,
+    NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: 'test-anon-key',
+    SUPABASE_SERVICE_ROLE_KEY: 'test-service-key',
+  },
+}))
+
+const PSYCH_ID = '550e8400-e29b-41d4-a716-446655440001'
+
 describe('Admin Actions - Psychologist Approval/Rejection', () => {
   const mockAdminUser = {
     id: 'admin-user-123',
     email: 'admin@example.com',
+    app_metadata: { role: 'ADMIN' },
   }
 
   const mockAdminProfile = {
@@ -53,7 +81,7 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
   }
 
   const mockPsychologist = {
-    id: 'psych-123',
+    id: '550e8400-e29b-41d4-a716-446655440001',
     userId: 'psych-user-456',
     crp: '06/123456',
     isVerified: false,
@@ -88,11 +116,11 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
       ;(prisma.psychologistProfile.update as jest.Mock).mockResolvedValue(mockPsychologist)
       ;(sendEmail as jest.Mock).mockResolvedValue({ success: true })
 
-      const result = await verifyPsychologist({ psychologistId: 'psych-123' })
+      const result = await verifyPsychologist({ psychologistId: PSYCH_ID })
 
       expect(result.success).toBe(true)
       expect(prisma.psychologistProfile.update).toHaveBeenCalledWith({
-        where: { id: 'psych-123' },
+        where: { id: PSYCH_ID },
         data: { isVerified: true, suspensionReason: null },
         include: {
           user: { include: { profiles: true } },
@@ -100,7 +128,7 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
       })
       expect(sendEmail).toHaveBeenCalledWith({
         to: 'psych@example.com',
-        subject: 'Bem-vindo à Terapia! Seu perfil foi aprovado',
+        subject: 'Bem-vindo à Mind Cares! Seu perfil foi aprovado',
         html: expect.any(String),
       })
     })
@@ -116,7 +144,7 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
         },
       })
 
-      const result = await verifyPsychologist({ psychologistId: 'psych-123' })
+      const result = await verifyPsychologist({ psychologistId: PSYCH_ID })
 
       expect(result.success).toBe(false)
       expect(result.success === false && result.error).toBeTruthy()
@@ -125,12 +153,17 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
     })
 
     it('should reject if user is not an admin', async () => {
-      ;(prisma.profile.findUnique as jest.Mock).mockResolvedValue({
-        ...mockAdminProfile,
-        role: 'PATIENT', // Not an admin
+      const { createClient } = require('@/lib/supabase/server')
+      createClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: { ...mockAdminUser, app_metadata: { role: 'PATIENT' } } },
+            error: null,
+          }),
+        },
       })
 
-      const result = await verifyPsychologist({ psychologistId: 'psych-123' })
+      const result = await verifyPsychologist({ psychologistId: PSYCH_ID })
 
       expect(result.success).toBe(false)
       expect(prisma.psychologistProfile.update).not.toHaveBeenCalled()
@@ -143,7 +176,7 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
         new Error('Database error')
       )
 
-      const result = await verifyPsychologist({ psychologistId: 'psych-123' })
+      const result = await verifyPsychologist({ psychologistId: PSYCH_ID })
 
       expect(result.success).toBe(false)
       expect(result.success === false && result.error).toBeDefined()
@@ -155,7 +188,7 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
       ;(prisma.psychologistProfile.update as jest.Mock).mockResolvedValue(mockPsychologist)
       ;(sendEmail as jest.Mock).mockResolvedValue({ success: false, error: 'Email failed' })
 
-      const result = await verifyPsychologist({ psychologistId: 'psych-123' })
+      const result = await verifyPsychologist({ psychologistId: PSYCH_ID })
 
       // Approval should still succeed even if email fails
       expect(result.success).toBe(true)
@@ -172,13 +205,13 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
       ;(sendEmail as jest.Mock).mockResolvedValue({ success: true })
 
       const result = await rejectPsychologist({
-        psychologistId: 'psych-123',
+        psychologistId: PSYCH_ID,
         reason: 'Documentação inválida',
       })
 
       expect(result.success).toBe(true)
       expect(prisma.psychologistProfile.delete).toHaveBeenCalledWith({
-        where: { id: 'psych-123' },
+        where: { id: PSYCH_ID },
       })
       expect(prisma.user.update).toHaveBeenCalled()
       expect(sendEmail).toHaveBeenCalledWith({
@@ -200,7 +233,7 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
       })
 
       const result = await rejectPsychologist({
-        psychologistId: 'psych-123',
+        psychologistId: PSYCH_ID,
         reason: 'Invalid docs',
       })
 
@@ -209,13 +242,18 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
     })
 
     it('should reject if user is not an admin', async () => {
-      ;(prisma.profile.findUnique as jest.Mock).mockResolvedValue({
-        ...mockAdminProfile,
-        role: 'PSYCHOLOGIST', // Not an admin
+      const { createClient } = require('@/lib/supabase/server')
+      createClient.mockReturnValue({
+        auth: {
+          getUser: jest.fn().mockResolvedValue({
+            data: { user: { ...mockAdminUser, app_metadata: { role: 'PSYCHOLOGIST' } } },
+            error: null,
+          }),
+        },
       })
 
       const result = await rejectPsychologist({
-        psychologistId: 'psych-123',
+        psychologistId: PSYCH_ID,
         reason: 'Invalid docs',
       })
 
@@ -228,7 +266,7 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue(null)
 
       const result = await rejectPsychologist({
-        psychologistId: 'psych-123',
+        psychologistId: PSYCH_ID,
         reason: 'Invalid docs',
       })
 
@@ -244,7 +282,7 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
       )
 
       const result = await rejectPsychologist({
-        psychologistId: 'psych-123',
+        psychologistId: PSYCH_ID,
         reason: 'Invalid docs',
       })
 

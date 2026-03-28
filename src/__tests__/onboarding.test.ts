@@ -6,11 +6,9 @@ jest.mock('@upstash/ratelimit', () => ({ Ratelimit: jest.fn() }))
 jest.mock('@upstash/redis', () => ({ Redis: jest.fn() }))
 
 const mockGetUser = jest.fn()
-const mockSupabaseFrom = jest.fn()
 jest.mock('@/lib/supabase/server', () => ({
   createClient: jest.fn(() => ({
     auth: { getUser: mockGetUser },
-    from: mockSupabaseFrom,
   })),
 }))
 
@@ -18,9 +16,25 @@ jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }))
 
-import { savePsychologistProfile, type PsychologistOnboardingData } from '@/lib/actions/onboarding'
+jest.mock('@/lib/prisma', () => ({
+  prisma: {
+    profile: {
+      update: jest.fn(),
+    },
+    psychologistProfile: {
+      upsert: jest.fn(),
+    },
+  },
+}))
 
-const MOCK_USER = { id: 'psych-user-1', email: 'psych@test.com' }
+import { savePsychologistProfile, type PsychologistOnboardingData } from '@/lib/actions/onboarding'
+import { prisma } from '@/lib/prisma'
+
+const MOCK_USER = {
+  id: 'psych-user-1',
+  email: 'psych@test.com',
+  app_metadata: { role: 'PSYCHOLOGIST' },
+}
 
 const VALID_DATA: PsychologistOnboardingData = {
   fullName: 'Dra. Ana Maria Silva',
@@ -32,19 +46,11 @@ const VALID_DATA: PsychologistOnboardingData = {
   videoUrl: 'https://youtube.com/watch?v=example',
 }
 
-function mockSupabaseChain(error: any = null) {
-  const chain: any = {
-    update: jest.fn().mockReturnThis(),
-    upsert: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockResolvedValue({ error }),
-  }
-  mockSupabaseFrom.mockReturnValue(chain)
-  return chain
-}
-
 describe('onboarding actions', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(prisma.profile.update as jest.Mock).mockResolvedValue({})
+    ;(prisma.psychologistProfile.upsert as jest.Mock).mockResolvedValue({})
   })
 
   describe('savePsychologistProfile', () => {
@@ -53,46 +59,35 @@ describe('onboarding actions', () => {
 
       const result = await savePsychologistProfile(VALID_DATA)
 
-      expect(result).toEqual({ success: false, error: 'Usuário não autenticado' })
+      expect(result.success).toBe(false)
+      expect(result.success === false && result.code).toBe('UNAUTHENTICATED')
     })
 
     it('should successfully save psychologist profile', async () => {
       mockGetUser.mockResolvedValue({ data: { user: MOCK_USER }, error: null })
 
-      // First call: profiles table update, second: psychologist_profiles upsert
-      let callCount = 0
-      mockSupabaseFrom.mockImplementation((table: string) => {
-        callCount++
-        const chain: any = {
-          update: jest.fn().mockReturnThis(),
-          upsert: jest.fn().mockResolvedValue({ error: null }),
-          eq: jest.fn().mockResolvedValue({ error: null }),
-        }
-        return chain
-      })
-
       const result = await savePsychologistProfile(VALID_DATA)
 
-      expect(result).toEqual({ success: true })
-      // Should call profiles and psychologist_profiles tables
-      expect(mockSupabaseFrom).toHaveBeenCalledWith('profiles')
-      expect(mockSupabaseFrom).toHaveBeenCalledWith('psychologist_profiles')
+      expect(result.success).toBe(true)
+      expect(prisma.profile.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { user_id: MOCK_USER.id },
+        })
+      )
+      expect(prisma.psychologistProfile.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: MOCK_USER.id },
+        })
+      )
     })
 
     it('should return error when profile update fails', async () => {
       mockGetUser.mockResolvedValue({ data: { user: MOCK_USER }, error: null })
-
-      mockSupabaseFrom.mockImplementation(() => {
-        const chain: any = {
-          update: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockResolvedValue({ error: { message: 'Profile update failed' } }),
-        }
-        return chain
-      })
+      ;(prisma.profile.update as jest.Mock).mockRejectedValue(new Error('Profile update failed'))
 
       const result = await savePsychologistProfile(VALID_DATA)
 
-      expect(result).toEqual({ success: false, error: 'Erro ao atualizar perfil básico' })
+      expect(result.success).toBe(false)
     })
 
     it('should sanitize input data (XSS prevention)', async () => {
@@ -105,64 +100,22 @@ describe('onboarding actions', () => {
         crp: '<img onerror="hack()">06/999999',
       }
 
-      let capturedProfileData: any = null
-      let capturedPsychData: any = null
-
-      mockSupabaseFrom.mockImplementation((table: string) => {
-        if (table === 'profiles') {
-          return {
-            update: jest.fn().mockImplementation((data: any) => {
-              capturedProfileData = data
-              return { eq: jest.fn().mockResolvedValue({ error: null }) }
-            }),
-          }
-        }
-        return {
-          upsert: jest.fn().mockImplementation((data: any) => {
-            capturedPsychData = data
-            return { then: (r: any) => r({ error: null }) }
-          }),
-        }
-      })
-
       await savePsychologistProfile(xssData)
 
-      // The name should be sanitized (no <script> tags)
-      if (capturedProfileData) {
-        expect(capturedProfileData.full_name).not.toContain('<script>')
-      }
+      const profileUpdateCall = (prisma.profile.update as jest.Mock).mock.calls[0][0]
+      expect(profileUpdateCall.data.fullName).not.toContain('<script>')
     })
 
     it('should merge specialties and approaches', async () => {
       mockGetUser.mockResolvedValue({ data: { user: MOCK_USER }, error: null })
 
-      let capturedData: any = null
-
-      mockSupabaseFrom.mockImplementation((table: string) => {
-        if (table === 'profiles') {
-          return {
-            update: jest.fn().mockReturnValue({
-              eq: jest.fn().mockResolvedValue({ error: null }),
-            }),
-          }
-        }
-        return {
-          upsert: jest.fn().mockImplementation((data: any) => {
-            capturedData = data
-            return Promise.resolve({ error: null })
-          }),
-        }
-      })
-
       await savePsychologistProfile(VALID_DATA)
 
-      // Specialties should contain both specialties and approaches
-      if (capturedData) {
-        const allItems = capturedData.specialties
-        expect(allItems).toEqual(
-          expect.arrayContaining(['Ansiedade', 'Depressão', 'TCC', 'Humanista'])
-        )
-      }
+      const upsertCall = (prisma.psychologistProfile.upsert as jest.Mock).mock.calls[0][0]
+      const allItems = upsertCall.create.specialties
+      expect(allItems).toEqual(
+        expect.arrayContaining(['Ansiedade', 'Depressão', 'TCC', 'Humanista'])
+      )
     })
   })
 })

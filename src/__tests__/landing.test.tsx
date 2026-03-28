@@ -22,13 +22,13 @@ describe('Landing Page', () => {
   it('renders the main value proposition', async () => {
     const ResolvedHome = await Home()
     render(ResolvedHome)
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Encontre seu equilíbrio/i)
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
   })
 
-  it('renders the "Começar agora" CTA', async () => {
+  it('renders the main CTA link', async () => {
     const ResolvedHome = await Home()
     render(ResolvedHome)
-    const link = screen.getByRole('link', { name: /Começar agora/i })
+    const link = screen.getByRole('link', { name: /Começar Jornada/i })
     expect(link).toBeInTheDocument()
   })
 

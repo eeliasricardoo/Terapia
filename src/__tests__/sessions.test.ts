@@ -65,7 +65,20 @@ jest.mock('@/lib/prisma', () => ({
       update: (...args: any[]) => mockPrismaAppointmentUpdate(...args),
       create: (...args: any[]) => mockPrismaAppointmentCreate(...args),
     },
-    $transaction: (...args: any[]) => mockPrismaTransaction(...args),
+    $transaction: (...args: any[]) => {
+      // If called with a callback (interactive transaction), execute it
+      if (typeof args[0] === 'function') {
+        const tx = {
+          appointment: {
+            findFirst: (...a: any[]) => mockPrismaAppointmentFindFirst(...a),
+            update: (...a: any[]) => mockPrismaAppointmentUpdate(...a),
+            create: (...a: any[]) => mockPrismaAppointmentCreate(...a),
+          },
+        }
+        return args[0](tx)
+      }
+      return mockPrismaTransaction(...args)
+    },
   },
 }))
 
