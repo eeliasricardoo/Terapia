@@ -170,7 +170,7 @@ export function NotificationCenter() {
                     {!notification.read && (
                       <button
                         onClick={() => handleMarkAsRead(notification.id)}
-                        className="h-6 w-6 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-white shadow-sm transition-all"
+                        className="h-6 w-6 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 shadow-sm transition-all"
                       >
                         <Check className="h-3 w-3" />
                       </button>
