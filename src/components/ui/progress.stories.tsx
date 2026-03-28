@@ -18,15 +18,17 @@ export const Default: Story = {
   render: () => <Progress value={33} className="w-[60%]" />,
 }
 
+function AnimatedProgress() {
+  const [progress, setProgress] = useState(13)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setProgress(66), 500)
+    return () => clearTimeout(timer)
+  }, [])
+
+  return <Progress value={progress} className="w-[60%]" />
+}
+
 export const Animated: Story = {
-  render: () => {
-    const [progress, setProgress] = useState(13)
-
-    useEffect(() => {
-      const timer = setTimeout(() => setProgress(66), 500)
-      return () => clearTimeout(timer)
-    }, [])
-
-    return <Progress value={progress} className="w-[60%]" />
-  },
+  render: () => <AnimatedProgress />,
 }
