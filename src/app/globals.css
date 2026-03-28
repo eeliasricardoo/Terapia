@@ -4,37 +4,37 @@
 
 @layer base {
   :root {
-    --background: 60 7% 97%; /* #F9F9F7 - Warm White */
-    --foreground: 180 29% 25%; /* #2D5252 - Dark Teal for text */
-    --card: 60 7% 99%;
-    --card-foreground: 180 29% 25%;
-    --popover: 60 7% 99%;
-    --popover-foreground: 180 29% 25%;
-    --primary: 180 29% 31%; /* #386666 - Logo Teal, darkened for contrast */
-    --primary-foreground: 60 7% 99%;
-    --secondary: 120 20% 55%; /* #7AA67A - Darker Green */
-    --secondary-foreground: 180 29% 25%;
-    --muted: 180 10% 90%;
-    --muted-foreground: 180 20% 35%;
-    --accent: 20 70% 60%; /* #D98553 - Darker Orange */
-    --accent-foreground: 60 7% 99%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 180 15% 85%;
-    --input: 180 15% 85%;
-    --ring: 180 29% 31%;
+    --background: 0 0% 98%; /* #FAFAFA - Clean white */
+    --foreground: 220 13% 13%; /* #1C1F26 - Near-black, high contrast */
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 13%;
+    --primary: 180 35% 28%; /* #2E6060 - Deep teal, WCAG AA on white */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 120 18% 48%; /* #5E9A5E - Muted green */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 14% 93%; /* #ECEEF2 - Light gray */
+    --muted-foreground: 220 10% 40%; /* #5C6070 - Dark gray, readable */
+    --accent: 20 72% 52%; /* #C8622A - Warm orange */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 88%; /* #DCDFE6 - Subtle border */
+    --input: 220 13% 88%;
+    --ring: 180 35% 28%;
     --radius: 2.5rem;
 
     /* Sentirz Specials */
-    --sentirz-teal: 180 29% 31%;
-    --sentirz-orange: 20 70% 60%;
-    --sentirz-green: 120 20% 55%;
-    --sentirz-bg: 60 7% 97%;
+    --sentirz-teal: 180 35% 28%;
+    --sentirz-orange: 20 72% 52%;
+    --sentirz-green: 120 18% 48%;
+    --sentirz-bg: 0 0% 98%;
 
     /* Pastel Variants for backgrounds/cards */
-    --sentirz-teal-pastel: 180 20% 95%;
-    --sentirz-orange-pastel: 20 60% 96%;
-    --sentirz-green-pastel: 120 20% 95%;
+    --sentirz-teal-pastel: 180 30% 94%;
+    --sentirz-orange-pastel: 20 60% 95%;
+    --sentirz-green-pastel: 120 20% 94%;
   }
 
   .dark {
