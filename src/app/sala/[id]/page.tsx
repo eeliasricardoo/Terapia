@@ -195,11 +195,11 @@ function ActiveRoomInterface({
   }, [daily, router])
 
   return (
-    <div className="flex h-screen bg-zinc-950 overflow-hidden font-sans relative">
+    <div className="flex h-[100dvh] bg-zinc-950 overflow-hidden font-sans relative">
       {/* Main Content: Full Video Area */}
-      <div className="flex-1 relative flex flex-col items-center justify-between transition-all duration-300">
+      <div className="flex-1 relative flex flex-col items-center justify-between transition-all duration-300 min-w-0">
         {/* Floating Session Info - Top Left */}
-        <div className="absolute top-6 left-8 z-40 flex flex-col gap-1">
+        <div className="absolute top-4 sm:top-6 left-4 sm:left-8 z-40 flex flex-col gap-1">
           <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-tight">
             Sessão em andamento
           </span>
@@ -219,8 +219,8 @@ function ActiveRoomInterface({
         </div>
 
         {/* Floating Actions - Top Right */}
-        <div className="absolute top-6 right-8 z-40 flex items-center gap-2">
-          <div className="px-3 py-1.5 bg-zinc-900 rounded-md border border-zinc-800 text-zinc-500 text-[10px] font-bold uppercase">
+        <div className="absolute top-4 sm:top-6 right-4 sm:right-8 z-40 flex items-center gap-2">
+          <div className="hidden sm:block px-3 py-1.5 bg-zinc-900 rounded-md border border-zinc-800 text-zinc-500 text-[10px] font-bold uppercase">
             SALA SEGURA
           </div>
 
@@ -266,11 +266,13 @@ function ActiveRoomInterface({
         </div>
       </div>
 
-      {/* Toggleable Sidebar */}
+      {/* Toggleable Sidebar - overlay on mobile, side panel on sm+ */}
       <div
         className={cn(
           'transition-all duration-300 border-l border-zinc-800 flex relative h-full bg-zinc-900',
-          isSidebarOpen ? 'w-[380px] xl:w-[420px]' : 'w-0 overflow-hidden border-none'
+          isSidebarOpen
+            ? 'absolute inset-0 sm:relative sm:inset-auto w-full sm:w-[340px] lg:w-[380px] xl:w-[420px] z-50 sm:z-auto'
+            : 'w-0 overflow-hidden border-none'
         )}
       >
         <RoomSidebar

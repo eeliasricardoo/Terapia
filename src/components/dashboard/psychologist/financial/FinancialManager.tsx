@@ -113,7 +113,7 @@ export function FinancialManager() {
   if (isLoading) {
     return (
       <div className="space-y-8 animate-in fade-in duration-500">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i} className="border-none shadow-sm">
               <CardContent className="p-6">
@@ -475,67 +475,70 @@ export function FinancialManager() {
             </Button>
           </div>
         </CardHeader>
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead>Paciente</TableHead>
-              <TableHead>Data</TableHead>
-              <TableHead>Método</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Valor</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {stats.recentTransactions.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-10 text-slate-400">
-                  Nenhuma transação encontrada.
-                </TableCell>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead>Paciente</TableHead>
+                <TableHead>Data</TableHead>
+                <TableHead>Método</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
               </TableRow>
-            ) : (
-              stats.recentTransactions.map((transaction) => (
-                <TableRow key={transaction.id} className="hover:bg-slate-50/50">
-                  <TableCell className="font-medium text-slate-900">
-                    {transaction.patient}
+            </TableHeader>
+            <TableBody>
+              {stats.recentTransactions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-10 text-slate-400">
+                    Nenhuma transação encontrada.
                   </TableCell>
-                  <TableCell className="text-slate-500">{transaction.date}</TableCell>
-                  <TableCell className="text-slate-600">{transaction.method}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={`
+                </TableRow>
+              ) : (
+                stats.recentTransactions.map((transaction) => (
+                  <TableRow key={transaction.id} className="hover:bg-slate-50/50">
+                    <TableCell className="font-medium text-slate-900">
+                      {transaction.patient}
+                    </TableCell>
+                    <TableCell className="text-slate-500">{transaction.date}</TableCell>
+                    <TableCell className="text-slate-600">{transaction.method}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={`
                                                 ${transaction.status === 'completed' || transaction.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : ''}
                                                 ${transaction.status === 'scheduled' || transaction.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' : ''}
                                                 ${transaction.status === 'canceled' || transaction.status === 'refunded' ? 'bg-red-50 text-red-700 border-red-200' : ''}
                                             `}
-                    >
-                      {transaction.status === 'completed' || transaction.status === 'paid'
-                        ? 'Recebido'
-                        : transaction.status === 'scheduled' || transaction.status === 'pending'
-                          ? 'Previsto'
-                          : 'Cancelado'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-medium text-slate-900">
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                      transaction.amount
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-slate-400 hover:text-slate-900"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                      >
+                        {transaction.status === 'completed' || transaction.status === 'paid'
+                          ? 'Recebido'
+                          : transaction.status === 'scheduled' || transaction.status === 'pending'
+                            ? 'Previsto'
+                            : 'Cancelado'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-medium text-slate-900">
+                      {new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      }).format(transaction.amount)}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-400 hover:text-slate-900"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </Card>
     </div>
   )

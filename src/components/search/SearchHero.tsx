@@ -64,7 +64,7 @@ export function SearchHero() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="flex-1 hidden md:block"
           >
-            <div className="bg-[#FFFAF3] p-8 rounded-[2.5rem] border border-orange-100 shadow-xl shadow-orange-100/20">
+            <div className="bg-[#FFFAF3] p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-orange-100 shadow-xl shadow-orange-100/20">
               <h3 className="text-xl font-bold text-slate-900 mb-6">Como funciona a busca:</h3>
               <ul className="space-y-6">
                 <li className="flex gap-4">

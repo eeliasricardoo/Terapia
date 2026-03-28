@@ -207,7 +207,7 @@ export default async function SessionsPage() {
                               scheduledAt: scheduledDate.toISOString(),
                             }}
                           >
-                            <Button variant="outline" className="w-full md:w-auto h-9">
+                            <Button variant="outline" className="w-full sm:w-auto h-9">
                               Reagendar
                             </Button>
                           </RescheduleDialog>

@@ -12,16 +12,16 @@ import { BRAND_NAME, BRAND_SLOGAN } from '@/lib/constants/branding'
 
 export function Hero() {
   return (
-    <section className="w-full min-h-[92vh] flex items-center bg-background relative overflow-hidden">
+    <section className="w-full min-h-screen flex items-center bg-background relative overflow-hidden">
       {/* Dynamic background accents - Sentirz Style */}
-      <div className="absolute top-20 left-10 w-[600px] h-[600px] bg-sentirz-teal/10 rounded-full blur-[120px] pointer-events-none animate-blob" />
-      <div className="absolute bottom-20 right-20 w-[500px] h-[500px] bg-sentirz-green/10 rounded-full blur-[100px] pointer-events-none animate-blob animation-delay-2000" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-sentirz-orange/5 rounded-full blur-[100px] pointer-events-none animate-blob animation-delay-4000" />
+      <div className="absolute top-20 left-10 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] bg-sentirz-teal/10 rounded-full blur-[80px] sm:blur-[120px] pointer-events-none animate-blob" />
+      <div className="absolute bottom-20 right-20 w-[250px] h-[250px] sm:w-[500px] sm:h-[500px] bg-sentirz-green/10 rounded-full blur-[60px] sm:blur-[100px] pointer-events-none animate-blob animation-delay-2000" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] sm:w-[400px] sm:h-[400px] bg-sentirz-orange/5 rounded-full blur-[60px] sm:blur-[100px] pointer-events-none animate-blob animation-delay-4000" />
 
-      <div className="container px-6 relative z-10 mx-auto max-w-7xl">
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center">
+      <div className="container px-4 sm:px-6 relative z-10 mx-auto max-w-7xl py-12 sm:py-16 lg:py-0">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
           {/* Text content */}
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-10">
+          <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-8 sm:space-y-10">
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -42,7 +42,7 @@ export function Hero() {
               transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="space-y-6"
             >
-              <h1 className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tight leading-[0.9] text-foreground font-outfit">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight leading-[0.9] text-foreground font-outfit">
                 Sinta a sua <br />
                 <span className="text-sentirz-gradient relative">
                   evolução.
@@ -75,12 +75,12 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-5"
+              className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full sm:w-auto"
             >
               <Button
                 asChild
                 size="lg"
-                className="h-16 px-12 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-2xl shadow-primary/20 transition-all hover:-translate-y-1 group border-none"
+                className="h-14 sm:h-16 px-8 sm:px-12 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-2xl shadow-primary/20 transition-all hover:-translate-y-1 group border-none w-full sm:w-auto"
               >
                 <Link href="/busca" className="flex items-center gap-2">
                   Começar Jornada
@@ -91,7 +91,7 @@ export function Hero() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="h-16 px-12 text-base font-bold border-2 border-primary/30 hover:bg-primary/5 rounded-full transition-all text-primary"
+                  className="h-14 sm:h-16 px-8 sm:px-12 text-base font-bold border-2 border-primary/30 hover:bg-primary/5 rounded-full transition-all text-primary w-full sm:w-auto"
                 >
                   Sou Psicólogo(a)
                 </Button>

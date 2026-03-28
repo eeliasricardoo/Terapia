@@ -105,11 +105,11 @@ export function BookingWidget({
   }
 
   return (
-    <Card className="border-none shadow-xl shadow-blue-900/5 bg-white overflow-hidden ring-1 ring-slate-100 flex flex-col max-h-[calc(100vh-6.5rem)]">
+    <Card className="border-none shadow-xl shadow-blue-900/5 bg-white overflow-hidden ring-1 ring-slate-100 flex flex-col max-h-[calc(100dvh-6.5rem)]">
       <div className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-200 hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full pb-4">
         {/* Plan Selection Header */}
         {monthlyEnabled && (
-          <div className="grid grid-cols-2 p-1.5 bg-slate-100/80 rounded-2xl mb-6 mx-6 mt-6">
+          <div className="grid grid-cols-2 p-1.5 bg-slate-100/80 rounded-2xl mb-6 mx-3 sm:mx-6 mt-6">
             <button
               onClick={() => setSelectedPlan('monthly')}
               className={cn(
@@ -137,7 +137,7 @@ export function BookingWidget({
 
         <div
           className={cn(
-            'mx-6 p-6 md:p-8 rounded-3xl text-white text-center transition-all duration-500 relative overflow-hidden',
+            'mx-3 sm:mx-6 p-5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl text-white text-center transition-all duration-500 relative overflow-hidden',
             !monthlyEnabled && 'mt-6',
             selectedPlan === 'single'
               ? 'bg-gradient-to-br from-slate-800 to-slate-900 shadow-slate-900/20 shadow-xl'
@@ -177,7 +177,7 @@ export function BookingWidget({
           </div>
         </div>
 
-        <CardContent className="p-6 md:p-8">
+        <CardContent className="p-4 sm:p-6 md:p-8">
           <h3 className="font-bold text-slate-900 mb-1 flex items-center gap-2">
             <div
               className="h-2 w-2 rounded-full bg-green-500 animate-pulse"
@@ -256,7 +256,7 @@ export function BookingWidget({
           <div className="space-y-3">
             <h4 className="text-sm font-semibold text-slate-900">Horários disponíveis</h4>
             {selectedDay ? (
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {availableSlotsForSelectedDay.length > 0 ? (
                   availableSlotsForSelectedDay.map((time) => (
                     <Button
@@ -275,7 +275,7 @@ export function BookingWidget({
                     </Button>
                   ))
                 ) : (
-                  <div className="col-span-3 text-sm text-slate-500 py-2">
+                  <div className="col-span-2 sm:col-span-3 text-sm text-slate-500 py-2">
                     Nenhum horário disponível para este dia.
                   </div>
                 )}

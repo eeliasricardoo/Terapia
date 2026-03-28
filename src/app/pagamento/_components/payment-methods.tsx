@@ -77,7 +77,7 @@ export function PaymentMethods({
               )}
             </TabsList>
 
-            <div className="p-8">
+            <div className="p-4 sm:p-8">
               <TabsContent value="card" className="mt-0 focus-visible:ring-0">
                 <div className="space-y-8">
                   <div className="bg-slate-50/50 rounded-2xl p-6 border border-slate-100 flex items-start gap-4">

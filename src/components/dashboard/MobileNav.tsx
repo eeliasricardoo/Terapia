@@ -17,6 +17,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Logo } from '@/components/ui/Logo'
 
 const PATIENT_MENU = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
@@ -105,14 +106,8 @@ export function MobileNav() {
 
   return (
     <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b bg-white sticky top-0 z-50 shadow-sm">
-      <Link
-        href="/dashboard"
-        className="flex items-center gap-2 font-semibold text-lg hover:opacity-80 transition-opacity"
-      >
-        <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground text-xs font-black">
-          MC
-        </div>
-        <span className="text-slate-900">Mind Cares</span>
+      <Link href="/dashboard" className="flex items-center hover:opacity-80 transition-opacity">
+        <Logo size="sm" />
       </Link>
       <Sheet>
         <SheetTrigger asChild>
@@ -125,22 +120,24 @@ export function MobileNav() {
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[min(85vw,20rem)] p-0">
-          <div className="h-full flex flex-col p-6">
+        <SheetContent side="left" className="w-[min(80vw,22rem)] p-0">
+          <div className="h-full flex flex-col">
             {/* Profile Info */}
-            <div className="flex items-center gap-3 mb-8">
-              <Avatar className="h-12 w-12">
+            <div className="flex items-center gap-3 px-5 py-6 border-b border-slate-100">
+              <Avatar className="h-11 w-11 shrink-0">
                 <AvatarImage src="/avatars/user.png" />
-                <AvatarFallback>{user?.name?.[0] || 'U'}</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                  {user?.name?.[0] || 'U'}
+                </AvatarFallback>
               </Avatar>
-              <div>
-                <p className="font-semibold text-sm">{user?.name || 'Carregando...'}</p>
+              <div className="min-w-0">
+                <p className="font-semibold text-sm truncate">{user?.name || 'Carregando...'}</p>
                 <p className="text-xs text-muted-foreground">{user?.role || ''}</p>
               </div>
             </div>
 
             {/* Nav Links */}
-            <nav className="flex-1 space-y-2">
+            <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
               {menuItems.map((item) => {
                 const isActive = pathname === item.href
                 return (
@@ -149,10 +146,10 @@ export function MobileNav() {
                     href={item.href}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
-                      'flex items-center gap-3 px-4 py-3.5 text-sm font-medium rounded-xl transition-colors',
+                      'flex items-center gap-3 px-4 py-4 text-sm font-medium rounded-xl transition-colors min-h-[52px]',
                       isActive
                         ? 'bg-primary text-white shadow-sm'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 active:bg-slate-100'
                     )}
                   >
                     <item.icon
@@ -165,14 +162,14 @@ export function MobileNav() {
               })}
             </nav>
 
-            <div className="pt-4 border-t">
+            <div className="px-3 pb-6 pt-3 border-t border-slate-100">
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-3 text-slate-600 hover:text-red-600 hover:bg-red-50 px-4"
+                className="w-full justify-start gap-3 text-slate-600 hover:text-red-600 hover:bg-red-50 px-4 h-12"
                 onClick={handleLogout}
               >
                 <LogOut className="h-5 w-5" />
-                Sair
+                Sair da conta
               </Button>
             </div>
           </div>

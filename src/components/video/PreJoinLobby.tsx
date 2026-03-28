@@ -131,7 +131,7 @@ export function PreJoinLobby({ roomUrl, token }: PreJoinLobbyProps) {
         </div>
       )}
 
-      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-12 items-center">
+      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 lg:gap-12 items-center">
         {/* Left: Preview */}
         <div className="space-y-8 flex flex-col items-center">
           <div className="flex flex-col items-center text-center space-y-4">
@@ -243,7 +243,7 @@ export function PreJoinLobby({ roomUrl, token }: PreJoinLobbyProps) {
         </div>
 
         {/* Right: Join Card */}
-        <div className="bg-zinc-50 p-10 rounded-[40px] border border-zinc-100 space-y-10 h-fit transition-all hover:bg-zinc-50/80">
+        <div className="bg-zinc-50 p-6 sm:p-10 rounded-[40px] border border-zinc-100 space-y-10 h-fit transition-all hover:bg-zinc-50/80">
           <div className="space-y-6">
             <div className="flex items-center justify-between text-zinc-950 pb-2">
               <div className="flex items-center gap-2 font-black uppercase tracking-tighter text-sm">

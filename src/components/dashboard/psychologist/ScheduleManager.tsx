@@ -702,7 +702,7 @@ export function ScheduleManager() {
               mode="single"
               selected={selectedDate}
               onSelect={setSelectedDate}
-              className="rounded-md border-0 w-full max-w-lg"
+              className="rounded-md border-0 w-full"
               classNames={{
                 month: 'space-y-3 w-full',
                 caption: 'flex justify-start pt-1 relative items-center pl-2',
@@ -758,7 +758,7 @@ export function ScheduleManager() {
               }}
             />
           </div>
-          <div className="border-t border-slate-100 px-5 py-2.5 flex items-center justify-center gap-5">
+          <div className="border-t border-slate-100 px-4 py-3 flex flex-wrap items-center justify-center gap-3 sm:gap-5">
             {[
               { color: 'bg-blue-500', label: 'Padrão' },
               { color: 'bg-indigo-500', label: 'Personalizado' },

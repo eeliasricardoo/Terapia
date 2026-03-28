@@ -291,7 +291,7 @@ export function PatientProfilePage({ patient }: Props) {
                       className="bg-slate-50 border-slate-200"
                       readOnly
                     />
-                    <div className="grid grid-cols-3 gap-4 mt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-2">
                       <Input
                         defaultValue={patient.address?.city || ''}
                         placeholder="Cidade"

@@ -125,7 +125,7 @@ export function CompaniesHero() {
               <motion.div
                 animate={{ y: [-10, 10, -10] }}
                 transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -left-10 top-1/4 bg-white/90 backdrop-blur-xl border border-white p-5 rounded-2xl shadow-2xl flex items-center gap-4 z-20"
+                className="absolute -left-4 sm:-left-10 top-1/4 bg-white/90 backdrop-blur-xl border border-white p-3 sm:p-5 rounded-2xl shadow-2xl flex items-center gap-3 sm:gap-4 z-20 hidden sm:flex"
               >
                 <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
                   <CoreUsersIcon className="h-6 w-6 text-blue-500" />
@@ -141,7 +141,7 @@ export function CompaniesHero() {
               <motion.div
                 animate={{ y: [10, -10, 10] }}
                 transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-                className="absolute -right-6 bottom-1/4 bg-slate-900/90 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl flex items-center gap-4 z-20"
+                className="absolute -right-2 sm:-right-6 bottom-1/4 bg-slate-900/90 backdrop-blur-xl border border-white/10 p-3 sm:p-5 rounded-2xl shadow-2xl flex items-center gap-3 sm:gap-4 z-20 hidden sm:flex"
               >
                 <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center">
                   <CoreShieldIcon className="h-6 w-6 text-sky-400" />

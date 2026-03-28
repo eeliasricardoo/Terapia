@@ -17,7 +17,7 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Meu Perfil</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Meu Perfil</h1>
         <p className="text-muted-foreground">Gerencie suas informações pessoais e segurança.</p>
       </div>
 
@@ -25,14 +25,14 @@ export default function ProfilePage() {
         <TabsList className="flex flex-wrap md:flex-nowrap items-center w-full md:w-fit h-auto mb-8 gap-2 bg-slate-100/50 p-1.5 rounded-[1.25rem] border border-slate-200/60 shadow-sm overflow-hidden">
           <TabsTrigger
             value="general"
-            className="flex-1 md:flex-initial rounded-xl px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
+            className="flex-1 md:flex-initial rounded-xl px-3 sm:px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
           >
             Informações Gerais
           </TabsTrigger>
           {user?.rawRole !== 'ADMIN' && (
             <TabsTrigger
               value="plans"
-              className="flex-1 md:flex-initial rounded-xl px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
+              className="flex-1 md:flex-initial rounded-xl px-3 sm:px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
             >
               Meus Planos
             </TabsTrigger>
@@ -40,14 +40,14 @@ export default function ProfilePage() {
           {user?.rawRole === 'PATIENT' && (
             <TabsTrigger
               value="benefits"
-              className="flex-1 md:flex-initial rounded-xl px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
+              className="flex-1 md:flex-initial rounded-xl px-3 sm:px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
             >
               Benefícios
             </TabsTrigger>
           )}
           <TabsTrigger
             value="security"
-            className="flex-1 md:flex-initial rounded-xl px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
+            className="flex-1 md:flex-initial rounded-xl px-3 sm:px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
           >
             Segurança
           </TabsTrigger>

@@ -45,20 +45,23 @@ const testimonials = [
 
 export function Testimonials() {
   return (
-    <section className="w-full py-32 md:py-40 bg-slate-50 relative overflow-hidden">
+    <section className="w-full py-20 md:py-32 lg:py-40 bg-slate-50 relative overflow-hidden">
       {/* Decorative quotes */}
-      <div className="absolute top-20 left-[5%] text-slate-100" aria-hidden="true">
-        <Quote className="h-32 w-32 rotate-180" />
+      <div className="absolute top-20 left-[5%] text-slate-100 hidden sm:block" aria-hidden="true">
+        <Quote className="h-24 w-24 sm:h-32 sm:w-32 rotate-180" />
       </div>
-      <div className="absolute bottom-16 right-[5%] text-slate-100" aria-hidden="true">
-        <Quote className="h-24 w-24" />
+      <div
+        className="absolute bottom-16 right-[5%] text-slate-100 hidden sm:block"
+        aria-hidden="true"
+      >
+        <Quote className="h-16 w-16 sm:h-24 sm:w-24" />
       </div>
 
       {/* Organic dots */}
       <div className="absolute top-1/3 right-[10%] w-2 h-2 rounded-full bg-amber-200/50" />
       <div className="absolute bottom-1/4 left-[12%] w-2.5 h-2.5 rounded-full bg-blue-200/40" />
 
-      <div className="container px-6 relative z-10 mx-auto max-w-5xl">
+      <div className="container px-4 sm:px-6 relative z-10 mx-auto max-w-5xl">
         <motion.div
           variants={stagger}
           initial="initial"
@@ -76,19 +79,19 @@ export function Testimonials() {
             </motion.p>
             <motion.h2
               variants={fadeIn}
-              className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 font-outfit"
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 font-outfit"
             >
               O que dizem sobre nós
             </motion.h2>
           </div>
 
           {/* Testimonials grid */}
-          <motion.div variants={stagger} className="grid md:grid-cols-3 gap-6">
+          <motion.div variants={stagger} className="grid md:grid-cols-3 gap-4 sm:gap-6">
             {testimonials.map((t, i) => (
               <motion.div
                 key={i}
                 variants={fadeIn}
-                className="bg-white border border-slate-100 rounded-3xl p-8 hover:shadow-lg hover:shadow-slate-100/80 hover:-translate-y-1 transition-all duration-500 flex flex-col justify-between gap-6 group"
+                className="bg-white border border-slate-100 rounded-2xl sm:rounded-3xl p-5 sm:p-8 hover:shadow-lg hover:shadow-slate-100/80 hover:-translate-y-1 transition-all duration-500 flex flex-col justify-between gap-6 group"
               >
                 <div className="space-y-5">
                   {/* Stars */}

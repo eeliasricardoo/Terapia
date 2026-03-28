@@ -50,12 +50,12 @@ const features = [
 
 export function Features() {
   return (
-    <section className="w-full py-32 md:py-40 bg-background relative overflow-hidden">
+    <section className="w-full py-20 md:py-32 lg:py-40 bg-background relative overflow-hidden">
       {/* Decorative organic shapes - Sentirz Style */}
       <div className="absolute top-20 right-10 w-40 h-40 rounded-full bg-sentirz-teal/10 blur-[80px]" />
       <div className="absolute bottom-32 left-16 w-32 h-32 rounded-full bg-sentirz-orange/10 blur-[60px]" />
 
-      <div className="container px-6 relative z-10 mx-auto max-w-5xl">
+      <div className="container px-4 sm:px-6 relative z-10 mx-auto max-w-5xl">
         <motion.div
           variants={stagger}
           initial="initial"
@@ -74,7 +74,7 @@ export function Features() {
             </motion.div>
             <motion.h2
               variants={fadeIn}
-              className="text-4xl md:text-6xl font-black tracking-tight text-foreground font-outfit"
+              className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight text-foreground font-outfit"
             >
               Por que a Sentirz?
             </motion.h2>
@@ -87,16 +87,16 @@ export function Features() {
           </div>
 
           {/* Features cards */}
-          <motion.div variants={stagger} className="grid md:grid-cols-3 gap-6">
+          <motion.div variants={stagger} className="grid md:grid-cols-3 gap-4 sm:gap-6">
             {features.map((feature) => (
               <motion.div
                 key={feature.number}
                 variants={fadeIn}
-                className="group relative bg-white border border-primary/10 rounded-[2.5rem] p-8 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-500"
+                className="group relative bg-white border border-primary/10 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-500"
               >
                 {/* Subtle gradient bg on hover */}
                 <div
-                  className={`absolute inset-0 bg-gradient-to-br ${feature.color} rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+                  className={`absolute inset-0 bg-gradient-to-br ${feature.color} rounded-[2rem] sm:rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
                 />
 
                 <div className="relative z-10 space-y-6">

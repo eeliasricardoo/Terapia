@@ -103,13 +103,13 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
-        className="sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl bg-white max-h-[90vh] flex flex-col"
+        className="max-w-[95vw] sm:max-w-[480px] p-0 overflow-hidden border-none shadow-2xl bg-white max-h-[90dvh] flex flex-col"
         aria-describedby="reschedule-description"
       >
         <div className="bg-gradient-to-br from-primary to-primary/80 p-6 text-primary-foreground relative flex-shrink-0">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
           <DialogHeader className="relative z-10 text-left">
-            <DialogTitle className="text-2xl font-black tracking-tight text-primary-foreground mb-2">
+            <DialogTitle className="text-xl sm:text-2xl font-black tracking-tight text-primary-foreground mb-2">
               Reagendar Sessão
             </DialogTitle>
             <p
