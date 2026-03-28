@@ -33,7 +33,7 @@ export default function SuccessPage() {
   const router = useRouter()
 
   return (
-    <div className="professional-theme flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="professional-theme flex min-h-[100dvh] items-center justify-center bg-gray-50 px-4 py-6 sm:py-12">
       <Card className="w-full max-w-2xl">
         <CardContent className="space-y-8 p-8 sm:p-12">
           {/* Success Icon */}

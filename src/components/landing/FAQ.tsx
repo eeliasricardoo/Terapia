@@ -46,8 +46,8 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section className="w-full py-32 md:py-40 bg-white relative overflow-hidden">
-      <div className="container px-6 relative z-10 mx-auto max-w-3xl">
+    <section className="w-full py-20 md:py-32 lg:py-40 bg-white relative overflow-hidden">
+      <div className="container px-4 sm:px-6 relative z-10 mx-auto max-w-3xl">
         <motion.div
           variants={stagger}
           initial="initial"
@@ -65,7 +65,7 @@ export function FAQ() {
             </motion.p>
             <motion.h2
               variants={fadeIn}
-              className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 font-outfit"
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 font-outfit"
             >
               Tire suas dúvidas
             </motion.h2>
@@ -89,7 +89,7 @@ export function FAQ() {
                   onClick={() => setOpenIndex(openIndex === i ? null : i)}
                   className="w-full flex items-center justify-between p-6 text-left focus:outline-none bg-white hover:bg-slate-50/50 transition-colors"
                 >
-                  <span className="font-semibold text-slate-900 pr-8">{faq.question}</span>
+                  <span className="font-semibold text-slate-900 pr-3 sm:pr-8">{faq.question}</span>
                   <div className="flex-shrink-0 text-slate-400">
                     {openIndex === i ? <Minus className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
                   </div>

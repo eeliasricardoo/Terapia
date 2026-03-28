@@ -14,7 +14,7 @@ import { SuccessState } from './_components/success-state'
 function PaymentPageSkeleton() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
-      <main className="flex-1 container py-12 max-w-7xl">
+      <main className="flex-1 container py-6 sm:py-12 max-w-7xl px-4 sm:px-6">
         {/* Breadcrumb skeleton */}
         <div className="flex items-center gap-2 mb-8">
           <Skeleton className="h-4 w-20 bg-slate-200" />
@@ -99,7 +99,7 @@ function PaymentContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
-      <main className="flex-1 container py-12 max-w-7xl">
+      <main className="flex-1 container py-6 sm:py-12 max-w-7xl px-4 sm:px-6">
         <CheckoutBreadcrumb doctorName={doctorName} doctorId={doctorId} />
 
         {isSuccess ? (
@@ -122,7 +122,7 @@ function PaymentContent() {
               </p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-12">
+            <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
               <OrderSummary
                 doctorName={doctorName}
                 avatarUrl={avatarUrl}

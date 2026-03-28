@@ -27,7 +27,7 @@ export function ChatSidebar({
   onSelect,
 }: ChatSidebarProps) {
   return (
-    <div className="w-full md:w-80 lg:w-96 flex flex-col h-[400px] md:h-full border border-slate-200/60 bg-white overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all">
+    <div className="w-full md:w-72 lg:w-80 xl:w-96 flex-shrink-0 flex flex-col h-64 sm:h-72 md:h-full border border-slate-200/60 bg-white overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all">
       <div className="p-6 border-b border-slate-100 space-y-5">
         <h2 className="text-xl font-bold tracking-tight text-slate-900">Conversas</h2>
         <div className="relative group">

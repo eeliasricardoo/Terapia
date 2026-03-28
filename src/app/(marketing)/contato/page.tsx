@@ -38,7 +38,7 @@ export default function ContatoPage() {
   }
 
   return (
-    <div className="bg-slate-50 min-h-screen py-20 px-6">
+    <div className="bg-slate-50 min-h-screen py-10 sm:py-20 px-4 sm:px-6">
       <div className="container max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-5 gap-16">
           {/* Informações de Contato */}

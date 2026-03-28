@@ -12,21 +12,21 @@ export function AboutSection({ psychologist }: AboutSectionProps) {
   return (
     <div className="space-y-8">
       {/* Bio Section */}
-      <section className="bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-4">
+      <section className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 border border-slate-100 shadow-sm space-y-4">
         <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">Sobre mim</h2>
-        <p className="text-slate-600 leading-relaxed text-lg whitespace-pre-wrap">
+        <p className="text-slate-600 leading-relaxed text-base sm:text-lg whitespace-pre-wrap">
           {psychologist.bio ||
             'Psicólogo(a) dedicado(a) ao bem-estar emocional e mental dos pacientes. Utilizo abordagens baseadas em evidências para ajudar pessoas a superarem desafios e alcançarem seus objetivos terapêuticos.'}
         </p>
       </section>
 
       {/* Education and Experience Section */}
-      <section className="bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
+      <section className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
         <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
           Formação e Qualificações
         </h2>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <div className="mt-1 bg-slate-50 p-2 rounded-lg">
@@ -85,7 +85,7 @@ export function AboutSection({ psychologist }: AboutSectionProps) {
       </section>
 
       {/* Specialties Section */}
-      <section className="bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
+      <section className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
         <h2 className="text-xl font-bold text-slate-900">Especialidades e Abordagens</h2>
         <div className="flex flex-wrap gap-2">
           {psychologist.specialties?.map((spec) => (

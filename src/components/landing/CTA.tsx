@@ -13,13 +13,13 @@ const fadeIn: Variants = {
 
 export function CTA() {
   return (
-    <section className="w-full py-32 md:py-40 bg-background relative overflow-hidden">
+    <section className="w-full py-20 md:py-32 lg:py-40 bg-background relative overflow-hidden">
       {/* Decorative organic dots */}
       <div className="absolute top-16 left-[10%] w-2 h-2 rounded-full bg-sentirz-teal/60" />
       <div className="absolute bottom-20 right-[15%] w-3 h-3 rounded-full bg-sentirz-green/50" />
       <div className="absolute top-1/3 right-[8%] w-2 h-2 rounded-full bg-sentirz-orange/40" />
 
-      <div className="container px-6 relative z-10 mx-auto max-w-5xl">
+      <div className="container px-4 sm:px-6 relative z-10 mx-auto max-w-5xl">
         <motion.div
           initial="initial"
           whileInView="animate"
@@ -29,10 +29,10 @@ export function CTA() {
           {/* Background card */}
           <motion.div
             variants={fadeIn}
-            className="relative bg-sentirz-teal-pastel border border-sentirz-teal/10 rounded-[2.5rem] p-12 md:p-20 overflow-hidden shadow-sm"
+            className="relative bg-sentirz-teal-pastel border border-sentirz-teal/10 rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[2.5rem] p-6 sm:p-12 md:p-20 overflow-hidden shadow-sm"
           >
             {/* Illustration decorations */}
-            <div className="absolute -right-10 -bottom-10 md:right-8 md:bottom-8 w-[280px] md:w-[360px] opacity-[0.08] pointer-events-none">
+            <div className="absolute -right-4 -bottom-4 sm:-right-10 sm:-bottom-10 md:right-8 md:bottom-8 w-[160px] sm:w-[280px] md:w-[360px] opacity-[0.08] pointer-events-none">
               <Image
                 src="/cta-illustration.png"
                 alt=""
@@ -51,7 +51,7 @@ export function CTA() {
                 <p className="text-xs font-semibold text-primary uppercase tracking-[0.2em]">
                   Comece sua jornada
                 </p>
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-tight font-outfit">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-tight font-outfit">
                   Pronto para dar o
                   <br />
                   <span className="text-sentirz-gradient relative">
@@ -83,7 +83,7 @@ export function CTA() {
                 <Button
                   asChild
                   size="lg"
-                  className="h-14 px-10 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg shadow-primary/10 transition-all hover:-translate-y-0.5 group border-none"
+                  className="h-12 sm:h-14 px-6 sm:px-10 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg shadow-primary/10 transition-all hover:-translate-y-0.5 group border-none w-full sm:w-auto"
                 >
                   <Link href="/busca" className="flex items-center gap-2">
                     Encontrar Meu Psicólogo
@@ -94,7 +94,7 @@ export function CTA() {
                   asChild
                   variant="ghost"
                   size="lg"
-                  className="h-14 px-10 text-base font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 rounded-full transition-all"
+                  className="h-12 sm:h-14 px-6 sm:px-10 text-base font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 rounded-full transition-all w-full sm:w-auto"
                 >
                   <Link href="/cadastro?role=psychologist">Sou profissional</Link>
                 </Button>

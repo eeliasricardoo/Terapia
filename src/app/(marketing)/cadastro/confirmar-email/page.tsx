@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function ConfirmEmailPage() {
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-12 px-4 bg-mesh">
+    <div className="flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center py-6 sm:py-12 px-4 bg-mesh">
       <Suspense
         fallback={
           <div className="flex items-center justify-center">

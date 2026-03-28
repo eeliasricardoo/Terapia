@@ -147,12 +147,12 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-xl border-b border-slate-100">
-      <div className="container flex h-20 items-center justify-between">
-        <div className="flex items-center gap-10">
+      <div className="container flex h-16 sm:h-20 items-center justify-between">
+        <div className="flex items-center gap-4 sm:gap-10">
           <Link href={isLoggedIn ? '/dashboard' : '/'} className="flex items-center gap-2.5">
             <Logo size="md" />
           </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
+          <nav className="hidden md:flex items-center gap-4 lg:gap-8 text-sm font-medium">
             {links.map((link) => (
               <Link
                 key={link.href}

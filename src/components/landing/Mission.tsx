@@ -15,16 +15,16 @@ const stagger: Variants = {
 
 export function Mission() {
   return (
-    <section className="w-full py-32 md:py-40 bg-white relative overflow-hidden">
+    <section className="w-full py-20 md:py-32 lg:py-40 bg-white relative overflow-hidden">
       {/* Dynamic background accents - Sentirz Style */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[150px] pointer-events-none animate-blob" />
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[120px] pointer-events-none animate-blob animation-delay-2000" />
+      <div className="absolute top-0 left-0 w-[250px] h-[250px] sm:w-[500px] sm:h-[500px] bg-primary/10 rounded-full blur-[80px] sm:blur-[150px] pointer-events-none animate-blob" />
+      <div className="absolute bottom-0 right-0 w-[200px] h-[200px] sm:w-[400px] sm:h-[400px] bg-accent/10 rounded-full blur-[60px] sm:blur-[120px] pointer-events-none animate-blob animation-delay-2000" />
 
       {/* Organic dots */}
       <div className="absolute top-20 right-[15%] w-3 h-3 rounded-full bg-primary/20" />
       <div className="absolute bottom-24 left-[10%] w-4 h-4 rounded-full bg-accent/20" />
 
-      <div className="container px-6 relative z-10 mx-auto max-w-5xl">
+      <div className="container px-4 sm:px-6 relative z-10 mx-auto max-w-5xl">
         <motion.div
           variants={stagger}
           initial="initial"
@@ -32,11 +32,11 @@ export function Mission() {
           viewport={{ once: true, margin: '-80px' }}
         >
           {/* Main content */}
-          <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
             {/* Left - Illustration */}
             <motion.div variants={fadeIn} className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-100/20 to-indigo-100/10 rounded-[3rem] blur-2xl pointer-events-none" />
-              <div className="relative bg-gradient-to-br from-slate-50 to-blue-50/30 rounded-[2.5rem] p-8 border border-slate-100">
+              <div className="relative bg-gradient-to-br from-slate-50 to-blue-50/30 rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-8 border border-slate-100">
                 <Image
                   src="/cta-illustration.png"
                   alt="Ilustração representando conexão e acolhimento entre terapeuta e paciente"
@@ -50,7 +50,7 @@ export function Mission() {
               <motion.div
                 animate={{ y: [-6, 6, -6] }}
                 transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -bottom-6 -right-4 md:-right-8 bg-white border border-slate-100 px-6 py-4 rounded-2xl shadow-lg max-w-[240px] z-20"
+                className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-4 md:-right-8 bg-white border border-slate-100 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl shadow-lg max-w-[200px] sm:max-w-[240px] z-20"
               >
                 <p className="text-sm text-slate-600 italic leading-relaxed">
                   &ldquo;Pedir ajuda é o primeiro passo para se sentir melhor.&rdquo;
@@ -75,7 +75,7 @@ export function Mission() {
 
               <motion.h2
                 variants={fadeIn}
-                className="text-4xl md:text-6xl font-black tracking-tight text-midnight dark:text-white leading-[1.1] font-outfit"
+                className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight text-midnight dark:text-white leading-[1.1] font-outfit"
               >
                 Todo mundo merece
                 <br />

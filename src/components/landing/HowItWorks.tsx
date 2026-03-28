@@ -46,12 +46,12 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="w-full py-32 md:py-40 bg-background relative overflow-hidden">
+    <section className="w-full py-20 md:py-32 lg:py-40 bg-background relative overflow-hidden">
       {/* Decorative dots */}
       <div className="absolute top-16 right-[12%] w-2 h-2 rounded-full bg-sentirz-green/40" />
       <div className="absolute bottom-24 left-[8%] w-3 h-3 rounded-full bg-sentirz-teal/30" />
 
-      <div className="container px-6 relative z-10 mx-auto max-w-5xl">
+      <div className="container px-4 sm:px-6 relative z-10 mx-auto max-w-5xl">
         <motion.div
           variants={stagger}
           initial="initial"
@@ -69,7 +69,7 @@ export function HowItWorks() {
             </motion.p>
             <motion.h2
               variants={fadeIn}
-              className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground font-outfit"
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground font-outfit"
             >
               Como funciona?
             </motion.h2>
@@ -89,7 +89,7 @@ export function HowItWorks() {
               aria-hidden="true"
             />
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-6">
               {steps.map((step, i) => (
                 <motion.div
                   key={i}

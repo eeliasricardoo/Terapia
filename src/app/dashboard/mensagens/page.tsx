@@ -32,7 +32,7 @@ export default function MessagesPage() {
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-700 px-4">
       <MessagesHeader />
 
-      <div className="h-[calc(100vh-16rem)] md:h-[calc(100vh-14rem)] min-h-[500px] flex flex-col md:flex-row gap-6 sm:gap-8">
+      <div className="h-[calc(100dvh-14rem)] sm:h-[calc(100dvh-12rem)] flex flex-col md:flex-row gap-4 sm:gap-6 md:gap-8">
         {/* Sidebar / Conversation List */}
         <ChatSidebar
           conversations={conversations}

@@ -71,7 +71,7 @@ export function PsychologistProfileClient({ psychologist, availability, stats }:
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
-      <main className="flex-1 py-8 px-4 md:px-8 max-w-7xl mx-auto w-full pb-32 lg:pb-8">
+      <main className="flex-1 py-4 sm:py-8 px-4 md:px-8 max-w-7xl mx-auto w-full pb-24 sm:pb-32 lg:pb-8">
         <nav aria-label="Navegação estrutural" className="mb-6">
           <div className="flex items-center text-sm text-slate-500 gap-2">
             <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
@@ -86,7 +86,7 @@ export function PsychologistProfileClient({ psychologist, availability, stats }:
           </div>
         </nav>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-5 sm:gap-8">
           {/* Main Content Column */}
           <div className="flex-1 space-y-8">
             <ProfileHeader

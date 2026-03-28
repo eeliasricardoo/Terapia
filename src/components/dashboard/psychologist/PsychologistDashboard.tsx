@@ -283,7 +283,9 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 Sessões
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-slate-900">{stats.sessionsToday}</span>
+                <span className="text-2xl sm:text-3xl font-bold text-slate-900">
+                  {stats.sessionsToday}
+                </span>
                 <span className="text-[10px] text-slate-400 font-bold">HOJE</span>
               </div>
             </div>
@@ -293,7 +295,9 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 Pacientes Ativos
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-slate-900">{stats.activePatients}</span>
+                <span className="text-2xl sm:text-3xl font-bold text-slate-900">
+                  {stats.activePatients}
+                </span>
                 <span className="text-[10px] text-slate-400 font-bold">
                   / {stats.totalPatients}
                 </span>
@@ -305,7 +309,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 Receita
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-slate-900">
+                <span className="text-xl sm:text-3xl font-bold text-slate-900">
                   {new Intl.NumberFormat('pt-BR', {
                     style: 'currency',
                     currency: 'BRL',
@@ -320,7 +324,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 Desempenho
               </p>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-slate-900">
+                <span className="text-2xl sm:text-3xl font-bold text-slate-900">
                   {stats.revenueChange >= 0 ? '+' : ''}
                   {stats.revenueChange}%
                 </span>
@@ -377,7 +381,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                       <p className="text-slate-500 text-xs mt-1">Nenhum atendimento agendado.</p>
                     </div>
                   ) : (
-                    <div className="overflow-y-auto max-h-[600px]">
+                    <div className="overflow-y-auto max-h-[50vh] sm:max-h-[600px]">
                       {sessionsByDate.map(({ date, sessions, isToday }) => (
                         <div key={date}>
                           {/* Date Header */}

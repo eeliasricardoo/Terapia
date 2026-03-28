@@ -41,7 +41,9 @@ export function ProfileHeader({
       <div className="flex-1 text-center md:text-left space-y-3">
         <div>
           <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1 justify-center md:justify-start">
-            <h1 className="text-3xl font-bold text-slate-900 leading-tight">{displayName}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">
+              {displayName}
+            </h1>
             {psychologist.is_verified && (
               <Badge
                 variant="secondary"
@@ -58,7 +60,7 @@ export function ProfileHeader({
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-4 justify-center md:justify-start pt-2">
+        <div className="flex flex-wrap gap-2 sm:gap-4 justify-center md:justify-start pt-2">
           <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
             <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
             <span className="font-bold text-slate-900">5.0</span>

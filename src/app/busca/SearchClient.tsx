@@ -167,8 +167,8 @@ export default function SearchClient({
         variants={itemVars}
         className="relative overflow-hidden bg-white p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-xl shadow-sentirz/10"
       >
-        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-96 h-96 bg-sentirz-teal-pastel/80 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-96 h-96 bg-sentirz-orange-pastel/80 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-48 h-48 sm:w-96 sm:h-96 bg-sentirz-teal-pastel/80 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-48 h-48 sm:w-96 sm:h-96 bg-sentirz-orange-pastel/80 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 space-y-4 sm:space-y-6 max-w-3xl mx-auto text-center">
           <div>
@@ -222,7 +222,7 @@ export default function SearchClient({
           </Sheet>
 
           <Select defaultValue="relevance">
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[140px] sm:w-[180px]">
               <SelectValue placeholder="Ordenar por" />
             </SelectTrigger>
             <SelectContent>
@@ -264,7 +264,7 @@ export default function SearchClient({
             <div className="hidden sm:flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Ordenar por:</span>
               <Select defaultValue="relevance">
-                <SelectTrigger className="w-[160px] h-9 text-sm">
+                <SelectTrigger className="w-[140px] lg:w-[160px] h-9 text-sm">
                   <SelectValue placeholder="Relevância" />
                 </SelectTrigger>
                 <SelectContent>

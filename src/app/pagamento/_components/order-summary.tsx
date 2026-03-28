@@ -54,7 +54,7 @@ export function OrderSummary({
             <Skeleton className="h-3 w-20 bg-slate-100" />
             <Skeleton className="h-6 w-44 bg-slate-200" />
           </div>
-          <CardContent className="p-8">
+          <CardContent className="p-4 sm:p-8">
             <Skeleton className="h-16 w-full rounded-2xl bg-slate-100 mb-10" />
             <div className="space-y-5">
               {[1, 2, 3, 4].map((i) => (
@@ -75,7 +75,7 @@ export function OrderSummary({
     <div className="animate-in fade-in slide-in-from-left-4 duration-700">
       <h2 className="text-xl font-bold mb-6 text-slate-900 font-outfit">Resumo da sua compra</h2>
       <Card className="overflow-hidden border border-slate-100 shadow-xl shadow-slate-200/50 rounded-3xl bg-white">
-        <div className="p-8 text-center border-b border-slate-50">
+        <div className="p-5 sm:p-8 text-center border-b border-slate-50">
           <div className="flex flex-col items-center gap-4">
             <div className="h-20 w-20 rounded-3xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 font-bold text-3xl overflow-hidden shadow-sm">
               {avatarUrl ? (
@@ -93,7 +93,7 @@ export function OrderSummary({
           </div>
         </div>
 
-        <CardContent className="p-8">
+        <CardContent className="p-4 sm:p-8">
           <div className="mb-10 pb-10 border-b border-slate-100">
             {matchedInsurance ? (
               <div className="p-5 bg-blue-50/50 border border-blue-100 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
@@ -192,7 +192,9 @@ export function OrderSummary({
                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">
                   Valor Total
                 </p>
-                <p className="font-black text-3xl text-slate-900 tracking-tighter">{finalPrice}</p>
+                <p className="font-black text-2xl sm:text-3xl text-slate-900 tracking-tighter">
+                  {finalPrice}
+                </p>
               </div>
               <div className="h-10 w-10 bg-white rounded-xl border border-slate-100 flex items-center justify-center shadow-sm">
                 <ShieldCheck className="h-5 w-5 text-emerald-500" />
