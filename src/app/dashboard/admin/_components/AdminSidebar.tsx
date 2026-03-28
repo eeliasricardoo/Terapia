@@ -81,7 +81,7 @@ export function AdminSidebar({ profileName }: { profileName: string }) {
         <div className="space-y-1">
           <Link
             href="/dashboard"
-            className="flex w-full items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-neutral-600 hover:bg-neutral-200 transition-colors"
+            className="flex w-full items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-neutral-600 hover:bg-neutral-200 hover:text-neutral-900 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 text-neutral-500" />
             Voltar ao App

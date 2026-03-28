@@ -39,14 +39,14 @@ export function ChatHeader({ chat }: ChatHeaderProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all active:scale-90"
+          className="h-10 w-10 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all active:scale-90"
         >
           <Phone className="h-4 w-4" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all active:scale-90"
+          className="h-10 w-10 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all active:scale-90"
         >
           <Video className="h-4 w-4" />
         </Button>
@@ -54,7 +54,7 @@ export function ChatHeader({ chat }: ChatHeaderProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all active:scale-90"
+          className="h-10 w-10 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all active:scale-90"
         >
           <MoreVertical className="h-4 w-4" />
         </Button>

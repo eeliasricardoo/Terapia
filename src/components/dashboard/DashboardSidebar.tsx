@@ -291,7 +291,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
 
         <Button
           variant="ghost"
-          className="w-full justify-start gap-3 h-12 text-foreground/60 hover:text-destructive hover:bg-destructive/5 font-bold rounded-2xl transition-all pl-4 group"
+          className="w-full justify-start gap-3 h-12 text-foreground/60 hover:text-destructive hover:bg-destructive/10 font-bold rounded-2xl transition-all pl-4 group"
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4 transition-transform group-hover:-translate-x-1" />

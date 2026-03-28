@@ -46,7 +46,7 @@ export function DiaryForm({
                 className={`h-10 w-10 rounded-xl flex items-center justify-center text-xl transition-all ${
                   selectedMood === mood.value
                     ? 'bg-slate-900 border-slate-900 shadow-md scale-110'
-                    : 'bg-transparent hover:bg-slate-50 grayscale opacity-40 hover:grayscale-0 hover:opacity-100'
+                    : 'bg-transparent hover:bg-slate-50 grayscale opacity-60 hover:grayscale-0 hover:opacity-100'
                 }`}
               >
                 <span className={selectedMood === mood.value ? 'grayscale-0' : ''}>
@@ -86,7 +86,7 @@ export function DiaryForm({
                   className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border transition-all text-xs font-semibold leading-none ${
                     isSelected
                       ? `bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-900/20`
-                      : 'border-slate-100 bg-white hover:border-slate-200 text-slate-500'
+                      : 'border-slate-100 bg-white hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 text-slate-500'
                   }`}
                 >
                   <Icon className={`h-3.5 w-3.5 ${isSelected ? 'text-white' : 'text-slate-400'}`} />
