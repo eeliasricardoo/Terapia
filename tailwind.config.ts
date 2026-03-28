@@ -58,6 +58,15 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        sentirz: {
+          teal: 'hsl(var(--sentirz-teal))',
+          orange: 'hsl(var(--sentirz-orange))',
+          green: 'hsl(var(--sentirz-green))',
+          bg: 'hsl(var(--sentirz-bg))',
+          'teal-pastel': 'hsl(var(--sentirz-teal-pastel))',
+          'orange-pastel': 'hsl(var(--sentirz-orange-pastel))',
+          'green-pastel': 'hsl(var(--sentirz-green-pastel))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

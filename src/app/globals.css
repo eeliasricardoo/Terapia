@@ -4,56 +4,59 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 0 0% 98%; /* #FAFAFA - Clean white */
+    --foreground: 220 13% 13%; /* #1C1F26 - Near-black, high contrast */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 13% 13%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 40%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83% 53%;
-    --radius: 1rem;
-    --professional-primary: 340 72% 61%;
-    --professional-primary-foreground: 0 0% 100%;
-    --admin-primary: 221.2 83% 53%;
-    --admin-primary-foreground: 0 0% 100%;
+    --popover-foreground: 220 13% 13%;
+    --primary: 180 35% 28%; /* #2E6060 - Deep teal, WCAG AA on white */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 120 18% 48%; /* #5E9A5E - Muted green */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 14% 93%; /* #ECEEF2 - Light gray */
+    --muted-foreground: 220 10% 40%; /* #5C6070 - Dark gray, readable */
+    --accent: 20 72% 52%; /* #C8622A - Warm orange */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 88%; /* #DCDFE6 - Subtle border */
+    --input: 220 13% 88%;
+    --ring: 180 35% 28%;
+    --radius: 2.5rem;
+
+    /* Sentirz Specials */
+    --sentirz-teal: 180 35% 28%;
+    --sentirz-orange: 20 72% 52%;
+    --sentirz-green: 120 18% 48%;
+    --sentirz-bg: 0 0% 98%;
+
+    /* Pastel Variants for backgrounds/cards */
+    --sentirz-teal-pastel: 180 30% 94%;
+    --sentirz-orange-pastel: 20 60% 95%;
+    --sentirz-green-pastel: 120 20% 94%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 221.2 83% 53%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 70%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 217.2 91.2% 59.8%;
-    --professional-primary: 340 72% 61%;
-    --professional-primary-foreground: 0 0% 100%;
-    --admin-primary: 221.2 83% 53%;
-    --admin-primary-foreground: 0 0% 100%;
+    --background: 180 35% 10%;
+    --foreground: 60 7% 97%;
+    --card: 180 35% 12%;
+    --card-foreground: 60 7% 97%;
+    --popover: 180 35% 12%;
+    --popover-foreground: 60 7% 97%;
+    --primary: 180 25% 55%;
+    --primary-foreground: 180 35% 10%;
+    --secondary: 120 25% 67%;
+    --secondary-foreground: 180 35% 10%;
+    --muted: 180 20% 20%;
+    --muted-foreground: 180 10% 70%;
+    --accent: 20 84% 69%;
+    --accent-foreground: 180 35% 10%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 60 7% 97%;
+    --border: 180 20% 25%;
+    --input: 180 20% 25%;
+    --ring: 180 25% 55%;
   }
 
   .professional-theme {
@@ -180,9 +183,40 @@
   .bg-mesh {
     background-color: #ffffff;
     background-image:
-      radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 0.03) 0, transparent 50%),
-      radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 0.03) 0, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 0.03) 0, transparent 50%);
+      radial-gradient(at 0% 0%, hsla(225, 60%, 8%, 0.05) 0, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(185, 100%, 50%, 0.05) 0, transparent 50%);
+  }
+
+  /* Sentirz Signature Elements */
+  .bg-sentirz-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--sentirz-teal)) 0%,
+      hsl(var(--sentirz-green)) 50%,
+      hsl(var(--sentirz-orange)) 100%
+    );
+    @apply opacity-90;
+  }
+
+  .text-sentirz-gradient {
+    @apply text-transparent bg-clip-text;
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--sentirz-teal)) 0%,
+      hsl(var(--sentirz-green)) 100%
+    );
+  }
+
+  .dark .text-sentirz-gradient {
+    background-image: linear-gradient(135deg, #ffffff 0%, hsl(var(--sentirz-green)) 100%);
+  }
+
+  .shadow-sentirz {
+    box-shadow: 0 10px 40px -10px hsla(var(--sentirz-teal) / 0.15);
+  }
+
+  .border-sentirz-gradient {
+    border-image: linear-gradient(135deg, hsl(var(--sentirz-teal)), hsl(var(--sentirz-green))) 1;
   }
 }
 

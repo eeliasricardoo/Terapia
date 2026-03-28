@@ -18,14 +18,15 @@ const outfit = Outfit({
   display: 'swap',
 })
 
+import { BRAND_NAME, BRAND_SLOGAN, BRAND_DESCRIPTION } from '@/lib/constants/branding'
+
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   title: {
-    default: 'Mind Cares - Terapia Online | Sua mente, nosso cuidado.',
-    template: '%s | Mind Cares',
+    default: `${BRAND_NAME} - Terapia Online | ${BRAND_SLOGAN}`,
+    template: `%s | ${BRAND_NAME}`,
   },
-  description:
-    'A Mind Cares é uma plataforma que conecta você a psicólogos qualificados para sessões de terapia online com total segurança, sigilo e praticidade.',
+  description: BRAND_DESCRIPTION,
   keywords: [
     'terapia online',
     'psicólogo online',
@@ -33,10 +34,10 @@ export const metadata: Metadata = {
     'ansiedade',
     'depressão',
     'bem-estar',
-    'mind cares',
+    'sentirz',
   ],
-  authors: [{ name: 'Mind Cares Team' }],
-  creator: 'Mind Cares Plataforma',
+  authors: [{ name: 'Sentirz Team' }],
+  creator: 'Sentirz Plataforma',
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',
@@ -46,21 +47,21 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'pt_BR',
     url: '/',
-    siteName: 'Mind Cares',
-    title: 'Mind Cares - Terapia Online de Alta Qualidade',
+    siteName: BRAND_NAME,
+    title: `${BRAND_NAME} - Terapia Online de Alta Qualidade`,
     description: 'Encontre psicólogos qualificados e comece sua jornada de autocuidado hoje mesmo.',
     images: [
       {
         url: '/logo.png',
         width: 1200,
         height: 630,
-        alt: 'Mind Cares Terapia Online',
+        alt: `${BRAND_NAME} Terapia Online`,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Mind Cares - Terapia Online',
+    title: `${BRAND_NAME} - Terapia Online`,
     description: 'Sessões de terapia online com total segurança e praticidade.',
     images: ['/logo.png'],
   },

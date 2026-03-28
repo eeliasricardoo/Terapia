@@ -54,7 +54,8 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
   })
   const [isLoadingAgenda, setIsLoadingAgenda] = useState(false)
 
-  const userName = userProfile?.full_name || 'Doutor(a)'
+  const userName =
+    (userProfile?.full_name || (userProfile as any)?.fullName || '').split(' ')[0] || 'Doutor(a)'
 
   const { stats, upcomingSessions, recentPatients } = dashboardData
 
@@ -151,7 +152,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
   }, [allAppointments, upcomingSessions])
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 pb-8">
+    <div className="space-y-6 sm:space-y-8 lg:space-y-12 animate-in fade-in duration-700 max-w-6xl mx-auto pb-8">
       {!dashboardData.isVerified ? (
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
           <div className="h-20 w-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-6 shadow-sm border border-amber-200">
@@ -189,18 +190,18 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
       ) : (
         <>
           {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-2">
-            <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900">
-                Olá, {userName}.
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900">
+                Olá, Dr. {userName}.
               </h1>
-              <p className="text-slate-600 mt-1 sm:mt-2 font-medium text-sm sm:text-base">
+              <p className="text-sm sm:text-base text-slate-600 font-medium">
                 Você tem {stats.sessionsToday}{' '}
                 {stats.sessionsToday === 1 ? 'atendimento agendado' : 'atendimentos agendados'} para
                 hoje.
               </p>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100 self-start sm:self-auto">
               {process.env.NODE_ENV === 'development' && (
                 <Button
                   variant="outline"
@@ -224,9 +225,10 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 </Button>
               </Link>
               <NotificationCenter />
+              <div className="h-6 w-px bg-slate-100 hidden sm:block" />
               <Button
                 asChild
-                className="ml-1 gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-4 sm:px-6 transition-all hover:translate-y-[-1px] shadow-lg shadow-primary/20"
+                className="gap-2 rounded-xl font-bold bg-slate-900 text-white hover:bg-slate-800 text-sm"
               >
                 <Link href={upcomingSessions?.[0]?.id ? `/sala/${upcomingSessions[0].id}` : '#'}>
                   <Video className="h-4 w-4" />
@@ -237,7 +239,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
           </div>
 
           {(!dashboardData.hasStripeAccount || !dashboardData.stripeOnboardingComplete) && (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 shadow-sm animate-in slide-in-from-top-4 duration-500 mb-6">
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 shadow-sm animate-in slide-in-from-top-4 duration-500">
               <div className="flex items-start gap-3 sm:gap-4">
                 <div className="h-10 w-10 sm:h-12 sm:w-12 bg-white rounded-xl flex items-center justify-center text-amber-600 shadow-sm border border-amber-100 flex-shrink-0">
                   <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6" />

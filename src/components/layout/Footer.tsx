@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { Logo } from '@/components/ui/Logo'
+import { BRAND_NAME, BRAND_SLOGAN } from '@/lib/constants/branding'
 
 export function Footer() {
   const pathname = usePathname()
@@ -11,31 +13,26 @@ export function Footer() {
   }
 
   return (
-    <footer className="border-t border-slate-100 bg-white">
+    <footer className="border-t border-primary/10 bg-background/50 backdrop-blur-md">
       <div className="container py-16 md:py-20 mx-auto max-w-5xl px-6">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
-          <div className="space-y-4 md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <img src="/logo.png" alt="" className="h-6 w-6" />
-              <h3 className="text-lg font-bold font-outfit text-slate-900 leading-none">
-                Mind Cares
-              </h3>
-            </div>
-            <p className="text-sm text-slate-500 leading-relaxed max-w-xs">
-              Sua jornada de autocuidado começa aqui. Conectamos você aos melhores profissionais de
-              saúde mental.
+          <div className="space-y-6 md:col-span-1 text-left">
+            <Logo size="sm" className="mb-4" />
+            <p className="text-sm text-foreground/80 leading-relaxed max-w-xs">
+              {BRAND_SLOGAN} Conectamos você aos melhores profissionais de saúde mental em um
+              ambiente seguro e acolhedor.
             </p>
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+            <h4 className="text-xs font-semibold text-foreground/60 uppercase tracking-widest">
               Plataforma
             </h4>
             <ul className="space-y-3 text-sm">
               <li>
                 <Link
                   href="/busca"
-                  className="text-slate-500 hover:text-slate-900 transition-colors"
+                  className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
                   Buscar Psicólogos
                 </Link>
@@ -43,7 +40,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/para-empresas"
-                  className="text-slate-500 hover:text-slate-900 transition-colors"
+                  className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
                   Para Empresas
                 </Link>
@@ -51,7 +48,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/para-psicologos"
-                  className="text-slate-500 hover:text-slate-900 transition-colors"
+                  className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
                   Para Psicólogos
                 </Link>
@@ -60,14 +57,14 @@ export function Footer() {
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+            <h4 className="text-xs font-semibold text-foreground/60 uppercase tracking-widest">
               Empresa
             </h4>
             <ul className="space-y-3 text-sm">
               <li>
                 <Link
                   href="/sobre"
-                  className="text-slate-500 hover:text-slate-900 transition-colors"
+                  className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
                   Sobre Nós
                 </Link>
@@ -75,7 +72,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/blog"
-                  className="text-slate-500 hover:text-slate-900 transition-colors"
+                  className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
                   Blog
                 </Link>
@@ -83,7 +80,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/contato"
-                  className="text-slate-500 hover:text-slate-900 transition-colors"
+                  className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
                   Contato
                 </Link>
@@ -92,14 +89,14 @@ export function Footer() {
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+            <h4 className="text-xs font-semibold text-foreground/60 uppercase tracking-widest">
               Legal
             </h4>
             <ul className="space-y-3 text-sm">
               <li>
                 <Link
                   href="/termos"
-                  className="text-slate-500 hover:text-slate-900 transition-colors"
+                  className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
                   Termos de Uso
                 </Link>
@@ -107,7 +104,7 @@ export function Footer() {
               <li>
                 <Link
                   href="/privacidade"
-                  className="text-slate-500 hover:text-slate-900 transition-colors"
+                  className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
                   Privacidade
                 </Link>
@@ -116,11 +113,13 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-slate-400">
-            © {new Date().getFullYear()} Mind Cares. Todos os direitos reservados.
+        <div className="mt-16 pt-8 border-t border-primary/10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-foreground/50">
+            © {new Date().getFullYear()} {BRAND_NAME}. Todos os direitos reservados.
           </p>
-          <p className="text-xs text-slate-300">Feito com cuidado para quem cuida.</p>
+          <p className="text-xs text-foreground/40 font-medium">
+            Feito com cuidado para quem sente.
+          </p>
         </div>
       </div>
     </footer>

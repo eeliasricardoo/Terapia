@@ -16,13 +16,13 @@ const stagger: Variants = {
 export function Mission() {
   return (
     <section className="w-full py-32 md:py-40 bg-white relative overflow-hidden">
-      {/* Soft decorative background */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-50/30 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-indigo-50/20 rounded-full blur-[120px] pointer-events-none" />
+      {/* Dynamic background accents - Sentirz Style */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[150px] pointer-events-none animate-blob" />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[120px] pointer-events-none animate-blob animation-delay-2000" />
 
       {/* Organic dots */}
-      <div className="absolute top-20 right-[15%] w-2 h-2 rounded-full bg-blue-200/50" />
-      <div className="absolute bottom-24 left-[10%] w-3 h-3 rounded-full bg-rose-200/40" />
+      <div className="absolute top-20 right-[15%] w-3 h-3 rounded-full bg-primary/20" />
+      <div className="absolute bottom-24 left-[10%] w-4 h-4 rounded-full bg-accent/20" />
 
       <div className="container px-6 relative z-10 mx-auto max-w-5xl">
         <motion.div
@@ -56,8 +56,10 @@ export function Mission() {
                   &ldquo;Pedir ajuda é o primeiro passo para se sentir melhor.&rdquo;
                 </p>
                 <div className="flex items-center gap-2 mt-3">
-                  <div className="h-1.5 w-1.5 rounded-full bg-blue-400" />
-                  <span className="text-[11px] text-slate-400 font-medium">Lembrete diário</span>
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+                    Sentirz Reminder
+                  </span>
                 </div>
               </motion.div>
             </motion.div>
@@ -73,11 +75,11 @@ export function Mission() {
 
               <motion.h2
                 variants={fadeIn}
-                className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight font-outfit"
+                className="text-4xl md:text-6xl font-black tracking-tight text-midnight dark:text-white leading-[1.1] font-outfit"
               >
                 Todo mundo merece
                 <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
                   ser ouvido.
                 </span>
               </motion.h2>
@@ -90,8 +92,8 @@ export function Mission() {
                 </motion.p>
 
                 <motion.p variants={fadeIn} className="text-slate-500 text-lg leading-relaxed">
-                  A <span className="font-semibold text-slate-700">Mind Cares</span> nasceu para
-                  tornar esse caminho mais leve. Conectamos você a profissionais acolhedores e
+                  A <span className="font-bold text-midnight dark:text-white">Sentirz</span> nasceu
+                  para tornar esse caminho mais leve. Conectamos você a profissionais acolhedores e
                   preparados, em um espaço seguro e sem julgamentos — tudo online, no seu ritmo.
                 </motion.p>
 

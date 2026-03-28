@@ -80,15 +80,15 @@ export function RoleSelectionDialog({
         <div className="absolute inset-0 bg-white/95 backdrop-blur-3xl" />
 
         {/* Decorative gradients */}
-        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-96 h-96 bg-orange-100/50 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-96 h-96 bg-blue-100/50 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-96 h-96 bg-sentirz-orange/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-96 h-96 bg-sentirz-green/20 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 p-8 md:p-12">
           <DialogHeader className="mb-10 text-center space-y-3">
-            <DialogTitle className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <DialogTitle className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
               {getTitle()}
             </DialogTitle>
-            <DialogDescription className="text-lg text-slate-600 font-medium">
+            <DialogDescription className="text-lg text-foreground/60 font-medium">
               {getDescription()}
             </DialogDescription>
           </DialogHeader>
@@ -105,10 +105,10 @@ export function RoleSelectionDialog({
                 onClick={() => handleOpenChange(false)}
                 className="block group h-full focus:outline-none"
               >
-                <div className="h-full relative overflow-hidden rounded-3xl bg-white border border-slate-200/60 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all duration-500 hover:-translate-y-1 flex flex-col">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                <div className="h-full relative overflow-hidden rounded-[2.5rem] bg-sentirz-teal-pastel border border-sentirz-teal/20 shadow-sm hover:shadow-xl hover:border-sentirz-teal/40 transition-all duration-500 hover:-translate-y-1 flex flex-col">
+                  <div className="absolute inset-0 bg-gradient-to-br from-sentirz-teal/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-                  <div className="relative z-10 w-full h-44 overflow-hidden bg-slate-50 border-b border-slate-100 flex-shrink-0">
+                  <div className="relative z-10 w-full h-44 overflow-hidden bg-sentirz-teal/10 border-b border-sentirz-teal/10 flex-shrink-0">
                     <Image
                       src="/role-paciente.png"
                       alt="Paciente"
@@ -118,20 +118,20 @@ export function RoleSelectionDialog({
                   </div>
 
                   <div className="relative z-10 p-6 md:p-8 flex flex-col flex-grow">
-                    <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors duration-500">
-                      <User className="h-6 w-6 text-blue-600" />
+                    <div className="h-12 w-12 rounded-2xl bg-sentirz-teal/10 flex items-center justify-center mb-4 group-hover:bg-sentirz-teal/20 transition-colors duration-500">
+                      <User className="h-6 w-6 text-sentirz-teal" />
                     </div>
 
-                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">
+                    <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-sentirz-teal transition-colors">
                       Para Mim
                     </h3>
-                    <p className="text-slate-600 text-sm leading-relaxed mb-6 flex-grow">
+                    <p className="text-foreground/60 text-sm leading-relaxed mb-6 flex-grow">
                       {mode === 'register'
                         ? 'Quero encontrar um especialista acolhedor e iniciar minha jornada de cuidado.'
                         : 'Acessar minha área, agendar sessões e ver meus conteúdos.'}
                     </p>
 
-                    <div className="flex items-center text-sm font-bold text-blue-600 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                    <div className="flex items-center text-sm font-bold text-sentirz-teal opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
                       {mode === 'register' ? 'Criar conta' : 'Entrar'}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </div>
@@ -146,10 +146,10 @@ export function RoleSelectionDialog({
                 onClick={() => handleOpenChange(false)}
                 className="block group h-full focus:outline-none"
               >
-                <div className="h-full relative overflow-hidden rounded-3xl bg-white border border-slate-200/60 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all duration-500 hover:-translate-y-1 flex flex-col">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                <div className="h-full relative overflow-hidden rounded-[2.5rem] bg-sentirz-green-pastel border border-sentirz-green/20 shadow-sm hover:shadow-xl hover:border-sentirz-green/40 transition-all duration-500 hover:-translate-y-1 flex flex-col">
+                  <div className="absolute inset-0 bg-gradient-to-br from-sentirz-green/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-                  <div className="relative z-10 w-full h-44 overflow-hidden bg-slate-50 border-b border-slate-100 flex-shrink-0">
+                  <div className="relative z-10 w-full h-44 overflow-hidden bg-sentirz-green/10 border-b border-sentirz-green/10 flex-shrink-0">
                     <Image
                       src="/role-profissional.png"
                       alt="Especialista"
@@ -159,20 +159,20 @@ export function RoleSelectionDialog({
                   </div>
 
                   <div className="relative z-10 p-6 md:p-8 flex flex-col flex-grow">
-                    <div className="h-12 w-12 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4 group-hover:bg-indigo-100 transition-colors duration-500">
-                      <Award className="h-6 w-6 text-indigo-600" />
+                    <div className="h-12 w-12 rounded-2xl bg-sentirz-green/10 flex items-center justify-center mb-4 group-hover:bg-sentirz-green/20 transition-colors duration-500">
+                      <Award className="h-6 w-6 text-sentirz-green" />
                     </div>
 
-                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-indigo-700 transition-colors">
+                    <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-sentirz-green transition-colors">
                       Sou Especialista
                     </h3>
-                    <p className="text-slate-600 text-sm leading-relaxed mb-6 flex-grow">
+                    <p className="text-foreground/60 text-sm leading-relaxed mb-6 flex-grow">
                       {mode === 'register'
                         ? 'Quero oferecer atendimento, fazer parte da rede e gerenciar minha carreira.'
                         : 'Acessar minha agenda, pacientes e painel financeiro.'}
                     </p>
 
-                    <div className="flex items-center text-sm font-bold text-indigo-600 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                    <div className="flex items-center text-sm font-bold text-sentirz-green opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
                       {mode === 'register' ? 'Criar conta' : 'Entrar'}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </div>
@@ -187,10 +187,10 @@ export function RoleSelectionDialog({
                 onClick={() => handleOpenChange(false)}
                 className="block group h-full focus:outline-none"
               >
-                <div className="h-full relative overflow-hidden rounded-3xl bg-white border border-slate-200/60 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all duration-500 hover:-translate-y-1 flex flex-col">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                <div className="h-full relative overflow-hidden rounded-[2.5rem] bg-sentirz-orange-pastel border border-sentirz-orange/20 shadow-sm hover:shadow-xl hover:border-sentirz-orange/40 transition-all duration-500 hover:-translate-y-1 flex flex-col">
+                  <div className="absolute inset-0 bg-gradient-to-br from-sentirz-orange/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-                  <div className="relative z-10 w-full h-44 overflow-hidden bg-slate-50 border-b border-slate-100 flex-shrink-0">
+                  <div className="relative z-10 w-full h-44 overflow-hidden bg-sentirz-orange/10 border-b border-sentirz-orange/10 flex-shrink-0">
                     <Image
                       src="/role-empresa.png"
                       alt="Empresa"
@@ -200,20 +200,20 @@ export function RoleSelectionDialog({
                   </div>
 
                   <div className="relative z-10 p-6 md:p-8 flex flex-col flex-grow">
-                    <div className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center mb-4 group-hover:bg-slate-800 transition-colors duration-500">
-                      <Building className="h-6 w-6 text-white" />
+                    <div className="h-12 w-12 rounded-2xl bg-sentirz-orange/10 flex items-center justify-center mb-4 group-hover:bg-sentirz-orange/20 transition-colors duration-500">
+                      <Building className="h-6 w-6 text-sentirz-orange" />
                     </div>
 
-                    <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">
+                    <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-sentirz-orange transition-colors">
                       Para Empresa
                     </h3>
-                    <p className="text-slate-600 text-sm leading-relaxed mb-6 flex-grow">
+                    <p className="text-foreground/60 text-sm leading-relaxed mb-6 flex-grow">
                       {mode === 'register'
                         ? 'Promover saúde emocional sustentável e cuidado corporativo de qualidade.'
                         : 'Acessar painel de gestão corporativa e relatórios.'}
                     </p>
 
-                    <div className="flex items-center text-sm font-bold text-blue-600 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                    <div className="flex items-center text-sm font-bold text-sentirz-orange opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
                       {mode === 'register' ? 'Criar conta' : 'Entrar'}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </div>

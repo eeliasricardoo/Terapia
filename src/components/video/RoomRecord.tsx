@@ -35,7 +35,7 @@ export function RoomRecord({ appointmentId }: RoomRecordProps) {
       if (!appointmentId || appointmentId === 'test' || appointmentId.startsWith('mock_')) {
         // Mock data for dev
         setPatientData({
-          name: 'Ana Beatriz Silva',
+          name: 'Ana Beatriz Silva (Teste)',
           age: '32 anos',
           sex: 'Feminino',
           phone: '(11) 98765-4321',
@@ -43,10 +43,16 @@ export function RoomRecord({ appointmentId }: RoomRecordProps) {
           complaint:
             'Dificuldade em manter o sono e picos de ansiedade durante o dia após mudanças no trabalho.',
         })
-        setHistory([
-          { scheduledAt: '12 Out, 2025', status: 'COMPLETED' },
-          { scheduledAt: '05 Out, 2025', status: 'COMPLETED' },
-        ])
+
+        const mockHistoryKey = `mock-history-record`
+        const savedHistory = JSON.parse(localStorage.getItem(mockHistoryKey) || '[]')
+
+        const defaultHistory = [
+          { id: 'h1', scheduledAt: '12 Out, 2025', status: 'COMPLETED' },
+          { id: 'h2', scheduledAt: '05 Out, 2025', status: 'COMPLETED' },
+        ]
+
+        setHistory([...savedHistory, ...defaultHistory])
         setIsLoading(false)
         return
       }
@@ -67,6 +73,12 @@ export function RoomRecord({ appointmentId }: RoomRecordProps) {
       }
     }
     loadData()
+
+    const handleRefresh = () => loadData()
+    window.addEventListener('mock-evolution-saved', handleRefresh)
+    return () => {
+      window.removeEventListener('mock-evolution-saved', handleRefresh)
+    }
   }, [appointmentId])
 
   if (isLoading) {

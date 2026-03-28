@@ -35,6 +35,9 @@ interface NavbarProps {
   userRole?: 'client' | 'psychologist' | 'company' | 'PATIENT' | 'PSYCHOLOGIST' | 'COMPANY' | string
 }
 
+import { Logo } from '@/components/ui/Logo'
+
+// @ts-ignore
 export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: NavbarProps) {
   const { isAuthenticated, role, fullName, avatarUrl } = useAuth()
   const [loginOpen, setLoginOpen] = useState(false)
@@ -103,10 +106,7 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
               href="/"
               className="flex items-center gap-2.5 opacity-50 hover:opacity-100 transition-opacity"
             >
-              <div className="h-6 w-6 relative rounded-md overflow-hidden p-0.5">
-                <img src="/logo.png" alt="Logo" />
-              </div>
-              <span className="text-xl font-bold tracking-tight font-outfit">Mind Cares</span>
+              <Logo size="sm" />
             </Link>
           </div>
           <div className="flex items-center gap-4">
@@ -150,19 +150,14 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
       <div className="container flex h-20 items-center justify-between">
         <div className="flex items-center gap-10">
           <Link href={isLoggedIn ? '/dashboard' : '/'} className="flex items-center gap-2.5">
-            <div className="h-8 w-8 relative rounded-lg overflow-hidden bg-slate-50 border border-slate-100 p-1">
-              <img src="/logo.png" alt="Logo" className="object-contain" />
-            </div>
-            <span className="text-xl font-bold tracking-tight font-outfit text-slate-900 group">
-              Mind Cares
-            </span>
+            <Logo size="md" />
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-slate-500 hover:text-slate-900 transition-colors"
+                className="text-foreground/80 hover:text-primary transition-colors"
               >
                 {link.label}
               </Link>
@@ -177,13 +172,13 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                 <Button
                   variant="ghost"
                   onClick={() => setLoginOpen(true)}
-                  className="text-slate-600 hover:text-slate-900 font-medium rounded-full"
+                  className="text-foreground/90 hover:text-primary font-bold rounded-full"
                 >
                   Entrar
                 </Button>
                 <Button
                   onClick={() => setRegisterOpen(true)}
-                  className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6 font-medium shadow-sm"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 font-medium shadow-sm transition-all"
                 >
                   Começar Agora
                 </Button>
