@@ -51,7 +51,7 @@ export function MessageInput({ value, onChange, onSend, isSending }: MessageInpu
           className={cn(
             'absolute right-1.5 h-10 w-10 rounded-2xl transition-all duration-500 active:scale-95',
             value.trim()
-              ? 'bg-slate-900 text-white shadow-lg shadow-slate-200'
+              ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20'
               : 'bg-slate-50 text-slate-300 border border-slate-100'
           )}
           onClick={onSend}
