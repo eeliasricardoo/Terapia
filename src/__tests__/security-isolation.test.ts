@@ -49,13 +49,11 @@ describe('Security Isolation', () => {
   function mockAuth(userId: string) {
     ;(createClient as jest.Mock).mockResolvedValue({
       auth: {
-        getUser: jest
-          .fn()
-          .mockResolvedValue({
-            data: {
-              user: { id: userId, email: 'test@test.com', app_metadata: { role: 'PSYCHOLOGIST' } },
-            },
-          }),
+        getUser: jest.fn().mockResolvedValue({
+          data: {
+            user: { id: userId, email: 'test@test.com', app_metadata: { role: 'PSYCHOLOGIST' } },
+          },
+        }),
       },
     })
   }

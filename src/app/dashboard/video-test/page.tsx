@@ -1,11 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  DailyProvider,
-  DailyAudio,
-  useMeetingState,
-} from '@daily-co/daily-react'
+import { DailyProvider, DailyAudio, useMeetingState } from '@daily-co/daily-react'
 import { Loader2, Video, Terminal } from 'lucide-react'
 import DailyIframe, { DailyCall } from '@daily-co/daily-js'
 
@@ -15,7 +11,11 @@ import { PreJoinLobby } from '@/components/video/PreJoinLobby'
 import { ActiveRoomInterface } from './_components/ActiveRoomInterface'
 
 export default function VideoTestPage() {
-  const [roomData, setRoomData] = useState<{ url: string; token: string; appointmentInfo: any } | null>(null)
+  const [roomData, setRoomData] = useState<{
+    url: string
+    token: string
+    appointmentInfo: any
+  } | null>(null)
   const [callObject, setCallObject] = useState<DailyCall | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -26,7 +26,7 @@ export default function VideoTestPage() {
     try {
       const res = await fetch('/api/video/test', { method: 'POST' })
       if (!res.ok) throw new Error('Falha ao iniciar teste de vídeo')
-      
+
       const data = await res.json()
       setRoomData({
         url: data.url,
@@ -35,7 +35,7 @@ export default function VideoTestPage() {
           scheduledAt: data.scheduledAt,
           durationMinutes: data.durationMinutes,
           isPsychologist: data.isPsychologist,
-        }
+        },
       })
 
       // Setup call object like in useRoomConnection
@@ -55,10 +55,10 @@ export default function VideoTestPage() {
   if (roomData && callObject) {
     return (
       <DailyProvider callObject={callObject}>
-        <RoomManager 
-          roomUrl={roomData.url} 
-          token={roomData.token} 
-          appointmentInfo={roomData.appointmentInfo} 
+        <RoomManager
+          roomUrl={roomData.url}
+          token={roomData.token}
+          appointmentInfo={roomData.appointmentInfo}
         />
         <DailyAudio />
       </DailyProvider>
@@ -83,9 +83,9 @@ export default function VideoTestPage() {
               <Terminal className="h-4 w-4" /> {error}
             </div>
           )}
-          
-          <Button 
-            className="w-full h-12 text-lg font-medium" 
+
+          <Button
+            className="w-full h-12 text-lg font-medium"
             onClick={startTest}
             disabled={isLoading}
           >
@@ -109,37 +109,37 @@ export default function VideoTestPage() {
 }
 
 function RoomManager({
-    roomUrl,
-    token,
-    appointmentInfo,
-  }: {
-    roomUrl: string
-    token: string
-    appointmentInfo: any
-  }) {
-    const meetingState = useMeetingState()
-  
-    if (meetingState === 'joining-meeting') {
-      return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
-          <p className="text-slate-400">Entrando na sala de teste...</p>
-        </div>
-      )
-    }
-  
-    if (meetingState === 'error') {
-      return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 p-4">
-          <p className="text-red-500 font-semibold mb-2">Erro na conexão de vídeo</p>
-          <Button onClick={() => window.location.reload()}>Recarregar Página</Button>
-        </div>
-      )
-    }
-  
-    if (meetingState === 'joined-meeting') {
-      return <ActiveRoomInterface appointmentId="test-id" appointmentInfo={appointmentInfo} />
-    }
-  
-    return <PreJoinLobby roomUrl={roomUrl} token={token} />
+  roomUrl,
+  token,
+  appointmentInfo,
+}: {
+  roomUrl: string
+  token: string
+  appointmentInfo: any
+}) {
+  const meetingState = useMeetingState()
+
+  if (meetingState === 'joining-meeting') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
+        <p className="text-slate-400">Entrando na sala de teste...</p>
+      </div>
+    )
   }
+
+  if (meetingState === 'error') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 p-4">
+        <p className="text-red-500 font-semibold mb-2">Erro na conexão de vídeo</p>
+        <Button onClick={() => window.location.reload()}>Recarregar Página</Button>
+      </div>
+    )
+  }
+
+  if (meetingState === 'joined-meeting') {
+    return <ActiveRoomInterface appointmentId="test-id" appointmentInfo={appointmentInfo} />
+  }
+
+  return <PreJoinLobby roomUrl={roomUrl} token={token} />
+}
