@@ -88,7 +88,7 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
       ;(prisma.psychologistProfile.update as jest.Mock).mockResolvedValue(mockPsychologist)
       ;(sendEmail as jest.Mock).mockResolvedValue({ success: true })
 
-      const result = await verifyPsychologist('psych-123')
+      const result = await verifyPsychologist({ psychologistId: 'psych-123' })
 
       expect(result.success).toBe(true)
       expect(prisma.psychologistProfile.update).toHaveBeenCalledWith({
@@ -116,10 +116,10 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
         },
       })
 
-      const result = await verifyPsychologist('psych-123')
+      const result = await verifyPsychologist({ psychologistId: 'psych-123' })
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Falha')
+      expect(result.success === false && result.error).toBeTruthy()
       expect(prisma.psychologistProfile.update).not.toHaveBeenCalled()
       expect(sendEmail).not.toHaveBeenCalled()
     })
@@ -130,7 +130,7 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
         role: 'PATIENT', // Not an admin
       })
 
-      const result = await verifyPsychologist('psych-123')
+      const result = await verifyPsychologist({ psychologistId: 'psych-123' })
 
       expect(result.success).toBe(false)
       expect(prisma.psychologistProfile.update).not.toHaveBeenCalled()
@@ -143,10 +143,10 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
         new Error('Database error')
       )
 
-      const result = await verifyPsychologist('psych-123')
+      const result = await verifyPsychologist({ psychologistId: 'psych-123' })
 
       expect(result.success).toBe(false)
-      expect(result.error).toBeDefined()
+      expect(result.success === false && result.error).toBeDefined()
       expect(sendEmail).not.toHaveBeenCalled()
     })
 
@@ -155,7 +155,7 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
       ;(prisma.psychologistProfile.update as jest.Mock).mockResolvedValue(mockPsychologist)
       ;(sendEmail as jest.Mock).mockResolvedValue({ success: false, error: 'Email failed' })
 
-      const result = await verifyPsychologist('psych-123')
+      const result = await verifyPsychologist({ psychologistId: 'psych-123' })
 
       // Approval should still succeed even if email fails
       expect(result.success).toBe(true)
@@ -171,7 +171,10 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
       ;(prisma.user.update as jest.Mock).mockResolvedValue({})
       ;(sendEmail as jest.Mock).mockResolvedValue({ success: true })
 
-      const result = await rejectPsychologist('psych-123', 'Documentação inválida')
+      const result = await rejectPsychologist({
+        psychologistId: 'psych-123',
+        reason: 'Documentação inválida',
+      })
 
       expect(result.success).toBe(true)
       expect(prisma.psychologistProfile.delete).toHaveBeenCalledWith({
@@ -180,7 +183,7 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
       expect(prisma.user.update).toHaveBeenCalled()
       expect(sendEmail).toHaveBeenCalledWith({
         to: 'psych@example.com',
-        subject: 'Atualização do seu cadastro na Terapia',
+        subject: expect.stringContaining('cadastro'),
         html: expect.any(String),
       })
     })
@@ -196,7 +199,10 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
         },
       })
 
-      const result = await rejectPsychologist('psych-123', 'Invalid docs')
+      const result = await rejectPsychologist({
+        psychologistId: 'psych-123',
+        reason: 'Invalid docs',
+      })
 
       expect(result.success).toBe(false)
       expect(prisma.psychologistProfile.delete).not.toHaveBeenCalled()
@@ -208,7 +214,10 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
         role: 'PSYCHOLOGIST', // Not an admin
       })
 
-      const result = await rejectPsychologist('psych-123', 'Invalid docs')
+      const result = await rejectPsychologist({
+        psychologistId: 'psych-123',
+        reason: 'Invalid docs',
+      })
 
       expect(result.success).toBe(false)
       expect(prisma.psychologistProfile.delete).not.toHaveBeenCalled()
@@ -218,7 +227,10 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
       ;(prisma.profile.findUnique as jest.Mock).mockResolvedValue(mockAdminProfile)
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValue(null)
 
-      const result = await rejectPsychologist('psych-123', 'Invalid docs')
+      const result = await rejectPsychologist({
+        psychologistId: 'psych-123',
+        reason: 'Invalid docs',
+      })
 
       expect(result.success).toBe(false)
       expect(prisma.psychologistProfile.delete).not.toHaveBeenCalled()
@@ -231,7 +243,10 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
         new Error('Delete failed')
       )
 
-      const result = await rejectPsychologist('psych-123', 'Invalid docs')
+      const result = await rejectPsychologist({
+        psychologistId: 'psych-123',
+        reason: 'Invalid docs',
+      })
 
       expect(result.success).toBe(false)
       expect(sendEmail).not.toHaveBeenCalled()

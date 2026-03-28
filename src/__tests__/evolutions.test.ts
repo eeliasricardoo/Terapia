@@ -41,10 +41,10 @@ describe('evolutions actions', () => {
   })
 
   describe('getPatientPublicEvolutions', () => {
-    it('should return empty if user is not authenticated', async () => {
+    it('should return error if user is not authenticated', async () => {
       mockAuth(null)
       const result = await getPatientPublicEvolutions()
-      expect(result).toEqual([])
+      expect(result.success).toBe(false)
     })
 
     it('should return empty array if profile is not found', async () => {
@@ -52,7 +52,8 @@ describe('evolutions actions', () => {
       ;(prisma.profile.findUnique as jest.Mock).mockResolvedValue(null)
 
       const result = await getPatientPublicEvolutions()
-      expect(result).toEqual([])
+      expect(result.success).toBe(true)
+      expect(result.success && result.data).toEqual([])
     })
 
     it('should return formatted evolutions with psychologist names', async () => {
@@ -85,21 +86,23 @@ describe('evolutions actions', () => {
 
       const result = await getPatientPublicEvolutions()
 
-      expect(result).toHaveLength(2)
-      expect(result[0]).toEqual(
+      expect(result.success).toBe(true)
+      if (!result.success) return
+      expect(result.data).toHaveLength(2)
+      expect(result.data[0]).toEqual(
         expect.objectContaining({ id: 'ev-1', psychologistName: 'Dra. Ana', mood: 'Bem' })
       )
-      expect(result[1]).toEqual(
+      expect(result.data[1]).toEqual(
         expect.objectContaining({ id: 'ev-2', psychologistName: 'Dr. Carlos', publicSummary: null })
       )
     })
 
-    it('should return empty array on error', async () => {
+    it('should return error on DB exception', async () => {
       mockAuth(MOCK_USER)
       ;(prisma.profile.findUnique as jest.Mock).mockRejectedValue(new Error('DB error'))
 
       const result = await getPatientPublicEvolutions()
-      expect(result).toEqual([])
+      expect(result.success).toBe(false)
     })
 
     it('should use fallback name when psychologist is not found', async () => {
@@ -117,7 +120,8 @@ describe('evolutions actions', () => {
       ;(prisma.psychologistProfile.findMany as jest.Mock).mockResolvedValue([])
 
       const result = await getPatientPublicEvolutions()
-      expect(result[0].psychologistName).toBe('Psicólogo')
+      expect(result.success).toBe(true)
+      expect(result.success && result.data[0].psychologistName).toBe('Psicólogo')
     })
   })
 })

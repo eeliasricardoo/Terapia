@@ -16,6 +16,8 @@ const psychologistOnboardingSchema = z.object({
   videoUrl: z.string().url().optional().or(z.literal('')),
 })
 
+export type PsychologistOnboardingData = z.infer<typeof psychologistOnboardingSchema>
+
 export const savePsychologistProfile = createSafeAction(
   psychologistOnboardingSchema,
   async (data, user) => {

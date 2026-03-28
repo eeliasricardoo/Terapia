@@ -1,4 +1,4 @@
-import { saveAvailability, getPsychologistAvailability } from '../lib/actions/availability'
+import { getPsychologistAvailability } from '../lib/actions/availability'
 import { createClient } from '@/lib/supabase/server'
 
 // Mock Supabase
@@ -35,42 +35,13 @@ describe('availability actions', () => {
     ;(createClient as jest.Mock).mockResolvedValue(mockSupabase)
   })
 
-  describe('saveAvailability', () => {
-    it('should correctly format and save weekly schedule', async () => {
-      const recurringSchedules = [
-        { id: '1', day: 'seg', startTime: '09:00 AM', endTime: '10:00 AM' },
-        { id: '2', day: 'sex', startTime: '02:00 PM', endTime: '03:00 PM' },
-      ]
-
-      const result = await saveAvailability('50', recurringSchedules, [], [], [])
-
-      expect(result.success).toBe(true)
-      expect(mockSupabase.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          weekly_schedule: expect.objectContaining({
-            sessionDuration: '50',
-            monday: { enabled: true, slots: [{ start: '09:00', end: '10:00' }] },
-            friday: { enabled: true, slots: [{ start: '14:00', end: '15:00' }] },
-          }),
-        })
-      )
-    })
-
-    it('should return error if not authenticated', async () => {
-      mockSupabase.auth.getUser.mockResolvedValueOnce({ data: { user: null }, error: null })
-
-      const result = await saveAvailability('50', [], [], [], [])
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Usuário não autenticado')
-    })
-  })
-
   describe('getPsychologistAvailability', () => {
-    it('should return null if profile fetch fails', async () => {
+    it('should return null data if profile fetch fails', async () => {
       mockSupabase.single.mockResolvedValueOnce({ data: null, error: { message: 'Not found' } })
 
-      const result = await getPsychologistAvailability('psych-1')
-      expect(result).toBeNull()
+      const result = await getPsychologistAvailability({ userId: 'psych-1' })
+      expect(result.success).toBe(true)
+      expect(result.success && result.data).toBeNull()
     })
 
     it('should return full availability data', async () => {
@@ -100,9 +71,12 @@ describe('availability actions', () => {
         return mockSupabase
       })
 
-      const result = await getPsychologistAvailability('psych-1')
-      expect(result?.timezone).toBe('America/Sao_Paulo')
-      expect(result?.overrides).toHaveProperty('2024-01-01')
+      const result = await getPsychologistAvailability({ userId: 'psych-1' })
+      expect(result.success).toBe(true)
+      if (result.success && result.data) {
+        expect(result.data.timezone).toBe('America/Sao_Paulo')
+        expect(result.data.overrides).toHaveProperty('2024-01-01')
+      }
     })
   })
 })

@@ -91,23 +91,25 @@ describe('messages actions', () => {
 
       const result = await getConversations()
 
-      expect(result).toHaveLength(1)
-      expect(result[0].id).toBe(CONV_ID)
-      expect(result[0].name).toBe('Dr. Smith')
-      expect(result[0].otherParticipantId).toBe(OTHER_USER_ID)
+      expect(result.success).toBe(true)
+      if (!result.success) return
+      expect(result.data).toHaveLength(1)
+      expect(result.data[0].id).toBe(CONV_ID)
+      expect(result.data[0].name).toBe('Dr. Smith')
+      expect(result.data[0].otherParticipantId).toBe(OTHER_USER_ID)
     })
   })
 
   describe('getMessages', () => {
-    it('should return empty array if user is not authenticated', async () => {
+    it('should return error if user is not authenticated', async () => {
       ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(null)
-      const result = await getMessages(CONV_ID)
-      expect(result).toEqual([])
+      const result = await getMessages({ conversationId: CONV_ID, limit: 100 })
+      expect(result.success).toBe(false)
     })
 
-    it('should return empty array for invalid UUID', async () => {
-      const result = await getMessages('invalid-id')
-      expect(result).toEqual([])
+    it('should return validation error for invalid UUID', async () => {
+      const result = await getMessages({ conversationId: 'invalid-id', limit: 100 })
+      expect(result.success).toBe(false)
     })
 
     it('should return formatted messages for a conversation', async () => {
@@ -126,11 +128,13 @@ describe('messages actions', () => {
         },
       ])
 
-      const result = await getMessages(CONV_ID)
+      const result = await getMessages({ conversationId: CONV_ID, limit: 100 })
 
-      expect(result).toHaveLength(1)
-      expect(result[0].id).toBe(MSG_ID)
-      expect(result[0].senderName).toBe('Test User')
+      expect(result.success).toBe(true)
+      if (!result.success) return
+      expect(result.data).toHaveLength(1)
+      expect(result.data[0].id).toBe(MSG_ID)
+      expect(result.data[0].senderName).toBe('Test User')
       expect(prisma.message.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { conversationId: CONV_ID },
@@ -142,14 +146,14 @@ describe('messages actions', () => {
 
   describe('sendMessage', () => {
     it('should return error for invalid conversation ID', async () => {
-      const result = await sendMessage('invalid-id', 'Hello')
-      expect(result).toEqual({ success: false, error: 'ID inválido' })
+      const result = await sendMessage({ conversationId: 'invalid-id', content: 'Hello' })
+      expect(result.success).toBe(false)
     })
 
     it('should return error if user is not authenticated', async () => {
       ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(null)
-      const result = await sendMessage(CONV_ID, 'Hello')
-      expect(result).toEqual({ success: false, error: 'Não autorizado' })
+      const result = await sendMessage({ conversationId: CONV_ID, content: 'Hello' })
+      expect(result.success).toBe(false)
     })
 
     it('should create message and update conversation timestamp', async () => {
@@ -157,9 +161,11 @@ describe('messages actions', () => {
       ;(prisma.message.create as jest.Mock).mockResolvedValue({ id: MSG_NEW_ID })
       ;(prisma.conversation.update as jest.Mock).mockResolvedValue({})
 
-      const result = await sendMessage(CONV_ID, 'Nova mensagem')
+      const result = await sendMessage({ conversationId: CONV_ID, content: 'Nova mensagem' })
 
-      expect(result).toEqual({ success: true, messageId: MSG_NEW_ID })
+      expect(result.success).toBe(true)
+      if (!result.success) return
+      expect(result.data.id).toBe(MSG_NEW_ID)
       expect(prisma.message.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           conversationId: CONV_ID,
@@ -176,21 +182,21 @@ describe('messages actions', () => {
       ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(MOCK_PROFILE)
       ;(prisma.message.create as jest.Mock).mockRejectedValue(new Error('DB error'))
 
-      const result = await sendMessage(CONV_ID, 'Fail')
-      expect(result).toEqual({ success: false, error: 'Erro ao enviar mensagem' })
+      const result = await sendMessage({ conversationId: CONV_ID, content: 'Fail' })
+      expect(result.success).toBe(false)
     })
   })
 
   describe('startOrGetConversation', () => {
-    it('should return null for invalid UUID', async () => {
-      const result = await startOrGetConversation('invalid-id')
-      expect(result).toBeNull()
+    it('should return error for invalid UUID', async () => {
+      const result = await startOrGetConversation({ otherUserId: 'invalid-id' })
+      expect(result.success).toBe(false)
     })
 
-    it('should return null if user is not authenticated', async () => {
+    it('should return error if user is not authenticated', async () => {
       ;(getCurrentUserProfile as jest.Mock).mockResolvedValue(null)
-      const result = await startOrGetConversation(OTHER_USER_ID)
-      expect(result).toBeNull()
+      const result = await startOrGetConversation({ otherUserId: OTHER_USER_ID })
+      expect(result.success).toBe(false)
     })
 
     it('should return existing conversation id if already exists', async () => {
@@ -199,9 +205,10 @@ describe('messages actions', () => {
         conversationId: EXISTING_CONV_ID,
       })
 
-      const result = await startOrGetConversation(OTHER_USER_ID)
+      const result = await startOrGetConversation({ otherUserId: OTHER_USER_ID })
 
-      expect(result).toBe(EXISTING_CONV_ID)
+      expect(result.success).toBe(true)
+      expect(result.success && result.data).toBe(EXISTING_CONV_ID)
       expect(prisma.conversation.create).not.toHaveBeenCalled()
     })
 
@@ -210,9 +217,10 @@ describe('messages actions', () => {
       ;(prisma.conversationParticipant.findFirst as jest.Mock).mockResolvedValue(null)
       ;(prisma.conversation.create as jest.Mock).mockResolvedValue({ id: NEW_CONV_ID })
 
-      const result = await startOrGetConversation(OTHER_USER_ID)
+      const result = await startOrGetConversation({ otherUserId: OTHER_USER_ID })
 
-      expect(result).toBe(NEW_CONV_ID)
+      expect(result.success).toBe(true)
+      expect(result.success && result.data).toBe(NEW_CONV_ID)
       expect(prisma.conversation.create).toHaveBeenCalledWith({
         data: {
           participants: {

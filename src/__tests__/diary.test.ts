@@ -68,10 +68,10 @@ describe('diary actions', () => {
   })
 
   describe('getDiaryEntries', () => {
-    it('should return empty array if user is not authenticated', async () => {
+    it('should return error if user is not authenticated', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } })
       const result = await getDiaryEntries()
-      expect(result).toEqual([])
+      expect(result.success).toBe(false)
     })
 
     it('should return formatted diary entries for authenticated user', async () => {
@@ -88,10 +88,12 @@ describe('diary actions', () => {
 
       const result = await getDiaryEntries()
 
-      expect(result).toHaveLength(1)
-      expect(result[0].id).toBe(VALID_UUID)
-      expect(result[0].mood).toBe(4)
-      expect(result[0].content).toBe('Um ótimo dia')
+      expect(result.success).toBe(true)
+      if (!result.success) return
+      expect(result.data).toHaveLength(1)
+      expect(result.data[0].id).toBe(VALID_UUID)
+      expect(result.data[0].mood).toBe(4)
+      expect(result.data[0].content).toBe('Um ótimo dia')
     })
   })
 
@@ -148,7 +150,7 @@ describe('diary actions', () => {
       mockPrismaDiaryFindFirst.mockResolvedValue({ id: 'existing-entry' })
       mockPrismaDiaryUpdate.mockResolvedValue({})
 
-      const result = await saveQuickMood(3)
+      const result = await saveQuickMood({ mood: 3 })
 
       expect(result).toEqual({ success: true })
       expect(mockPrismaDiaryUpdate).toHaveBeenCalledWith({

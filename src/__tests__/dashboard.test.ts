@@ -59,9 +59,10 @@ describe('dashboard actions', () => {
   })
 
   describe('getPsychologistDashboardData', () => {
-    it('should throw error if user is not authenticated', async () => {
+    it('should return error if user is not authenticated', async () => {
       mockSupabase.auth.getUser.mockResolvedValueOnce({ data: { user: null } })
-      await expect(getPsychologistDashboardData()).rejects.toThrow('Não autenticado')
+      const result = await getPsychologistDashboardData()
+      expect(result.success).toBe(false)
     })
 
     it('should return empty baseline if profile not found', async () => {
@@ -69,8 +70,9 @@ describe('dashboard actions', () => {
       ;(prisma.psychologistProfile.findUnique as jest.Mock).mockResolvedValueOnce(null)
 
       const result = await getPsychologistDashboardData()
-      expect(result.stats.sessionsToday).toBe(0)
-      expect(result.upcomingSessions).toEqual([])
+      expect(result.success).toBe(true)
+      expect(result.success && result.data.stats.sessionsToday).toBe(0)
+      expect(result.success && result.data.upcomingSessions).toEqual([])
     })
 
     it('should calculate and return correct dashboard data for psychologist', async () => {
@@ -130,26 +132,23 @@ describe('dashboard actions', () => {
 
       const result = await getPsychologistDashboardData()
 
-      expect(result.isVerified).toBe(true)
-      expect(result.stats.sessionsToday).toBe(1)
-      expect(result.stats.activePatients).toBe(1)
-      expect(result.stats.totalPatients).toBe(2)
-      expect(result.stats.monthlyRevenue).toBe(250) // 100 + 150
-      expect(result.upcomingSessions[0].patientName).toBe('John Doe')
-      expect(result.upcomingSessions[0].details).toBe('Aguardando início')
+      expect(result.success).toBe(true)
+      if (!result.success) return
+      expect(result.data.isVerified).toBe(true)
+      expect(result.data.stats.sessionsToday).toBe(1)
+      expect(result.data.stats.activePatients).toBe(1)
+      expect(result.data.stats.totalPatients).toBe(2)
+      expect(result.data.stats.monthlyRevenue).toBe(250) // 100 + 150
+      expect(result.data.upcomingSessions[0].patientName).toBe('John Doe')
+      expect(result.data.upcomingSessions[0].details).toBe('Aguardando início')
     })
   })
 
   describe('getPatientDashboardData', () => {
-    it('should return error baseline on exception (e.g. not authenticated)', async () => {
+    it('should return error when not authenticated', async () => {
       mockSupabase.auth.getUser.mockResolvedValueOnce({ data: { user: null } })
       const result = await getPatientDashboardData()
-      expect(result).toEqual({
-        nextSession: null,
-        recentSessions: [],
-        monthlyProgress: { completedSessions: 0, totalSessions: 0 },
-        upcomingSessions: [],
-      })
+      expect(result.success).toBe(false)
     })
 
     it('should fetch next session and recent sessions', async () => {
@@ -183,9 +182,11 @@ describe('dashboard actions', () => {
 
       const result = await getPatientDashboardData()
 
-      expect(result.nextSession?.psychologist.name).toBe('Dr. John')
-      expect(result.recentSessions[0].psychologistName).toBe('Dr. John')
-      expect(result.recentSessions[0].status).toBe('completed')
+      expect(result.success).toBe(true)
+      if (!result.success) return
+      expect(result.data.nextSession?.psychologist.name).toBe('Dr. John')
+      expect(result.data.recentSessions[0].psychologistName).toBe('Dr. John')
+      expect(result.data.recentSessions[0].status).toBe('completed')
     })
   })
 })
