@@ -16,14 +16,14 @@ export const getStyledEmailTemplate = (title: string, content: string) => `
 <body>
   <div class="container">
     <div class="header">
-      <h1>Mind Cares</h1>
+      <h1>Sentirz</h1>
     </div>
     <div class="content">
       <h2 style="color: #0f172a; margin-top: 0;">${title}</h2>
       ${content}
     </div>
     <div class="footer">
-      &copy; ${new Date().getFullYear()} Mind Cares. Todos os direitos reservados.<br>
+      &copy; ${new Date().getFullYear()} Sentirz. Todos os direitos reservados.<br>
       Sua jornada de autocuidado começa aqui.
     </div>
   </div>

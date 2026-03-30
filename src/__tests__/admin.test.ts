@@ -128,7 +128,7 @@ describe('Admin Actions - Psychologist Approval/Rejection', () => {
       })
       expect(sendEmail).toHaveBeenCalledWith({
         to: 'psych@example.com',
-        subject: 'Bem-vindo à Mind Cares! Seu perfil foi aprovado',
+        subject: 'Bem-vindo à Sentirz! Seu perfil foi aprovado',
         html: expect.any(String),
       })
     })

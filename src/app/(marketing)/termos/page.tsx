@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Termos de Uso | Terapia',
-  description: 'Leia os termos de uso e condições da plataforma Terapia.',
+  title: 'Termos de Uso | Sentirz',
+  description: 'Leia os termos de uso e condições da plataforma Sentirz.',
 }
 
 export default function TermosPage() {
@@ -25,7 +25,7 @@ export default function TermosPage() {
             <section className="mb-10">
               <h2 className="text-2xl font-bold mb-4">1. Aceitação dos Termos</h2>
               <p>
-                Ao acessar e utilizar a plataforma Terapia, você concorda em cumprir e estar
+                Ao acessar e utilizar a plataforma Sentirz, você concorda em cumprir e estar
                 vinculado aos seguintes Termos de Uso. Se você não concordar com qualquer parte
                 destes termos, não deverá utilizar nossos serviços.
               </p>
@@ -34,10 +34,9 @@ export default function TermosPage() {
             <section className="mb-10">
               <h2 className="text-2xl font-bold mb-4">2. Descrição do Serviço</h2>
               <p>
-                A Terapia é uma plataforma tecnológica que conecta pacientes a profissionais de
-                saúde mental (psicólogos) para a realização de sessões de vídeo-atendimento. Atuamos
-                como intermediários, facilitando o agendamento, pagamento e a tecnologia de
-                comunicação.
+                Sentirz é uma plataforma tecnológica que conecta pacientes a profissionais de saúde
+                mental (psicólogos) para a realização de sessões de vídeo-atendimento. Atuamos como
+                intermediários, facilitando o agendamento, pagamento e a tecnologia de comunicação.
               </p>
             </section>
 
@@ -78,7 +77,7 @@ export default function TermosPage() {
             <section className="mb-10">
               <h2 className="text-2xl font-bold mb-4">5. Responsabilidades do Profissional</h2>
               <p>
-                Todos os profissionais cadastrados na Terapia são responsáveis pela veracidade de
+                Todos os profissionais cadastrados na Sentirz são responsáveis pela veracidade de
                 seus dados e pela manutenção de sua inscrição ativa nos órgãos de classe (CRP). A
                 plataforma realiza uma verificação inicial, mas a conduta ética e profissional é de
                 inteira responsabilidade do psicólogo.
@@ -99,10 +98,10 @@ export default function TermosPage() {
               <p className="text-sm font-medium text-slate-500 mb-0">
                 Dúvidas sobre os Termos? Entre em contato conosco através do e-mail:
                 <a
-                  href="mailto:ajuda@terapiaplataforma.com.br"
+                  href="mailto:ajuda@sentirz.com.br"
                   className="text-blue-600 font-bold ml-1 hover:underline"
                 >
-                  ajuda@terapiaplataforma.com.br
+                  ajuda@sentirz.com.br
                 </a>
               </p>
             </footer>

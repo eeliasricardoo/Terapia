@@ -73,7 +73,7 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
   // 1. Load draft from localStorage on mount
   useEffect(() => {
     if (!patientId) return
-    const draftKey = `terapia:draft:evolution:${patientId}`
+    const draftKey = `sentirz:draft:evolution:${patientId}`
     const savedDraft = localStorage.getItem(draftKey)
     if (savedDraft) {
       try {
@@ -98,7 +98,7 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
   // 2. Save draft to localStorage whenever fields change
   useEffect(() => {
     if (!patientId) return
-    const draftKey = `terapia:draft:evolution:${patientId}`
+    const draftKey = `sentirz:draft:evolution:${patientId}`
 
     // Only save if there's significant content to avoid useless writes
     if (publicSummary.length > 5 || privateNotes.length > 5 || selectedMood) {
@@ -138,7 +138,7 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
         toast.success('Registro salvo com sucesso!')
 
         // 3. Clear draft upon success
-        localStorage.removeItem(`terapia:draft:evolution:${patientId}`)
+        localStorage.removeItem(`sentirz:draft:evolution:${patientId}`)
 
         // Refresh list
         const res = await getEvolutions(patientId)

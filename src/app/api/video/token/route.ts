@@ -81,7 +81,7 @@ export async function POST(req: Request) {
     // 3. Create a Fresh Room for every session attempt to ensure it hasn't expired
     // The previous room URL in appointment.meetingUrl might be stale/expired
     const uniqueSuffix = Math.random().toString(36).substring(2, 7)
-    const roomName = `terapia-${appointmentId}-${uniqueSuffix}`
+    const roomName = `sentirz-${appointmentId}-${uniqueSuffix}`
     let roomUrl = ''
 
     try {

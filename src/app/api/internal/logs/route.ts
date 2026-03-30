@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const logs = await redis.lrange('terapia:logs:critical', 0, 100)
+    const logs = await redis.lrange('sentirz:logs:critical', 0, 100)
     return NextResponse.json({
       count: logs.length,
       logs: logs.map((l) => (typeof l === 'string' ? JSON.parse(l) : l)),
@@ -41,6 +41,6 @@ export async function DELETE(req: NextRequest) {
 
   if (!redis) return NextResponse.json({ error: 'Redis not configured' }, { status: 500 })
 
-  await redis.del('terapia:logs:critical')
+  await redis.del('sentirz:logs:critical')
   return NextResponse.json({ success: true })
 }

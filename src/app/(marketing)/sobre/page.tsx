@@ -3,8 +3,8 @@ import Image from 'next/image'
 import { Heart, Shield, Video, Users } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Sobre Nós | Terapia',
-  description: 'Conheça a missão e a equipe por trás da plataforma Terapia.',
+  title: 'Sobre Nós | Sentirz',
+  description: 'Conheça a missão e a equipe por trás da plataforma Sentirz.',
 }
 
 export default function SobrePage() {
@@ -21,7 +21,7 @@ export default function SobrePage() {
               Saúde Mental <span className="text-blue-600">Acessível</span> para Todos
             </h1>
             <p className="text-xl text-slate-500 leading-relaxed font-medium">
-              Acreditamos que cuidar da mente não deve ser um privilégio, mas um direito. A Terapia
+              Acreditamos que cuidar da mente não deve ser um privilégio, mas um direito. A Sentirz
               nasceu para encurtar distâncias e quebrar estigmas.
             </p>
           </div>
@@ -92,7 +92,7 @@ export default function SobrePage() {
               Nossa História
             </h2>
             <p className="text-xl text-slate-600 text-center leading-relaxed font-light italic mb-12">
-              &quot;A Terapia nasceu de uma conversa em 2024 sobre como era difícil encontrar ajuda
+              &quot;A Sentirz nasceu de uma conversa em 2024 sobre como era difícil encontrar ajuda
               qualificada de forma rápida e segura. Decidimos criar a plataforma que gostaríamos de
               usar.&quot;
             </p>

@@ -110,18 +110,18 @@ export const registerPatientSupabase = createSafeAction(
       const { sendEmail } = await import('@/lib/utils/email')
       sendEmail({
         to: data.email,
-        subject: 'Bem-vindo à Mind Cares! 🌊',
+        subject: 'Bem-vindo à Sentirz! 🌊',
         html: getStyledEmailTemplate(
           `Olá, ${safeName}!`,
           `
-          <p>Sua conta na <strong>Mind Cares</strong> foi criada com sucesso.</p>
+          <p>Sua conta na <strong>Sentirz</strong> foi criada com sucesso.</p>
           <p>Estamos muito felizes em ter você conosco em sua jornada de autocuidado.</p>
           <div style="text-align: center;">
             <a href="${env.NEXT_PUBLIC_APP_URL}/login/paciente" class="button" style="color: #ffffff;">Entrar na Plataforma</a>
           </div>
           <br/>
           <p>Atenciosamente,</p>
-          <p>Equipe Mind Cares</p>
+          <p>Equipe Sentirz</p>
           `
         ),
       }).catch((e) => logger.error('Failed to send welcome email:', e))
@@ -229,17 +229,17 @@ export const registerPsychologistSupabase = createSafeAction(
       const { sendEmail } = await import('@/lib/utils/email')
       sendEmail({
         to: data.email,
-        subject: 'Bem-vindo à Mind Cares! 🌊',
+        subject: 'Bem-vindo à Sentirz! 🌊',
         html: getStyledEmailTemplate(
           `Olá, Prof. ${safeName}!`,
           `
-          <p>Sua conta de profissional na <strong>Mind Cares</strong> foi criada com sucesso.</p>
+          <p>Sua conta de profissional na <strong>Sentirz</strong> foi criada com sucesso.</p>
           <p>Nosso time revisará seus documentos em breve para ativar sua visibilidade.</p>
           <div style="text-align: center;">
             <a href="${env.NEXT_PUBLIC_APP_URL}/login/psicologo" class="button" style="color: #ffffff;">Configurar meu Perfil</a>
           </div>
           <br/>
-          <p>Equipe Mind Cares</p>
+          <p>Equipe Sentirz</p>
           `
         ),
       }).catch((e) => logger.error('Failed to send psychologist welcome email:', e))

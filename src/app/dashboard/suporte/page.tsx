@@ -82,7 +82,7 @@ export default function SuportePage() {
               variant="outline"
               className="w-full rounded-xl border-slate-200"
               onClick={() =>
-                toast.info('Nossa nova Central de Ajuda Mind Cares está sendo preparada.', {
+                toast.info('Nossa nova Central de Ajuda Sentirz está sendo preparada.', {
                   description: 'Em breve você terá acesso a tutoriais completos.',
                 })
               }

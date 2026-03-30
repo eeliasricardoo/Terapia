@@ -36,7 +36,7 @@ export const Logo: React.FC<LogoProps> = ({
       {showText && !iconOnly && (
         <div className="flex flex-col -space-y-0.5">
           <span className={`font-heading font-black tracking-tight text-[#3b6b6b] ${textSize}`}>
-            Sentirz
+            {BRAND_NAME}
           </span>
           <span
             className={`font-sans font-medium text-[#3b6b6b]/80 tracking-tight ${subtitleSize} opacity-90`}

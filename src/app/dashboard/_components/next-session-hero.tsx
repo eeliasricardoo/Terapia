@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar as CalendarIcon, Clock } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock, Video, ArrowRight, RotateCcw } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -11,17 +11,7 @@ import { format } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
-
-const QUOTES = [
-  'O autoconhecimento é o começo de toda sabedoria.',
-  'Cuide da sua mente com a mesma dedicação que cuida do seu corpo.',
-  'Cada passo na direção certa, por menor que seja, é um progresso.',
-  'Permita-se sentir. Suas emoções são válidas.',
-  'A vulnerabilidade é a maior medida de coragem.',
-  'Não existe saúde sem saúde mental.',
-  'Pedir ajuda é um ato de força, não de fraqueza.',
-  'O melhor momento para cuidar de si é agora.',
-]
+import { motion } from 'framer-motion'
 
 interface Props {
   session: {
@@ -42,12 +32,12 @@ interface Props {
 export function NextSessionHero({ session }: Props) {
   if (!session) {
     return (
-      <Card className="border-none shadow-md overflow-hidden relative p-6 sm:p-8 flex flex-col items-center justify-center text-center bg-white min-h-[220px] sm:min-h-[300px]">
-        <div className="h-12 w-12 sm:h-16 sm:w-16 bg-slate-50 rounded-full flex items-center justify-center mb-3 sm:mb-4">
-          <CalendarIcon className="h-6 w-6 sm:h-8 sm:w-8 text-slate-400" />
+      <Card className="border-none shadow-md overflow-hidden relative p-6 sm:p-8 flex flex-col items-center justify-center text-center bg-white min-h-[200px]">
+        <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+          <CalendarIcon className="h-6 w-6 text-slate-400" />
         </div>
-        <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">Sem sessões agendadas</h2>
-        <p className="text-sm text-slate-500 mb-4 sm:mb-6">
+        <h2 className="text-base font-bold text-slate-900 mb-1">Sem sessões agendadas</h2>
+        <p className="text-sm text-slate-500 mb-4">
           Você não possui atendimentos marcados para os próximos dias.
         </p>
         <Link href="/busca">
@@ -62,99 +52,122 @@ export function NextSessionHero({ session }: Props) {
   const timezone = session.psychologist.timezone || 'America/Sao_Paulo'
   const scheduledDate = new Date(session.scheduledAt)
   const dateStr = formatInTimeZone(scheduledDate, timezone, "EEEE, dd 'de' MMMM", { locale: ptBR })
-
   const finishTime = new Date(scheduledDate.getTime() + session.durationMinutes * 60000)
   const startTimeStr = formatInTimeZone(scheduledDate, timezone, 'HH:mm')
   const finishTimeStr = formatInTimeZone(finishTime, timezone, 'HH:mm')
-  const timeRange = `${startTimeStr} - ${finishTimeStr}`
-
-  // Detect if user zone is different to show a subtle warning?
-  // For now let's just show the session time as agreed (psychologist's clock).
 
   return (
-    <Card className="border border-slate-100 shadow-sm overflow-hidden relative rounded-2xl sm:rounded-[2rem]">
-      <div className="flex flex-col lg:flex-row min-h-fit lg:min-h-[320px]">
-        <div className="p-5 sm:p-7 lg:p-10 flex-1 flex flex-col justify-center">
-          <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
-            <span className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
-              {dateStr}
-            </span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-              {timeRange}
-            </span>
-          </div>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+    >
+      <Card className="border-none shadow-lg overflow-hidden rounded-2xl sm:rounded-3xl">
+        <div className="flex flex-col sm:flex-row">
+          {/* Left — Psychologist panel */}
+          <div className="relative sm:w-56 lg:w-64 shrink-0 bg-slate-900 flex flex-col items-center justify-center p-6 sm:p-8 gap-3 overflow-hidden">
+            {/* Subtle gradient blobs */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[hsl(var(--sentirz-teal))] opacity-10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-[hsl(var(--sentirz-green))] opacity-10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 mb-4 sm:mb-6 leading-tight">
-            Sua próxima sessão de <span className="text-primary">{session.type}</span>
-          </h2>
+            <div className="relative z-10 flex flex-col items-center text-center gap-3">
+              <div className="relative">
+                <Avatar className="h-20 w-20 sm:h-24 sm:w-24 ring-4 ring-white/10">
+                  <AvatarImage src={session.psychologist.image || undefined} />
+                  <AvatarFallback className="bg-[hsl(var(--sentirz-teal))] text-white font-black text-2xl">
+                    {session.psychologist.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="absolute bottom-1 right-1 h-3.5 w-3.5 rounded-full bg-green-400 border-2 border-slate-900" />
+              </div>
 
-          <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-10">
-            <Avatar className="h-10 w-10 sm:h-14 sm:w-14 ring-4 ring-slate-50 transition-all hover:ring-blue-50">
-              <AvatarImage src={session.psychologist.image || undefined} />
-              <AvatarFallback className="bg-slate-100 text-slate-600 font-bold">
-                {session.psychologist.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm sm:text-base font-bold text-slate-900">
-                {session.psychologist.name}
-              </p>
-              <p className="text-xs font-medium text-slate-500">{session.psychologist.specialty}</p>
+              <div>
+                <p className="text-sm font-bold text-white leading-tight">
+                  {session.psychologist.name}
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">{session.psychologist.specialty}</p>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-8 mt-2">
-            <Link href={`/sala/${session.id}`} className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 sm:px-10 h-12 sm:h-14 text-sm font-bold shadow-xl shadow-primary/20 transition-all active:scale-95">
-                Entrar na Sala
-              </Button>
-            </Link>
+          {/* Right — Session info */}
+          <div className="flex-1 bg-white p-5 sm:p-7 flex flex-col justify-between gap-5">
+            {/* Top: label + date/time */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/8 px-2.5 py-1 rounded-full border border-primary/10">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                  Próxima sessão
+                </span>
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                  {session.type}
+                </span>
+              </div>
 
-            <div className="flex items-center gap-1">
-              <SessionDetailsDialog session={session}>
-                <Button
-                  variant="ghost"
-                  className="h-9 sm:h-10 rounded-full px-3 sm:px-4 text-xs font-bold text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                >
-                  Detalhes
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight font-outfit capitalize">
+                  {dateStr}
+                </h2>
+                <div className="flex items-center gap-3 mt-1.5">
+                  <span className="flex items-center gap-1.5 text-sm text-slate-500 font-medium">
+                    <Clock className="w-3.5 h-3.5" />
+                    {startTimeStr} – {finishTimeStr}
+                  </span>
+                  <span className="text-slate-200">·</span>
+                  <span className="text-sm text-slate-400 font-medium">
+                    {session.durationMinutes} min
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom: actions */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-4 border-t border-slate-100">
+              <Link href={`/sala/${session.id}`} className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-10 px-5 text-sm font-bold shadow-sm transition-all active:scale-95 flex items-center gap-2">
+                  <Video className="w-4 h-4" />
+                  Entrar na Sala
+                  <ArrowRight className="w-3.5 h-3.5 opacity-60" />
                 </Button>
-              </SessionDetailsDialog>
+              </Link>
 
-              <div className="w-px h-3 bg-slate-100 mx-1" />
+              <div className="flex items-center gap-1">
+                <SessionDetailsDialog session={session}>
+                  <Button
+                    variant="ghost"
+                    className="h-9 rounded-xl px-3 text-sm font-medium text-slate-400 hover:text-slate-700 hover:bg-slate-50"
+                  >
+                    Documentos
+                  </Button>
+                </SessionDetailsDialog>
 
-              <RescheduleDialog
-                session={{
-                  id: session.id,
-                  doctor: session.psychologist.name,
-                  role: 'Psicóloga Clínica',
-                  image: session.psychologist.image || '/avatars/01.png',
-                  date: format(new Date(session.scheduledAt), "dd 'de' MMMM, yyyy", {
-                    locale: ptBR,
-                  }),
-                  time: format(new Date(session.scheduledAt), 'HH:mm'),
-                  psychologistId: session.psychologist.userId,
-                  scheduledAt: session.scheduledAt,
-                }}
-              >
-                <Button
-                  variant="ghost"
-                  className="h-9 sm:h-10 rounded-full px-3 sm:px-4 text-xs font-bold text-slate-500 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                <RescheduleDialog
+                  session={{
+                    id: session.id,
+                    doctor: session.psychologist.name,
+                    role: 'Psicóloga Clínica',
+                    image: session.psychologist.image || '/avatars/01.png',
+                    date: format(new Date(session.scheduledAt), "dd 'de' MMMM, yyyy", {
+                      locale: ptBR,
+                    }),
+                    time: format(new Date(session.scheduledAt), 'HH:mm'),
+                    psychologistId: session.psychologist.userId,
+                    scheduledAt: session.scheduledAt,
+                  }}
                 >
-                  Reagendar
-                </Button>
-              </RescheduleDialog>
+                  <Button
+                    variant="ghost"
+                    className="h-9 rounded-xl px-3 text-sm font-medium text-slate-400 hover:text-rose-500 hover:bg-rose-50 flex items-center gap-1.5"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Reagendar
+                  </Button>
+                </RescheduleDialog>
+              </div>
             </div>
           </div>
         </div>
-
-        <div className="hidden lg:flex w-full lg:w-[35%] bg-slate-50 items-center justify-center p-12 border-l border-slate-100">
-          <div className="text-center">
-            <p className="text-lg font-serif italic text-slate-400 leading-relaxed">
-              &quot;{QUOTES[new Date().getDate() % QUOTES.length]}&quot;
-            </p>
-          </div>
-        </div>
-      </div>
-    </Card>
+      </Card>
+    </motion.div>
   )
 }

@@ -168,14 +168,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { psychologist } = data
   const fullName = psychologist.profile?.full_name || 'Especialista'
   const specialty = psychologist.specialties?.[0] || 'Psicologia Clínica'
-  const bio = psychologist.bio?.substring(0, 160) || 'Agende sua sessão de terapia online.'
+  const bio = psychologist.bio?.substring(0, 160) || 'Agende sua sessão através da Sentirz.'
   const avatarUrl = psychologist.profile?.avatar_url || '/og-image.png'
 
   return {
     title: `Psic. ${fullName} - ${specialty}`,
     description: bio,
     openGraph: {
-      title: `Psic. ${fullName} | Mind Cares`,
+      title: `Psic. ${fullName} | Sentirz`,
       description: bio,
       images: [
         {
@@ -191,7 +191,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary',
-      title: `Psic. ${fullName} - Mind Cares`,
+      title: `Psic. ${fullName} - Sentirz`,
       description: bio,
       images: [avatarUrl],
     },
