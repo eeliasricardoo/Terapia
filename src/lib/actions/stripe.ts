@@ -184,7 +184,7 @@ export const createStripeCheckoutSession = createSafeAction(
           price_data: {
             currency: 'brl',
             product_data: {
-              name: `Sessão de Terapia (Mind Cares) com ${psychologistName}`,
+              name: `Sessão de Terapia (Sentirz) com ${psychologistName}`,
               description: `Agendada para ${new Date(data.scheduledAt).toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' })}`,
             },
             unit_amount: stripeAmount,

@@ -96,7 +96,7 @@ export default function ContatoPage() {
                 <div>
                   <h3 className="font-bold text-slate-900">Localização</h3>
                   <p className="text-slate-500 font-medium text-sm md:text-base">
-                    Mind Cares Hub - São Paulo, SP
+                    Sentirz Hub - São Paulo, SP
                   </p>
                 </div>
               </div>

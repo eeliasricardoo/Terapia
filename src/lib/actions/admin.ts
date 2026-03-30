@@ -140,7 +140,7 @@ export const verifyPsychologist = createSafeAction(
 
     await sendEmail({
       to: psychologist.user.email,
-      subject: 'Bem-vindo à Mind Cares! Seu perfil foi aprovado',
+      subject: 'Bem-vindo à Sentirz! Seu perfil foi aprovado',
       html: getApprovalEmailTemplate(
         psychologist.user.profiles?.fullName || 'Psicólogo',
         psychologist.crp || ''
@@ -191,7 +191,7 @@ export const rejectPsychologist = createSafeAction(
 
     await sendEmail({
       to: psychologist.user.email,
-      subject: 'Atualização do seu cadastro na Mind Cares',
+      subject: 'Atualização do seu cadastro na Sentirz',
       html: getRejectionEmailTemplate(
         psychologist.user.profiles?.fullName || 'Psicólogo',
         data.reason
@@ -240,16 +240,16 @@ export const suspendPsychologistAccess = createSafeAction(
 
       await sendEmail({
         to: psychologist.user.email,
-        subject: 'Aviso Importante: Acesso Suspenso na Mind Cares',
+        subject: 'Aviso Importante: Acesso Suspenso na Sentirz',
         html: `
           <h2>Olá, ${psychologist.user.profiles?.fullName || 'Psicólogo'}.</h2>
-          <p>A equipe de moderação da Mind Cares suspendeu seu acesso à plataforma.</p>
+          <p>A equipe de moderação da Sentirz suspendeu seu acesso à plataforma.</p>
           ${customMessageHtml}
           <p>Seu perfil público foi ocultado e você retornou para a fase de análise de cadastro.</p>
           <p>Entre em contato com o suporte para mais informações.</p>
           <br/>
           <p>Atenciosamente,</p>
-          <p>Equipe Mind Cares</p>
+          <p>Equipe Sentirz</p>
         `,
       })
     }

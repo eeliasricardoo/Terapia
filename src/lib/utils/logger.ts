@@ -138,8 +138,8 @@ class Logger {
       }
 
       // Keep only last 1000 critical logs to avoid Redis bloat
-      await redis.lpush('terapia:logs:critical', JSON.stringify(logEntry))
-      await redis.ltrim('terapia:logs:critical', 0, 999)
+      await redis.lpush('sentirz:logs:critical', JSON.stringify(logEntry))
+      await redis.ltrim('sentirz:logs:critical', 0, 999)
     } catch (e) {
       // Do nothing, we don't want logger errors to crash the app
     }

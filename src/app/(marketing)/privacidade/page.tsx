@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Política de Privacidade | Terapia',
-  description: 'Saiba como a Terapia protege sua privacidade e seus dados de saúde mental.',
+  title: 'Política de Privacidade | Sentirz',
+  description: 'Saiba como a Sentirz protege sua privacidade e seus dados de saúde mental.',
 }
 
 export default function PrivacidadePage() {
@@ -25,7 +25,7 @@ export default function PrivacidadePage() {
             <section className="mb-10">
               <h2 className="text-2xl font-bold mb-4">1. Nosso Compromisso com sua Privacidade</h2>
               <p>
-                Na Terapia, sua privacidade e o sigilo de suas informações de saúde mental são nossa
+                Na Sentirz, sua privacidade e o sigilo de suas informações de saúde mental são nossa
                 prioridade máxima. Esta política detalha como coletamos, protegemos e utilizamos
                 seus dados pessoais no cumprimento das leis vigentes, em especial a **LGPD (Lei
                 Geral de Proteção de Dados)**.
@@ -103,10 +103,10 @@ export default function PrivacidadePage() {
               <p className="text-sm font-medium text-slate-500 mb-0">
                 Questões sobre Privacidade? Fale com nosso encarregado de dados:
                 <a
-                  href="mailto:privacidade@terapiaplataforma.com.br"
+                  href="mailto:privacidade@sentirz.com.br"
                   className="text-blue-600 font-bold ml-1 hover:underline"
                 >
-                  privacidade@terapiaplataforma.com.br
+                  privacidade@sentirz.com.br
                 </a>
               </p>
             </footer>

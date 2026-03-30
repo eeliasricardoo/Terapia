@@ -23,7 +23,7 @@ import { BRAND_NAME, BRAND_SLOGAN, BRAND_DESCRIPTION } from '@/lib/constants/bra
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   title: {
-    default: `${BRAND_NAME} - Terapia Online | ${BRAND_SLOGAN}`,
+    default: `${BRAND_NAME} - Sentirz Online | ${BRAND_SLOGAN}`,
     template: `%s | ${BRAND_NAME}`,
   },
   description: BRAND_DESCRIPTION,
@@ -48,20 +48,20 @@ export const metadata: Metadata = {
     locale: 'pt_BR',
     url: '/',
     siteName: BRAND_NAME,
-    title: `${BRAND_NAME} - Terapia Online de Alta Qualidade`,
+    title: `${BRAND_NAME} - Sentirz Online de Alta Qualidade`,
     description: 'Encontre psicólogos qualificados e comece sua jornada de autocuidado hoje mesmo.',
     images: [
       {
         url: '/logo.png',
         width: 1200,
         height: 630,
-        alt: `${BRAND_NAME} Terapia Online`,
+        alt: `${BRAND_NAME} Sentirz Online`,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${BRAND_NAME} - Terapia Online`,
+    title: `${BRAND_NAME} - Sentirz Online`,
     description: 'Sessões de terapia online com total segurança e praticidade.',
     images: ['/logo.png'],
   },

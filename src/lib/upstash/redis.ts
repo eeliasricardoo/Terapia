@@ -9,4 +9,4 @@ export const redis =
       })
     : null
 
-export const EMAIL_QUEUE_KEY = 'terapia:email_queue'
+export const EMAIL_QUEUE_KEY = 'sentirz:email_queue'
