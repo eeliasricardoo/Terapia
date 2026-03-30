@@ -21,6 +21,7 @@ const testimonials = [
     role: 'Paciente há 8 meses',
     rating: 5,
     initials: 'MC',
+    image: '/testimonials/maria.png',
     color: 'bg-blue-50 text-blue-600',
   },
   {
@@ -30,6 +31,7 @@ const testimonials = [
     role: 'Psicólogo',
     rating: 5,
     initials: 'PA',
+    image: '/testimonials/pedro.png',
     color: 'bg-emerald-50 text-emerald-600',
   },
   {
@@ -39,13 +41,14 @@ const testimonials = [
     role: 'Paciente há 1 ano',
     rating: 5,
     initials: 'AL',
+    image: '/testimonials/ana.png',
     color: 'bg-amber-50 text-amber-600',
   },
 ]
 
 export function Testimonials() {
   return (
-    <section className="w-full py-20 md:py-32 lg:py-40 bg-slate-50 relative overflow-hidden">
+    <section className="w-full py-16 md:py-24 bg-slate-50 relative overflow-hidden">
       {/* Decorative quotes */}
       <div className="absolute top-20 left-[5%] text-slate-100 hidden sm:block" aria-hidden="true">
         <Quote className="h-24 w-24 sm:h-32 sm:w-32 rotate-180" />
@@ -67,7 +70,7 @@ export function Testimonials() {
           initial="initial"
           whileInView="animate"
           viewport={{ once: true, margin: '-80px' }}
-          className="space-y-16"
+          className="space-y-12"
         >
           {/* Section header */}
           <div className="text-center space-y-5">
@@ -109,11 +112,19 @@ export function Testimonials() {
 
                 {/* Author */}
                 <div className="flex items-center gap-3 pt-2 border-t border-slate-50">
-                  <div
-                    className={`h-10 w-10 rounded-full ${t.color} flex items-center justify-center text-xs font-bold`}
-                  >
-                    {t.initials}
-                  </div>
+                  {t.image ? (
+                    <img
+                      src={t.image}
+                      alt={t.name}
+                      className="h-12 w-12 rounded-full object-cover shadow-sm ring-2 ring-slate-50"
+                    />
+                  ) : (
+                    <div
+                      className={`h-12 w-12 rounded-full ${t.color} flex items-center justify-center text-xs font-bold`}
+                    >
+                      {t.initials}
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm font-semibold text-slate-900">{t.name}</p>
                     <p className="text-xs text-slate-400">{t.role}</p>

@@ -50,7 +50,7 @@ const features = [
 
 export function Features() {
   return (
-    <section className="w-full py-20 md:py-32 lg:py-40 bg-background relative overflow-hidden">
+    <section className="w-full py-16 md:py-24 bg-background relative overflow-hidden">
       {/* Decorative organic shapes - Sentirz Style */}
       <div className="absolute top-20 right-10 w-40 h-40 rounded-full bg-sentirz-teal/10 blur-[80px]" />
       <div className="absolute bottom-32 left-16 w-32 h-32 rounded-full bg-sentirz-orange/10 blur-[60px]" />
@@ -61,7 +61,7 @@ export function Features() {
           initial="initial"
           whileInView="animate"
           viewport={{ once: true, margin: '-80px' }}
-          className="space-y-20"
+          className="space-y-12"
         >
           {/* Section header */}
           <div className="text-center space-y-5">

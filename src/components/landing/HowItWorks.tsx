@@ -46,7 +46,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="w-full py-20 md:py-32 lg:py-40 bg-background relative overflow-hidden">
+    <section className="w-full py-16 md:py-24 bg-background relative overflow-hidden">
       {/* Decorative dots */}
       <div className="absolute top-16 right-[12%] w-2 h-2 rounded-full bg-sentirz-green/40" />
       <div className="absolute bottom-24 left-[8%] w-3 h-3 rounded-full bg-sentirz-teal/30" />
@@ -57,7 +57,7 @@ export function HowItWorks() {
           initial="initial"
           whileInView="animate"
           viewport={{ once: true, margin: '-80px' }}
-          className="space-y-20"
+          className="space-y-12"
         >
           {/* Section header */}
           <div className="text-center space-y-5">

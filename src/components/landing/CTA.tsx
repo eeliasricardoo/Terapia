@@ -13,7 +13,7 @@ const fadeIn: Variants = {
 
 export function CTA() {
   return (
-    <section className="w-full py-20 md:py-32 lg:py-40 bg-background relative overflow-hidden">
+    <section className="w-full py-16 md:py-20 bg-background relative overflow-hidden">
       {/* Decorative organic dots */}
       <div className="absolute top-16 left-[10%] w-2 h-2 rounded-full bg-sentirz-teal/60" />
       <div className="absolute bottom-20 right-[15%] w-3 h-3 rounded-full bg-sentirz-green/50" />
@@ -29,15 +29,16 @@ export function CTA() {
           {/* Background card */}
           <motion.div
             variants={fadeIn}
-            className="relative bg-sentirz-teal-pastel border border-sentirz-teal/10 rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[2.5rem] p-6 sm:p-12 md:p-20 overflow-hidden shadow-sm"
+            className="relative bg-sentirz-teal-pastel border border-sentirz-teal/10 rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[2.5rem] p-6 sm:p-10 md:p-14 overflow-hidden shadow-sm"
           >
             {/* Illustration decorations */}
-            <div className="absolute -right-4 -bottom-4 sm:-right-10 sm:-bottom-10 md:right-8 md:bottom-8 w-[160px] sm:w-[280px] md:w-[360px] opacity-[0.08] pointer-events-none">
+            {/* Illustration decoration — Premium Abstract Glassmorphism */}
+            <div className="absolute -right-20 -bottom-20 sm:-right-32 sm:-bottom-32 md:-right-20 md:-bottom-20 w-[300px] sm:w-[500px] md:w-[650px] opacity-[0.8] pointer-events-none transition-all group-hover:scale-110 group-hover:rotate-3 duration-1000">
               <Image
                 src="/cta-illustration.png"
-                alt=""
-                width={360}
-                height={360}
+                alt="Ilustração premium abstrata em vidro orgânico com cores da marca"
+                width={650}
+                height={650}
                 className="object-contain"
                 aria-hidden="true"
               />

@@ -45,7 +45,7 @@ export function SearchHighlight({ totalPsychologists = 500 }: SearchHighlightPro
   ]
 
   return (
-    <section className="w-full py-32 md:py-40 bg-slate-50 relative overflow-hidden">
+    <section className="w-full py-16 md:py-24 bg-slate-50 relative overflow-hidden">
       {/* Subtle grid pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.015)_1px,transparent_1px)] bg-[length:64px_64px] pointer-events-none" />
 
@@ -59,7 +59,7 @@ export function SearchHighlight({ totalPsychologists = 500 }: SearchHighlightPro
           initial="initial"
           whileInView="animate"
           viewport={{ once: true, margin: '-80px' }}
-          className="space-y-20"
+          className="space-y-12"
         >
           {/* Section header */}
           <div className="text-center space-y-5">
