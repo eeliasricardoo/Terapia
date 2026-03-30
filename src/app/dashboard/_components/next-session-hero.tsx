@@ -67,37 +67,11 @@ export function NextSessionHero({ session }: Props) {
     >
       <Card className="border-none shadow-lg overflow-hidden rounded-2xl sm:rounded-3xl">
         <div className="flex flex-col sm:flex-row">
-          {/* Left — Psychologist panel */}
-          <div className="relative sm:w-56 lg:w-64 shrink-0 bg-slate-900 flex flex-col items-center justify-center p-6 sm:p-8 gap-3 overflow-hidden">
-            {/* Subtle gradient blobs */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[hsl(var(--sentirz-teal))] opacity-10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-[hsl(var(--sentirz-green))] opacity-10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
-
-            <div className="relative z-10 flex flex-col items-center text-center gap-3">
-              <div className="relative">
-                <Avatar className="h-20 w-20 sm:h-24 sm:w-24 ring-4 ring-white/10">
-                  <AvatarImage src={session.psychologist.image || undefined} />
-                  <AvatarFallback className="bg-[hsl(var(--sentirz-teal))] text-white font-black text-2xl">
-                    {session.psychologist.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="absolute bottom-1 right-1 h-3.5 w-3.5 rounded-full bg-green-400 border-2 border-slate-900" />
-              </div>
-
-              <div>
-                <p className="text-sm font-bold text-white leading-tight">
-                  {session.psychologist.name}
-                </p>
-                <p className="text-xs text-slate-400 mt-0.5">{session.psychologist.specialty}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Right — Session info */}
+          {/* Session info */}
           <div className="flex-1 bg-white p-5 sm:p-7 flex flex-col justify-between gap-5">
             {/* Top: label + date/time */}
             <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/8 px-2.5 py-1 rounded-full border border-primary/10">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                   Próxima sessão
@@ -105,6 +79,24 @@ export function NextSessionHero({ session }: Props) {
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
                   {session.type}
                 </span>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <div className="relative shrink-0">
+                  <Avatar className="h-14 w-14">
+                    <AvatarImage src={session.psychologist.image || undefined} />
+                    <AvatarFallback className="bg-[hsl(var(--sentirz-teal))] text-white font-bold text-sm">
+                      {session.psychologist.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-400 border-2 border-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900 leading-tight">
+                    {session.psychologist.name}
+                  </p>
+                  <p className="text-xs text-slate-400">{session.psychologist.specialty}</p>
+                </div>
               </div>
 
               <div>
