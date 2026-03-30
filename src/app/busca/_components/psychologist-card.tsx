@@ -24,46 +24,47 @@ export const PsychologistCard = memo(function PsychologistCard({
     'Olá! Sou especialista em saúde mental e estou aqui para ajudar você a alcançar seus objetivos e bem-estar. Meu consultório é um espaço seguro e acolhedor.'
 
   return (
-    <Card className="overflow-hidden hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/20 transition-all duration-500 border-slate-200/60 rounded-3xl group flex flex-col bg-white h-full relative hover:-translate-y-1">
+    <Card className="overflow-hidden hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-300 border-slate-200/60 rounded-[2.5rem] group flex flex-col bg-white h-full relative hover:-translate-y-1">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
       <CardContent className="p-0 flex flex-col flex-1 relative z-10">
-        <div className="p-5 md:p-8 flex flex-col flex-1">
-          <div className="flex gap-4 sm:gap-5 mb-5">
+        <div className="p-4 sm:p-6 flex flex-col flex-1">
+          <div className="flex gap-3 sm:gap-4 mb-4">
             <div className="relative flex-shrink-0">
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-md opacity-0 group-hover:opacity-60 transition-opacity duration-500" />
-              <Avatar className="h-16 w-16 sm:h-24 sm:w-24 border-[3px] border-white shadow-md ring-1 ring-slate-100/50 relative z-10 group-hover:scale-105 transition-transform duration-500">
+              <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-2 border-white shadow-sm ring-1 ring-slate-100/50 relative z-10">
                 <AvatarImage src={profile?.avatar_url || undefined} className="object-cover" />
-                <AvatarFallback className="bg-gradient-to-br from-primary/10 to-indigo-50/30 text-primary text-xl sm:text-2xl font-bold">
+                <AvatarFallback className="bg-gradient-to-br from-primary/10 to-indigo-50/30 text-primary text-xl font-bold">
                   {displayName.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <span className="absolute bottom-1 right-1 w-3 h-3 sm:w-4 sm:h-4 bg-emerald-500 border-[3px] border-white rounded-full z-20 shadow-sm"></span>
+              <span className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full z-20 shadow-sm"></span>
             </div>
 
             <div className="flex-1 min-w-0 flex flex-col justify-center">
-              <div className="flex justify-between items-start gap-2 mb-1">
+              <div className="flex justify-between items-start gap-2 mb-0.5">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-extrabold text-xl text-slate-900 truncate group-hover:text-primary transition-colors duration-300">
+                  <h3 className="font-extrabold text-lg text-slate-900 truncate group-hover:text-primary transition-colors duration-300">
                     {displayName}
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium tracking-wide">CRP {crp}</p>
+                  <p className="text-[10px] text-slate-400 font-bold tracking-tight uppercase">
+                    CRP {crp}
+                  </p>
                 </div>
-                <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-full text-xs font-bold text-slate-500 shadow-sm border border-slate-100">
-                  <Star className="w-3.5 h-3.5 text-slate-300" />
+                <div className="flex items-center gap-1 bg-slate-50 px-2 py-0.5 rounded-full text-[10px] font-bold text-slate-500 border border-slate-100">
+                  <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
                   <span>Novo</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 text-xs text-slate-500 mt-2 font-medium">
+              <div className="flex items-center gap-3 text-[11px] text-slate-500 mt-1.5 font-medium">
                 <div className="flex items-center gap-1">
-                  <Video className="w-3.5 h-3.5 text-primary" />
+                  <Video className="w-3 h-3 text-primary" />
                   <span>Online</span>
                 </div>
-                <span className="w-1 h-1 rounded-full bg-slate-300" />
+                <span className="w-0.5 h-0.5 rounded-full bg-slate-300" />
                 <div className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="truncate max-w-[120px]">
+                  <MapPin className="w-3 h-3 text-slate-400" />
+                  <span className="truncate max-w-[100px]">
                     {profile?.city && profile?.state
                       ? `${profile.city}, ${profile.state}`
                       : profile?.city || profile?.state || 'Brasil'}
@@ -73,45 +74,40 @@ export const PsychologistCard = memo(function PsychologistCard({
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-5">
+          <div className="flex flex-wrap gap-1.5 mb-4">
             {specialties.slice(0, 3).map((specialty: string) => (
               <Badge
                 key={specialty}
                 variant="secondary"
-                className="font-medium text-[11px] px-2.5 py-0.5 bg-slate-100/80 text-slate-700 group-hover:bg-primary/10 group-hover:text-primary transition-colors border border-slate-200/60 rounded-full"
+                className="font-semibold text-[10px] px-2 py-0 bg-slate-100/60 text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors border-transparent rounded-full"
               >
                 {specialty}
               </Badge>
             ))}
-            {specialties.length > 3 && (
-              <span className="text-[11px] text-slate-500 flex items-center px-1 font-semibold">
-                +{specialties.length - 3} mais
-              </span>
-            )}
           </div>
 
           <div className="flex-1">
-            <p className="text-sm text-slate-600 line-clamp-3 leading-relaxed">{bio}</p>
+            <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed">{bio}</p>
           </div>
         </div>
       </CardContent>
 
-      <CardFooter className="p-5 md:px-8 md:py-6 border-t border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between relative z-10 mt-auto">
+      <CardFooter className="p-4 sm:px-6 sm:py-4 border-t border-slate-100 bg-slate-50/30 flex flex-row items-center justify-between relative z-10 mt-auto">
         <div className="flex flex-col justify-center">
-          <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1">
+          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-0.5">
             Sessão (50 min)
           </span>
-          <span className="font-extrabold text-slate-900 text-xl leading-none">
+          <span className="font-black text-slate-900 text-lg leading-none">
             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price)}
           </span>
         </div>
 
         <Link
           href={`/psicologo/${psychologist.userId}`}
-          className="flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground transition-all duration-300 font-bold text-sm h-11 px-6 rounded-full group-hover:shadow-md group-hover:shadow-primary/20 active:scale-95 whitespace-nowrap"
+          className="flex items-center justify-center gap-1.5 bg-primary text-white hover:bg-primary/90 transition-all duration-300 font-bold text-xs h-9 px-5 rounded-full shadow-sm hover:shadow-md active:scale-95"
         >
           Ver Perfil
-          <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          <ChevronRight className="w-3.5 h-3.5" />
         </Link>
       </CardFooter>
     </Card>
