@@ -51,7 +51,7 @@ export default function CompanyProfilePage() {
       const data = res.success ? res.data : null
       if (data) {
         setProfile(data)
-        const config = data.benefitConfig as any
+        const config = data.benefitConfig as { allowedDomains?: string[] } | null
         setDomains(config?.allowedDomains || [])
       }
       setLoading(false)
@@ -75,7 +75,7 @@ export default function CompanyProfilePage() {
   const handleSaveConfig = async () => {
     setIsSaving(true)
     const res = await updateCompanyBenefit({
-      ...((profile?.benefitConfig as any) || {}),
+      ...((profile?.benefitConfig as Record<string, unknown>) || {}),
       allowedDomains: domains,
     })
 

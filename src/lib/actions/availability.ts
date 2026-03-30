@@ -2,6 +2,7 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { logger } from '@/lib/utils/logger'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
@@ -255,13 +256,13 @@ export const updatePsychologistAvailability = createSafeAction(
           },
           update: {
             type: override.type,
-            slots: override.slots as any,
+            slots: override.slots as Prisma.InputJsonValue,
           },
           create: {
             psychologistId: profile.id,
             date: date,
             type: override.type,
-            slots: override.slots as any,
+            slots: override.slots as Prisma.InputJsonValue,
           },
         })
       }

@@ -105,7 +105,7 @@ export function AvailabilityForm() {
         .single()
 
       if (profile?.weekly_schedule) {
-        const ws = profile.weekly_schedule as any
+        const ws = profile.weekly_schedule as { sessionDuration?: string }
         if (ws.sessionDuration) {
           setSessionDuration(ws.sessionDuration)
         }

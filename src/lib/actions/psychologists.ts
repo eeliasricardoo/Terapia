@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
 import { PsychologistWithProfile } from '@/lib/supabase/types'
+import { WeeklyScheduleData } from '@/lib/validations/availability'
 
 function mapPsychologist(psych: any): PsychologistWithProfile {
   const userProfile = psych.user?.profiles || null
@@ -32,7 +33,7 @@ function mapPsychologist(psych: any): PsychologistWithProfile {
     price_per_session: psych.pricePerSession ? Number(psych.pricePerSession) : null,
     video_presentation_url: psych.videoPresentationUrl,
     is_verified: psych.isVerified,
-    weekly_schedule: psych.weeklySchedule as any,
+    weekly_schedule: psych.weeklySchedule as WeeklyScheduleData | null,
     timezone: psych.timezone,
     academic_level: psych.academicLevel,
     session_duration: psych.sessionDuration,

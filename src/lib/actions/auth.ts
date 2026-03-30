@@ -16,7 +16,7 @@ import {
 } from '@/lib/security'
 import { headers } from 'next/headers'
 import { logger } from '@/lib/utils/logger'
-import { getStyledEmailTemplate } from '@/lib/utils/email-template'
+import { getStyledEmailTemplate } from '@/lib/utils/email-templates'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
 import { env } from '@/lib/env'

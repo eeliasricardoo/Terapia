@@ -85,7 +85,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
   } | null>(
     initialProfile
       ? {
-          name: (initialProfile as any).full_name || (initialProfile as any).fullName || 'Usuário',
+          name: initialProfile.full_name || 'Usuário',
           email: '',
           role:
             initialProfile.role === 'ADMIN'
@@ -96,7 +96,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
                   ? 'Gestor de RH'
                   : 'Paciente',
           rawRole: initialProfile.role,
-          avatar_url: initialProfile.avatar_url || (initialProfile as any).avatarUrl || undefined,
+          avatar_url: initialProfile.avatar_url || undefined,
         }
       : null
   )
@@ -132,7 +132,6 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
             setUser({
               name:
                 profile?.full_name ||
-                (profile as any)?.fullName ||
                 authUser.user_metadata?.full_name ||
                 authUser.user_metadata?.name ||
                 authUser.email?.split('@')[0] ||
@@ -140,7 +139,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
               email: authUser.email || '',
               role: displayRole,
               rawRole: finalRole,
-              avatar_url: profile?.avatar_url || (profile as any)?.avatarUrl,
+              avatar_url: profile?.avatar_url || undefined,
             })
           }
 
@@ -155,13 +154,16 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
                 filter: `user_id=eq.${authUser.id}`,
               },
               (payload) => {
-                const newProfile = payload.new as any
+                const newProfile = payload.new as {
+                  full_name: string | null
+                  avatar_url: string | null
+                }
                 setUser((prev) =>
                   prev
                     ? {
                         ...prev,
                         name: newProfile.full_name || prev.name,
-                        avatar_url: newProfile.avatar_url,
+                        avatar_url: newProfile.avatar_url ?? undefined,
                       }
                     : null
                 )

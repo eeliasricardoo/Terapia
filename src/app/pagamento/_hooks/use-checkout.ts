@@ -101,9 +101,12 @@ export function useCheckout() {
           }
 
           // Check for insurance match
-          if (patientProfile?.healthInsuranceId && (psych as any).acceptedInsurances) {
-            const match = (psych as any).acceptedInsurances.find(
-              (ins: any) => ins.id === patientProfile.healthInsuranceId
+          const psychWithInsurance = psych as typeof psych & {
+            acceptedInsurances?: { id: string }[]
+          }
+          if (patientProfile?.healthInsuranceId && psychWithInsurance.acceptedInsurances) {
+            const match = psychWithInsurance.acceptedInsurances.find(
+              (ins) => ins.id === patientProfile.healthInsuranceId
             )
             if (match) {
               setMatchedInsurance(match)

@@ -26,6 +26,7 @@ import {
 } from '@/lib/supabase/types'
 import { createClient } from '@supabase/supabase-js'
 import { logger } from '@/lib/utils/logger'
+import { WeeklyScheduleData } from '@/lib/validations/availability'
 
 // Use a pure prisma call to fetch all verified psychologists
 const getCachedPsychologists = unstable_cache(
@@ -54,7 +55,7 @@ const getCachedPsychologists = unstable_cache(
       }
 
       // Map data to the model used by the frontend components
-      return (psychologists as any[]).map((psych) => {
+      return psychologists.map((psych) => {
         const userProfile = psych.user?.profiles || null
 
         const profile = userProfile
@@ -81,7 +82,7 @@ const getCachedPsychologists = unstable_cache(
           price_per_session: psych.pricePerSession ? Number(psych.pricePerSession) : null,
           video_presentation_url: psych.videoPresentationUrl,
           is_verified: psych.isVerified,
-          weekly_schedule: psych.weeklySchedule as any,
+          weekly_schedule: psych.weeklySchedule as WeeklyScheduleData | null,
           timezone: psych.timezone,
           academic_level: psych.academicLevel,
           session_duration: psych.sessionDuration,

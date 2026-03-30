@@ -109,7 +109,9 @@ export function RegistrationForm() {
         if (values.healthInsurancePolicy)
           formData.append('healthInsurancePolicy', values.healthInsurancePolicy)
 
-        const result = await registerPatientSupabase(formData as any)
+        const result = await registerPatientSupabase(
+          formData as unknown as Parameters<typeof registerPatientSupabase>[0]
+        )
 
         if (!result.success) {
           toast.error(result.error || 'Erro ao criar conta. Verifique os dados.')

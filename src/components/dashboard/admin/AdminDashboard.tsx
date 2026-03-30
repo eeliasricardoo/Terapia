@@ -7,15 +7,15 @@ import Link from 'next/link'
 import { Users, ShieldCheck, Activity, Calendar, LayoutDashboard } from 'lucide-react'
 
 import { AdminDashboardData } from '@/lib/actions/dashboard'
+import { Profile } from '@/lib/supabase/types'
 
 interface Props {
-  userProfile: any
+  userProfile: Profile
   dashboardData: AdminDashboardData
 }
 
 export function AdminDashboard({ userProfile, dashboardData }: Props) {
-  const userName =
-    (userProfile?.full_name || (userProfile as any)?.fullName || '').split(' ')[0] || 'Admin'
+  const userName = (userProfile?.full_name || '').split(' ')[0] || 'Admin'
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
