@@ -164,7 +164,7 @@ export default async function SessionsPage() {
                         {isPsychologist
                           ? 'Paciente'
                           : otherParty?.role === 'PSYCHOLOGIST'
-                            ? 'Psicólogo(a) Clínica'
+                            ? 'Psicólogo(a)'
                             : 'Especialista'}
                       </p>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2 flex-wrap">
@@ -194,7 +194,7 @@ export default async function SessionsPage() {
                             session={{
                               id: session.id,
                               doctor: otherParty?.full_name || 'Especialista',
-                              role: isPsychologist ? 'Paciente' : 'Psicóloga Clínica',
+                              role: isPsychologist ? 'Paciente' : 'Psicólogo(a)',
                               image: otherParty?.avatar_url || '/avatars/01.png',
                               date: format(scheduledDate, "dd 'de' MMMM, yyyy", { locale: ptBR }),
                               time: format(scheduledDate, 'HH:mm'),
@@ -226,7 +226,7 @@ export default async function SessionsPage() {
                             session={{
                               id: session.id,
                               doctor: otherParty?.full_name || 'Especialista',
-                              role: isPsychologist ? 'Paciente' : 'Psicóloga Clínica',
+                              role: isPsychologist ? 'Paciente' : 'Psicólogo(a)',
                               date: format(scheduledDate, "dd 'de' MMMM, yyyy", { locale: ptBR }),
                               time: format(scheduledDate, 'HH:mm'),
                               amount: Number(session.price),
