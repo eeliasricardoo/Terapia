@@ -51,7 +51,10 @@ export function NextSessionHero({ session }: Props) {
 
   const timezone = session.psychologist.timezone || 'America/Sao_Paulo'
   const scheduledDate = new Date(session.scheduledAt)
-  const dateStr = formatInTimeZone(scheduledDate, timezone, "EEEE, dd 'de' MMMM", { locale: ptBR })
+  const dateStrRaw = formatInTimeZone(scheduledDate, timezone, "EEEE, dd 'de' MMMM", {
+    locale: ptBR,
+  })
+  const dateStr = dateStrRaw.charAt(0).toUpperCase() + dateStrRaw.slice(1)
   const finishTime = new Date(scheduledDate.getTime() + session.durationMinutes * 60000)
   const startTimeStr = formatInTimeZone(scheduledDate, timezone, 'HH:mm')
   const finishTimeStr = formatInTimeZone(finishTime, timezone, 'HH:mm')
@@ -105,7 +108,7 @@ export function NextSessionHero({ session }: Props) {
               </div>
 
               <div>
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight font-outfit capitalize">
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight font-outfit">
                   {dateStr}
                 </h2>
                 <div className="flex items-center gap-3 mt-1.5">
@@ -145,7 +148,7 @@ export function NextSessionHero({ session }: Props) {
                   session={{
                     id: session.id,
                     doctor: session.psychologist.name,
-                    role: 'Psicóloga Clínica',
+                    role: session.psychologist.specialty || 'Psicólogo(a)',
                     image: session.psychologist.image || '/avatars/01.png',
                     date: format(new Date(session.scheduledAt), "dd 'de' MMMM, yyyy", {
                       locale: ptBR,

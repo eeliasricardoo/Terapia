@@ -43,7 +43,8 @@ export function UpcomingSessionsList({ sessions }: Props) {
       <div className="space-y-4">
         {otherSessions.map((session) => {
           const date = new Date(session.scheduledAt)
-          const dateStr = format(date, "dd 'de' MMMM", { locale: ptBR })
+          const dateStrRaw = format(date, "EEEE, dd 'de' MMMM", { locale: ptBR })
+          const dateStr = dateStrRaw.charAt(0).toUpperCase() + dateStrRaw.slice(1)
           const timeStr = format(date, 'HH:mm')
 
           return (
@@ -58,9 +59,7 @@ export function UpcomingSessionsList({ sessions }: Props) {
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-black text-slate-900 capitalize">
-                        {dateStr}
-                      </span>
+                      <span className="text-sm font-black text-slate-900">{dateStr}</span>
                       <span className="text-xs font-bold text-slate-400">•</span>
                       <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">
                         {timeStr}
