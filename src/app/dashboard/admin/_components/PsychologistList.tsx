@@ -137,7 +137,9 @@ export function PsychologistList({
             </label>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as 'all' | 'verified' | 'pending' | 'suspended')
+              }
               className="w-full px-3 py-2 border border-neutral-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm"
             >
               <option value="all">Todos os Status</option>
@@ -153,7 +155,7 @@ export function PsychologistList({
             </label>
             <select
               value={stripeFilter}
-              onChange={(e) => setStripeFilter(e.target.value as any)}
+              onChange={(e) => setStripeFilter(e.target.value as 'all' | 'complete' | 'incomplete')}
               className="w-full px-3 py-2 border border-neutral-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm"
             >
               <option value="all">Todos (Stripe)</option>

@@ -268,7 +268,7 @@ function RescheduleForm({
               {d}
             </span>
           ))}
-          {Array.from({ length: (calendar as any).firstDayOfMonth }).map((_, i) => (
+          {Array.from({ length: calendar.firstDayOfMonth }).map((_, i) => (
             <div key={`empty-${i}`} className="h-10 w-10 md:h-11 md:w-11" />
           ))}
           {Array.from({ length: calendar.daysInMonth }, (_, i) => i + 1).map((day) => {

@@ -102,7 +102,7 @@ export const createStripeCheckoutSession = createSafeAction(
             scheduledAt: new Date(data.scheduledAt),
             durationMinutes: data.durationMinutes,
           },
-          tx as any
+          tx
         )
 
         if (hasConflict) {
@@ -149,7 +149,7 @@ export const createStripeCheckoutSession = createSafeAction(
           scheduledAt: new Date(data.scheduledAt),
           durationMinutes: data.durationMinutes,
         },
-        tx as any
+        tx
       )
 
       if (hasConflict) {

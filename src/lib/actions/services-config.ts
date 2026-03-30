@@ -4,7 +4,11 @@ import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
-import type { TimeSlot, PsychologistAvailability } from '@/lib/validations/availability'
+import type {
+  TimeSlot,
+  PsychologistAvailability,
+  WeeklyScheduleData,
+} from '@/lib/validations/availability'
 import type { PsychologistWithProfile } from '@/lib/supabase/types'
 
 // ─── Types & Schemas ──────────────────────────────────────────────
@@ -131,7 +135,7 @@ export const getPatientBookingData = createSafeAction(
       price_per_session: psych.pricePerSession ? Number(psych.pricePerSession) : null,
       video_presentation_url: psych.videoPresentationUrl,
       is_verified: psych.isVerified,
-      weekly_schedule: psych.weeklySchedule as any,
+      weekly_schedule: psych.weeklySchedule as WeeklyScheduleData | null,
       timezone: psych.timezone,
       academic_level: psych.academicLevel,
       session_duration: psych.sessionDuration,
@@ -175,7 +179,7 @@ export const getPatientBookingData = createSafeAction(
 
     const availability: PsychologistAvailability = {
       timezone: psych.timezone || 'America/Sao_Paulo',
-      weeklySchedule: psych.weeklySchedule as any,
+      weeklySchedule: psych.weeklySchedule as WeeklyScheduleData | null,
       overrides,
       appointments: appointmentList.map((a) => ({
         id: a.id,

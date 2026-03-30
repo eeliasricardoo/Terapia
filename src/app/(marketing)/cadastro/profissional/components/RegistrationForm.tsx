@@ -71,7 +71,9 @@ export function RegistrationForm() {
         formData.append('terms', 'true')
         if (captchaToken) formData.append('captcha_token', captchaToken)
 
-        const result = await registerPsychologistSupabase(formData as any)
+        const result = await registerPsychologistSupabase(
+          formData as unknown as Parameters<typeof registerPsychologistSupabase>[0]
+        )
 
         if (!result.success) {
           toast.error(result.error || 'Erro ao criar conta. Tente novamente.')

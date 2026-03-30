@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
-import { Appointment } from '@prisma/client'
+import { Appointment, Prisma } from '@prisma/client'
 
 /**
  * Checks if there is any appointment conflict for a psychologist or a patient
@@ -20,7 +20,7 @@ export async function checkAppointmentConflict(
     durationMinutes: number
     excludeAppointmentId?: string
   },
-  tx?: any
+  tx?: Prisma.TransactionClient
 ) {
   const db = tx || prisma
   const newSessionStart = new Date(scheduledAt)

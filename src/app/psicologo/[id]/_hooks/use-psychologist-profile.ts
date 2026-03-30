@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { format, isBefore, startOfDay, addMinutes } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import type { PsychologistWithProfile } from '@/lib/supabase/types'
-import type { PsychologistAvailability } from '@/lib/validations/availability'
+import type { PsychologistAvailability, WeeklyScheduleData } from '@/lib/validations/availability'
 
 export function usePsychologistProfile(
   psychologist: PsychologistWithProfile,
@@ -50,7 +50,7 @@ export function usePsychologistProfile(
 
     // 3. Get slot definitions (from custom overrides or weekly schedule)
     let slotsDef: { start: string; end: string }[] = []
-    const ws = availability.weeklySchedule as any
+    const ws = availability.weeklySchedule as WeeklyScheduleData | null
 
     if (availability.overrides[dateStr] && availability.overrides[dateStr].type === 'custom') {
       slotsDef = availability.overrides[dateStr].slots

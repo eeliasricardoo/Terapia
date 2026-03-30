@@ -5,7 +5,11 @@ import { unstable_cache } from 'next/cache'
 import { PsychologistWithProfile } from '@/lib/supabase/types'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
-import { PsychologistAvailability, TimeSlot } from '@/lib/validations/availability'
+import {
+  PsychologistAvailability,
+  TimeSlot,
+  WeeklyScheduleData,
+} from '@/lib/validations/availability'
 
 interface PageProps {
   params: Promise<{
@@ -57,7 +61,7 @@ async function getPsychologistDataInternal(userId: string) {
       price_per_session: psych.pricePerSession ? Number(psych.pricePerSession) : null,
       video_presentation_url: psych.videoPresentationUrl,
       is_verified: psych.isVerified,
-      weekly_schedule: psych.weeklySchedule as any,
+      weekly_schedule: psych.weeklySchedule as WeeklyScheduleData | null,
       timezone: psych.timezone,
       academic_level: psych.academicLevel,
       session_duration: psych.sessionDuration,
@@ -114,7 +118,7 @@ async function getPsychologistDataInternal(userId: string) {
 
     const availability: PsychologistAvailability = {
       timezone: psych.timezone || 'America/Sao_Paulo',
-      weeklySchedule: psych.weeklySchedule as any,
+      weeklySchedule: psych.weeklySchedule as WeeklyScheduleData | null,
       overrides: overridesMap,
       appointments: appointmentsMap,
     }

@@ -105,10 +105,8 @@ export const getNextSession = createSafeAction(z.any().optional(), async (_, use
     ...appt,
     scheduled_at: appt.scheduledAt.toISOString(),
     price: Number(appt.price),
-    patient: appt.patient?.profiles ? (appt.patient.profiles as any) : null,
-    psychologist: appt.psychologist?.user?.profiles
-      ? (appt.psychologist.user.profiles as any)
-      : null,
+    patient: mapProfile(appt.patient?.profiles),
+    psychologist: mapProfile(appt.psychologist?.user?.profiles),
   }
 })
 
@@ -172,7 +170,7 @@ export const cancelSession = createSafeAction(z.string().uuid(), async (sessionI
   // 2. Either psych cancelled (always refund) OR patient cancelled more than 24h before
   const isRefundEligible =
     appointment.paymentMethod === 'Stripe' &&
-    (appointment as any).stripePaymentIntentId !== null &&
+    appointment.stripePaymentIntentId !== null &&
     (isPsychologist || hoursUntilSession > 24)
 
   if (isPatient && hoursUntilSession <= 24) {
@@ -186,7 +184,7 @@ export const cancelSession = createSafeAction(z.string().uuid(), async (sessionI
   if (isRefundEligible) {
     try {
       const refund = await stripe.refunds.create({
-        payment_intent: (appointment as any).stripePaymentIntentId!,
+        payment_intent: appointment.stripePaymentIntentId!,
       })
       refunded = refund.status === 'succeeded' || refund.status === 'pending'
 
@@ -239,7 +237,7 @@ export const rescheduleSession = createSafeAction(
           durationMinutes: appointment.durationMinutes,
           excludeAppointmentId: data.sessionId,
         },
-        tx as any
+        tx
       )
 
       if (hasConflict) {

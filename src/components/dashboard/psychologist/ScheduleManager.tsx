@@ -40,6 +40,7 @@ import { ptBR } from 'date-fns/locale'
 import { format } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
+import { WeeklyScheduleData } from '@/lib/validations/availability'
 
 // --- Types ---
 
@@ -149,7 +150,7 @@ export function ScheduleManager() {
         .single()
 
       if (profile?.weekly_schedule) {
-        const ws = profile.weekly_schedule as any
+        const ws = profile.weekly_schedule as { sessionDuration?: string; breakDuration?: string }
         if (ws.sessionDuration) {
           setSessionDuration(ws.sessionDuration)
         }
@@ -440,7 +441,7 @@ export function ScheduleManager() {
       const { updatePsychologistAvailability } = await import('@/lib/actions/availability')
 
       const result = await updatePsychologistAvailability({
-        weeklySchedule: weeklySchedule as any,
+        weeklySchedule: weeklySchedule as unknown as WeeklyScheduleData,
         sessionDuration,
         breakDuration,
         timezone,

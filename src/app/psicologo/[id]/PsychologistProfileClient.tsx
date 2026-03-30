@@ -100,7 +100,15 @@ export function PsychologistProfileClient({ psychologist, availability, stats }:
 
             <PresentationVideo videoUrl={psychologist.video_presentation_url} />
 
-            <InsuranceSection insurances={(psychologist as any).acceptedInsurances} />
+            <InsuranceSection
+              insurances={
+                (
+                  psychologist as PsychologistWithProfile & {
+                    acceptedInsurances?: { id: string; name: string }[]
+                  }
+                ).acceptedInsurances
+              }
+            />
 
             <ReviewsSection />
           </div>

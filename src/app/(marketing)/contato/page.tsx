@@ -17,7 +17,9 @@ export default function ContatoPage() {
 
     try {
       const formData = new FormData(e.currentTarget)
-      const result = await sendContactForm(formData as any)
+      const result = await sendContactForm(
+        formData as unknown as Parameters<typeof sendContactForm>[0]
+      )
 
       if (result.success) {
         toast.success('Mensagem enviada com sucesso!', {

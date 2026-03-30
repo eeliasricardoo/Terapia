@@ -1,6 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 import { logger } from '@/lib/utils/logger'
 import { createSafeAction } from '@/lib/safe-action'
@@ -157,7 +158,7 @@ export const savePatientPreferences = createSafeAction(
     await prisma.profile.update({
       where: { user_id: user.id },
       data: {
-        onboardingData: data as any,
+        onboardingData: data as Prisma.InputJsonValue,
       },
     })
 

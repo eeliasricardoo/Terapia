@@ -97,7 +97,7 @@ export async function uploadProfileImage(formData: FormData) {
           id: user.id, // Enforce 1:1 mapping for simplicity if missing
           user_id: user.id,
           full_name: user.user_metadata?.full_name || 'Usuário',
-          role: (user.user_metadata?.role as any) || 'PATIENT',
+          role: (user.user_metadata?.role as string) || 'PATIENT',
           avatar_url: publicUrl,
           updated_at: new Date().toISOString(),
           // created_at is automatic usually but safe to send
