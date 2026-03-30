@@ -157,17 +157,20 @@ export const searchPsychologists = createSafeAction(
       }
     }
 
-    const psychologists = await prisma.psychologistProfile.findMany({
-      where,
-      include: {
-        user: { include: { profiles: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: pageSize,
-    })
+    const [psychologists, total] = await Promise.all([
+      prisma.psychologistProfile.findMany({
+        where,
+        include: {
+          user: { include: { profiles: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      prisma.psychologistProfile.count({ where }),
+    ])
 
-    return psychologists.map(mapPsychologist)
+    return { results: psychologists.map(mapPsychologist), total }
   },
   { isPublic: true }
 )

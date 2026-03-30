@@ -112,7 +112,7 @@ export default async function SearchPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <main className="flex-1 container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8 max-w-7xl">
-        <div className="mb-8">
+        <div className="mb-5">
           <div className="flex items-center text-sm text-slate-500 gap-2 px-1">
             <Link href="/" className="hover:text-orange-600 transition-colors">
               Home

@@ -218,6 +218,24 @@
   .border-sentirz-gradient {
     border-image: linear-gradient(135deg, hsl(var(--sentirz-teal)), hsl(var(--sentirz-green))) 1;
   }
+
+  /* Custom Scrollbar Utility */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+  }
+
+  /* Compact spacing for lists */
+  .compact-list-item {
+    @apply py-1 px-2 rounded-lg transition-colors hover:bg-slate-50;
+  }
 }
 
 /* Phone Input Styles */
