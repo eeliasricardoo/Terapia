@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -16,14 +17,16 @@ import {
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import { loginSchema, type LoginInput } from '@/lib/validations/auth'
 import { toast } from 'sonner'
 import { login } from '@/lib/actions/auth'
 import { auth } from '@/lib/supabase/auth'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useTranslations } from 'next-intl'
 
 export function LoginForm() {
+  const t = useTranslations('Auth.login')
   const router = useRouter()
   const searchParams = useSearchParams()
   const returnTo = searchParams.get('returnTo')
@@ -46,21 +49,21 @@ export function LoginForm() {
 
       if (!result.success) {
         if (result.error?.includes('Email not confirmed')) {
-          toast.error('Seu e-mail ainda não foi confirmado.')
+          toast.error(t('errors.emailNotConfirmed'))
           router.push(
             `/cadastro/confirmar-email?email=${encodeURIComponent(values.email)}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`
           )
           return
         }
-        toast.error(result.error || 'Credenciais inválidas')
+        toast.error(result.error || t('errors.invalidCredentials'))
         return
       }
 
-      toast.success('Login realizado com sucesso!')
+      toast.success(t('success'))
       router.push(returnTo || '/dashboard')
       router.refresh()
     } catch (error) {
-      toast.error('Erro ao fazer login. Tente novamente.')
+      toast.error(t('errors.generic'))
     } finally {
       setIsLoading(false)
     }
@@ -75,7 +78,7 @@ export function LoginForm() {
         setIsLoading(false)
       }
     } catch (error) {
-      toast.error('Erro ao fazer login com Google')
+      toast.error(t('errors.google'))
       setIsLoading(false)
     }
   }
@@ -83,9 +86,9 @@ export function LoginForm() {
   return (
     <Card className="mx-auto max-w-md w-full">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Entrar</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center">{t('title')}</CardTitle>
         <CardDescription className="text-center">
-          Digite seu email e senha para acessar sua conta
+          {t('description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -97,9 +100,9 @@ export function LoginForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t('email')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="seu@email.com" {...field} />
+                      <Input placeholder={t('emailPlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -111,16 +114,16 @@ export function LoginForm() {
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center justify-between">
-                      <FormLabel>Senha</FormLabel>
+                      <FormLabel>{t('password')}</FormLabel>
                       <Link
                         href="/login/esqueci-senha"
                         className="text-xs text-primary hover:underline font-medium"
                       >
-                        Esqueci minha senha
+                        {t('forgotPassword')}
                       </Link>
                     </div>
                     <FormControl>
-                      <PasswordInput placeholder="******" {...field} />
+                      <PasswordInput placeholder={t('passwordPlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -137,7 +140,7 @@ export function LoginForm() {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel className="text-sm font-medium text-slate-600 cursor-pointer">
-                        Mantenha-me conectado
+                        {t('rememberMe')}
                       </FormLabel>
                     </div>
                   </FormItem>
@@ -146,7 +149,7 @@ export function LoginForm() {
             </div>
 
             <Button type="submit" className="w-full h-11" disabled={isLoading}>
-              {isLoading ? 'Entrando...' : 'Entrar'}
+              {isLoading ? t('submitting') : t('submit')}
             </Button>
           </form>
         </Form>
@@ -156,7 +159,7 @@ export function LoginForm() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Ou continue com</span>
+            <span className="bg-background px-2 text-muted-foreground">{t('orContinueWith')}</span>
           </div>
         </div>
 
@@ -189,12 +192,12 @@ export function LoginForm() {
         </Button>
 
         <div className="mt-4 text-center text-sm">
-          Não tem uma conta?{' '}
+          {t('noAccount')}{' '}
           <Link
-            href={`/cadastro/paciente${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`}
+            href={`/cadastro${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`}
             className="underline text-primary"
           >
-            Cadastre-se
+            {t('register')}
           </Link>
         </div>
       </CardContent>

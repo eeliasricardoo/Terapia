@@ -3,8 +3,10 @@
 import { auth } from '@/lib/supabase/auth'
 import { toast } from 'sonner'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 export function SocialLoginButtons() {
+  const t = useTranslations('Auth.professionalRegistration')
   const [loading, setLoading] = useState(false)
 
   const handleGoogleLogin = async () => {
@@ -16,7 +18,7 @@ export function SocialLoginButtons() {
         setLoading(false)
       }
     } catch (error) {
-      toast.error('Erro ao fazer login com Google')
+      toast.error(t('errors.google'))
       setLoading(false)
     }
   }

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import { Hero } from './Hero'
 import { PasswordInput } from './PasswordInput'
 import { DividerWithText } from './DividerWithText'
@@ -31,8 +31,10 @@ import { maskCRP } from '@/lib/utils/crp'
 import { registerPsychologistSupabase } from '@/lib/actions/auth'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { useRef } from 'react'
+import { useTranslations } from 'next-intl'
 
 export function RegistrationForm() {
+  const t = useTranslations('Auth.professionalRegistration')
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const turnstileRef = useRef<TurnstileInstance>(null)
@@ -59,7 +61,7 @@ export function RegistrationForm() {
     startTransition(async () => {
       try {
         if (!captchaToken && process.env.NODE_ENV === 'production') {
-          toast.error('Por favor, complete a verificação de segurança.')
+          toast.error(t('errors.captcha'))
           return
         }
 
@@ -76,15 +78,15 @@ export function RegistrationForm() {
         )
 
         if (!result.success) {
-          toast.error(result.error || 'Erro ao criar conta. Tente novamente.')
+          toast.error(result.error || t('errors.apiError'))
         } else {
-          toast.success('Conta criada com sucesso!')
+          toast.success(t('success'))
           // Redirecionar para completar dados profissionais
           router.push('/cadastro/profissional/dados')
         }
       } catch (error) {
         console.error('Registration error:', error)
-        toast.error('Erro ao criar conta. Tente novamente mais tarde.')
+        toast.error(t('errors.generic'))
       }
     })
   }
@@ -100,9 +102,9 @@ export function RegistrationForm() {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nome Completo</FormLabel>
+                <FormLabel>{t('fields.name')}</FormLabel>
                 <FormControl>
-                  <Input className="h-[44px]" placeholder="Digite seu nome completo" {...field} />
+                  <Input className="h-[44px]" placeholder={t('fields.namePlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -114,12 +116,12 @@ export function RegistrationForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>E-mail</FormLabel>
+                <FormLabel>{t('fields.email')}</FormLabel>
                 <FormControl>
                   <Input
                     className="h-[44px]"
                     type="email"
-                    placeholder="Digite seu e-mail"
+                    placeholder={t('fields.emailPlaceholder')}
                     {...field}
                   />
                 </FormControl>
@@ -133,11 +135,11 @@ export function RegistrationForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Criar Senha</FormLabel>
+                <FormLabel>{t('fields.password')}</FormLabel>
                 <FormControl>
                   <PasswordInput
                     className="h-[44px]"
-                    placeholder="Digite uma senha segura"
+                    placeholder={t('fields.passwordPlaceholder')}
                     {...field}
                   />
                 </FormControl>
@@ -151,11 +153,11 @@ export function RegistrationForm() {
             name="professionalCard"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Número da Carteira Profissional (CRP)</FormLabel>
+                <FormLabel>{t('fields.crp')}</FormLabel>
                 <FormControl>
                   <Input
                     className="h-[44px]"
-                    placeholder="XX/XXXXX ou XX/XXXXXX"
+                    placeholder={t('fields.crpPlaceholder')}
                     maxLength={9}
                     {...field}
                     onChange={(e) => {
@@ -165,7 +167,7 @@ export function RegistrationForm() {
                   />
                 </FormControl>
                 <FormDescription>
-                  Digite seu CRP no formato XX/XXXXX ou XX/XXXXXX (ex: 06/123456)
+                  {t('fields.crpHint')}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -183,16 +185,16 @@ export function RegistrationForm() {
                   </FormControl>
                   <div className="space-y-1 leading-none">
                     <FormLabel className="text-sm font-normal cursor-pointer">
-                      Aceito os{' '}
+                      {t('fields.terms')}{' '}
                       <Link href="/termos" className="text-primary underline hover:no-underline">
-                        Termos de Serviço
+                        {t('fields.termsOfService')}
                       </Link>{' '}
-                      e a{' '}
+                      {t('fields.and')}{' '}
                       <Link
                         href="/privacidade"
                         className="text-primary underline hover:no-underline"
                       >
-                        Política de Privacidade
+                        {t('fields.privacyPolicy')}
                       </Link>
                       .
                     </FormLabel>
@@ -225,25 +227,25 @@ export function RegistrationForm() {
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Criando conta...
+                {t('actions.submitting')}
               </>
             ) : (
-              'Criar Conta'
+              t('actions.submit')
             )}
           </Button>
         </form>
       </Form>
 
-      <DividerWithText text="Ou cadastre-se com" />
+      <DividerWithText text={t('actions.orRegisterWith')} />
 
       <SocialLoginButtons />
 
       <div className="flex items-center justify-between pt-4">
-        <h2 className="text-sm font-medium text-muted-foreground">Cadastro Psicólogo</h2>
+        <h2 className="text-sm font-medium text-muted-foreground">{t('psychologistRegistration')}</h2>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Já tem uma conta?</span>
+          <span>{t('loginPrompt')}</span>
           <Button variant="link" className="h-auto p-0 font-medium" asChild>
-            <Link href="/login/profissional">Entrar</Link>
+            <Link href="/login/profissional">{t('login')}</Link>
           </Button>
         </div>
       </div>

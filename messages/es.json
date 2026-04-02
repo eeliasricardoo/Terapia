@@ -362,5 +362,145 @@
         "desc": "Sigue la evolución del bienestar de tu equipo de forma anónima y segura con datos procesable."
       }
     }
+  },
+  "Auth": {
+    "login": {
+      "title": "Entrar",
+      "description": "Ingresa tu correo y contraseña para acceder a tu cuenta",
+      "email": "Correo",
+      "emailPlaceholder": "tu@correo.com",
+      "password": "Contraseña",
+      "passwordPlaceholder": "******",
+      "forgotPassword": "Olvidé mi contraseña",
+      "rememberMe": "Mantener mi sesión iniciada",
+      "submit": "Entrar",
+      "submitting": "Entrando...",
+      "orContinueWith": "O continuar con",
+      "noAccount": "¿No tienes una cuenta?",
+      "register": "Regístrate",
+      "errors": {
+        "emailNotConfirmed": "Tu correo aún no ha sido confirmado.",
+        "invalidCredentials": "Credenciales inválidas",
+        "generic": "Error al iniciar sesión. Inténtalo de nuevo.",
+        "google": "Error al iniciar sesión con Google"
+      },
+      "success": "¡Inicio de sesión exitoso!"
+    },
+    "roleSelection": {
+      "patient": {
+        "title": "Cliente",
+        "description": "Quiero realizar sesiones de terapia y ver contenido sobre salud emocional"
+      },
+      "professional": {
+        "title": "Especialista",
+        "description": "Quiero atender pacientes en línea y gestionar mi carrera"
+      },
+      "company": {
+        "title": "Empresa",
+        "description": "Quiero promover el bienestar emocional de mis empleados"
+      }
+    },
+    "register": {
+      "howToCreate": "¿Cómo quieres crear tu cuenta?",
+      "selectOption": "Selecciona la opción con la que deseas crear tu cuenta:"
+    },
+    "patientRegistration": {
+      "steps": {
+        "1": {
+          "title": "Crea tu cuenta",
+          "description": "Comienza ingresando tus datos básicos."
+        },
+        "2": {
+          "title": "Datos Necesarios",
+          "description": "Completa la información restante por tu seguridad."
+        },
+        "3": {
+          "title": "Seguro Médico (Opcional)",
+          "description": "Si tienes un seguro médico, ingresa los datos a continuación."
+        }
+      },
+      "professionalPrompt": "¿Eres un profesional?",
+      "registerAsProfessional": "Regístrate como especialista",
+      "fields": {
+        "name": "Nombre Completo",
+        "namePlaceholder": "¿Cómo te gustaría que te llamen?",
+        "email": "Correo",
+        "emailPlaceholder": "tu@correo.com",
+        "document": "ID / DNI(CPF)",
+        "documentPlaceholder": "000.000.000-00",
+        "phone": "Celular",
+        "phonePlaceholder": "(00) 00000-0000",
+        "birthDate": "Fecha de Nacimiento",
+        "birthDateHint": "Debes tener al menos 18 años",
+        "password": "Contraseña",
+        "passwordPlaceholder": "Tu contraseña segura",
+        "confirmPassword": "Confirmar Contraseña",
+        "confirmPasswordPlaceholder": "Confirma tu contraseña",
+        "terms": "Acepto los Términos de Uso",
+        "termsAgreement": "Estás de acuerdo con nuestra",
+        "privacyPolicy": "Política de Privacidad",
+        "and": "y",
+        "termsOfService": "Términos de Servicio.",
+        "healthInsurance": "Seguro Médico",
+        "selectPlan": "Selecciona tu plan",
+        "noPlan": "Ninguno / Prefiero no informar",
+        "planHint": "Esto nos ayuda a encontrar profesionales que acepten tu plan.",
+        "policyNumber": "Número de Tarjeta / Póliza",
+        "policyNumberPlaceholder": "0000 0000 0000 0000"
+      },
+      "actions": {
+        "continue": "Continuar",
+        "back": "Volver",
+        "submit": "Crear Cuenta",
+        "submitting": "Creando cuenta..."
+      },
+      "loginPrompt": "¿Ya tienes una cuenta?",
+      "login": "Inicia sesión",
+      "or": "o",
+      "recoverPassword": "recupera tu contraseña",
+      "errors": {
+        "honeypot": "Ocurrió un error al procesar tu registro. Inténtalo de nuevo.",
+        "captcha": "Por favor, completa la verificación de seguridad.",
+        "apiError": "Error al crear la cuenta. Verifica los datos.",
+        "generic": "Error al crear la cuenta. Inténtalo de nuevo más tarde."
+      },
+      "success": "¡Cuenta creada con éxito! Hemos enviado un código de confirmación a tu correo."
+    },
+    "professionalRegistration": {
+      "hero": {
+        "title": "Únete a nuestra red profesional",
+        "description": "Conéctate con pacientes en todo el país y expande tu práctica online."
+      },
+      "fields": {
+        "name": "Nombre Completo",
+        "namePlaceholder": "Escribe tu nombre completo",
+        "email": "Correo",
+        "emailPlaceholder": "Escribe tu correo",
+        "password": "Crear Contraseña",
+        "passwordPlaceholder": "Escribe una contraseña segura",
+        "crp": "Número de Tarjeta Profesional / Colegiatura",
+        "crpPlaceholder": "XX/XXXXX o XX/XXXXXX",
+        "crpHint": "Ingresa tu número en el formato XX/XXXXX o XX/XXXXXX (ej: 06/123456)",
+        "terms": "Acepto los",
+        "termsOfService": "Términos de Servicio",
+        "and": "y la",
+        "privacyPolicy": "Política de Privacidad"
+      },
+      "actions": {
+        "submit": "Crear Cuenta",
+        "submitting": "Creando cuenta...",
+        "orRegisterWith": "O regístrate con"
+      },
+      "loginPrompt": "¿Ya tienes una cuenta?",
+      "login": "Entrar",
+      "psychologistRegistration": "Registro de Psicólogo",
+      "errors": {
+        "captcha": "Por favor, completa la verificación de seguridad.",
+        "apiError": "Error al crear la cuenta. Inténtalo de nuevo.",
+        "generic": "Error al crear la cuenta. Inténtalo de nuevo más tarde.",
+        "google": "Error al iniciar sesión con Google"
+      },
+      "success": "¡Cuenta creada con éxito!"
+    }
   }
 }
