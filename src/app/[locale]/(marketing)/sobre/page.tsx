@@ -1,13 +1,20 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
 import { Heart, Shield, Video, Users } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
+import { Link } from '@/i18n/routing'
 
-export const metadata: Metadata = {
-  title: 'Sobre Nós | Sentirz',
-  description: 'Conheça a missão e a equipe por trás da plataforma Sentirz.',
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace: 'AboutPage' })
+  return {
+    title: t('meta.title'),
+    description: t('meta.description'),
+  }
 }
 
-export default function SobrePage() {
+export default async function SobrePage({ params: { locale } }: { params: { locale: string } }) {
+  const t = await getTranslations({ locale, namespace: 'AboutPage' })
+
   return (
     <div className="bg-white">
       {/* Hero Section */}
@@ -15,14 +22,15 @@ export default function SobrePage() {
         <div className="container max-w-6xl mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-16 relative z-10">
             <span className="inline-block px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-sm font-bold tracking-tight mb-6 animate-fade-in">
-              Nossa Missão
+              {t('hero.badge')}
             </span>
             <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 mb-8 font-heading">
-              Saúde Mental <span className="text-blue-600">Acessível</span> para Todos
+              {t.rich('hero.titlePart1', {})}
+              <span className="text-blue-600">{t('hero.titleHighlight')}</span>
+              {t.rich('hero.titlePart2', {})}
             </h1>
             <p className="text-xl text-slate-500 leading-relaxed font-medium">
-              Acreditamos que cuidar da mente não deve ser um privilégio, mas um direito. A Sentirz
-              nasceu para encurtar distâncias e quebrar estigmas.
+              {t('hero.description')}
             </p>
           </div>
 
@@ -47,37 +55,36 @@ export default function SobrePage() {
               <div className="h-12 w-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
                 <Heart className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Empatia</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{t('values.empathy.title')}</h3>
               <p className="text-slate-500 text-sm leading-relaxed">
-                Colocamos o ser humano no centro de tudo o que fazemos, com escuta ativa e
-                acolhimento.
+                {t('values.empathy.desc')}
               </p>
             </div>
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 transition-all hover:shadow-lg hover:-translate-y-1">
               <div className="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6">
                 <Shield className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Segurança</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{t('values.security.title')}</h3>
               <p className="text-slate-500 text-sm leading-relaxed">
-                Sigilo absoluto e criptografia de ponta para garantir sua total privacidade.
+                {t('values.security.desc')}
               </p>
             </div>
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 transition-all hover:shadow-lg hover:-translate-y-1">
               <div className="h-12 w-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-6">
                 <Video className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Tecnologia</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{t('values.technology.title')}</h3>
               <p className="text-slate-500 text-sm leading-relaxed">
-                Inovamos constantemente para oferecer a melhor experiência de atendimento remoto.
+                {t('values.technology.desc')}
               </p>
             </div>
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 transition-all hover:shadow-lg hover:-translate-y-1">
               <div className="h-12 w-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-6">
                 <Users className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Comunidade</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{t('values.community.title')}</h3>
               <p className="text-slate-500 text-sm leading-relaxed">
-                Criamos laços entre profissionais e pacientes para uma jornada de evolução conjunta.
+                {t('values.community.desc')}
               </p>
             </div>
           </div>
@@ -89,23 +96,17 @@ export default function SobrePage() {
         <div className="container max-w-4xl mx-auto px-6">
           <div className="prose prose-slate max-w-none">
             <h2 className="text-4xl font-extrabold text-slate-900 text-center mb-12">
-              Nossa História
+              {t('history.title')}
             </h2>
             <p className="text-xl text-slate-600 text-center leading-relaxed font-light italic mb-12">
-              &quot;A Sentirz nasceu de uma conversa em 2024 sobre como era difícil encontrar ajuda
-              qualificada de forma rápida e segura. Decidimos criar a plataforma que gostaríamos de
-              usar.&quot;
+              {t('history.quote')}
             </p>
             <div className="space-y-8 text-slate-600 font-medium">
               <p>
-                Iniciamos nossa jornada com um pequeno grupo de psicólogos visionários que
-                acreditavam no potencial da telepsicologia. Hoje, somos centenas de profissionais
-                cuidando de milhares de vidas em todo o país.
+                {t('history.p1')}
               </p>
               <p>
-                Nossa plataforma não é apenas um software de vídeo; é um ecossistema completo que
-                apoia o profissional em sua gestão clínica e garante ao paciente um ambiente seguro
-                para florescer.
+                {t('history.p2')}
               </p>
             </div>
           </div>
@@ -121,25 +122,24 @@ export default function SobrePage() {
 
             <div className="relative z-10">
               <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
-                Pronto para começar sua jornada?
+                {t('cta.title')}
               </h2>
               <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto font-medium">
-                Encontre o psicólogo ideal para você em poucos minutos e comece a cuidar do que mais
-                importa.
+                {t('cta.description')}
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a
+                <Link
                   href="/busca"
                   className="h-14 px-10 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold flex items-center justify-center transition-all shadow-xl shadow-blue-600/20 active:scale-95"
                 >
-                  Encontrar Terapeuta
-                </a>
-                <a
-                  href="/cadastro/profissional"
+                  {t('cta.buttonPatient')}
+                </Link>
+                <Link
+                  href="/cadastro?role=psychologist"
                   className="h-14 px-10 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold flex items-center justify-center transition-all backdrop-blur-md active:scale-95"
                 >
-                  Sou Psicólogo
-                </a>
+                  {t('cta.buttonProfessional')}
+                </Link>
               </div>
             </div>
           </div>

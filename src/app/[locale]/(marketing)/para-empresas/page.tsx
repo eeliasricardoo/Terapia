@@ -2,17 +2,20 @@ import type { Metadata } from 'next'
 import { CompaniesHero } from '@/components/companies/CompaniesHero'
 import { CompaniesFeatures } from '@/components/companies/CompaniesFeatures'
 import { CTA } from '@/components/landing/CTA'
+import { getTranslations } from 'next-intl/server'
 
-export const metadata: Metadata = {
-  title: 'Para Empresas - Saúde Mental e Bem-estar Corporativo',
-  description:
-    'Leve terapia de qualidade para seus colaboradores e melhore o clima organizacional. Ofereça benefícios de saúde mental com gestão simples e eficiente.',
-  keywords: [
-    'saúde mental corporativa',
-    'benefícios para funcionários',
-    'psicologia nas empresas',
-    'bem-estar no trabalho',
-  ],
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace: 'CompaniesPage' })
+  return {
+    title: t('meta.title'),
+    description: t('meta.description'),
+    keywords: [
+      'saúde mental corporativa',
+      'benefícios para funcionários',
+      'psicologia nas empresas',
+      'bem-estar no trabalho',
+    ],
+  }
 }
 
 export default function ForCompaniesPage() {

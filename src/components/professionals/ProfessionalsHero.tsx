@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { CoreHeartIcon, CoreShieldIcon, CoreClockIcon } from '@/components/ui/exclusive-icons'
 import { RoleSelectionDialog } from '@/components/auth/RoleSelectionDialog'
+import { useTranslations } from 'next-intl'
 
 export function ProfessionalsHero() {
+  const t = useTranslations('ProfessionalsPage')
   return (
     <section className="w-full pt-20 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 bg-[#F8FAFF] overflow-hidden relative bg-mesh-indigo">
       {/* Animated Aesthetic Blobs - Indigo/Violet themed */}
@@ -27,7 +29,7 @@ export function ProfessionalsHero() {
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50/80 backdrop-blur-sm border border-indigo-200/50 text-indigo-800 text-sm font-medium mb-2 shadow-sm"
             >
               <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
-              Para Profissionais da Saúde
+              {t('hero.badge')}
             </motion.div>
 
             <div className="space-y-6">
@@ -37,10 +39,10 @@ export function ProfessionalsHero() {
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl/tight font-outfit"
               >
-                <span className="text-slate-900">Transforme sua</span>
+                <span className="text-slate-900">{t('hero.title1')}</span>
                 <br />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-blue-500 to-violet-600">
-                  prática clínica.
+                  {t('hero.titleHighlight')}
                 </span>
               </motion.h1>
               <motion.p
@@ -49,8 +51,7 @@ export function ProfessionalsHero() {
                 transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                 className="text-slate-600 md:text-xl font-light leading-relaxed max-w-[550px] mx-auto lg:mx-0"
               >
-                Junte-se à maior rede de terapia solidária. Gerencie seus pacientes, sua agenda e
-                seus ganhos em um só lugar, com total segurança e praticidade.
+                {t('hero.description')}
               </motion.p>
             </div>
 
@@ -65,7 +66,7 @@ export function ProfessionalsHero() {
                   size="lg"
                   className="h-16 px-10 text-lg shadow-2xl shadow-indigo-600/20 hover:shadow-indigo-600/40 transition-all hover:-translate-y-1 bg-gradient-to-br from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 border-0 rounded-2xl"
                 >
-                  Cadastrar meu perfil
+                  {t('hero.register')}
                 </Button>
               </RoleSelectionDialog>
               <Button
@@ -73,7 +74,7 @@ export function ProfessionalsHero() {
                 size="lg"
                 className="h-16 px-10 text-lg border-2 border-slate-200/60 text-slate-700 hover:bg-white hover:border-indigo-200 transition-all hover:-translate-y-1 bg-white/40 backdrop-blur-md rounded-2xl"
               >
-                Como funciona
+                {t('hero.howItWorks')}
               </Button>
             </motion.div>
 
@@ -102,7 +103,7 @@ export function ProfessionalsHero() {
                     +500
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 font-medium ml-1">Psicólogos parceiros</p>
+                <p className="text-xs text-slate-500 font-medium ml-1">{t('hero.partners')}</p>
               </div>
             </motion.div>
           </div>
@@ -145,9 +146,9 @@ export function ProfessionalsHero() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                    Agenda
+                    {t('floatCards.schedule')}
                   </p>
-                  <p className="text-sm font-bold text-slate-900">Flexibilidade Total</p>
+                  <p className="text-sm font-bold text-slate-900">{t('floatCards.flexibility')}</p>
                 </div>
               </motion.div>
 
@@ -161,9 +162,9 @@ export function ProfessionalsHero() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                    Missão
+                    {t('floatCards.mission')}
                   </p>
-                  <p className="text-sm font-bold text-white">Impacto Social</p>
+                  <p className="text-sm font-bold text-white">{t('floatCards.impact')}</p>
                 </div>
               </motion.div>
             </div>

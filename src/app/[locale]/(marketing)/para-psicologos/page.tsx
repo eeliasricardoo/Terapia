@@ -2,17 +2,20 @@ import type { Metadata } from 'next'
 import { ProfessionalsHero } from '@/components/professionals/ProfessionalsHero'
 import { ProfessionalsFeatures } from '@/components/professionals/ProfessionalsFeatures'
 import { CTA } from '@/components/landing/CTA'
+import { getTranslations } from 'next-intl/server'
 
-export const metadata: Metadata = {
-  title: 'Para Psicólogos - Transforme seu Atendimento Clínico',
-  description:
-    'Tenha total autonomia, gestão completa e uma agenda cheia de pacientes qualificados. A plataforma ideal para psicólogos que buscam crescer na clínica online.',
-  keywords: [
-    'psicologia clínica',
-    'plataforma para psicólogos',
-    'gestão de consultório',
-    'terapias online',
-  ],
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace: 'ProfessionalsPage' })
+  return {
+    title: t('meta.title'),
+    description: t('meta.description'),
+    keywords: [
+      'psicologia clínica',
+      'plataforma para psicólogos',
+      'gestão de consultório',
+      'terapias online',
+    ],
+  }
 }
 
 export default function ForProfessionalsPage() {

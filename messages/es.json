@@ -245,5 +245,122 @@
       "sessionDuration": "Sesión (50 min)",
       "viewProfile": "Ver Perfil"
     }
+  },
+  "AboutPage": {
+    "meta": {
+      "title": "Sobre Nosotros | Sentirz",
+      "description": "Conoce la misión y el equipo detrás de la plataforma Sentirz."
+    },
+    "hero": {
+      "badge": "Nuestra Misión",
+      "titlePart1": "Salud Mental ",
+      "titleHighlight": "Accesible",
+      "titlePart2": " para Todos",
+      "description": "Creemos que cuidar la mente no debe ser un privilegio, sino un derecho. Sentirz nació para acortar distancias y romper estigmas."
+    },
+    "values": {
+      "empathy": {
+        "title": "Empatía",
+        "desc": "Ponemos al ser humano en el centro de todo lo que hacemos, con escucha activa y acogida."
+      },
+      "security": {
+        "title": "Seguridad",
+        "desc": "Privacidad absoluta y cifrado de extremo a extremo para garantizar tu total privacidad."
+      },
+      "technology": {
+        "title": "Tecnología",
+        "desc": "Innovamos constantemente para ofrecer la mejor experiencia de atención remota."
+      },
+      "community": {
+        "title": "Comunidad",
+        "desc": "Creamos lazos entre profesionales y pacientes para un viaje de evolución conjunta."
+      }
+    },
+    "history": {
+      "title": "Nuestra Historia",
+      "quote": "\"Sentirz nació de una conversación en 2024 sobre lo difícil que era encontrar ayuda calificada de forma rápida y segura. Decidimos crear la plataforma que nos gustaría usar.\"",
+      "p1": "Comenzamos nuestro viaje con un pequeño grupo de psicólogos visionarios que creían en el potencial de la telepsicología. Hoy somos cientos de profesionales cuidando miles de vidas en todo el país.",
+      "p2": "Nuestra plataforma no es solo un software de video; es un ecosistema completo que apoya al profesional en su gestión clínica y garantiza al paciente un entorno seguro para florecer."
+    },
+    "cta": {
+      "title": "¿Listo para empezar tu viaje?",
+      "description": "Encuentra al psicólogo ideal para ti en pocos minutos y empieza a cuidar de lo que más importa.",
+      "buttonPatient": "Encontrar Terapeuta",
+      "buttonProfessional": "Soy Psicólogo"
+    }
+  },
+  "ProfessionalsPage": {
+    "meta": {
+      "title": "Para Psicólogos - Transforma tu Atención Clínica",
+      "description": "Ten total autonomía, gestión completa y una agenda llena de pacientes calificados. La plataforma ideal para psicólogos que buscan crecer en la clínica online."
+    },
+    "hero": {
+      "badge": "Para Profesionales de la Salud",
+      "title1": "Transforma tu",
+      "titleHighlight": "práctica clínica.",
+      "description": "Únete a la mayor red de terapia solidaria. Gestiona a tus pacientes, tu agenda y tus ganancias en un solo lugar, con total seguridad y practicidad.",
+      "register": "Registrar mi perfil",
+      "howItWorks": "Cómo funciona",
+      "partners": "Psicólogos asociados"
+    },
+    "floatCards": {
+      "schedule": "Agenda",
+      "flexibility": "Total Flexibilidad",
+      "mission": "Misión",
+      "impact": "Impacto Social"
+    },
+    "features": {
+      "sectionTitle": "Tu clínica, ahora digital y escalable",
+      "sectionDesc": "Nos enfocamos en la tecnología para que tú puedas enfocarte en lo que más importa: el cuidado de tus pacientes.",
+      "platform": {
+        "title": "Plataforma Completa",
+        "desc": "Gestión de agenda, historias clínicas electrónicas y facturación en un panel único e intuitivo."
+      },
+      "online": {
+        "title": "Atención Online",
+        "desc": "Sala de video propia con cifrado de extremo a extremo, sin necesidad de software externo."
+      },
+      "payment": {
+        "title": "Remuneración Justa",
+        "desc": "Proceso de pago transparente y rápido. Define tus horarios y cobra por cada sesión completada."
+      }
+    }
+  },
+  "CompaniesPage": {
+    "meta": {
+      "title": "Para Empresas - Salud Mental y Bienestar Corporativo",
+      "description": "Lleva terapia de calidad a tus empleados y mejora el clima organizacional. Ofrece beneficios de salud mental con gestión simple y eficiente."
+    },
+    "hero": {
+      "badge": "Terapia Corporativa",
+      "title1": "Cuida la",
+      "titleHighlight": "salud de tu equipo.",
+      "description": "Reduce el burnout, aumenta el compromiso y construye una cultura de bienestar con nuestra plataforma de terapia corporativa.",
+      "contact": "Hablar con un consultor",
+      "demo": "Ver demostración",
+      "trusted": "Empresas que confían"
+    },
+    "floatCards": {
+      "team": "Equipo",
+      "engagement": "+ Compromiso",
+      "results": "Resultados",
+      "reports": "Informes en Tiempo Real"
+    },
+    "features": {
+      "sectionTitle": "Cómo funciona MindCare Business",
+      "sectionDesc": "Una solución completa e integrada para transformar la cultura de salud mental de tu organización.",
+      "therapy": {
+        "title": "Terapia para Colaboradores",
+        "desc": "Fácil acceso a sesiones individuales con psicólogos cualificados para todo tu equipo."
+      },
+      "workshops": {
+        "title": "Charlas y Talleres",
+        "desc": "Sesiones grupales sobre salud mental, manejo del estrés y comunicación no violenta."
+      },
+      "reports": {
+        "title": "Informes de Impacto",
+        "desc": "Sigue la evolución del bienestar de tu equipo de forma anónima y segura con datos procesable."
+      }
+    }
   }
 }
