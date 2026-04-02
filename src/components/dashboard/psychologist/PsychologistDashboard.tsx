@@ -16,8 +16,11 @@ import {
   ArrowRight,
   Bell,
 } from 'lucide-react'
-import Link from 'next/link'
-import { Profile } from '@/lib/supabase/types'
+import { NotificationCenter } from '../NotificationCenter'
+import { AlertCircle } from 'lucide-react'
+import { DashboardCalendar } from './DashboardCalendar'
+import { Link } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 
 import { PsychologistDashboardData } from '@/lib/actions/dashboard'
 import { RescheduleDialog } from '@/components/dashboard/RescheduleDialog'
@@ -25,10 +28,7 @@ import { format } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
 import { createClient } from '@/lib/supabase/client'
-import { NotificationCenter } from '../NotificationCenter'
-
-import { AlertCircle } from 'lucide-react'
-import { DashboardCalendar } from './DashboardCalendar'
+import { Profile } from '@/lib/supabase/types'
 
 interface Props {
   userProfile: Profile
@@ -36,6 +36,7 @@ interface Props {
 }
 
 export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
+  const t = useTranslations('PsychologistDashboard')
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [allAppointments, setAllAppointments] = useState<any[]>([
     ...dashboardData.upcomingSessions,
@@ -158,30 +159,28 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             <AlertCircle className="h-10 w-10" />
           </div>
           <h2 className="text-3xl font-bold tracking-tight text-slate-900 mb-3">
-            Perfil em Análise
+            {t('pendingVerification.title')}
           </h2>
           <p className="text-slate-500 max-w-lg mb-8 leading-relaxed">
-            Seus dados e documentos (CRP) foram recebidos com sucesso e estão sendo validados por
-            nossa equipe de especialistas. Você receberá um e-mail assim que seu acesso for aprovado
-            e você puder começar a atender pacientes pela plataforma.
+            {t('pendingVerification.description')}
           </p>
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm shadow-slate-100 max-w-md w-full text-left">
             <h3 className="font-semibold text-slate-900 mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              Próximos Passos
+              {t('pendingVerification.nextStepsTitle')}
             </h3>
             <ul className="space-y-3">
               <li className="flex gap-3 text-sm text-slate-600">
                 <span className="text-emerald-500 font-bold">1.</span>
-                Validação do registro profissional (CRP).
+                {t('pendingVerification.step1')}
               </li>
               <li className="flex gap-3 text-sm text-slate-600">
                 <span className="text-emerald-500 font-bold">2.</span>
-                Aprovação do seu perfil público e especialidades.
+                {t('pendingVerification.step2')}
               </li>
               <li className="flex gap-3 text-sm text-slate-600">
                 <span className="text-slate-300 font-bold">3.</span>
-                Liberação da sua agenda para marcações de pacientes.
+                {t('pendingVerification.step3')}
               </li>
             </ul>
           </div>
@@ -192,12 +191,10 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex flex-col gap-1">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-slate-900">
-                Olá, Dr. {userName}.
+                {t('greeting', { name: userName })}
               </h1>
               <p className="text-sm sm:text-base text-slate-600 font-medium">
-                Você tem {stats.sessionsToday}{' '}
-                {stats.sessionsToday === 1 ? 'atendimento agendado' : 'atendimentos agendados'} para
-                hoje.
+                {t('scheduledToday', { count: stats.sessionsToday })}
               </p>
             </div>
             <div className="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100 self-start sm:self-auto">
@@ -231,7 +228,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
               >
                 <Link href={upcomingSessions?.[0]?.id ? `/sala/${upcomingSessions[0].id}` : '#'}>
                   <Video className="h-4 w-4" />
-                  <span className="hidden sm:inline">Sala Virtual</span>
+                  <span className="hidden sm:inline">{t('virtualRoom')}</span>
                 </Link>
               </Button>
             </div>
@@ -245,21 +242,13 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 </div>
                 <div>
                   <h3 className="text-amber-900 font-bold font-serif italic text-base sm:text-lg tracking-tight">
-                    Faturamento {!dashboardData.hasStripeAccount ? 'Pendente' : 'Incompleto'}
+                    {!dashboardData.hasStripeAccount ? t('billing.titlePending') : t('billing.titleIncomplete')}
                   </h3>
                   <p className="text-amber-700/80 text-xs sm:text-sm leading-relaxed max-w-xl font-medium">
                     {!dashboardData.hasStripeAccount ? (
-                      <>
-                        Seu perfil está <b>oculto na busca</b> até que você conecte sua conta
-                        bancária via Stripe Connect. Isso é necessário para que você receba os
-                        repasses das sessões automaticamente.
-                      </>
+                      t.rich('billing.descPending', { bold: (chunks) => <b>{chunks}</b> })
                     ) : (
-                      <>
-                        Você conectou sua conta, mas <b>ainda não completou o cadastro no Stripe</b>
-                        . Dados obrigatórios estão faltando. Seu perfil continuará oculto até a
-                        finalização.
-                      </>
+                      t.rich('billing.descIncomplete', { bold: (chunks) => <b>{chunks}</b> })
                     )}
                   </p>
                 </div>
@@ -269,7 +258,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl px-6 sm:px-8 shadow-lg shadow-amber-600/20 whitespace-nowrap h-10 sm:h-12 w-full sm:w-auto text-sm"
               >
                 <Link href="/dashboard/financeiro">
-                  {!dashboardData.hasStripeAccount ? 'Conectar Conta Agora' : 'Finalizar Cadastro'}
+                  {!dashboardData.hasStripeAccount ? t('billing.ctaPending') : t('billing.ctaIncomplete')}
                 </Link>
               </Button>
             </div>
@@ -279,19 +268,19 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                Sessões
+                {t('stats.sessions')}
               </p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl sm:text-3xl font-bold text-slate-900">
                   {stats.sessionsToday}
                 </span>
-                <span className="text-[10px] text-slate-400 font-bold">HOJE</span>
+                <span className="text-[10px] text-slate-400 font-bold">{t('stats.today')}</span>
               </div>
             </div>
 
             <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                Pacientes Ativos
+                {t('stats.activePatients')}
               </p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl sm:text-3xl font-bold text-slate-900">
@@ -305,7 +294,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
 
             <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                Receita
+                {t('stats.revenue')}
               </p>
               <div className="flex items-baseline gap-2">
                 <span className="text-xl sm:text-3xl font-bold text-slate-900">
@@ -320,7 +309,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
 
             <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                Desempenho
+                {t('stats.performance')}
               </p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl sm:text-3xl font-bold text-slate-900">
@@ -330,7 +319,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 <span
                   className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${stats.revenueChange >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'}`}
                 >
-                  MENSAL
+                  {t('stats.monthly')}
                 </span>
               </div>
             </div>
@@ -344,7 +333,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-lg font-semibold text-slate-900">
-                        Próximas Sessões
+                        {t('agenda.upcomingSessions')}
                       </CardTitle>
                       <CardDescription>
                         {(() => {
@@ -353,10 +342,8 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                           const futureCount = sessionsByDate
                             .filter((g) => !g.isToday)
                             .reduce((acc, g) => acc + g.sessions.length, 0)
-                          const parts = []
-                          if (todayCount > 0) parts.push(`${todayCount} hoje`)
-                          if (futureCount > 0) parts.push(`${futureCount} em breve`)
-                          return parts.length > 0 ? parts.join(' · ') : 'Agenda livre'
+                          if (todayCount === 0 && futureCount === 0) return t('agenda.freeSchedule')
+                          return t('agenda.summary', { todayCount, futureCount })
                         })()}
                       </CardDescription>
                     </div>
@@ -366,7 +353,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                       className="text-slate-400 hover:text-primary hover:bg-transparent font-semibold text-xs transition-colors"
                       asChild
                     >
-                      <Link href="/dashboard/agenda">VER AGENDA &rarr;</Link>
+                      <Link href="/dashboard/agenda">{t('agenda.viewAgenda')}</Link>
                     </Button>
                   </div>
                 </CardHeader>
@@ -376,8 +363,8 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                       <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm mb-4">
                         <CalendarIcon className="h-6 w-6 text-slate-400" />
                       </div>
-                      <h3 className="text-sm font-medium text-slate-900">Agenda livre</h3>
-                      <p className="text-slate-500 text-xs mt-1">Nenhum atendimento agendado.</p>
+                      <h3 className="text-sm font-medium text-slate-900">{t('agenda.freeSchedule')}</h3>
+                      <p className="text-slate-500 text-xs mt-1">{t('agenda.noAppointments')}</p>
                     </div>
                   ) : (
                     <div className="overflow-y-auto max-h-[50vh] sm:max-h-[600px]">
@@ -394,7 +381,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                             </span>
                             {isToday && (
                               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                                — hoje
+                                {t('agenda.todayBadge')}
                               </span>
                             )}
                           </div>
@@ -446,12 +433,12 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                           variant="secondary"
                                           className="bg-emerald-50 text-emerald-600 border-none text-[9px] h-4 font-black uppercase tracking-tighter"
                                         >
-                                          Concluída
+                                          {t('agenda.completedBadge')}
                                         </Badge>
                                       )}
                                       {isNext && (
                                         <Badge className="bg-primary/10 text-primary border-none text-[9px] h-4 font-bold uppercase tracking-wider">
-                                          Próxima
+                                          {t('agenda.nextBadge')}
                                         </Badge>
                                       )}
                                     </div>
@@ -466,7 +453,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                           className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-5 h-8 text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-105 shadow-sm shadow-primary/20"
                                         >
                                           <Video className="w-3.5 h-3.5 mr-2" />
-                                          Iniciar
+                                          {t('agenda.startSession')}
                                         </Button>
                                       </Link>
                                       <RescheduleDialog
@@ -490,7 +477,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                           size="sm"
                                           className="text-slate-300 hover:text-primary transition-colors font-medium text-[11px] h-8 px-2"
                                         >
-                                          Reagendar
+                                          {t('agenda.reschedule')}
                                         </Button>
                                       </RescheduleDialog>
                                     </>
@@ -516,7 +503,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                         size="sm"
                                         className="text-slate-300 hover:text-primary transition-colors font-medium text-[11px] h-8 px-2"
                                       >
-                                        Reagendar
+                                        {t('agenda.reschedule')}
                                       </Button>
                                     </RescheduleDialog>
                                   )}
@@ -545,7 +532,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 <CardHeader className="pb-4 border-b border-slate-50 pt-5 px-5">
                   <CardTitle className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                     <Settings className="h-3.5 w-3.5" />
-                    Acesso Rápido
+                    {t('quickActions.title')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 space-y-2">
@@ -559,9 +546,9 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">
-                          Gerenciar Horários
+                          {t('quickActions.manageSchedule')}
                         </p>
-                        <p className="text-xs text-slate-400 mt-0.5">Configure sua agenda</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{t('quickActions.configureAgenda')}</p>
                       </div>
                       <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-slate-400 group-hover:translate-x-0.5 transition-all" />
                     </div>
@@ -577,9 +564,9 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">
-                          Meus Pacientes
+                          {t('quickActions.myPatients')}
                         </p>
-                        <p className="text-xs text-slate-400 mt-0.5">Visualize prontuários</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{t('quickActions.viewRecords')}</p>
                       </div>
                       <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-slate-400 group-hover:translate-x-0.5 transition-all" />
                     </div>
@@ -591,7 +578,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 <CardHeader className="pb-4 border-b border-slate-50 pt-5 px-5">
                   <CardTitle className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                     <Clock className="h-3.5 w-3.5" />
-                    Histórico Recente
+                    {t('recentHistory.title')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -622,7 +609,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                   </div>
                   {recentPatients.length === 0 && (
                     <div className="p-8 text-center">
-                      <p className="text-sm text-slate-400">Nenhum paciente recente</p>
+                      <p className="text-sm text-slate-400">{t('recentHistory.noPatients')}</p>
                     </div>
                   )}
                   <div className="p-3 border-t border-slate-50 bg-slate-50/30">
@@ -632,7 +619,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                       className="w-full text-slate-500 hover:text-slate-900 hover:bg-white hover:shadow-sm text-[11px] font-bold h-8 rounded-lg transition-all uppercase tracking-wider"
                       asChild
                     >
-                      <Link href="/dashboard/pacientes">Ver todos</Link>
+                      <Link href="/dashboard/pacientes">{t('recentHistory.seeAll')}</Link>
                     </Button>
                   </div>
                 </CardContent>

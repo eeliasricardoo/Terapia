@@ -2,7 +2,8 @@
 
 import React, { Suspense } from 'react'
 import { motion, Variants } from 'framer-motion'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { MoodTracker } from '@/components/dashboard/MoodTracker'
 import { PatientDashboardHeader } from './patient-dashboard-header'
@@ -20,8 +21,9 @@ interface PatientDashboardClientProps {
 }
 
 export function PatientDashboardClient({ userName, patientData }: PatientDashboardClientProps) {
+  const t = useTranslations('PatientDashboard')
   const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'
+  const greeting = hour < 12 ? t('greeting.morning') : hour < 18 ? t('greeting.afternoon') : t('greeting.night')
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -67,10 +69,13 @@ export function PatientDashboardClient({ userName, patientData }: PatientDashboa
               </p>
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 font-outfit">
-              Olá, <span className="text-sentirz-gradient">{userName}</span>.
+              {t.rich('title', {
+                name: userName,
+                gradient: (chunks) => <span className="text-sentirz-gradient">{chunks}</span>
+              })}
             </h1>
             <p className="text-base text-slate-600 font-medium max-w-prose">
-              Seu espaço de cuidado está pronto para continuar sua jornada hoje.
+              {t('subtitle')}
             </p>
           </div>
 
@@ -79,7 +84,7 @@ export function PatientDashboardClient({ userName, patientData }: PatientDashboa
             <div className="h-8 w-px bg-slate-100 mx-1" />
             <Link href="/busca">
               <Button className="rounded-full px-6 font-bold bg-slate-900 text-white hover:bg-slate-800 text-sm h-11 transition-all active:scale-95 shadow-lg shadow-slate-200">
-                Nova Sessão
+                {t('newSession')}
               </Button>
             </Link>
           </div>
@@ -105,7 +110,7 @@ export function PatientDashboardClient({ userName, patientData }: PatientDashboa
             <motion.div variants={itemVariants} className="pt-4">
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                  Monitoramento diário
+                  {t('dailyTracking')}
                 </h2>
                 <div className="h-px flex-1 bg-slate-100 ml-6" />
               </div>
@@ -117,7 +122,7 @@ export function PatientDashboardClient({ userName, patientData }: PatientDashboa
           <div className="lg:col-span-4 space-y-10 lg:space-y-12">
             <motion.div variants={itemVariants}>
               <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
-                Acesso Rápido
+                {t('quickAccess')}
               </h2>
               <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-1 border border-slate-100">
                 <QuickActions />
@@ -126,7 +131,7 @@ export function PatientDashboardClient({ userName, patientData }: PatientDashboa
 
             <motion.div variants={itemVariants}>
               <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
-                Histórico Recente
+                {t('recentHistory')}
               </h2>
               <div className="hover:translate-x-1 transition-transform">
                 <RecentHistory history={patientData.recentSessions} />

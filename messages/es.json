@@ -609,5 +609,71 @@
       "openMenu": "Abrir menú",
       "navigation": "Navegación del panel"
     }
+  },
+  "PatientDashboard": {
+    "greeting": {
+      "morning": "Buenos días",
+      "afternoon": "Buenas tardes",
+      "night": "Buenas noches"
+    },
+    "title": "Hola, <gradient>{name}</gradient>.",
+    "subtitle": "Tu espacio de cuidado está listo para que continúes hoy.",
+    "newSession": "Nueva Sesión",
+    "dailyTracking": "Seguimiento diario",
+    "quickAccess": "Acceso Rápido",
+    "recentHistory": "Historial Reciente"
+  },
+  "PsychologistDashboard": {
+    "pendingVerification": {
+      "title": "Perfil en Análisis",
+      "description": "Tus datos y documentos han sido recibidos con éxito y están siendo validados por nuestro equipo de especialistas. Recibirás un correo electrónico tan pronto como tu acceso sea aprobado y puedas comenzar a atender pacientes a través de la plataforma.",
+      "nextStepsTitle": "Próximos Pasos",
+      "step1": "Validación de tu registro profesional.",
+      "step2": "Aprobación de tu perfil público y especialidades.",
+      "step3": "Apertura de tu agenda para citas de pacientes."
+    },
+    "greeting": "Hola, Dr(a). {name}.",
+    "scheduledToday": "Tienes {count} {count, plural, =1 {cita programada} other {citas programadas}} para hoy.",
+    "virtualRoom": "Sala Virtual",
+    "billing": {
+      "titlePending": "Facturación Pendiente",
+      "titleIncomplete": "Facturación Incompleta",
+      "descPending": "Tu perfil está <bold>oculto en la búsqueda</bold> hasta que conectes tu cuenta bancaria a través de Stripe Connect. Esto es necesario para que recibas los repagos de las sesiones automáticamente.",
+      "descIncomplete": "Has conectado tu cuenta, pero <bold>aún no has completado el registro en Stripe</bold>. Faltan datos obligatorios. Tu perfil seguirá oculto hasta su finalización.",
+      "ctaPending": "Conectar Cuenta Ahora",
+      "ctaIncomplete": "Finalizar Registro"
+    },
+    "stats": {
+      "sessions": "Sesiones",
+      "today": "HOY",
+      "activePatients": "Pacientes Activos",
+      "revenue": "Ingresos",
+      "performance": "Rendimiento",
+      "monthly": "MENSUAL"
+    },
+    "agenda": {
+      "upcomingSessions": "Próximas Sesiones",
+      "summary": "{todayCount, plural, !=0 {{todayCount} hoy}} {todayCount, plural, !=0 {·}} {futureCount, plural, !=0 {{futureCount} pronto}}",
+      "freeSchedule": "Agenda libre",
+      "noAppointments": "Sin citas agendadas.",
+      "viewAgenda": "VER AGENDA →",
+      "todayBadge": "— hoy",
+      "completedBadge": "Completada",
+      "nextBadge": "Siguiente",
+      "startSession": "Iniciar",
+      "reschedule": "Reagendar"
+    },
+    "quickActions": {
+      "title": "Acceso Rápido",
+      "manageSchedule": "Gestionar Horarios",
+      "configureAgenda": "Configura tu agenda",
+      "myPatients": "Mis Pacientes",
+      "viewRecords": "Ver expedientes"
+    },
+    "recentHistory": {
+      "title": "Historial Reciente",
+      "noPatients": "Sin pacientes recientes",
+      "seeAll": "Ver todos"
+    }
   }
 }
