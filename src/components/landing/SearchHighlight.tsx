@@ -1,9 +1,10 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Users, Star, Clock } from 'lucide-react'
 import { motion, Variants } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 const fadeIn: Variants = {
   initial: { opacity: 0, y: 30 },
@@ -20,26 +21,28 @@ interface SearchHighlightProps {
 }
 
 export function SearchHighlight({ totalPsychologists = 500 }: SearchHighlightProps) {
+  const t = useTranslations('SearchHighlight')
+
   const stats = [
     {
       icon: Users,
       value: `${totalPsychologists}+`,
-      label: 'Especialistas verificados',
-      description: 'Profissionais acolhedores prontos para te ajudar',
+      label: t('stats.verified.label'),
+      description: t('stats.verified.desc'),
       accent: 'bg-blue-50 text-blue-600',
     },
     {
       icon: Star,
       value: '4.9/5',
-      label: 'Avaliação média',
-      description: 'Baseada em cuidado real e feedback genuíno',
+      label: t('stats.rating.label'),
+      description: t('stats.rating.desc'),
       accent: 'bg-amber-50 text-amber-600',
     },
     {
       icon: Clock,
       value: '24/7',
-      label: 'Disponibilidade',
-      description: 'Sessões online no seu ritmo e espaço',
+      label: t('stats.availability.label'),
+      description: t('stats.availability.desc'),
       accent: 'bg-emerald-50 text-emerald-600',
     },
   ]
@@ -67,21 +70,21 @@ export function SearchHighlight({ totalPsychologists = 500 }: SearchHighlightPro
               variants={fadeIn}
               className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em]"
             >
-              Por que nos escolher
+              {t('badge')}
             </motion.p>
             <motion.h2
               variants={fadeIn}
               className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight font-outfit"
             >
-              O profissional certo
+              {t('title1')}
               <br />
-              <span className="text-slate-400 font-light">para o seu momento.</span>
+              <span className="text-slate-400 font-light">{t('title2')}</span>
             </motion.h2>
             <motion.p
               variants={fadeIn}
               className="text-lg text-slate-500 max-w-md mx-auto leading-relaxed"
             >
-              Sabemos que o primeiro passo é o mais importante. Estamos aqui para torná-lo leve.
+              {t('description')}
             </motion.p>
           </div>
 
@@ -119,7 +122,7 @@ export function SearchHighlight({ totalPsychologists = 500 }: SearchHighlightPro
               className="h-14 px-10 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-lg shadow-slate-900/10 transition-all hover:-translate-y-0.5 group"
             >
               <Link href="/busca" className="flex items-center gap-2">
-                Encontrar psicólogo
+                {t('button')}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>

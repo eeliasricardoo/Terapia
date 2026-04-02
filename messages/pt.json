@@ -1,0 +1,198 @@
+{
+  "Index": {
+    "title": "Terapia"
+  },
+  "LanguageSwitcher": {
+    "toggle": "Alterar idioma"
+  },
+  "Navbar": {
+    "links": {
+      "search": "Buscar Psicólogos",
+      "companies": "Para Empresas",
+      "psychologists": "Sou Psicólogo",
+      "blog": "Blog",
+      "patient": {
+        "appointments": "Meus Agendamentos",
+        "profile": "Meu Perfil"
+      },
+      "psychologist": {
+        "schedule": "Minha Agenda",
+        "patients": "Pacientes",
+        "financial": "Financeiro",
+        "profile": "Meu Perfil"
+      },
+      "company": {
+        "dashboard": "Dashboard",
+        "employees": "Colaboradores",
+        "reports": "Relatórios",
+        "settings": "Configurações"
+      }
+    },
+    "registration": {
+      "cancel": "Cancelar Cadastro",
+      "cancelTitle": "Tem certeza que deseja sair?",
+      "cancelDesc": "Ao prosseguir, você sairá do fluxo de cadastro. Seu progresso pode não ser completamente salvo e você precisará reiniciar as etapas que não foram confirmadas.",
+      "backToRegister": "Voltar ao Cadastro",
+      "exitAnyway": "Sair mesmo assim"
+    },
+    "buttons": {
+      "login": "Entrar",
+      "getStarted": "Começar Agora",
+      "logout": "Sair"
+    },
+    "menu": {
+      "user": "Usuário",
+      "profile": "Perfil",
+      "settings": "Configurações"
+    },
+    "roles": {
+      "psychologist": "Psicólogo",
+      "patient": "Paciente"
+    }
+  },
+  "Hero": {
+    "titlePart1": "Sinta a sua",
+    "titleHighlight": "evolução.",
+    "description": "Conectamos você aos melhores psicólogos para uma jornada de autodescoberta segura, humana e moderna. Transforme sua mente com a ",
+    "buttons": {
+      "startJourney": "Começar Jornada",
+      "imPsychologist": "Sou Psicólogo(a)"
+    },
+    "stats": {
+      "professionals": "profissionais",
+      "stars": "estrelas",
+      "evolutions": "evoluções"
+    },
+    "floatingCards": {
+      "session": "Sessão",
+      "online": "100% Online",
+      "privacy": "Sigilo",
+      "guaranteed": "Garantido"
+    }
+  },
+  "Marquee": {
+    "word0": "Acolhimento",
+    "word1": "Empatia",
+    "word2": "Privacidade",
+    "word3": "Autoconhecimento",
+    "word4": "Bem-estar",
+    "word5": "Saúde Mental",
+    "word6": "Equilíbrio",
+    "word7": "Cuidado"
+  },
+  "SearchHighlight": {
+    "badge": "Por que nos escolher",
+    "title1": "O profissional certo",
+    "title2": "para o seu momento.",
+    "description": "Sabemos que o primeiro passo é o mais importante. Estamos aqui para torná-lo leve.",
+    "stats": {
+      "verified": {
+        "label": "Especialistas verificados",
+        "desc": "Profissionais acolhedores prontos para te ajudar"
+      },
+      "rating": {
+        "label": "Avaliação média",
+        "desc": "Baseada em cuidado real e feedback genuíno"
+      },
+      "availability": {
+        "label": "Disponibilidade",
+        "desc": "Sessões online no seu ritmo e espaço"
+      }
+    },
+    "button": "Encontrar psicólogo"
+  },
+  "HowItWorks": {
+    "badge": "Simples e rápido",
+    "title": "Como funciona?",
+    "description": "Em poucos passos você já estará cuidando de si.",
+    "steps": {
+      "search": {
+        "title": "Busque",
+        "desc": "Encontre o profissional ideal por especialidade, abordagem ou afinidade."
+      },
+      "schedule": {
+        "title": "Agende",
+        "desc": "Escolha o melhor dia e horário diretamente na agenda do psicólogo."
+      },
+      "connect": {
+        "title": "Conecte-se",
+        "desc": "Entre na sessão online com vídeo de alta qualidade, direto do navegador."
+      },
+      "evolve": {
+        "title": "Evolua",
+        "desc": "Acompanhe seu progresso e construa uma jornada de autoconhecimento."
+      }
+    }
+  },
+  "Features": {
+    "badge": "Diferenciais",
+    "title": "Por que a Sentirz?",
+    "description": "Tecnologia e empatia unidos para o seu despertar pessoal.",
+    "featureNumber": "Feature {number}",
+    "cards": {
+      "genuine": {
+        "title": "Conexão Genuína",
+        "desc": "Encontre o profissional certo por afinidade e verdadeiro respeito à sua história."
+      },
+      "humanized": {
+        "title": "Sessões Humanizadas",
+        "desc": "Vídeo-chamadas de alta qualidade direto do navegador, com foco total no seu acolhimento."
+      },
+      "secure": {
+        "title": "Espaço 100% Seguro",
+        "desc": "Criptografia de ponta a ponta e sigilo absoluto garantido em cada conversa."
+      }
+    }
+  },
+  "Testimonials": {
+    "badge": "Depoimentos",
+    "title": "O que dizem sobre nós",
+    "maria": {
+      "quote": "A terapia online mudou completamente a minha vida. Encontrei uma profissional incrível que me ajuda a evoluir a cada sessão.",
+      "role": "Paciente há 8 meses"
+    },
+    "pedro": {
+      "quote": "Como psicólogo, a plataforma me deu a liberdade de atender de forma humanizada, com toda a segurança que meus pacientes precisam.",
+      "role": "Psicólogo"
+    },
+    "ana": {
+      "quote": "O primeiro passo é sempre o mais difícil, mas a plataforma tornou tudo muito simples. Recomendo de olhos fechados.",
+      "role": "Paciente há 1 ano"
+    }
+  },
+  "CTA": {
+    "badge": "Comece sua jornada",
+    "title1": "Pronto para dar o",
+    "title2": "primeiro passo?",
+    "description": "Cuidar da mente não precisa ser um luxo. Descubra uma terapia profunda, humana e acessível.",
+    "buttons": {
+      "findPsychologist": "Encontrar Meu Psicólogo",
+      "iamProfessional": "Sou profissional"
+    },
+    "badges": {
+      "privacy": "Sigilo garantido",
+      "security": "Pagamento seguro",
+      "noCommitment": "Sem compromisso"
+    }
+  },
+  "Footer": {
+    "description": "Conectamos você aos melhores profissionais de saúde mental em um ambiente seguro e acolhedor.",
+    "categories": {
+      "platform": "Plataforma",
+      "company": "Empresa",
+      "legal": "Legal"
+    },
+    "links": {
+      "search": "Buscar Psicólogos",
+      "companies": "Para Empresas",
+      "psychologists": "Para Psicólogos",
+      "about": "Sobre Nós",
+      "blog": "Blog",
+      "contact": "Contato",
+      "terms": "Termos de Uso",
+      "privacy": "Privacidade"
+    },
+    "rights": "Todos os direitos reservados.",
+    "madeWithCare": "Feito com cuidado para quem sente."
+  }
+}

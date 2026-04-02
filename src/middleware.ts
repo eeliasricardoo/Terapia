@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import createIntlMiddleware from 'next-intl/middleware'
+import { routing } from './i18n/routing'
+
+const handleI18nRouting = createIntlMiddleware(routing)
 
 export async function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
@@ -25,18 +29,17 @@ export async function middleware(request: NextRequest) {
     .replace(/\s{2,}/g, ' ')
     .trim()
 
-  const requestHeaders = new Headers(request.headers)
-  requestHeaders.set('x-nonce', nonce)
-  requestHeaders.set('Content-Security-Policy', cspHeader)
+  // Attach headers to request before Intl handles it
+  request.headers.set('x-nonce', nonce)
+  request.headers.set('Content-Security-Policy', cspHeader)
 
-  let response = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  })
+  // 1. Run i18n middleware
+  let response = handleI18nRouting(request)
 
+  // 2. Set security headers on the response
   response.headers.set('Content-Security-Policy', cspHeader)
 
+  // 3. Supabase Auth
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -59,20 +62,26 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
   const session = !!user
+  
+  // Extract custom route logic skipping locale
   const { pathname } = request.nextUrl
+  const segments = pathname.split('/')
+  const hasLocale = ['pt', 'es'].includes(segments[1])
+  const localePrefix = hasLocale ? `/${segments[1]}` : ''
+  const pathnameWithoutLocale = hasLocale ? `/${segments.slice(2).join('/')}` : pathname
 
   // Protect dashboard and admin routes
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
+  if (pathnameWithoutLocale.startsWith('/dashboard') || pathnameWithoutLocale.startsWith('/admin')) {
     if (!session) {
       const url = request.nextUrl.clone()
-      url.pathname = '/login/paciente'
+      url.pathname = `${localePrefix}/login/paciente`
       return NextResponse.redirect(url)
     }
 
     // Direct unconfirmed users to verification if they somehow have a session
-    if (user && !user.email_confirmed_at && !pathname.includes('confirmar-email')) {
+    if (user && !user.email_confirmed_at && !pathnameWithoutLocale.includes('confirmar-email')) {
       const url = request.nextUrl.clone()
-      url.pathname = '/cadastro/confirmar-email'
+      url.pathname = `${localePrefix}/cadastro/confirmar-email`
       url.searchParams.set('email', user.email || '')
       return NextResponse.redirect(url)
     }
@@ -81,17 +90,17 @@ export async function middleware(request: NextRequest) {
   // Redirect authenticated users away from home, login, and register pages
   // BUT allow them to access onboarding/profile completion and verification
   if (
-    (pathname === '/' || pathname.startsWith('/login') || pathname.startsWith('/cadastro')) &&
+    (pathnameWithoutLocale === '/' || pathnameWithoutLocale === '' || pathnameWithoutLocale.startsWith('/login') || pathnameWithoutLocale.startsWith('/cadastro')) &&
     session &&
-    !pathname.includes('completar-perfil') &&
-    !pathname.includes('onboarding') &&
-    !pathname.includes('confirmar-email') &&
-    !pathname.includes('reset-password')
+    !pathnameWithoutLocale.includes('completar-perfil') &&
+    !pathnameWithoutLocale.includes('onboarding') &&
+    !pathnameWithoutLocale.includes('confirmar-email') &&
+    !pathnameWithoutLocale.includes('reset-password')
   ) {
     // Only redirect if email is confirmed
     if (user.email_confirmed_at) {
       const url = request.nextUrl.clone()
-      url.pathname = '/dashboard'
+      url.pathname = `${localePrefix}/dashboard`
       return NextResponse.redirect(url)
     }
   }

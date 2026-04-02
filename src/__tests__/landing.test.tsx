@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import Home from '../app/(marketing)/page'
+import Home from '../app/[locale]/(marketing)/page'
 import '@testing-library/jest-dom'
 
 jest.mock('@/lib/supabase/server', () => ({

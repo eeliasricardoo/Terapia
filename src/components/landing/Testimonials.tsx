@@ -2,6 +2,7 @@
 
 import { motion, Variants } from 'framer-motion'
 import { Star, Quote } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 const fadeIn: Variants = {
   initial: { opacity: 0, y: 30 },
@@ -13,32 +14,26 @@ const stagger: Variants = {
   animate: { transition: { staggerChildren: 0.12 } },
 }
 
-const testimonials = [
+const testimonialsData = [
   {
-    quote:
-      'A terapia online mudou completamente a minha vida. Encontrei uma profissional incrível que me ajuda a evoluir a cada sessão.',
+    key: 'maria',
     name: 'Maria C.',
-    role: 'Paciente há 8 meses',
     rating: 5,
     initials: 'MC',
     image: '/testimonials/maria.png',
     color: 'bg-blue-50 text-blue-600',
   },
   {
-    quote:
-      'Como psicólogo, a plataforma me deu a liberdade de atender de forma humanizada, com toda a segurança que meus pacientes precisam.',
+    key: 'pedro',
     name: 'Dr. Pedro A.',
-    role: 'Psicólogo',
     rating: 5,
     initials: 'PA',
     image: '/testimonials/pedro.png',
     color: 'bg-emerald-50 text-emerald-600',
   },
   {
-    quote:
-      'O primeiro passo é sempre o mais difícil, mas a plataforma tornou tudo muito simples. Recomendo de olhos fechados.',
+    key: 'ana',
     name: 'Ana L.',
-    role: 'Paciente há 1 ano',
     rating: 5,
     initials: 'AL',
     image: '/testimonials/ana.png',
@@ -47,6 +42,7 @@ const testimonials = [
 ]
 
 export function Testimonials() {
+  const t = useTranslations('Testimonials')
   return (
     <section className="w-full py-16 md:py-24 bg-slate-50 relative overflow-hidden">
       {/* Decorative quotes */}
@@ -78,19 +74,19 @@ export function Testimonials() {
               variants={fadeIn}
               className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em]"
             >
-              Depoimentos
+              {t('badge')}
             </motion.p>
             <motion.h2
               variants={fadeIn}
               className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 font-outfit"
             >
-              O que dizem sobre nós
+              {t('title')}
             </motion.h2>
           </div>
 
           {/* Testimonials grid */}
           <motion.div variants={stagger} className="grid md:grid-cols-3 gap-4 sm:gap-6">
-            {testimonials.map((t, i) => (
+            {testimonialsData.map((item, i) => (
               <motion.div
                 key={i}
                 variants={fadeIn}
@@ -99,35 +95,35 @@ export function Testimonials() {
                 <div className="space-y-5">
                   {/* Stars */}
                   <div className="flex gap-1">
-                    {Array.from({ length: t.rating }).map((_, j) => (
+                    {Array.from({ length: item.rating }).map((_, j) => (
                       <Star key={j} className="h-4 w-4 text-amber-400 fill-amber-400" />
                     ))}
                   </div>
 
                   {/* Quote */}
                   <p className="text-slate-600 leading-relaxed text-[15px]">
-                    &ldquo;{t.quote}&rdquo;
+                    &ldquo;{t(`${item.key}.quote`)}&rdquo;
                   </p>
                 </div>
 
                 {/* Author */}
                 <div className="flex items-center gap-3 pt-2 border-t border-slate-50">
-                  {t.image ? (
+                  {item.image ? (
                     <img
-                      src={t.image}
-                      alt={t.name}
+                      src={item.image}
+                      alt={item.name}
                       className="h-12 w-12 rounded-full object-cover shadow-sm ring-2 ring-slate-50"
                     />
                   ) : (
                     <div
-                      className={`h-12 w-12 rounded-full ${t.color} flex items-center justify-center text-xs font-bold`}
+                      className={`h-12 w-12 rounded-full ${item.color} flex items-center justify-center text-xs font-bold`}
                     >
-                      {t.initials}
+                      {item.initials}
                     </div>
                   )}
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">{t.name}</p>
-                    <p className="text-xs text-slate-400">{t.role}</p>
+                    <p className="text-sm font-semibold text-slate-900">{item.name}</p>
+                    <p className="text-xs text-slate-400">{t(`${item.key}.role`)}</p>
                   </div>
                 </div>
               </motion.div>

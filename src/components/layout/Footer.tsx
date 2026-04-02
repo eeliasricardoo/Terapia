@@ -1,12 +1,13 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, usePathname } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import { Logo } from '@/components/ui/Logo'
 import { BRAND_NAME, BRAND_SLOGAN } from '@/lib/constants/branding'
 
 export function Footer() {
   const pathname = usePathname()
+  const t = useTranslations('Footer')
 
   if (pathname?.startsWith('/cadastro')) {
     return null
@@ -19,14 +20,13 @@ export function Footer() {
           <div className="space-y-6 md:col-span-1 text-left">
             <Logo size="sm" className="mb-4" />
             <p className="text-sm text-foreground/80 leading-relaxed max-w-xs">
-              {BRAND_SLOGAN} Conectamos você aos melhores profissionais de saúde mental em um
-              ambiente seguro e acolhedor.
+              {BRAND_SLOGAN} {t('description')}
             </p>
           </div>
 
           <div className="space-y-4">
             <h4 className="text-xs font-semibold text-foreground/60 uppercase tracking-widest">
-              Plataforma
+              {t('categories.platform')}
             </h4>
             <ul className="space-y-3 text-sm">
               <li>
@@ -34,7 +34,7 @@ export function Footer() {
                   href="/busca"
                   className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
-                  Buscar Psicólogos
+                  {t('links.search')}
                 </Link>
               </li>
               <li>
@@ -42,7 +42,7 @@ export function Footer() {
                   href="/para-empresas"
                   className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
-                  Para Empresas
+                  {t('links.companies')}
                 </Link>
               </li>
               <li>
@@ -50,7 +50,7 @@ export function Footer() {
                   href="/para-psicologos"
                   className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
-                  Para Psicólogos
+                  {t('links.psychologists')}
                 </Link>
               </li>
             </ul>
@@ -58,7 +58,7 @@ export function Footer() {
 
           <div className="space-y-4">
             <h4 className="text-xs font-semibold text-foreground/60 uppercase tracking-widest">
-              Empresa
+              {t('categories.company')}
             </h4>
             <ul className="space-y-3 text-sm">
               <li>
@@ -66,7 +66,7 @@ export function Footer() {
                   href="/sobre"
                   className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
-                  Sobre Nós
+                  {t('links.about')}
                 </Link>
               </li>
               <li>
@@ -74,7 +74,7 @@ export function Footer() {
                   href="/blog"
                   className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
-                  Blog
+                  {t('links.blog')}
                 </Link>
               </li>
               <li>
@@ -82,7 +82,7 @@ export function Footer() {
                   href="/contato"
                   className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
-                  Contato
+                  {t('links.contact')}
                 </Link>
               </li>
             </ul>
@@ -90,7 +90,7 @@ export function Footer() {
 
           <div className="space-y-4">
             <h4 className="text-xs font-semibold text-foreground/60 uppercase tracking-widest">
-              Legal
+              {t('categories.legal')}
             </h4>
             <ul className="space-y-3 text-sm">
               <li>
@@ -98,7 +98,7 @@ export function Footer() {
                   href="/termos"
                   className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
-                  Termos de Uso
+                  {t('links.terms')}
                 </Link>
               </li>
               <li>
@@ -106,7 +106,7 @@ export function Footer() {
                   href="/privacidade"
                   className="text-foreground/80 hover:text-primary transition-colors font-medium"
                 >
-                  Privacidade
+                  {t('links.privacy')}
                 </Link>
               </li>
             </ul>
@@ -115,10 +115,10 @@ export function Footer() {
 
         <div className="mt-16 pt-8 border-t border-primary/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-foreground/50">
-            © {new Date().getFullYear()} {BRAND_NAME}. Todos os direitos reservados.
+            © {new Date().getFullYear()} {BRAND_NAME}. {t('rights')}
           </p>
           <p className="text-xs text-foreground/40 font-medium">
-            Feito com cuidado para quem sente.
+            {t('madeWithCare')}
           </p>
         </div>
       </div>

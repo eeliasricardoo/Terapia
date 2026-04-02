@@ -2,6 +2,7 @@
 
 import { motion, Variants } from 'framer-motion'
 import { Heart, Video, Shield, Sparkles } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 const fadeIn: Variants = {
   initial: { opacity: 0, y: 30 },
@@ -13,12 +14,10 @@ const stagger: Variants = {
   animate: { transition: { staggerChildren: 0.15 } },
 }
 
-const features = [
+const featuresData = [
   {
     icon: Heart,
-    title: 'Conexão Genuína',
-    description:
-      'Encontre o profissional certo por afinidade e verdadeiro respeito à sua história.',
+    key: 'genuine',
     number: '01',
     color: 'from-sentirz-teal/5 to-sentirz-teal/10',
     iconColor: 'text-sentirz-teal',
@@ -27,9 +26,7 @@ const features = [
   },
   {
     icon: Video,
-    title: 'Sessões Humanizadas',
-    description:
-      'Vídeo-chamadas de alta qualidade direto do navegador, com foco total no seu acolhimento.',
+    key: 'humanized',
     number: '02',
     color: 'from-sentirz-orange/5 to-sentirz-orange/10',
     iconColor: 'text-sentirz-orange',
@@ -38,8 +35,7 @@ const features = [
   },
   {
     icon: Shield,
-    title: 'Espaço 100% Seguro',
-    description: 'Criptografia de ponta a ponta e sigilo absoluto garantido em cada conversa.',
+    key: 'secure',
     number: '03',
     color: 'from-sentirz-green/5 to-sentirz-green/10',
     iconColor: 'text-sentirz-green',
@@ -49,6 +45,7 @@ const features = [
 ]
 
 export function Features() {
+  const t = useTranslations('Features')
   return (
     <section className="w-full py-16 md:py-24 bg-background relative overflow-hidden">
       {/* Decorative organic shapes - Sentirz Style */}
@@ -70,25 +67,25 @@ export function Features() {
               className="flex items-center justify-center gap-2 text-xs font-bold text-primary uppercase tracking-[0.3em]"
             >
               <Sparkles className="h-4 w-4" />
-              Diferenciais
+              {t('badge')}
             </motion.div>
             <motion.h2
               variants={fadeIn}
               className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight text-foreground font-outfit"
             >
-              Por que a Sentirz?
+              {t('title')}
             </motion.h2>
             <motion.p
               variants={fadeIn}
               className="text-xl text-foreground/60 max-w-md mx-auto leading-relaxed"
             >
-              Tecnologia e empatia unidos para o seu despertar pessoal.
+              {t('description')}
             </motion.p>
           </div>
 
           {/* Features cards */}
           <motion.div variants={stagger} className="grid md:grid-cols-3 gap-4 sm:gap-6">
-            {features.map((feature) => (
+            {featuresData.map((feature) => (
               <motion.div
                 key={feature.number}
                 variants={fadeIn}
@@ -102,7 +99,7 @@ export function Features() {
                 <div className="relative z-10 space-y-6">
                   {/* Number */}
                   <span className="text-[10px] font-mono text-foreground/20 font-bold tracking-widest uppercase">
-                    Feature {feature.number}
+                    {t('featureNumber', { number: feature.number })}
                   </span>
 
                   {/* Icon */}
@@ -116,9 +113,9 @@ export function Features() {
 
                   {/* Text */}
                   <div className="space-y-3">
-                    <h3 className="text-xl font-bold text-foreground">{feature.title}</h3>
+                    <h3 className="text-xl font-bold text-foreground">{t(`cards.${feature.key}.title`)}</h3>
                     <p className="text-foreground/60 leading-relaxed text-[15px]">
-                      {feature.description}
+                      {t(`cards.${feature.key}.desc`)}
                     </p>
                   </div>
                 </div>

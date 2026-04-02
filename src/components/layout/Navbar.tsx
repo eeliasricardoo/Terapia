@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { Link, usePathname, useRouter } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Menu, User } from 'lucide-react'
@@ -40,6 +41,7 @@ import { Logo } from '@/components/ui/Logo'
 // @ts-ignore
 export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: NavbarProps) {
   const { isAuthenticated, role, fullName, avatarUrl } = useAuth()
+  const t = useTranslations('Navbar')
   const [loginOpen, setLoginOpen] = useState(false)
   const [registerOpen, setRegisterOpen] = useState(false)
 
@@ -53,10 +55,10 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
   const getNavLinks = () => {
     if (!isLoggedIn) {
       return [
-        { href: '/busca', label: 'Buscar Psicólogos' },
-        { href: '/para-empresas', label: 'Para Empresas' },
-        { href: '/para-psicologos', label: 'Sou Psicólogo' },
-        { href: '/blog', label: 'Blog' },
+        { href: '/busca', label: t('links.search') },
+        { href: '/para-empresas', label: t('links.companies') },
+        { href: '/para-psicologos', label: t('links.psychologists') },
+        { href: '/blog', label: t('links.blog') },
       ]
     }
 
@@ -64,31 +66,31 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
       case 'client':
       case 'PATIENT': // Handle database role string
         return [
-          { href: '/dashboard', label: 'Meus Agendamentos' },
-          { href: '/busca', label: 'Buscar Psicólogos' },
-          { href: '/dashboard/perfil', label: 'Meu Perfil' },
+          { href: '/dashboard', label: t('links.patient.appointments') },
+          { href: '/busca', label: t('links.search') },
+          { href: '/dashboard/perfil', label: t('links.patient.profile') },
         ]
       case 'psychologist':
       case 'PSYCHOLOGIST':
         return [
-          { href: '/agenda', label: 'Minha Agenda' },
-          { href: '/pacientes', label: 'Pacientes' },
-          { href: '/financeiro', label: 'Financeiro' },
-          { href: '/perfil', label: 'Meu Perfil' },
+          { href: '/agenda', label: t('links.psychologist.schedule') },
+          { href: '/pacientes', label: t('links.psychologist.patients') },
+          { href: '/financeiro', label: t('links.psychologist.financial') },
+          { href: '/perfil', label: t('links.psychologist.profile') },
         ]
       case 'company':
       case 'COMPANY':
         return [
-          { href: '/dashboard', label: 'Dashboard' },
-          { href: '/colaboradores', label: 'Colaboradores' },
-          { href: '/relatorios', label: 'Relatórios' },
-          { href: '/configuracoes', label: 'Configurações' },
+          { href: '/dashboard', label: t('links.company.dashboard') },
+          { href: '/colaboradores', label: t('links.company.employees') },
+          { href: '/relatorios', label: t('links.company.reports') },
+          { href: '/configuracoes', label: t('links.company.settings') },
         ]
       default:
         // Fallback for unknown roles or if role is missing but logged in
         return [
-          { href: '/dashboard', label: 'Dashboard' },
-          { href: '/busca', label: 'Buscar Psicólogos' },
+          { href: '/dashboard', label: t('links.company.dashboard') },
+          { href: '/busca', label: t('links.search') },
         ]
     }
   }
@@ -116,25 +118,23 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                   variant="ghost"
                   className="text-slate-500 hover:text-slate-900 hover:bg-slate-100 font-medium h-9 px-4"
                 >
-                  Cancelar Cadastro
+                  {t('registration.cancel')}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Tem certeza que deseja sair?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('registration.cancelTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Ao prosseguir, você sairá do fluxo de cadastro. Seu progresso pode não ser
-                    completamente salvo e você precisará reiniciar as etapas que não foram
-                    confirmadas.
+                    {t('registration.cancelDesc')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Voltar ao Cadastro</AlertDialogCancel>
+                  <AlertDialogCancel>{t('registration.backToRegister')}</AlertDialogCancel>
                   <AlertDialogAction
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90 w-full sm:w-auto mt-2 sm:mt-0 font-bold"
                     onClick={() => router.push('/')}
                   >
-                    Sair mesmo assim
+                    {t('registration.exitAnyway')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -167,6 +167,7 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
 
         <div className="flex items-center gap-4">
           <div className="hidden md:flex items-center gap-3">
+            <LanguageSwitcher />
             {!isLoggedIn ? (
               <>
                 <Button
@@ -174,13 +175,13 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                   onClick={() => setLoginOpen(true)}
                   className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bold rounded-full px-6 transition-all"
                 >
-                  Entrar
+                  {t('buttons.login')}
                 </Button>
                 <Button
                   onClick={() => setRegisterOpen(true)}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 font-medium shadow-sm transition-all"
                 >
-                  Começar Agora
+                  {t('buttons.getStarted')}
                 </Button>
               </>
             ) : (
@@ -207,17 +208,17 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{fullName || 'Usuário'}</p>
+                      <p className="text-sm font-medium leading-none">{fullName || t('menu.user')}</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        {role === 'PSYCHOLOGIST' ? 'Psicólogo' : 'Paciente'}
+                        {role === 'PSYCHOLOGIST' ? t('roles.psychologist') : t('roles.patient')}
                       </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Perfil</DropdownMenuItem>
-                  <DropdownMenuItem>Configurações</DropdownMenuItem>
+                  <DropdownMenuItem>{t('menu.profile')}</DropdownMenuItem>
+                  <DropdownMenuItem>{t('menu.settings')}</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Sair</DropdownMenuItem>
+                  <DropdownMenuItem>{t('buttons.logout')}</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
@@ -238,6 +239,9 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                   </Link>
                 ))}
                 <div className="flex flex-col gap-2 mt-4">
+                  <div className="flex justify-start mb-2">
+                    <LanguageSwitcher />
+                  </div>
                   {!isLoggedIn ? (
                     <>
                       <Button
@@ -245,15 +249,15 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                         className="w-full"
                         onClick={() => setLoginOpen(true)}
                       >
-                        Entrar
+                        {t('buttons.login')}
                       </Button>
                       <Button className="w-full" onClick={() => setRegisterOpen(true)}>
-                        Começar Agora
+                        {t('buttons.getStarted')}
                       </Button>
                     </>
                   ) : (
                     <Button variant="outline" className="w-full">
-                      Sair
+                      {t('buttons.logout')}
                     </Button>
                   )}
                 </div>

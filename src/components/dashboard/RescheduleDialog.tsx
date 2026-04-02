@@ -39,7 +39,7 @@ import { PsychologistAvailability } from '@/lib/validations/availability'
 import { getPsychologistById } from '@/lib/actions/psychologists'
 import { rescheduleSession, cancelSession } from '@/lib/actions/sessions'
 import { PsychologistWithProfile } from '@/lib/supabase/types'
-import { usePsychologistProfile } from '@/app/psicologo/[id]/_hooks/use-psychologist-profile'
+import { usePsychologistProfile } from '@/app/[locale]/psicologo/[id]/_hooks/use-psychologist-profile'
 import { cn } from '@/lib/utils'
 
 interface RescheduleDialogProps {

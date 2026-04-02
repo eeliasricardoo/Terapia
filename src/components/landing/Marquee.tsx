@@ -2,19 +2,11 @@
 
 import { motion } from 'framer-motion'
 import { Heart } from 'lucide-react'
-
-const words = [
-  'Acolhimento',
-  'Empatia',
-  'Privacidade',
-  'Autoconhecimento',
-  'Bem-estar',
-  'Saúde Mental',
-  'Equilíbrio',
-  'Cuidado',
-]
+import { useTranslations } from 'next-intl'
 
 export function Marquee() {
+  const t = useTranslations('Marquee')
+  const words = Array.from({ length: 8 }).map((_, i) => t(`word${i}`))
   return (
     <section className="w-full py-8 bg-white overflow-hidden relative border-y border-slate-100">
       <div className="flex whitespace-nowrap">

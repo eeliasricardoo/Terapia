@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import { Inter, Outfit } from 'next/font/google'
-import './globals.css'
+import '../globals.css'
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages, setRequestLocale } from 'next-intl/server'
+import { routing } from '@/i18n/routing'
 import { AuthProvider } from '@/components/providers/auth-provider'
 import { Toaster } from 'sonner'
 import { headers } from 'next/headers'
@@ -74,22 +77,36 @@ export const metadata: Metadata = {
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
 export default async function RootLayout({
   children,
+  params
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>
 }>) {
+  const { locale } = await params
+  
+  // Enable static rendering
+  setRequestLocale(locale);
+  
+  const messages = await getMessages({locale})
   const nonce = (await headers()).get('x-nonce') ?? undefined
 
   return (
-    <html lang="pt-BR" nonce={nonce} suppressHydrationWarning>
+    <html lang={locale} nonce={nonce} suppressHydrationWarning>
       <body className={`${inter.variable} ${outfit.variable} antialiased font-sans`}>
-        <AuthProvider>
-          <Toaster position="top-center" richColors />
-          <main className="flex-1">{children}</main>
-        </AuthProvider>
-        <Analytics />
-        <SpeedInsights />
+        <NextIntlClientProvider messages={messages} locale={locale}>
+          <AuthProvider>
+            <Toaster position="top-center" richColors />
+            <main className="flex-1">{children}</main>
+          </AuthProvider>
+          <Analytics />
+          <SpeedInsights />
+        </NextIntlClientProvider>
       </body>
     </html>
   )
