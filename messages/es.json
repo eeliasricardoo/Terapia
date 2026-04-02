@@ -556,5 +556,58 @@
       "success": "¡Correo confirmado con éxito!",
       "resendSuccess": "¡Nuevo código enviado!"
     }
+  },
+  "DashboardLayout": {
+    "skipToContent": "Ir al contenido principal",
+    "roles": {
+      "admin": "Administrador",
+      "psychologist": "Psicólogo",
+      "company": "Gerente",
+      "companyFull": "Gerente de RRHH",
+      "patient": "Cliente",
+      "user": "Usuario"
+    },
+    "menu": {
+      "patient": {
+        "dashboard": "Panel principal",
+        "search": "Buscar Especialista",
+        "sessions": "Mis Sesiones",
+        "records": "Mi Historial",
+        "journal": "Diario Emocional",
+        "messages": "Mensajes",
+        "profile": "Mi Perfil"
+      },
+      "psychologist": {
+        "dashboard": "Resumen",
+        "agenda": "Mi Agenda",
+        "patients": "Mis Pacientes",
+        "messages": "Mensajes",
+        "config": "Servicios y Tarifas",
+        "financial": "Finanzas",
+        "profile": "Mi Perfil",
+        "settings": "Ajustes"
+      },
+      "admin": {
+        "dashboard": "Resumen",
+        "approvals": "Aprobaciones",
+        "psychologists": "Especialistas",
+        "plans": "Seguros Médicos",
+        "profile": "Mi Perfil"
+      },
+      "company": {
+        "dashboard": "Resumen",
+        "employees": "Colaboradores",
+        "financial": "Finanzas",
+        "profile": "Perfil de la Empresa",
+        "support": "Soporte",
+        "settings": "Configuraciones"
+      }
+    },
+    "sidebar": {
+      "logout": "Cerrar sesión",
+      "loading": "Cargando...",
+      "openMenu": "Abrir menú",
+      "navigation": "Navegación del panel"
+    }
   }
 }

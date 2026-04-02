@@ -4,15 +4,17 @@ import { MobileNav } from '@/components/dashboard/MobileNav'
 import { NotificationListener } from '@/components/dashboard/NotificationListener'
 import { getCurrentUserProfile } from '@/lib/actions/profile'
 import { cn } from '@/lib/utils'
+import { getTranslations } from 'next-intl/server'
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children, params: { locale } }: { children: React.ReactNode, params: { locale: string } }) {
   const profile = await getCurrentUserProfile()
   const themeClass = profile?.role === 'ADMIN' ? 'admin-theme' : ''
+  const t = await getTranslations({ locale, namespace: 'DashboardLayout' })
 
   return (
     <div className={cn('min-h-screen bg-slate-50/50', themeClass)}>
       <a href="#main-content" className="skip-to-content">
-        Ir para o conteúdo principal
+        {t('skipToContent')}
       </a>
 
       {/* Realtime notification toasts for ALL users (Psychologist, Patient, Admin) */}

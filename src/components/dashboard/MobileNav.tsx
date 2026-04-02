@@ -22,54 +22,55 @@ import {
   HeartPulse,
   ChevronRight,
 } from 'lucide-react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useTranslations } from 'next-intl'
 
 const PATIENT_MENU = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
-  { href: '/busca', label: 'Buscar Psicólogos', icon: Search },
-  { href: '/dashboard/sessoes', label: 'Minhas Sessões', icon: Calendar },
-  { href: '/dashboard/prontuario', label: 'Meu Prontuário', icon: FileText },
-  { href: '/dashboard/diario', label: 'Diário Emocional', icon: BookOpen },
-  { href: '/dashboard/mensagens', label: 'Mensagens', icon: MessageSquare },
-  { href: '/dashboard/perfil', label: 'Meu Perfil', icon: User },
+  { href: '/dashboard', labelKey: 'menu.patient.dashboard', icon: LayoutGrid },
+  { href: '/busca', labelKey: 'menu.patient.search', icon: Search },
+  { href: '/dashboard/sessoes', labelKey: 'menu.patient.sessions', icon: Calendar },
+  { href: '/dashboard/prontuario', labelKey: 'menu.patient.records', icon: FileText },
+  { href: '/dashboard/diario', labelKey: 'menu.patient.journal', icon: BookOpen },
+  { href: '/dashboard/mensagens', labelKey: 'menu.patient.messages', icon: MessageSquare },
+  { href: '/dashboard/perfil', labelKey: 'menu.patient.profile', icon: User },
 ]
 
 const PSYCHOLOGIST_MENU = [
-  { href: '/dashboard', label: 'Visão Geral', icon: LayoutGrid },
-  { href: '/dashboard/agenda', label: 'Minha Agenda', icon: Calendar },
-  { href: '/dashboard/pacientes', label: 'Meus Pacientes', icon: Users },
-  { href: '/dashboard/mensagens', label: 'Mensagens', icon: MessageSquare },
-  { href: '/dashboard/configuracoes', label: 'Serviços & Tarifas', icon: DollarSign },
-  { href: '/dashboard/financeiro', label: 'Financeiro', icon: BarChart3 },
-  { href: '/dashboard/perfil', label: 'Meu Perfil', icon: User },
-  { href: '/dashboard/ajustes', label: 'Ajustes', icon: Settings },
+  { href: '/dashboard', labelKey: 'menu.psychologist.dashboard', icon: LayoutGrid },
+  { href: '/dashboard/agenda', labelKey: 'menu.psychologist.agenda', icon: Calendar },
+  { href: '/dashboard/pacientes', labelKey: 'menu.psychologist.patients', icon: Users },
+  { href: '/dashboard/mensagens', labelKey: 'menu.psychologist.messages', icon: MessageSquare },
+  { href: '/dashboard/configuracoes', labelKey: 'menu.psychologist.config', icon: DollarSign },
+  { href: '/dashboard/financeiro', labelKey: 'menu.psychologist.financial', icon: BarChart3 },
+  { href: '/dashboard/perfil', labelKey: 'menu.psychologist.profile', icon: User },
+  { href: '/dashboard/ajustes', labelKey: 'menu.psychologist.settings', icon: Settings },
 ]
 
 const ADMIN_MENU = [
-  { href: '/dashboard', label: 'Visão Geral', icon: LayoutGrid },
-  { href: '/dashboard/admin/aprovacoes', label: 'Aprovações', icon: ShieldCheck },
-  { href: '/dashboard/admin/psicologos', label: 'Psicólogos', icon: Users },
-  { href: '/dashboard/admin/planos', label: 'Planos de Saúde', icon: HeartPulse },
-  { href: '/dashboard/perfil', label: 'Meu Perfil', icon: User },
+  { href: '/dashboard', labelKey: 'menu.admin.dashboard', icon: LayoutGrid },
+  { href: '/dashboard/admin/aprovacoes', labelKey: 'menu.admin.approvals', icon: ShieldCheck },
+  { href: '/dashboard/admin/psicologos', labelKey: 'menu.admin.psychologists', icon: Users },
+  { href: '/dashboard/admin/planos', labelKey: 'menu.admin.plans', icon: HeartPulse },
+  { href: '/dashboard/perfil', labelKey: 'menu.admin.profile', icon: User },
 ]
 
 const COMPANY_MENU = [
-  { href: '/dashboard', label: 'Visão Geral', icon: LayoutGrid },
-  { href: '/dashboard/empresa/colaboradores', label: 'Colaboradores', icon: Users },
-  { href: '/dashboard/empresa/financeiro', label: 'Financeiro', icon: DollarSign },
-  { href: '/dashboard/empresa/perfil', label: 'Perfil da Empresa', icon: Building2 },
-  { href: '/dashboard/empresa/suporte', label: 'Suporte', icon: LifeBuoy },
-  { href: '/dashboard/ajustes', label: 'Configurações', icon: Settings },
+  { href: '/dashboard', labelKey: 'menu.company.dashboard', icon: LayoutGrid },
+  { href: '/dashboard/empresa/colaboradores', labelKey: 'menu.company.employees', icon: Users },
+  { href: '/dashboard/empresa/financeiro', labelKey: 'menu.company.financial', icon: DollarSign },
+  { href: '/dashboard/empresa/perfil', labelKey: 'menu.company.profile', icon: Building2 },
+  { href: '/dashboard/empresa/suporte', labelKey: 'menu.company.support', icon: LifeBuoy },
+  { href: '/dashboard/ajustes', labelKey: 'menu.company.settings', icon: Settings },
 ]
 
-import { useRouter } from 'next/navigation'
+import { Link, useRouter, usePathname } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect } from 'react'
 
+import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+
 export function MobileNav() {
+  const t = useTranslations('DashboardLayout')
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -96,17 +97,17 @@ export function MobileNav() {
 
         const finalRole = profile?.role || 'PATIENT'
         setUser({
-          name: profile?.full_name || authUser.email?.split('@')[0] || 'Usuário',
+          name: profile?.full_name || authUser.email?.split('@')[0] || t('roles.user'),
           email: authUser.email || '',
           avatarUrl: profile?.avatar_url || null,
           role:
             finalRole === 'ADMIN'
-              ? 'Administrador'
+              ? t('roles.admin')
               : finalRole === 'PSYCHOLOGIST'
-                ? 'Psicólogo'
+                ? t('roles.psychologist')
                 : finalRole === 'COMPANY'
-                  ? 'Gestor'
-                  : 'Paciente',
+                  ? t('roles.company')
+                  : t('roles.patient'),
           rawRole: finalRole,
         })
       }
@@ -151,7 +152,7 @@ export function MobileNav() {
             variant="ghost"
             size="icon"
             className="h-10 w-10 rounded-xl hover:bg-slate-100"
-            aria-label="Abrir menu"
+            aria-label={t('sidebar.openMenu')}
           >
             <Menu className="h-5 w-5 text-slate-700" />
           </Button>
@@ -181,7 +182,7 @@ export function MobileNav() {
 
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-white text-base truncate leading-tight">
-                  {user?.name || 'Carregando...'}
+                  {user?.name || t('sidebar.loading')}
                 </p>
                 <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-widest text-white/50 bg-white/10 px-2 py-0.5 rounded-full">
                   {user?.role || ''}
@@ -193,7 +194,7 @@ export function MobileNav() {
           {/* Nav */}
           <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
             {menuItems.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
               return (
                 <Link
                   key={item.href}
@@ -220,7 +221,8 @@ export function MobileNav() {
                       aria-hidden="true"
                     />
                   </div>
-                  <span className="flex-1">{item.label}</span>
+                  {/* @ts-ignore */}
+                  <span className="flex-1">{t(item.labelKey)}</span>
                   {isActive && <ChevronRight className="h-3.5 w-3.5 text-white/50 shrink-0" />}
                 </Link>
               )
@@ -236,7 +238,7 @@ export function MobileNav() {
               <div className="h-8 w-8 rounded-lg bg-slate-100 group-hover:bg-red-100 flex items-center justify-center shrink-0 transition-colors">
                 <LogOut className="h-4 w-4 group-hover:text-red-500 transition-colors" />
               </div>
-              Sair da conta
+              {t('sidebar.logout')}
             </button>
           </div>
         </SheetContent>
