@@ -194,5 +194,56 @@
     },
     "rights": "Todos os direitos reservados.",
     "madeWithCare": "Feito com cuidado para quem sente."
+  },
+  "SearchPage": {
+    "meta": {
+      "title": "Encontrar Psicólogos",
+      "description": "Explore nossa lista de profissionais qualificados e encontre o terapeuta ideal para o seu perfil e necessidades."
+    },
+    "exploreProfessionals": "Explorar Profissionais",
+    "header": {
+      "titlePart1": "Deseja iniciar sua jornada? Encontramos",
+      "titlePart2": "{count} especialistas",
+      "titlePart3": "especialmente para você."
+    },
+    "sort": {
+      "label": "Ordenar:",
+      "placeholder": "Relevância",
+      "relevance": "Relevância",
+      "priceAsc": "Menor Preço",
+      "priceDesc": "Maior Preço"
+    },
+    "filters": {
+      "title": "Filtros",
+      "description": "Refine sua busca para encontrar o profissional ideal.",
+      "clear": "Limpar",
+      "quickSearch": "Busca Rápida",
+      "searchPlaceholder": "Nome ou especialidade...",
+      "specialties": "Especialidades",
+      "insurances": "Convênios",
+      "noInsurances": "Nenhum plano disponível.",
+      "investment": "Investimento",
+      "upTo": "Até {amount}",
+      "gender": "Gênero",
+      "female": "Feminino",
+      "male": "Masculino",
+      "moreComingSoon": "Mais filtros em breve: Idiomas e horários."
+    },
+    "empty": {
+      "title": "Nenhum resultado",
+      "description": "Tente ajustar seus filtros para encontrar outros profissionais.",
+      "button": "Limpar filtros"
+    },
+    "loadingMore": "Carregando mais...",
+    "card": {
+      "fallbackName": "Psicólogo",
+      "notInformed": "Não informado",
+      "fallbackBio": "Olá! Sou especialista em saúde mental e estou aqui para ajudar você a alcançar seus objetivos e bem-estar. Meu consultório é um espaço seguro e acolhedor.",
+      "new": "Novo",
+      "online": "Online",
+      "brazil": "Brasil",
+      "sessionDuration": "Sessão (50 min)",
+      "viewProfile": "Ver Perfil"
+    }
   }
 }

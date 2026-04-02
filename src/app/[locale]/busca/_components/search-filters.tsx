@@ -3,6 +3,7 @@ import { Slider } from '@/components/ui/slider'
 import { Separator } from '@/components/ui/separator'
 import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { PsychologistSearchFilters } from '@/lib/supabase/types'
 import { useEffect, useState, memo, useCallback } from 'react'
 import { getHealthInsurances } from '@/lib/actions/health-insurance'
@@ -19,6 +20,7 @@ export const SearchFilters = memo(function SearchFilters({
   filters,
   onFilterChange,
 }: SearchFiltersProps) {
+  const t = useTranslations('SearchPage')
   const [insurances, setInsurances] = useState<{ id: string; name: string }[]>([])
 
   useEffect(() => {
@@ -86,14 +88,14 @@ export const SearchFilters = memo(function SearchFilters({
       {/* Search Input Integrated */}
       <div className="space-y-2">
         <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">
-          Busca Rápida
+          {t('filters.quickSearch')}
         </h4>
         <div className="relative group/search">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within/search:text-primary transition-colors" />
           <Input
             value={filters.searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Nome ou especialidade..."
+            placeholder={t('filters.searchPlaceholder')}
             className="pl-9 h-10 text-sm rounded-xl border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white transition-all shadow-none"
           />
         </div>
@@ -104,7 +106,7 @@ export const SearchFilters = memo(function SearchFilters({
       {/* Specialties */}
       <div className="space-y-2.5">
         <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">
-          Especialidades
+          {t('filters.specialties')}
         </h4>
         <div className="grid grid-cols-1 gap-1.5 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
           {specialtiesList.map((item) => (
@@ -130,7 +132,7 @@ export const SearchFilters = memo(function SearchFilters({
 
       {/* Health Insurances */}
       <div className="space-y-2.5">
-        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Convênios</h4>
+        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">{t('filters.insurances')}</h4>
         <div className="grid grid-cols-1 gap-1.5 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
           {insurances.map((ins) => (
             <div key={ins.id} className="flex items-center space-x-2 group">
@@ -149,7 +151,7 @@ export const SearchFilters = memo(function SearchFilters({
             </div>
           ))}
           {insurances.length === 0 && (
-            <p className="text-xs text-slate-400 italic">Nenhum plano disponível.</p>
+            <p className="text-xs text-slate-400 italic">{t('filters.noInsurances')}</p>
           )}
         </div>
       </div>
@@ -160,9 +162,9 @@ export const SearchFilters = memo(function SearchFilters({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">
-            Investimento
+            {t('filters.investment')}
           </h4>
-          <span className="text-xs font-bold text-primary">Até R$ {filters.maxPrice || 500}</span>
+          <span className="text-xs font-bold text-primary">{t('filters.upTo', { amount: `R$ ${filters.maxPrice || 500}` })}</span>
         </div>
         <Slider
           defaultValue={[filters.maxPrice || 500]}
@@ -182,11 +184,11 @@ export const SearchFilters = memo(function SearchFilters({
 
       {/* Gender */}
       <div className="space-y-2.5">
-        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Gênero</h4>
+        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">{t('filters.gender')}</h4>
         <div className="grid grid-cols-2 gap-2">
           {[
-            { id: 'Feminino', label: 'Feminino' },
-            { id: 'Masculino', label: 'Masculino' },
+            { id: 'Feminino', label: t('filters.female') },
+            { id: 'Masculino', label: t('filters.male') },
           ].map((item) => (
             <div
               key={item.id}
@@ -212,7 +214,7 @@ export const SearchFilters = memo(function SearchFilters({
       <div className="pt-2">
         <div className="p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
           <p className="text-[10px] text-indigo-600 font-semibold leading-tight text-center">
-            Mais filtros em breve: Idiomas e horários.
+            {t('filters.moreComingSoon')}
           </p>
         </div>
       </div>

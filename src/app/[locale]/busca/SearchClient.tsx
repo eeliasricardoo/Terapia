@@ -1,5 +1,7 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -50,6 +52,7 @@ export default function SearchClient({
 }: {
   initialPsychologists: PsychologistWithProfile[]
 }) {
+  const t = useTranslations('SearchPage')
   const { isAuthenticated } = useAuth()
   const [psychologists, setPsychologists] =
     useState<PsychologistWithProfile[]>(initialPsychologists)
@@ -168,25 +171,25 @@ export default function SearchClient({
       {/* Results Header - Span across Filters and Grid */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2 border-b border-slate-100 bg-white/50 backdrop-blur-sm rounded-2xl mb-6">
         <p className="text-sm text-slate-500 font-medium">
-          Deseja iniciar sua jornada? Encontramos{' '}
+          {t('header.titlePart1')}{' '}
           <span className="font-black text-slate-900 bg-sentirz-teal-pastel/50 px-2 py-0.5 rounded-md">
-            {total} especialistas
+            {t('header.titlePart2', { count: total })}
           </span>{' '}
-          especialmente para você.
+          {t('header.titlePart3')}
         </p>
 
         <div className="hidden sm:flex items-center gap-3 bg-white p-1 rounded-full border border-slate-200">
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-3">
-            Ordenar:
+            {t('sort.label')}
           </span>
           <Select defaultValue="relevance">
             <SelectTrigger className="w-[140px] h-8 text-xs rounded-full bg-slate-50 border-none shadow-none font-bold text-slate-700">
-              <SelectValue placeholder="Relevância" />
+              <SelectValue placeholder={t('sort.placeholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="relevance">Relevância</SelectItem>
-              <SelectItem value="price_asc">Menor Preço</SelectItem>
-              <SelectItem value="price_desc">Maior Preço</SelectItem>
+              <SelectItem value="relevance">{t('sort.relevance')}</SelectItem>
+              <SelectItem value="price_asc">{t('sort.priceAsc')}</SelectItem>
+              <SelectItem value="price_desc">{t('sort.priceDesc')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -204,14 +207,14 @@ export default function SearchClient({
                 className="flex items-center gap-2 h-9 rounded-full bg-white shadow-sm"
               >
                 <Filter className="h-4 w-4" />
-                Filtros
+                {t('filters.title')}
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[min(85vw,24rem)] overflow-y-auto">
               <SheetHeader>
-                <SheetTitle>Filtros</SheetTitle>
+                <SheetTitle>{t('filters.title')}</SheetTitle>
                 <SheetDescription>
-                  Refine sua busca para encontrar o profissional ideal.
+                  {t('filters.description')}
                 </SheetDescription>
               </SheetHeader>
               <div className="py-6">
@@ -222,12 +225,12 @@ export default function SearchClient({
 
           <Select defaultValue="relevance">
             <SelectTrigger className="w-[140px] sm:w-[180px] h-9 rounded-full bg-white shadow-sm">
-              <SelectValue placeholder="Ordenar por" />
+              <SelectValue placeholder={t('sort.placeholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="relevance">Relevância</SelectItem>
-              <SelectItem value="price_asc">Menor Preço</SelectItem>
-              <SelectItem value="price_desc">Maior Preço</SelectItem>
+              <SelectItem value="relevance">{t('sort.relevance')}</SelectItem>
+              <SelectItem value="price_asc">{t('sort.priceAsc')}</SelectItem>
+              <SelectItem value="price_desc">{t('sort.priceDesc')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -238,7 +241,7 @@ export default function SearchClient({
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
               <h3 className="font-black text-xs flex items-center gap-2 text-slate-400 uppercase tracking-[0.2em]">
                 <ListFilter className="w-4 h-4 text-primary" />
-                Filtros
+                {t('filters.title')}
               </h3>
               <Button
                 variant="ghost"
@@ -246,7 +249,7 @@ export default function SearchClient({
                 onClick={clearFilters}
                 className="h-7 text-[10px] uppercase font-black text-slate-400 hover:text-slate-900 hover:bg-slate-100 px-3 rounded-full transition-colors"
               >
-                Limpar
+                {t('filters.clear')}
               </Button>
             </div>
             <SearchFilters filters={filters} onFilterChange={handleFilterChange} />
@@ -266,16 +269,16 @@ export default function SearchClient({
               <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="h-8 w-8 text-slate-300" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900">Nenhum resultado</h3>
+              <h3 className="text-lg font-bold text-slate-900">{t('empty.title')}</h3>
               <p className="text-slate-500 text-sm max-w-xs mx-auto mt-1">
-                Tente ajustar seus filtros para encontrar outros profissionais.
+                {t('empty.description')}
               </p>
               <Button
                 onClick={clearFilters}
                 className="mt-5 rounded-full px-8 text-xs font-bold"
                 variant="outline"
               >
-                Limpar filtros
+                {t('empty.button')}
               </Button>
             </div>
           ) : (
@@ -296,7 +299,7 @@ export default function SearchClient({
                 {isPending && hasMore && (
                   <div className="flex items-center gap-2 text-slate-500 font-medium">
                     <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    Carregando mais...
+                    {t('loadingMore')}
                   </div>
                 )}
               </div>

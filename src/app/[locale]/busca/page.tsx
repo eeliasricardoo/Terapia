@@ -1,10 +1,13 @@
 import { Metadata } from 'next'
 import dynamic from 'next/dynamic'
+import { getTranslations } from 'next-intl/server'
 
-export const metadata: Metadata = {
-  title: 'Encontrar Psicólogos',
-  description:
-    'Explore nossa lista de profissionais qualificados e encontre o terapeuta ideal para o seu perfil e necessidades.',
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace: 'SearchPage' })
+  return {
+    title: t('meta.title'),
+    description: t('meta.description'),
+  }
 }
 
 const SearchClient = dynamic(() => import('./SearchClient'), {
@@ -16,7 +19,7 @@ const SearchClient = dynamic(() => import('./SearchClient'), {
 })
 
 import { Footer } from '@/components/layout/Footer'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import { ChevronRight } from 'lucide-react'
 import { unstable_cache } from 'next/cache'
 import {
@@ -106,8 +109,9 @@ const getCachedPsychologists = unstable_cache(
   { revalidate: 3600, tags: ['psychologists'] }
 )
 
-export default async function SearchPage() {
+export default async function SearchPage({ params: { locale } }: { params: { locale: string } }) {
   const psychologists = await getCachedPsychologists()
+  const t = await getTranslations({ locale, namespace: 'SearchPage' })
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -118,7 +122,7 @@ export default async function SearchPage() {
               Home
             </Link>
             <ChevronRight className="h-4 w-4" />
-            <span className="text-slate-700 font-medium font-outfit">Explorar Profissionais</span>
+            <span className="text-slate-700 font-medium font-outfit">{t('exploreProfessionals')}</span>
           </div>
         </div>
 

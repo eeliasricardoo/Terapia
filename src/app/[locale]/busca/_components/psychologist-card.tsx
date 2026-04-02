@@ -4,8 +4,9 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Star, MapPin, Video, ChevronRight } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import { memo } from 'react'
+import { useTranslations, useFormatter } from 'next-intl'
 
 interface PsychologistCardProps {
   psychologist: any
@@ -14,14 +15,15 @@ interface PsychologistCardProps {
 export const PsychologistCard = memo(function PsychologistCard({
   psychologist,
 }: PsychologistCardProps) {
+  const t = useTranslations('SearchPage')
+  const format = useFormatter()
+
   const profile = psychologist.profile
-  const displayName = profile?.full_name || 'Psicólogo'
+  const displayName = profile?.full_name || t('card.fallbackName')
   const specialties = psychologist.specialties || []
   const price = psychologist.price_per_session ? Number(psychologist.price_per_session) : 0
-  const crp = psychologist.crp || 'Não informado'
-  const bio =
-    psychologist.bio ||
-    'Olá! Sou especialista em saúde mental e estou aqui para ajudar você a alcançar seus objetivos e bem-estar. Meu consultório é um espaço seguro e acolhedor.'
+  const crp = psychologist.crp || t('card.notInformed')
+  const bio = psychologist.bio || t('card.fallbackBio')
 
   return (
     <Card className="overflow-hidden hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-300 border-slate-200/60 rounded-[2.5rem] group flex flex-col bg-white h-full relative hover:-translate-y-1">
@@ -52,14 +54,14 @@ export const PsychologistCard = memo(function PsychologistCard({
                 </div>
                 <div className="flex items-center gap-1 bg-slate-50 px-2 py-0.5 rounded-full text-[10px] font-bold text-slate-500 border border-slate-100">
                   <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                  <span>Novo</span>
+                  <span>{t('card.new')}</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 text-[11px] text-slate-500 mt-1.5 font-medium">
                 <div className="flex items-center gap-1">
                   <Video className="w-3 h-3 text-primary" />
-                  <span>Online</span>
+                  <span>{t('card.online')}</span>
                 </div>
                 <span className="w-0.5 h-0.5 rounded-full bg-slate-300" />
                 <div className="flex items-center gap-1">
@@ -67,7 +69,7 @@ export const PsychologistCard = memo(function PsychologistCard({
                   <span className="truncate max-w-[100px]">
                     {profile?.city && profile?.state
                       ? `${profile.city}, ${profile.state}`
-                      : profile?.city || profile?.state || 'Brasil'}
+                      : profile?.city || profile?.state || t('card.brazil')}
                   </span>
                 </div>
               </div>
@@ -95,10 +97,10 @@ export const PsychologistCard = memo(function PsychologistCard({
       <CardFooter className="p-4 sm:px-6 sm:py-4 border-t border-slate-100 bg-slate-50/30 flex flex-row items-center justify-between relative z-10 mt-auto">
         <div className="flex flex-col justify-center">
           <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-0.5">
-            Sessão (50 min)
+            {t('card.sessionDuration')}
           </span>
           <span className="font-black text-slate-900 text-lg leading-none">
-            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price)}
+            {format.number(price, { style: 'currency', currency: 'BRL' })}
           </span>
         </div>
 
@@ -106,7 +108,7 @@ export const PsychologistCard = memo(function PsychologistCard({
           href={`/psicologo/${psychologist.userId}`}
           className="flex items-center justify-center gap-1.5 bg-primary text-white hover:bg-primary/90 transition-all duration-300 font-bold text-xs h-9 px-5 rounded-full shadow-sm hover:shadow-md active:scale-95"
         >
-          Ver Perfil
+          {t('card.viewProfile')}
           <ChevronRight className="w-3.5 h-3.5" />
         </Link>
       </CardFooter>
