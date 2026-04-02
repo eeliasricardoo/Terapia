@@ -501,6 +501,60 @@
         "google": "Erro ao fazer login com Google"
       },
       "success": "Conta criada com sucesso!"
+    },
+    "forgotPassword": {
+      "title": "Recuperar senha",
+      "description": "Informe seu e-mail para receber as instruções de recuperação.",
+      "email": "Email",
+      "emailPlaceholder": "seu@email.com",
+      "submit": "Enviar instruções",
+      "submitting": "Enviando...",
+      "backToLogin": "Voltar para o login",
+      "successTitle": "Verifique seu e-mail",
+      "successDescription": "Enviamos as instruções para recuperação de senha para o seu e-mail.",
+      "errors": {
+        "apiError": "Erro ao enviar e-mail de recuperação.",
+        "generic": "Erro ao processar solicitação."
+      },
+      "success": "E-mail de recuperação enviado!"
+    },
+    "resetPassword": {
+      "title": "Nova senha",
+      "description": "Digite sua nova senha abaixo.",
+      "password": "Nova Senha",
+      "passwordPlaceholder": "******",
+      "confirmPassword": "Confirmar Nova Senha",
+      "confirmPasswordPlaceholder": "******",
+      "submit": "Atualizar senha",
+      "submitting": "Salvando...",
+      "errors": {
+        "apiError": "Erro ao atualizar senha.",
+        "generic": "Erro ao processar solicitação."
+      },
+      "success": "Senha atualizada com sucesso!"
+    },
+    "emailVerification": {
+      "title": "Verifique seu e-mail",
+      "descriptionPart1": "Enviamos um código de 6 dígitos para ",
+      "descriptionPart2": ". Digite-o abaixo para confirmar sua conta.",
+      "code": "Código de Verificação",
+      "codePlaceholder": "000000",
+      "submit": "Confirmar E-mail",
+      "submitting": "Verificando...",
+      "notReceived": "Não recebeu o código?",
+      "resend": "Reenviar código",
+      "resending": "Enviando...",
+      "resent": "Enviado!",
+      "changeEmail": "Alterar e-mail",
+      "errors": {
+        "notFound": "E-mail não encontrado.",
+        "apiError": "Código inválido ou expirado.",
+        "generic": "Erro ao verificar código. Tente novamente.",
+        "resendApiError": "Erro ao reenviar código.",
+        "resendGeneric": "Erro ao reenviar código."
+      },
+      "success": "E-mail confirmado com sucesso!",
+      "resendSuccess": "Novo código enviado!"
     }
   }
 }

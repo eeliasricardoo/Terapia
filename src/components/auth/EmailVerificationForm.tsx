@@ -2,7 +2,8 @@
 import { logger } from '@/lib/utils/logger'
 
 import { useState, useTransition, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -21,7 +22,8 @@ import { Loader2, Mail, ArrowLeft } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 
 const verificationSchema = z.object({
   code: z.string().min(6, 'O código deve ter 6 dígitos').max(6, 'O código deve ter 6 dígitos'),
@@ -30,6 +32,7 @@ const verificationSchema = z.object({
 type VerificationInput = z.infer<typeof verificationSchema>
 
 export function EmailVerificationForm() {
+  const t = useTranslations('Auth.emailVerification')
   const router = useRouter()
   const searchParams = useSearchParams()
   const email = searchParams.get('email')
@@ -55,7 +58,7 @@ export function EmailVerificationForm() {
           setDisplayEmail(user.email)
           return
         }
-        toast.error('E-mail não encontrado.')
+        toast.error(t('errors.notFound'))
         router.push('/cadastro/paciente')
       }
     }
@@ -70,16 +73,16 @@ export function EmailVerificationForm() {
         const { error } = await auth.verifyOtp(displayEmail, values.code, 'signup')
 
         if (error) {
-          toast.error(error.message || 'Código inválido ou expirado.')
+          toast.error(error.message || t('errors.apiError'))
         } else {
-          toast.success('E-mail confirmado com sucesso!')
+          toast.success(t('success'))
           router.push(
             `/login/paciente${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`
           )
         }
       } catch (error) {
         logger.error('Verification error:', error)
-        toast.error('Erro ao verificar código. Tente novamente.')
+        toast.error(t('errors.generic'))
       }
     })
   }
@@ -91,15 +94,15 @@ export function EmailVerificationForm() {
     try {
       const { error } = await auth.resendOtp(displayEmail)
       if (error) {
-        toast.error(error.message || 'Erro ao reenviar código.')
+        toast.error(error.message || t('errors.resendApiError'))
         setResendStatus('idle')
       } else {
-        toast.success('Novo código enviado!')
+        toast.success(t('resendSuccess'))
         setResendStatus('sent')
         setTimeout(() => setResendStatus('idle'), 60000) // 1 minute cooldown
       }
     } catch (error) {
-      toast.error('Erro ao reenviar código.')
+      toast.error(t('errors.resendGeneric'))
       setResendStatus('idle')
     }
   }
@@ -110,11 +113,10 @@ export function EmailVerificationForm() {
         <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
           <Mail className="w-6 h-6 text-primary" />
         </div>
-        <CardTitle className="text-2xl">Verifique seu e-mail</CardTitle>
+        <CardTitle className="text-2xl">{t('title')}</CardTitle>
         <CardDescription>
-          Enviamos um código de 6 dígitos para{' '}
-          <span className="font-semibold text-foreground">{displayEmail}</span>. Digite-o abaixo
-          para confirmar sua conta.
+          {t('descriptionPart1')}
+          <span className="font-semibold text-foreground">{displayEmail}</span>{t('descriptionPart2')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -125,10 +127,10 @@ export function EmailVerificationForm() {
               name="code"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Código de Verificação</FormLabel>
+                  <FormLabel>{t('code')}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="000000"
+                      placeholder={t('codePlaceholder')}
                       className="text-center text-3xl tracking-[0.5em] font-mono h-14"
                       maxLength={6}
                       {...field}
@@ -147,16 +149,16 @@ export function EmailVerificationForm() {
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Verificando...
+                  {t('submitting')}
                 </>
               ) : (
-                'Confirmar E-mail'
+                t('submit')
               )}
             </Button>
 
             <div className="flex flex-col gap-3 pt-2">
               <p className="text-sm text-center text-muted-foreground">
-                Não recebeu o código?{' '}
+                {t('notReceived')}{' '}
                 <button
                   type="button"
                   onClick={handleResend}
@@ -164,10 +166,10 @@ export function EmailVerificationForm() {
                   className="text-primary hover:underline font-medium disabled:opacity-50 disabled:no-underline"
                 >
                   {resendStatus === 'sending'
-                    ? 'Enviando...'
+                    ? t('resending')
                     : resendStatus === 'sent'
-                      ? 'Enviado!'
-                      : 'Reenviar código'}
+                      ? t('resent')
+                      : t('resend')}
                 </button>
               </p>
 
@@ -175,7 +177,7 @@ export function EmailVerificationForm() {
                 href="/cadastro/paciente"
                 className="flex items-center justify-center text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" /> Alterar e-mail
+                <ArrowLeft className="mr-2 h-4 w-4" /> {t('changeEmail')}
               </Link>
             </div>
           </form>

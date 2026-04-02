@@ -501,6 +501,60 @@
         "google": "Error al iniciar sesión con Google"
       },
       "success": "¡Cuenta creada con éxito!"
+    },
+    "forgotPassword": {
+      "title": "Recuperar contraseña",
+      "description": "Ingresa tu correo para recibir las instrucciones de recuperación.",
+      "email": "Correo",
+      "emailPlaceholder": "tu@correo.com",
+      "submit": "Enviar instrucciones",
+      "submitting": "Enviando...",
+      "backToLogin": "Volver al inicio de sesión",
+      "successTitle": "Verifica tu correo",
+      "successDescription": "Hemos enviado las instrucciones para recuperar la contraseña a tu correo.",
+      "errors": {
+        "apiError": "Error al enviar el correo de recuperación.",
+        "generic": "Error al procesar la solicitud."
+      },
+      "success": "¡Correo de recuperación enviado!"
+    },
+    "resetPassword": {
+      "title": "Nueva contraseña",
+      "description": "Ingresa tu nueva contraseña a continuación.",
+      "password": "Nueva Contraseña",
+      "passwordPlaceholder": "******",
+      "confirmPassword": "Confirmar Nueva Contraseña",
+      "confirmPasswordPlaceholder": "******",
+      "submit": "Actualizar contraseña",
+      "submitting": "Guardando...",
+      "errors": {
+        "apiError": "Error al actualizar la contraseña.",
+        "generic": "Error al procesar la solicitud."
+      },
+      "success": "¡Contraseña actualizada con éxito!"
+    },
+    "emailVerification": {
+      "title": "Verifica tu correo",
+      "descriptionPart1": "Hemos enviado un código de 6 dígitos a ",
+      "descriptionPart2": ". Ingrésalo a continuación para confirmar tu cuenta.",
+      "code": "Código de Verificación",
+      "codePlaceholder": "000000",
+      "submit": "Confirmar Correo",
+      "submitting": "Verificando...",
+      "notReceived": "¿No recibiste el código?",
+      "resend": "Reenviar código",
+      "resending": "Enviando...",
+      "resent": "¡Enviado!",
+      "changeEmail": "Cambiar correo",
+      "errors": {
+        "notFound": "Correo no encontrado.",
+        "apiError": "Código inválido o caducado.",
+        "generic": "Error al verificar el código. Inténtalo de nuevo.",
+        "resendApiError": "Error al reenviar el código.",
+        "resendGeneric": "Error al reenviar el código."
+      },
+      "success": "¡Correo confirmado con éxito!",
+      "resendSuccess": "¡Nuevo código enviado!"
     }
   }
 }
