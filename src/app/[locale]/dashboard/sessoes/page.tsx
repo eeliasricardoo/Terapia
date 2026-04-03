@@ -10,18 +10,20 @@ import { getUserSessions } from '@/lib/actions/sessions'
 import { format } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import { prisma } from '@/lib/prisma'
+import { getTranslations } from 'next-intl/server'
 
 export default async function SessionsPage() {
+  const t = await getTranslations('SessionsList')
   const profile = await getCurrentUserProfile()
 
   if (!profile) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-muted-foreground">Você precisa estar logado para ver suas sessões.</p>
+        <p className="text-muted-foreground">{t('loginRequired')}</p>
         <Button asChild className="mt-4">
-          <Link href="/login">Fazer Login</Link>
+          <Link href="/login">{t('loginButton')}</Link>
         </Button>
       </div>
     )
@@ -54,14 +56,14 @@ export default async function SessionsPage() {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Minhas Sessões</h1>
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t('title')}</h1>
         <p className="text-muted-foreground">
-          Gerencie seus agendamentos e histórico de consultas.
+          {t('description')}
           {total > 0 && (
             <span className="ml-1">
               {nextCursor
-                ? `Exibindo ${sessions.length} de ${total} sessões.`
-                : `${total} ${total === 1 ? 'sessão' : 'sessões'} no total.`}
+                ? t('summaryPagination', { count: sessions.length, total })
+                : t('summaryTotal', { total })}
             </span>
           )}
         </p>
@@ -72,12 +74,10 @@ export default async function SessionsPage() {
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
               <CalendarX className="h-12 w-12 mb-4 opacity-20" />
-              <p className="font-medium">Nenhuma sessão encontrada.</p>
-              <p className="text-sm">
-                Seus agendamentos aparecerão aqui assim que forem realizados.
-              </p>
+              <p className="font-medium">{t('emptyTitle')}</p>
+              <p className="text-sm">{t('emptyDesc')}</p>
               <Button asChild variant="outline" className="mt-4">
-                <Link href="/busca">Buscar Psicólogos</Link>
+                <Link href="/busca">{t('searchPsychologists')}</Link>
               </Button>
             </CardContent>
           </Card>
@@ -132,7 +132,7 @@ export default async function SessionsPage() {
                         </h3>
                         {isUpcoming && (
                           <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200">
-                            Agendada
+                            {t('badges.scheduled')}
                           </Badge>
                         )}
                         {statusUpper === 'COMPLETED' && (
@@ -140,32 +140,24 @@ export default async function SessionsPage() {
                             variant="secondary"
                             className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200"
                           >
-                            Realizada
+                            {t('badges.completed')}
                           </Badge>
                         )}
-                        {statusUpper === 'CANCELLED' && (
+                        {(statusUpper === 'CANCELLED' || statusUpper === 'CANCELED') && (
                           <Badge
                             variant="destructive"
                             className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200"
                           >
-                            Cancelada
-                          </Badge>
-                        )}
-                        {statusUpper === 'CANCELED' && (
-                          <Badge
-                            variant="destructive"
-                            className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200"
-                          >
-                            Cancelada
+                            {t('badges.cancelled')}
                           </Badge>
                         )}
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {isPsychologist
-                          ? 'Paciente'
+                          ? t('roles.patient')
                           : otherParty?.role === 'PSYCHOLOGIST'
-                            ? 'Psicólogo(a)'
-                            : 'Especialista'}
+                            ? t('roles.psychologist')
+                            : t('roles.specialist')}
                       </p>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2 flex-wrap">
                         <span className="flex items-center gap-1">
@@ -181,7 +173,7 @@ export default async function SessionsPage() {
                           </span>
                         </span>
                         <span className="flex items-center gap-1">
-                          <Video className="h-4 w-4" /> Online
+                          <Video className="h-4 w-4" /> {t('online')}
                         </span>
                       </div>
                     </div>
@@ -208,14 +200,14 @@ export default async function SessionsPage() {
                             }}
                           >
                             <Button variant="outline" className="w-full sm:w-auto h-9">
-                              Reagendar
+                              {t('reschedule')}
                             </Button>
                           </RescheduleDialog>
                           {isUpcoming && (
                             <Button asChild className="w-full md:w-auto gap-2 h-9">
                               <Link href={`/dashboard/sessoes/${session.id}`}>
                                 <Video className="h-4 w-4" />
-                                Entrar
+                                {t('enterSession')}
                               </Link>
                             </Button>
                           )}
@@ -238,11 +230,11 @@ export default async function SessionsPage() {
                               className="w-full md:w-auto text-muted-foreground"
                             >
                               <FileText className="mr-2 h-4 w-4" />
-                              Recibo
+                              {t('receipt')}
                             </Button>
                           </ReceiptDialog>
                           <Button variant="outline" size="sm" asChild className="w-full md:w-auto">
-                            <Link href="/busca">Agendar Novamente</Link>
+                            <Link href="/busca">{t('scheduleAgain')}</Link>
                           </Button>
                         </>
                       )}

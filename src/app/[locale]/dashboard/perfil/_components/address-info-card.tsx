@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { MapPin, Building2, Building, Hash, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +25,7 @@ interface AddressInfoCardProps {
 }
 
 export function AddressInfoCard({ user, setUser, isLoading, setIsLoading }: AddressInfoCardProps) {
+  const t = useTranslations('ProfilePage')
   const handleSaveAddress = async () => {
     if (!user) return
 
@@ -44,16 +46,16 @@ export function AddressInfoCard({ user, setUser, isLoading, setIsLoading }: Addr
       })
 
       if (result.error) {
-        toast.error('Erro ao salvar endereço', { description: result.error })
+        toast.error(t('address.errorUpdate'), { description: result.error })
         return
       }
 
-      toast.success('Endereço atualizado!', {
-        description: 'Seus dados de endereço foram salvos com sucesso.',
+      toast.success(t('address.success'), {
+        description: t('address.successDesc'),
       })
     } catch (error) {
       console.error('Error saving address:', error)
-      toast.error('Erro ao salvar endereço')
+      toast.error(t('address.errorUpdate'))
     } finally {
       setIsLoading(false)
     }
@@ -70,17 +72,17 @@ export function AddressInfoCard({ user, setUser, isLoading, setIsLoading }: Addr
             <MapPin className="h-8 w-8" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Endereço</h2>
-            <p className="text-slate-500 font-medium text-sm">
-              Informações de localização para faturamento e prontuário.
-            </p>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+              {t('address.title')}
+            </h2>
+            <p className="text-slate-500 font-medium text-sm">{t('address.subtitle')}</p>
           </div>
         </div>
 
         <div className="space-y-8">
           <div className="space-y-4">
             <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-              Logradouro (Endereço e Número)
+              {t('address.addressLine')}
             </Label>
             <div className="relative group">
               <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
@@ -91,7 +93,7 @@ export function AddressInfoCard({ user, setUser, isLoading, setIsLoading }: Addr
                 }
                 className="pl-12 h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium"
                 disabled={isLoading}
-                placeholder="Ex: Rua das Flores, 123 - Apto 10"
+                placeholder={t('address.addressLinePlaceholder')}
               />
             </div>
           </div>
@@ -99,7 +101,7 @@ export function AddressInfoCard({ user, setUser, isLoading, setIsLoading }: Addr
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-4">
               <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-                CEP
+                {t('address.zipCode')}
               </Label>
               <div className="relative group">
                 <Hash className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
@@ -110,14 +112,14 @@ export function AddressInfoCard({ user, setUser, isLoading, setIsLoading }: Addr
                   }
                   className="pl-12 h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium"
                   disabled={isLoading}
-                  placeholder="00000-000"
+                  placeholder={t('address.zipCodePlaceholder')}
                 />
               </div>
             </div>
 
             <div className="space-y-4">
               <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-                Cidade
+                {t('address.city')}
               </Label>
               <Input
                 value={user?.city || ''}
@@ -131,7 +133,7 @@ export function AddressInfoCard({ user, setUser, isLoading, setIsLoading }: Addr
 
             <div className="space-y-4">
               <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-                Estado (UF)
+                {t('address.state')}
               </Label>
               <Input
                 value={user?.state || ''}
@@ -140,7 +142,7 @@ export function AddressInfoCard({ user, setUser, isLoading, setIsLoading }: Addr
                 }
                 className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium px-6 text-center"
                 disabled={isLoading}
-                placeholder="Ex: SP"
+                placeholder={t('address.statePlaceholder')}
                 maxLength={2}
               />
             </div>
@@ -156,12 +158,12 @@ export function AddressInfoCard({ user, setUser, isLoading, setIsLoading }: Addr
             {isLoading ? (
               <>
                 <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Salvando...
+                {t('address.saving')}
               </>
             ) : (
               <>
                 <Save className="h-4 w-4" />
-                Salvar Endereço
+                {t('address.save')}
               </>
             )}
           </Button>

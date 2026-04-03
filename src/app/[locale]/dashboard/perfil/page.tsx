@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useProfileData } from './_hooks/use-profile-data'
 import { ProfileAvatarCard } from './_components/profile-avatar-card'
@@ -13,12 +14,15 @@ import { CompanyBenefitCard } from './_components/company-benefit-card'
 export default function ProfilePage() {
   const { user, setUser, isLoading, setIsLoading, isSaving, setIsSaving, professionalInfo } =
     useProfileData()
+  const t = useTranslations('ProfilePage')
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Meu Perfil</h1>
-        <p className="text-muted-foreground">Gerencie suas informações pessoais e segurança.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+          {t('title')}
+        </h1>
+        <p className="text-muted-foreground">{t('description')}</p>
       </div>
 
       <Tabs defaultValue="general" className="w-full">
@@ -27,14 +31,14 @@ export default function ProfilePage() {
             value="general"
             className="flex-1 md:flex-initial rounded-xl px-3 sm:px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
           >
-            Informações Gerais
+            {t('tabs.general')}
           </TabsTrigger>
           {user?.rawRole !== 'ADMIN' && (
             <TabsTrigger
               value="plans"
               className="flex-1 md:flex-initial rounded-xl px-3 sm:px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
             >
-              Meus Planos
+              {t('tabs.plans')}
             </TabsTrigger>
           )}
           {user?.rawRole === 'PATIENT' && (
@@ -42,14 +46,14 @@ export default function ProfilePage() {
               value="benefits"
               className="flex-1 md:flex-initial rounded-xl px-3 sm:px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
             >
-              Benefícios
+              {t('tabs.benefits')}
             </TabsTrigger>
           )}
           <TabsTrigger
             value="security"
             className="flex-1 md:flex-initial rounded-xl px-3 sm:px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-md font-semibold text-xs uppercase tracking-tight transition-all"
           >
-            Segurança
+            {t('tabs.security')}
           </TabsTrigger>
         </TabsList>
 

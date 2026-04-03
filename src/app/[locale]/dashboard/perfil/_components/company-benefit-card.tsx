@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import React, { useState } from 'react'
 import {
   Card,
@@ -27,6 +28,7 @@ interface CompanyBenefitCardProps {
 }
 
 export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) {
+  const t = useTranslations('ProfilePage')
   const [code, setCode] = useState('')
   const [isValidating, setIsValidating] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -38,13 +40,13 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
     try {
       const result = await linkCompanyBenefit(code)
       if (result.success) {
-        toast.success('Vínculo Confirmado! Você agora possui o benefício.')
+        toast.success(t('benefits.linkSuccess'))
         setCode('')
       } else {
-        toast.error('Código Inválido', { description: result.error })
+        toast.error(t('benefits.linkError'), { description: result.error })
       }
     } catch (err) {
-      toast.error('Erro ao processar solicitação')
+      toast.error(t('benefits.genericError'))
     } finally {
       setIsValidating(false)
     }
@@ -57,12 +59,12 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
     try {
       const result = await unlinkCompanyBenefit(currentCompany.id)
       if (result.success) {
-        toast.success('Vínculo removido com sucesso.')
+        toast.success(t('benefits.unlinkSuccess'))
       } else {
-        toast.error('Erro ao remover vínculo', { description: result.error })
+        toast.error(t('benefits.unlinkError'), { description: result.error })
       }
     } catch (err) {
-      toast.error('Erro ao processar solicitação')
+      toast.error(t('benefits.genericError'))
     } finally {
       setIsLoading(false)
     }
@@ -81,11 +83,9 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
             </div>
             <div className="space-y-1">
               <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-                Benefício Corporativo
+                {t('benefits.title')}
               </h2>
-              <p className="text-slate-500 font-medium text-sm">
-                Vincule sua conta a uma empresa para obter subsídios em suas sessões de terapia.
-              </p>
+              <p className="text-slate-500 font-medium text-sm">{t('benefits.subtitle')}</p>
             </div>
           </div>
 
@@ -104,11 +104,13 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
                     </h3>
                     <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100/50">
                       <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest">Ativo</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest">
+                        {t('benefits.active')}
+                      </span>
                     </div>
                   </div>
                   <p className="text-slate-400 font-medium text-xs uppercase tracking-widest">
-                    Vinculado em {currentCompany.joinedAt}
+                    {t('benefits.linkedOn', { date: currentCompany.joinedAt })}
                   </p>
                 </div>
               </div>
@@ -118,7 +120,7 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
                 onClick={handleUnlink}
                 disabled={isLoading}
               >
-                {isLoading ? 'Removendo...' : 'Remover Vínculo'}
+                {isLoading ? t('benefits.unlinking') : t('benefits.unlink')}
               </Button>
             </div>
           ) : (
@@ -129,7 +131,7 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
                     <ShieldCheck />
                   </div>
                   <Input
-                    placeholder="INSERIR SEU CÓDIGO DE CONVITE ÚNICO"
+                    placeholder={t('benefits.placeholder')}
                     className="pl-14 h-16 rounded-3xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 text-base font-bold tracking-[0.1em] placeholder:text-slate-300 transition-all shadow-sm"
                     value={code}
                     onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -141,9 +143,9 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
                     <Info className="h-4 w-4 text-slate-400" />
                   </div>
                   <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                    O código de convite é pessoal e fornecido pelo RH da sua empresa.
+                    {t('benefits.infoTitle')}
                     <span className="block mt-1 text-slate-400 italic">
-                      Sua privacidade é garantida: nenhum conteúdo das sessões é compartilhado.
+                      {t('benefits.infoDesc')}
                     </span>
                   </p>
                 </div>
@@ -154,7 +156,7 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
                 disabled={!code || isValidating}
                 className="w-full md:w-auto bg-slate-900 text-white hover:bg-slate-800 h-16 rounded-3xl px-12 font-bold shadow-2xl shadow-slate-900/20 text-sm uppercase tracking-widest gap-3 transition-all active:scale-95 disabled:opacity-20 translate-y-2 hover:translate-y-0"
               >
-                {isValidating ? 'Validando...' : 'Ativar Benefício'}
+                {isValidating ? t('benefits.validating') : t('benefits.activate')}
                 {!isValidating && <ArrowRight className="h-4 w-4" />}
               </Button>
             </div>
@@ -166,22 +168,22 @@ export function CompanyBenefitCard({ currentCompany }: CompanyBenefitCardProps) 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8">
           {[
             {
-              title: 'Subsubsídios',
-              desc: 'Sua empresa paga parte ou o total das suas consultas.',
+              title: t('benefits.feat1Title'),
+              desc: t('benefits.feat1Desc'),
               icon: CheckCircle2,
               color: 'text-emerald-500',
               bg: 'bg-emerald-50',
             },
             {
-              title: 'Sigilo Total',
-              desc: 'Nenhuma informação sensível é enviada para a empresa.',
+              title: t('benefits.feat2Title'),
+              desc: t('benefits.feat2Desc'),
               icon: ShieldCheck,
               color: 'text-blue-500',
               bg: 'bg-blue-50',
             },
             {
-              title: 'Simples e Rápido',
-              desc: 'Ative em segundos com seu código corporativo.',
+              title: t('benefits.feat3Title'),
+              desc: t('benefits.feat3Desc'),
               icon: Building2,
               color: 'text-slate-900',
               bg: 'bg-slate-50',

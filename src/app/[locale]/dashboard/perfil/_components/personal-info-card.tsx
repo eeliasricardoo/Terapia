@@ -22,6 +22,7 @@ import {
 import { toast } from 'sonner'
 import { updateUserProfile } from '../actions'
 import { UserProfile } from '../_hooks/use-profile-data'
+import { useTranslations } from 'next-intl'
 
 interface PersonalInfoCardProps {
   user: UserProfile | null
@@ -36,6 +37,7 @@ export function PersonalInfoCard({
   isLoading,
   setIsLoading,
 }: PersonalInfoCardProps) {
+  const t = useTranslations('ProfilePage.personal')
   const handleSaveProfile = async () => {
     if (!user) return
 
@@ -56,14 +58,14 @@ export function PersonalInfoCard({
       })
 
       if (result.error) {
-        toast.error('Erro ao salvar perfil', { description: result.error })
+        toast.error(t('personal.errorUpdate'), { description: result.error })
         return
       }
 
-      toast.success('Perfil atualizado!', { description: 'Seus dados foram salvos com sucesso.' })
+      toast.success(t('personal.success'), { description: t('personal.successDesc') })
     } catch (error) {
       console.error('Error saving profile:', error)
-      toast.error('Erro ao salvar perfil')
+      toast.error(t('personal.errorUpdate'))
     } finally {
       setIsLoading(false)
     }
@@ -80,17 +82,17 @@ export function PersonalInfoCard({
             <UserCircle className="h-8 w-8" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Dados Pessoais</h2>
-            <p className="text-slate-500 font-medium text-sm">
-              Mantenha suas informações básicas sempre atualizadas.
-            </p>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+              {t('personal.title')}
+            </h2>
+            <p className="text-slate-500 font-medium text-sm">{t('personal.subtitle')}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
           <div className="space-y-4">
             <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-              Nome Completo
+              {t('personal.fullName')}
             </Label>
             <div className="relative group">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
@@ -107,7 +109,7 @@ export function PersonalInfoCard({
 
           <div className="space-y-4">
             <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-              CPF / Documento
+              {t('personal.document')}
             </Label>
             <div className="relative group">
               <FileText className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
@@ -125,7 +127,7 @@ export function PersonalInfoCard({
 
           <div className="space-y-4">
             <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-              Data de Nascimento
+              {t('personal.birthDate')}
             </Label>
             <div className="relative group">
               <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
@@ -143,7 +145,7 @@ export function PersonalInfoCard({
 
           <div className="space-y-4">
             <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-              Gênero
+              {t('personal.gender')}
             </Label>
             <Select
               value={user?.gender || undefined}
@@ -153,21 +155,23 @@ export function PersonalInfoCard({
               disabled={isLoading}
             >
               <SelectTrigger className="h-14 rounded-2xl border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-slate-900/5 focus:border-slate-200 transition-all font-medium pl-6">
-                <SelectValue placeholder="Selecione seu gênero" />
+                <SelectValue placeholder={t('personal.genderPlaceholder')} />
               </SelectTrigger>
               <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
-                <SelectItem value="Masculino">Masculino</SelectItem>
-                <SelectItem value="Feminino">Feminino</SelectItem>
-                <SelectItem value="Não-binário">Não-binário</SelectItem>
-                <SelectItem value="Prefiro não dizer">Prefiro não dizer</SelectItem>
-                <SelectItem value="Outro">Outro</SelectItem>
+                <SelectItem value="Masculino">{t('personal.genderMale')}</SelectItem>
+                <SelectItem value="Feminino">{t('personal.genderFemale')}</SelectItem>
+                <SelectItem value="Não-binário">{t('personal.genderNonBinary')}</SelectItem>
+                <SelectItem value="Prefiro não dizer">
+                  {t('personal.genderPreferNotSay')}
+                </SelectItem>
+                <SelectItem value="Outro">{t('personal.genderOther')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-4">
             <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-              Profissão
+              {t('personal.profession')}
             </Label>
             <div className="relative group">
               <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
@@ -184,7 +188,7 @@ export function PersonalInfoCard({
 
           <div className="space-y-4">
             <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-              Telefone / WhatsApp
+              {t('personal.phone')}
             </Label>
             <div className="relative group">
               <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
@@ -203,8 +207,10 @@ export function PersonalInfoCard({
           <div className="md:col-span-2 pt-4">
             <div className="space-y-4">
               <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-                Email{' '}
-                <span className="text-[10px] lowercase italic font-normal">(não alterável)</span>
+                {t('personal.email')}
+                <span className="text-[10px] lowercase italic font-normal">
+                  {t('personal.notEditable')}
+                </span>
               </Label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-200" />
@@ -227,12 +233,14 @@ export function PersonalInfoCard({
             {isLoading ? (
               <>
                 <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Salvando...
+
+                {t('personal.saving')}
               </>
             ) : (
               <>
                 <Save className="h-4 w-4" />
-                Salvar Alterações
+
+                {t('personal.save')}
               </>
             )}
           </Button>

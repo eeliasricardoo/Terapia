@@ -17,9 +17,11 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 
+import { useTranslations } from 'next-intl'
 import { updatePassword } from '@/lib/actions/auth'
 
 export function SecuritySettingsCard() {
+  const t = useTranslations('ProfilePage')
   const [isLoading, setIsLoading] = useState(false)
   const [passwords, setPasswords] = useState({
     current: '',
@@ -31,11 +33,11 @@ export function SecuritySettingsCard() {
 
   const validatePassword = (password: string): string[] => {
     const errors: string[] = []
-    if (password.length < 8) errors.push('Senha deve ter pelo menos 8 caracteres')
-    if (!/[A-Z]/.test(password)) errors.push('Senha deve conter pelo menos uma letra maiúscula')
-    if (!/[a-z]/.test(password)) errors.push('Senha deve conter pelo menos uma letra minúscula')
-    if (!/[0-9]/.test(password)) errors.push('Senha deve conter pelo menos um número')
-    if (!/[\W_]/.test(password)) errors.push('Senha deve conter pelo menos um caractere especial')
+    if (password.length < 8) errors.push(t('security.validationLength'))
+    if (!/[A-Z]/.test(password)) errors.push(t('security.validationUpper'))
+    if (!/[a-z]/.test(password)) errors.push(t('security.validationLower'))
+    if (!/[0-9]/.test(password)) errors.push(t('security.validationNumber'))
+    if (!/[\W_]/.test(password)) errors.push(t('security.validationSpecial'))
     return errors
   }
 
@@ -48,8 +50,8 @@ export function SecuritySettingsCard() {
     setPasswordErrors([])
 
     if (!passwords.current || !passwords.new || !passwords.confirm) {
-      toast.error('Preencha todos os campos', {
-        description: 'Todos os campos de senha são obrigatórios.',
+      toast.error(t('security.missingFields'), {
+        description: t('security.missingFieldsDesc'),
       })
       return
     }
@@ -57,15 +59,15 @@ export function SecuritySettingsCard() {
     const errors = validatePassword(passwords.new)
     if (errors.length > 0) {
       setPasswordErrors(errors)
-      toast.error('Senha não atende aos requisitos', {
-        description: 'Verifique os requisitos abaixo.',
+      toast.error(t('security.reqNotMet'), {
+        description: t('security.reqNotMetDesc'),
       })
       return
     }
 
     if (passwords.new !== passwords.confirm) {
-      toast.error('As senhas não coincidem', {
-        description: 'A nova senha e a confirmação devem ser iguais.',
+      toast.error(t('security.notMatch'), {
+        description: t('security.notMatchDesc'),
       })
       return
     }
@@ -80,17 +82,19 @@ export function SecuritySettingsCard() {
       if (result.success) {
         setPasswords({ current: '', new: '', confirm: '' })
         setPasswordErrors([])
-        toast.success('Senha alterada com sucesso!', {
-          description: 'Sua senha foi atualizada.',
+        toast.success(t('security.success'), {
+          description: t('security.successDesc'),
           duration: 3000,
         })
+        setPasswords({ current: '', new: '', confirm: '' })
       } else {
-        toast.error('Erro ao alterar senha', {
+        toast.error(t('security.error'), {
           description: result.error,
         })
       }
-    } catch (err) {
-      toast.error('Ocorreu um erro inesperado.')
+    } catch (error) {
+      console.error('Error changing password:', error)
+      toast.error(t('security.genericError'))
     } finally {
       setIsLoading(false)
     }
@@ -107,10 +111,10 @@ export function SecuritySettingsCard() {
             <Lock className="h-8 w-8" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Segurança da Conta</h2>
-            <p className="text-slate-500 font-medium text-sm">
-              Altere sua senha periodicamente para manter sua conta segura.
-            </p>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+              {t('security.title')}
+            </h2>
+            <p className="text-slate-500 font-medium text-sm">{t('security.subtitle')}</p>
           </div>
         </div>
 
@@ -118,7 +122,7 @@ export function SecuritySettingsCard() {
           <div className="space-y-8">
             <div className="space-y-4">
               <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-                Senha Atual
+                {t('security.current')}
               </Label>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
@@ -136,7 +140,7 @@ export function SecuritySettingsCard() {
             <div className="space-y-6">
               <div className="space-y-4">
                 <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-                  Nova Senha
+                  {t('security.new')}
                 </Label>
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
@@ -151,7 +155,7 @@ export function SecuritySettingsCard() {
 
               <div className="space-y-4">
                 <Label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-                  Confirmar Nova Senha
+                  {t('security.confirm')}
                 </Label>
                 <div className="relative group">
                   <Shield className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
@@ -169,18 +173,18 @@ export function SecuritySettingsCard() {
           <div className="bg-slate-50/50 rounded-[2rem] p-8 border border-slate-100 flex flex-col justify-between">
             <div className="space-y-6">
               <h4 className="text-sm font-bold text-slate-900 uppercase tracking-tight">
-                Requisitos de Segurança
+                {t('security.reqs')}
               </h4>
 
-              <div className="space-y-3">
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-3">
                 {[
-                  { label: '8+ caracteres', met: passwords.new.length >= 8 },
-                  { label: 'Letra maiúscula', met: /[A-Z]/.test(passwords.new) },
-                  { label: 'Letra minúscula', met: /[a-z]/.test(passwords.new) },
-                  { label: 'Pelo menos um número', met: /[0-9]/.test(passwords.new) },
-                  { label: 'Caractere especial', met: /[\W_]/.test(passwords.new) },
+                  { label: t('security.reqLength'), met: passwords.new.length >= 8 },
+                  { label: t('security.reqUpper'), met: /[A-Z]/.test(passwords.new) },
+                  { label: t('security.reqLower'), met: /[a-z]/.test(passwords.new) },
+                  { label: t('security.reqNumber'), met: /[0-9]/.test(passwords.new) },
+                  { label: t('security.reqSpecial'), met: /[\W_]/.test(passwords.new) },
                 ].map((req, i) => (
-                  <div key={i} className="flex items-center gap-3">
+                  <li key={i} className="flex items-center gap-3">
                     <div
                       className={cn(
                         'h-5 w-5 rounded-full flex items-center justify-center border-2 transition-all',
@@ -199,9 +203,9 @@ export function SecuritySettingsCard() {
                     >
                       {req.label}
                     </span>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
 
             <div className="pt-8 flex items-center justify-end gap-4">
@@ -211,14 +215,14 @@ export function SecuritySettingsCard() {
                 onClick={handleCancel}
                 disabled={isLoading}
               >
-                Cancelar
+                {t('security.cancel')}
               </Button>
               <Button
                 className="rounded-xl bg-slate-900 text-white hover:bg-slate-800 font-bold px-8 shadow-xl shadow-slate-900/20 transition-all active:scale-95 disabled:opacity-20"
                 onClick={handlePasswordChange}
                 disabled={isLoading}
               >
-                {isLoading ? 'Salvando...' : 'Atualizar Senha'}
+                {isLoading ? t('security.saving') : t('security.save')}
               </Button>
             </div>
           </div>

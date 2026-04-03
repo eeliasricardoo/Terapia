@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useRef } from 'react'
 import { Camera } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -22,6 +23,7 @@ export function ProfileAvatarCard({
   setIsLoading,
 }: ProfileAvatarCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const t = useTranslations('ProfilePage')
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -36,19 +38,19 @@ export function ProfileAvatarCard({
       const result = await uploadProfileImage(formData)
 
       if (result.error) {
-        toast.error('Erro ao atualizar foto', { description: result.error })
+        toast.error(t('avatar.errorUpdate'), { description: result.error })
         return
       }
 
       if (result.publicUrl) {
         setUser((prev: any) => (prev ? { ...prev, image: result.publicUrl } : null))
-        toast.success('Foto atualizada!', {
-          description: 'Sua foto de perfil foi alterada com sucesso.',
+        toast.success(t('avatar.success'), {
+          description: t('avatar.successDesc'),
         })
       }
     } catch (error) {
       console.error('Error uploading image:', error)
-      toast.error('Erro ao atualizar foto')
+      toast.error(t('avatar.errorUpdate'))
     } finally {
       setIsLoading(false)
     }
@@ -102,23 +104,22 @@ export function ProfileAvatarCard({
         <div className="flex-1 text-center md:text-left space-y-3">
           <div className="space-y-1">
             <h3 className="text-3xl font-bold tracking-tight text-slate-900">
-              {user?.name || 'Carregando...'}
+              {user?.name || t('avatar.loading')}
             </h3>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
               <span className="px-3 py-1 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest rounded-full shadow-sm">
                 {user?.role === 'ADMIN'
-                  ? 'Administrador'
+                  ? t('avatar.roles.admin')
                   : user?.role === 'PSYCHOLOGIST'
-                    ? 'Psicólogo'
+                    ? t('avatar.roles.psychologist')
                     : user?.role === 'COMPANY'
-                      ? 'Gestor'
-                      : 'Paciente'}
+                      ? t('avatar.roles.company')
+                      : t('avatar.roles.patient')}
               </span>
             </div>
           </div>
           <p className="text-sm text-slate-500 max-w-md leading-relaxed">
-            Recomendamos uma imagem quadrada (ex: 500x500px) para melhor visualização nos
-            prontuários e chats.
+            {t('avatar.recommendation')}
           </p>
         </div>
       </div>

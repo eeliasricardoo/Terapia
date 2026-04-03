@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -48,6 +49,7 @@ export function ProfessionalProfileCard({
   setVideoUrl,
 }: ProfessionalProfileCardProps) {
   const supabase = createClient()
+  const t = useTranslations('ProfilePage')
 
   const handleSaveProfessionalProfile = async () => {
     try {
@@ -71,12 +73,12 @@ export function ProfessionalProfileCard({
 
       if (error) throw error
 
-      toast.success('Perfil profissional salvo!', {
-        description: 'Suas informações foram atualizadas na plataforma.',
+      toast.success(t('professional.success'), {
+        description: t('professional.successDesc'),
       })
     } catch (error) {
       console.error('Error saving professional profile:', error)
-      toast.error('Erro ao salvar perfil profissional')
+      toast.error(t('professional.errorUpdate'))
     } finally {
       setIsSaving(false)
     }
@@ -85,69 +87,71 @@ export function ProfessionalProfileCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Perfil Profissional</CardTitle>
-        <CardDescription>Configure como você aparecerá para os pacientes na busca.</CardDescription>
+        <CardTitle>{t('professional.title')}</CardTitle>
+        <CardDescription>{t('professional.subtitle')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="crp">CRP</Label>
+            <Label htmlFor="crp">{t('professional.crp')}</Label>
             <Input
               id="crp"
               value={crp}
               onChange={(e) => setCrp(e.target.value)}
-              placeholder="Ex: 00/00000"
+              placeholder={t('professional.crpPlaceholder')}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="price">Valor da Sessão (R$)</Label>
+            <Label htmlFor="price">{t('professional.price')}</Label>
             <Input
               id="price"
               type="number"
               value={price}
               onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
-              placeholder="Ex: 150"
+              placeholder={t('professional.pricePlaceholder')}
             />
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="specialties">Especialidades (separadas por vírgula)</Label>
+          <Label htmlFor="specialties">{t('professional.specialties')}</Label>
           <Input
             id="specialties"
             value={specialties}
             onChange={(e) => setSpecialties(e.target.value)}
-            placeholder="Ex: Psicologia Clínica, TCC, ansiedade"
+            placeholder={t('professional.specialtiesPlaceholder')}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="videoUrl">URL do Vídeo de Apresentação</Label>
+          <Label htmlFor="videoUrl">{t('professional.videoUrl')}</Label>
           <Input
             id="videoUrl"
             value={videoUrl}
             onChange={(e) => setVideoUrl(e.target.value)}
-            placeholder="Link do YouTube ou Vimeo"
+            placeholder={t('professional.videoUrlPlaceholder')}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="bio">Biografia</Label>
+          <Label htmlFor="bio">{t('professional.bio')}</Label>
           <textarea
             id="bio"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            placeholder="Conte um pouco sobre sua abordagem, experiência e como você pode ajudar o paciente..."
+            placeholder={t('professional.bioPlaceholder')}
           />
-          <p className="text-xs text-muted-foreground">{bio.length} caracteres</p>
+          <p className="text-xs text-muted-foreground">
+            {t('professional.chars', { count: bio.length })}
+          </p>
         </div>
       </CardContent>
       <CardFooter className="flex justify-end border-t p-6">
         <Button disabled={isSaving} onClick={handleSaveProfessionalProfile}>
           {isSaving ? (
-            'Salvando...'
+            t('professional.saving')
           ) : (
             <>
               <Save className="mr-2 h-4 w-4" />
-              Salvar Perfil Profissional
+              {t('professional.save')}
             </>
           )}
         </Button>
