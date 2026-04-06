@@ -525,6 +525,28 @@
       "toastSuccessDesc": "Que bom que você compartilhou. Você está se sentindo",
       "toastError": "Erro ao salvar",
       "toastErrorDesc": "Não foi possível registrar seu humor agora."
+    },
+    "diary": {
+      "placeholder": "Como foi seu dia? O que está passando pela sua mente?",
+      "characters": "caracteres",
+      "saveButton": "Salvar Reflexão",
+      "moods": {
+        "verySad": "Muito triste",
+        "sad": "Triste",
+        "neutral": "Neutro",
+        "good": "Bem",
+        "veryGood": "Muito bem"
+      },
+      "emotions": {
+        "love": "Amor",
+        "anxiety": "Ansiedade",
+        "calm": "Calma",
+        "joy": "Alegria",
+        "sadness": "Tristeza",
+        "boredom": "Tédio",
+        "gratitude": "Gratidão",
+        "motivation": "Motivação"
+      }
     }
   },
   "Auth": {
@@ -613,6 +635,32 @@
       "title": "Pacientes Recentes",
       "noPatients": "Nenhum paciente atendido recentemente.",
       "seeAll": "Ver Todos"
+    },
+    "evolution": {
+      "title": "Registro de Sessão",
+      "finalized": "Finalizada",
+      "moodQuestion": "COMO O PACIENTE CHEGOU HOJE?",
+      "summaryLabel": "RESUMO DA SESSÃO (PÚBLICO NO PRONTUÁRIO)",
+      "summaryPlaceholder": "O que foi discutido hoje?",
+      "emptySummary": "(Sem resumo)",
+      "analysisLabel": "ANÁLISE TÉCNICA PRIVADA",
+      "analysisPlaceholder": "Suas impressões técnicas...",
+      "emptyAnalysis": "(Sem análise)",
+      "confidential": "Sigiloso",
+      "history": "Histórico",
+      "save": "Salvar Registro",
+      "saving": "Gravando...",
+      "edit": "Editar",
+      "success": "Registro de sessão salvo!",
+      "successDesc": "As informações foram sincronizadas com o prontuário permanente.",
+      "draftRecovered": "Rascunho recuperado automaticamente.",
+      "fillError": "Preencha ao menos um campo da evolução.",
+      "moods": {
+        "bem": "Bem",
+        "neutro": "Neutro",
+        "mal": "Mal",
+        "crise": "Crise"
+      }
     }
   },
   "AboutPage": {
@@ -730,6 +778,89 @@
         "title": "Dados e Insights",
         "desc": "Métricas anônimas sobre o clima organizacional e bem-estar."
       }
+    }
+  },
+  "ProfilePage": {
+    "title": "Configurações da Conta",
+    "description": "Gerencie suas informações pessoais, planos e segurança.",
+    "tabs": {
+      "general": "Geral",
+      "plans": "Planos",
+      "benefits": "Benefícios",
+      "security": "Segurança"
+    },
+    "personal": {
+      "title": "Informações Pessoais",
+      "subtitle": "Atualize seus dados básicos e de contato.",
+      "fullName": "Nome Completo",
+      "document": "Documento (CPF/CPNJ)",
+      "birthDate": "Data de Nascimento",
+      "gender": "Gênero",
+      "genderPlaceholder": "Selecione o gênero",
+      "genderMale": "Masculino",
+      "genderFemale": "Feminino",
+      "genderNonBinary": "Não-binário",
+      "genderPreferNotSay": "Prefiro não dizer",
+      "genderOther": "Outro",
+      "profession": "Profissão",
+      "phone": "Telefone",
+      "email": "E-mail",
+      "notEditable": " (não editável)",
+      "save": "Salvar Alterações",
+      "saving": "Salvando...",
+      "success": "Perfil atualizado!",
+      "successDesc": "Suas informações foram salvas com sucesso.",
+      "errorUpdate": "Erro ao atualizar"
+    }
+  },
+  "ScheduleManager": {
+    "title": "Gerenciar Agenda",
+    "subtitle": "Configure seus horários de atendimento e folgas.",
+    "timezonePlaceholder": "Selecione o fuso",
+    "weeklyRoutine": "Rotina Semanal",
+    "routineConfigTitle": "Configuração da Rotina",
+    "routineConfigDesc": "Defina seus horários padrão para cada dia da semana.",
+    "sessionDuration": "Duração da Sessão",
+    "breakDuration": "Intervalo entre Sessões",
+    "noBreak": "Sem intervalo",
+    "minutes": "{count} minutos",
+    "unavailable": "Indisponível",
+    "addInterval": "Adicionar Intervalo",
+    "finish": "Concluir",
+    "restoreDefault": "Horário padrão restaurado para este dia.",
+    "conflict": "Conflito",
+    "conflictError": "Conflito de Horários",
+    "conflictErrorDesc": "Você tem intervalos que se sobrepõem. Por favor, ajuste-os.",
+    "save": "Salvar Agenda",
+    "saving": "Salvando...",
+    "saveSuccess": "Agenda salva!",
+    "saveSuccessDesc": "Seus horários foram atualizados corretamente.",
+    "saveError": "Erro ao salvar",
+    "monthlyView": "Visão Mensal",
+    "legend": {
+      "standard": "Rotina Padrão",
+      "custom": "Horário Customizado",
+      "freeDay": "Dia Livre",
+      "dayOff": "Folga/Bloqueado",
+      "appointment": "Sessão Agendada"
+    },
+    "selectDay": "Selecione um dia",
+    "selectDayDesc": "Escolha um dia no calendário para editar horários específicos.",
+    "days": {
+      "monday": "Segunda-feira",
+      "mondayShort": "Seg",
+      "tuesday": "Terça-feira",
+      "tuesdayShort": "Ter",
+      "wednesday": "Quarta-feira",
+      "wednesdayShort": "Qua",
+      "thursday": "Quinta-feira",
+      "thursdayShort": "Qui",
+      "friday": "Sexta-feira",
+      "fridayShort": "Sex",
+      "saturday": "Sábado",
+      "saturdayShort": "Sab",
+      "sunday": "Domingo",
+      "sundayShort": "Dom"
     }
   }
 }

@@ -1,4 +1,5 @@
 'use client'
+import { useTranslations } from 'next-intl'
 
 import { useState, useEffect, useRef } from 'react'
 import { logger } from '@/lib/utils/logger'
@@ -29,6 +30,7 @@ interface RoomEvolutionProps {
 }
 
 export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
+  const t = useTranslations('PsychologistDashboard.evolution')
   const [mood, setMood] = useState<PatientMood>(null)
   const [summary, setSummary] = useState('')
   const [analysis, setAnalysis] = useState('')
@@ -47,7 +49,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
         if (sMood) setMood(sMood)
         if (sSummary) setSummary(sSummary)
         if (sAnalysis) setAnalysis(sAnalysis)
-        toast.info('Rascunho recuperado automaticamente.')
+        toast.info(t('draftRecovered'))
       } catch (e) {
         logger.error('Error recovering draft:', e)
       }
@@ -66,7 +68,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
 
   const handleSave = async () => {
     if (!summary.trim() && !analysis.trim()) {
-      toast.error('Preencha ao menos um campo da evolução.')
+      toast.error(t('fillError'))
       return
     }
 
@@ -115,11 +117,11 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
         setIsFinalized(true)
         setLastSaved(new Date())
         if (appointmentId) localStorage.removeItem(`draft-evolution-${appointmentId}`)
-        toast.success('Registro de sessão salvo!', {
-          description: 'As informações foram sincronizadas com o prontuário permanente.',
+        toast.success(t('success'), {
+          description: t('successDesc'),
         })
       } else {
-        toast.error(result.error || 'Erro ao salvar registro')
+        toast.error(result.error || t('saveError'))
       }
     } catch (error) {
       toast.error('Erro de conexão ao salvar registro')
@@ -131,7 +133,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
   const moods = [
     {
       id: 'bem',
-      label: 'Bem',
+      label: t('moods.bem'),
       icon: Smile,
       color: 'text-emerald-500',
       bg: 'bg-emerald-50',
@@ -139,7 +141,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
     },
     {
       id: 'neutro',
-      label: 'Neutro',
+      label: t('moods.neutro'),
       icon: Meh,
       color: 'text-amber-500',
       bg: 'bg-amber-50',
@@ -147,7 +149,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
     },
     {
       id: 'mal',
-      label: 'Mal',
+      label: t('moods.mal'),
       icon: Frown,
       color: 'text-orange-500',
       bg: 'bg-orange-50',
@@ -155,7 +157,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
     },
     {
       id: 'crise',
-      label: 'Crise',
+      label: t('moods.crise'),
       icon: AlertCircle,
       color: 'text-red-500',
       bg: 'bg-red-50',
@@ -169,7 +171,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
       <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
         <div className="flex items-center gap-2 text-zinc-500">
           <FileText className="h-4 w-4" />
-          <h3 className="text-xs font-bold uppercase tracking-wider">Registro de Sessão</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider">{t('title')}</h3>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-zinc-400 bg-zinc-50 px-2 py-1 rounded border border-zinc-100 uppercase tracking-tight">
@@ -182,7 +184,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
           {isFinalized && (
             <span className="text-[10px] font-bold text-zinc-400 flex items-center gap-1.5 uppercase tracking-tight">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              Finalizada
+              {t('finalized')}
             </span>
           )}
         </div>
@@ -191,7 +193,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
       {/* Mood Selector */}
       <section className="space-y-3">
         <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">
-          COMO O PACIENTE CHEGOU HOJE?
+          {t('moodQuestion')}
         </label>
         <div className="grid grid-cols-4 gap-2">
           {moods.map((m) => {
@@ -221,7 +223,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
       <div className="flex-1 space-y-5">
         <section className="space-y-2">
           <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">
-            RESUMO DA SESSÃO (PÚBLICO NO PRONTUÁRIO)
+            {t('summaryLabel')}
           </label>
           <div
             className={cn(
@@ -233,13 +235,13 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
           >
             {isFinalized ? (
               <p className="text-sm text-zinc-600 leading-relaxed indent-4">
-                {summary || '(Sem resumo)'}
+                {summary || t('emptySummary')}
               </p>
             ) : (
               <textarea
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
-                placeholder="O que foi discutido hoje?"
+                placeholder={t('summaryPlaceholder')}
                 className="w-full h-24 p-4 text-sm outline-none resize-none bg-transparent placeholder:text-zinc-300"
               />
             )}
@@ -249,11 +251,11 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
         <section className="space-y-2">
           <div className="flex items-center justify-between px-1">
             <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-              ANÁLISE TÉCNICA PRIVADA
+              {t('analysisLabel')}
             </label>
             <div className="flex items-center gap-1 text-[9px] font-bold text-zinc-400 uppercase bg-zinc-50 px-2 py-0.5 rounded border border-zinc-100">
               <ShieldAlert className="h-3 w-3" />
-              Sigiloso
+              {t('confidential')}
             </div>
           </div>
           <div
@@ -266,13 +268,13 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
           >
             {isFinalized ? (
               <p className="text-sm text-zinc-600 leading-relaxed italic">
-                {analysis || '(Sem análise)'}
+                {analysis || t('emptyAnalysis')}
               </p>
             ) : (
               <textarea
                 value={analysis}
                 onChange={(e) => setAnalysis(e.target.value)}
-                placeholder="Suas impressões técnicas..."
+                placeholder={t('analysisPlaceholder')}
                 className="w-full h-28 p-4 text-sm outline-none resize-none bg-transparent placeholder:text-zinc-300"
               />
             )}
@@ -288,7 +290,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
           className="text-zinc-400 text-[10px] font-bold uppercase hover:bg-zinc-50 rounded-lg h-9"
         >
           <History className="h-3.5 w-3.5 mr-2" />
-          Histórico
+          {t('history')}
         </Button>
         <div className="flex items-center gap-2">
           {isFinalized ? (
@@ -299,7 +301,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
               onClick={() => setIsFinalized(false)}
             >
               <Edit2 className="h-3.5 w-3.5" />
-              Editar
+              {t('edit')}
             </Button>
           ) : (
             <Button
@@ -313,7 +315,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
               ) : (
                 <Save className="h-3.5 w-3.5" />
               )}
-              {isSaving ? 'Gravando...' : 'Salvar Registro'}
+              {isSaving ? t('saving') : t('save')}
             </Button>
           )}
         </div>
