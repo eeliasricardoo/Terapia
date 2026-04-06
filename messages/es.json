@@ -1,4 +1,18 @@
 {
+  "Payment": {
+    "success": {
+      "titlePayment": "¡Pago confirmado y sesión programada!",
+      "titleInsurance": "¡Sesión programada a través de su plan!",
+      "description": "Le hemos enviado un correo electrónico con todos los detalles de su sesión.",
+      "professionalLabel": "Profesional",
+      "dateTimeLabel": "Fecha y Hora",
+      "transactionLabel": "ID de Transacción",
+      "protocolLabel": "Protocolo",
+      "viewDetails": "Ver detalles de la sesión",
+      "goToDashboard": "Ir a mi panel",
+      "footer": "Si tiene alguna duda, no dude en <support>contactar al soporte</support>."
+    }
+  },
   "Metadata": {
     "title": "Terapia Online de Alta Calidad",
     "description": "Encuentra psicólogos calificados y comienza tu camino de autocuidado a través de sesiones online con total seguridad.",

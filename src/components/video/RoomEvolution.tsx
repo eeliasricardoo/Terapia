@@ -54,7 +54,7 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
         logger.error('Error recovering draft:', e)
       }
     }
-  }, [appointmentId, isFinalized])
+  }, [appointmentId, isFinalized, t])
 
   // Auto-save draft on changes
   useEffect(() => {
