@@ -526,5 +526,210 @@
       "toastError": "Erro ao salvar",
       "toastErrorDesc": "Não foi possível registrar seu humor agora."
     }
+  },
+  "Auth": {
+    "login": {
+      "title": "Entrar na sua conta",
+      "description": "Seja bem-vindo de volta! Continue sua jornada de bem-estar.",
+      "email": "E-mail",
+      "emailPlaceholder": "seu@email.com",
+      "password": "Senha",
+      "passwordPlaceholder": "Sua senha segura",
+      "forgotPassword": "Esqueceu a senha?",
+      "rememberMe": "Lembrar-me",
+      "submit": "Entrar",
+      "submitting": "Entrando...",
+      "orContinueWith": "Ou continue com",
+      "noAccount": "Não tem uma conta?",
+      "register": "Cadastre-se",
+      "success": "Login realizado com sucesso!",
+      "errors": {
+        "invalidCredentials": "E-mail ou senha incorretos.",
+        "emailNotConfirmed": "E-mail não confirmado. Verifique sua caixa de entrada.",
+        "generic": "Ocorreu um erro ao fazer login.",
+        "google": "Erro ao autenticar com Google."
+      }
+    },
+    "register": {
+      "title": "Criar sua conta",
+      "description": "Comece hoje sua jornada de autodescoberta.",
+      "email": "E-mail",
+      "password": "Senha",
+      "submit": "Criar Conta",
+      "success": "Conta criada com sucesso!",
+      "alreadyHaveAccount": "Já tem uma conta?",
+      "login": "Entrar"
+    }
+  },
+  "PsychologistDashboard": {
+    "greeting": "Olá, {name}!",
+    "scheduledToday": "Você tem {count} sessões agendadas para hoje.",
+    "virtualRoom": "Sala Virtual",
+    "pendingVerification": {
+      "title": "Sua conta está em análise",
+      "description": "Nossa equipe está verificando seus documentos e informações profissionais para garantir a segurança da plataforma.",
+      "nextStepsTitle": "Próximos passos",
+      "step1": "Aguarde a validação do seu CRP.",
+      "step2": "Você receberá um e-mail assim que for aprovado.",
+      "step3": "Após a aprovação, você poderá configurar sua agenda."
+    },
+    "billing": {
+      "titlePending": "Configure seus pagamentos",
+      "titleIncomplete": "Finalize seu cadastro financeiro",
+      "descPending": "Para receber por suas sessões, você precisa configurar uma conta no <bold>Stripe</bold>.",
+      "descIncomplete": "Seu cadastro no Stripe está incompleto. Finalize-o para evitar bloqueios nos repasses.",
+      "ctaPending": "Configurar Pagamentos",
+      "ctaIncomplete": "Finalizar Cadastro"
+    },
+    "stats": {
+      "sessions": "Sessões",
+      "today": "hoje",
+      "activePatients": "Pacientes Ativos",
+      "totalPatients": "total",
+      "revenue": "Faturamento",
+      "performance": "Desempenho",
+      "monthly": "no mês"
+    },
+    "agenda": {
+      "upcomingSessions": "Agenda de Hoje & Amanhã",
+      "freeSchedule": "Agenda Livre",
+      "summary": "Você tem {todayCount} sessões hoje e {futureCount} nas próximas datas.",
+      "viewAgenda": "Ver Agenda Completa",
+      "noAppointments": "Nenhum compromisso marcado para este dia.",
+      "todayBadge": "Hoje",
+      "completedBadge": "Finalizada",
+      "nextBadge": "A seguir",
+      "startSession": "Iniciar Sessão",
+      "reschedule": "Reagendar"
+    },
+    "quickActions": {
+      "title": "Ações Rápidas",
+      "manageSchedule": "Gerenciar Agenda",
+      "configureAgenda": "Configurar horários e folgas",
+      "myPatients": "Meus Pacientes",
+      "viewRecords": "Ver prontuários e evoluções"
+    },
+    "recentHistory": {
+      "title": "Pacientes Recentes",
+      "noPatients": "Nenhum paciente atendido recentemente.",
+      "seeAll": "Ver Todos"
+    }
+  },
+  "AboutPage": {
+    "meta": {
+      "title": "Sobre Nós | Sentirz",
+      "description": "Conheça a história e os valores da Sentirz, sua plataforma de saúde mental."
+    },
+    "hero": {
+      "badge": "Nossa Missão",
+      "titlePart1": "Cuidando de mentes, ",
+      "titleHighlight": "transformando",
+      "titlePart2": " vidas.",
+      "description": "A Sentirz nasceu com o propósito de democratizar o acesso à saúde mental de qualidade, unindo tecnologia de ponta e acolhimento humano."
+    },
+    "values": {
+      "empathy": {
+        "title": "Empatia",
+        "desc": "Colocamos o ser humano no centro de tudo o que fazemos."
+      },
+      "security": {
+        "title": "Segurança",
+        "desc": "Sigilo absoluto e criptografia em todas as interações."
+      },
+      "technology": {
+        "title": "Tecnologia",
+        "desc": "Inovação para tornar a terapia mais acessível e eficaz."
+      },
+      "community": {
+        "title": "Comunidade",
+        "desc": "Criando conexões reais entre profissionais e pacientes."
+      }
+    },
+    "history": {
+      "title": "Nossa História",
+      "quote": "\"Acreditamos que o autoconhecimento é a chave para uma vida mais plena e equilibrada.\"",
+      "p1": "Fundada por especialistas em tecnologia e psicologia, a Sentirz surgiu da necessidade de encontrar um espaço seguro e moderno para a prática terapêutica online.",
+      "p2": "Hoje, somos uma das principais plataformas do mercado brasileiro, conectando milhares de pessoas aos melhores profissionais."
+    },
+    "cta": {
+      "title": "Faça parte da nossa história",
+      "description": "Seja como paciente ou como profissional, estamos aqui para te apoiar.",
+      "buttonPatient": "Quero ser Paciente",
+      "buttonProfessional": "Sou Psicólogo(a)"
+    }
+  },
+  "ProfessionalsPage": {
+    "meta": {
+      "title": "Para Psicólogos | Sentirz",
+      "description": "Expanda seu consultório com a plataforma mais completa para psicólogos."
+    },
+    "hero": {
+      "badge": "Para Profissionais",
+      "title1": "Seu consultório no ",
+      "titleHighlight": "próximo nível.",
+      "description": "Gestão completa, prontuário eletrônico e sala virtual segura em um só lugar.",
+      "register": "Começar Cadastro",
+      "howItWorks": "Como Funciona",
+      "partners": "Profissionais parceiros"
+    },
+    "floatCards": {
+      "schedule": "Agenda",
+      "flexibility": "Flexibilidade total",
+      "mission": "Missão",
+      "impact": "Impacto real"
+    },
+    "features": {
+      "sectionTitle": "Tudo o que você precisa",
+      "sectionDesc": "Ferramentas modernas desenhadas para a sua prática clínica.",
+      "platform": {
+        "title": "Gestão Simplificada",
+        "desc": "Controle seus pacientes, horários e documentos de forma intuitiva."
+      },
+      "online": {
+        "title": "Sala Virtual HD",
+        "desc": "Videochamadas estáveis com criptografia de ponta a ponta."
+      },
+      "payment": {
+        "title": "Pagamentos Seguros",
+        "desc": "Receba por suas sessões de forma automática e garantida."
+      }
+    }
+  },
+  "CompaniesPage": {
+    "meta": {
+      "title": "Para Empresas | Sentirz",
+      "description": "Soluções de saúde mental para o bem-estar da sua equipe."
+    },
+    "hero": {
+      "badge": "Para Empresas",
+      "title1": "Equipes mais ",
+      "titleHighlight": "saudáveis e produtivas.",
+      "description": "Ofereça suporte psicológico como benefício e transforme a cultura da sua empresa.",
+      "contact": "Falar com Consultor",
+      "demo": "Agendar Demonstração",
+      "trusted": "Empresas que confiam"
+    },
+    "floatCards": {
+      "team": "Equipe",
+      "engagement": "Alto engajamento",
+      "results": "Resultados",
+      "reports": "Relatórios em tempo real"
+    },
+    "features": {
+      "sectionTitle": "Benefícios para sua empresa",
+      "sectionDesc": "Cuidado preventivo e suporte especializado para seus colaboradores.",
+      "therapy": {
+        "title": "Terapia Online",
+        "desc": "Sessões subsidiadas com profissionais criteriosamente selecionados."
+      },
+      "workshops": {
+        "title": "Workshops & Ações",
+        "desc": "Conteúdo educativo sobre saúde mental e equilíbrio emocional."
+      },
+      "reports": {
+        "title": "Dados e Insights",
+        "desc": "Métricas anônimas sobre o clima organizacional e bem-estar."
+      }
+    }
   }
 }
