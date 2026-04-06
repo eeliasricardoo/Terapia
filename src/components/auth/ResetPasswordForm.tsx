@@ -3,7 +3,8 @@
 import { useTransition } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -34,6 +35,7 @@ const resetPasswordSchema = z
 type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
 
 export function ResetPasswordForm() {
+  const t = useTranslations('Auth.resetPassword')
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -50,13 +52,13 @@ export function ResetPasswordForm() {
       try {
         const { error } = await auth.updatePassword(values.password)
         if (error) {
-          toast.error(error.message || 'Erro ao atualizar senha.')
+          toast.error(error.message || t('errors.apiError'))
         } else {
-          toast.success('Senha atualizada com sucesso!')
+          toast.success(t('success'))
           router.push('/login/paciente')
         }
       } catch (error) {
-        toast.error('Erro ao processar solicitação.')
+        toast.error(t('errors.generic'))
       }
     })
   }
@@ -64,8 +66,8 @@ export function ResetPasswordForm() {
   return (
     <Card className="mx-auto max-w-md w-full">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">Nova senha</CardTitle>
-        <CardDescription>Digite sua nova senha abaixo.</CardDescription>
+        <CardTitle className="text-2xl font-bold">{t('title')}</CardTitle>
+        <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -75,9 +77,9 @@ export function ResetPasswordForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nova Senha</FormLabel>
+                  <FormLabel>{t('password')}</FormLabel>
                   <FormControl>
-                    <PasswordInput placeholder="******" {...field} />
+                    <PasswordInput placeholder={t('passwordPlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -88,9 +90,9 @@ export function ResetPasswordForm() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirmar Nova Senha</FormLabel>
+                  <FormLabel>{t('confirmPassword')}</FormLabel>
                   <FormControl>
-                    <PasswordInput placeholder="******" {...field} />
+                    <PasswordInput placeholder={t('confirmPasswordPlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -100,10 +102,10 @@ export function ResetPasswordForm() {
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Salvando...
+                  {t('submitting')}
                 </>
               ) : (
-                'Atualizar senha'
+                t('submit')
               )}
             </Button>
           </form>

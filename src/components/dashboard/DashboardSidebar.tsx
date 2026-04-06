@@ -1,8 +1,7 @@
 'use client'
 import { logger } from '@/lib/utils/logger'
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { Link, usePathname, useRouter } from '@/i18n/routing'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -28,42 +27,44 @@ import { createClient } from '@/lib/supabase/client'
 import type { Profile } from '@/lib/supabase/types'
 import { Logo } from '@/components/ui/Logo'
 
+import { useTranslations } from 'next-intl'
+
 const PATIENT_MENU = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
-  { href: '/busca', label: 'Buscar Psicólogos', icon: Search },
-  { href: '/dashboard/sessoes', label: 'Minhas Sessões', icon: Calendar },
-  { href: '/dashboard/prontuario', label: 'Meu Prontuário', icon: FileText },
-  { href: '/dashboard/diario', label: 'Diário Emocional', icon: BookOpen },
-  { href: '/dashboard/mensagens', label: 'Mensagens', icon: MessageSquare },
-  { href: '/dashboard/perfil', label: 'Meu Perfil', icon: User },
+  { href: '/dashboard', labelKey: 'menu.patient.dashboard', icon: LayoutGrid },
+  { href: '/busca', labelKey: 'menu.patient.search', icon: Search },
+  { href: '/dashboard/sessoes', labelKey: 'menu.patient.sessions', icon: Calendar },
+  { href: '/dashboard/prontuario', labelKey: 'menu.patient.records', icon: FileText },
+  { href: '/dashboard/diario', labelKey: 'menu.patient.journal', icon: BookOpen },
+  { href: '/dashboard/mensagens', labelKey: 'menu.patient.messages', icon: MessageSquare },
+  { href: '/dashboard/perfil', labelKey: 'menu.patient.profile', icon: User },
 ]
 
 const PSYCHOLOGIST_MENU = [
-  { href: '/dashboard', label: 'Visão Geral', icon: LayoutGrid },
-  { href: '/dashboard/agenda', label: 'Minha Agenda', icon: Calendar },
-  { href: '/dashboard/pacientes', label: 'Meus Pacientes', icon: Users },
-  { href: '/dashboard/mensagens', label: 'Mensagens', icon: MessageSquare },
-  { href: '/dashboard/configuracoes', label: 'Serviços & Tarifas', icon: DollarSign },
-  { href: '/dashboard/financeiro', label: 'Financeiro', icon: BarChart3 },
-  { href: '/dashboard/perfil', label: 'Meu Perfil', icon: User },
-  { href: '/dashboard/ajustes', label: 'Ajustes', icon: Settings },
+  { href: '/dashboard', labelKey: 'menu.psychologist.dashboard', icon: LayoutGrid },
+  { href: '/dashboard/agenda', labelKey: 'menu.psychologist.agenda', icon: Calendar },
+  { href: '/dashboard/pacientes', labelKey: 'menu.psychologist.patients', icon: Users },
+  { href: '/dashboard/mensagens', labelKey: 'menu.psychologist.messages', icon: MessageSquare },
+  { href: '/dashboard/configuracoes', labelKey: 'menu.psychologist.config', icon: DollarSign },
+  { href: '/dashboard/financeiro', labelKey: 'menu.psychologist.financial', icon: BarChart3 },
+  { href: '/dashboard/perfil', labelKey: 'menu.psychologist.profile', icon: User },
+  { href: '/dashboard/ajustes', labelKey: 'menu.psychologist.settings', icon: Settings },
 ]
 
 const ADMIN_MENU = [
-  { href: '/dashboard', label: 'Visão Geral', icon: LayoutGrid },
-  { href: '/dashboard/admin/aprovacoes', label: 'Aprovações', icon: ShieldCheck },
-  { href: '/dashboard/admin/psicologos', label: 'Psicólogos', icon: Users },
-  { href: '/dashboard/admin/planos', label: 'Planos de Saúde', icon: HeartPulse },
-  { href: '/dashboard/perfil', label: 'Meu Perfil', icon: User },
+  { href: '/dashboard', labelKey: 'menu.admin.dashboard', icon: LayoutGrid },
+  { href: '/dashboard/admin/aprovacoes', labelKey: 'menu.admin.approvals', icon: ShieldCheck },
+  { href: '/dashboard/admin/psicologos', labelKey: 'menu.admin.psychologists', icon: Users },
+  { href: '/dashboard/admin/planos', labelKey: 'menu.admin.plans', icon: HeartPulse },
+  { href: '/dashboard/perfil', labelKey: 'menu.admin.profile', icon: User },
 ]
 
 const COMPANY_MENU = [
-  { href: '/dashboard', label: 'Visão Geral', icon: LayoutGrid },
-  { href: '/dashboard/empresa/colaboradores', label: 'Colaboradores', icon: Users },
-  { href: '/dashboard/empresa/financeiro', label: 'Financeiro', icon: DollarSign },
-  { href: '/dashboard/empresa/perfil', label: 'Perfil da Empresa', icon: Building2 },
-  { href: '/dashboard/empresa/suporte', label: 'Suporte', icon: LifeBuoy },
-  { href: '/dashboard/ajustes', label: 'Configurações', icon: Settings },
+  { href: '/dashboard', labelKey: 'menu.company.dashboard', icon: LayoutGrid },
+  { href: '/dashboard/empresa/colaboradores', labelKey: 'menu.company.employees', icon: Users },
+  { href: '/dashboard/empresa/financeiro', labelKey: 'menu.company.financial', icon: DollarSign },
+  { href: '/dashboard/empresa/perfil', labelKey: 'menu.company.profile', icon: Building2 },
+  { href: '/dashboard/empresa/suporte', labelKey: 'menu.company.support', icon: LifeBuoy },
+  { href: '/dashboard/ajustes', labelKey: 'menu.company.settings', icon: Settings },
 ]
 
 interface DashboardSidebarProps {
@@ -72,6 +73,7 @@ interface DashboardSidebarProps {
 }
 
 export function DashboardSidebar({ className, initialProfile }: DashboardSidebarProps) {
+  const t = useTranslations('DashboardLayout')
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -85,16 +87,16 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
   } | null>(
     initialProfile
       ? {
-          name: initialProfile.full_name || 'Usuário',
+          name: initialProfile.full_name || t('roles.user'),
           email: '',
           role:
             initialProfile.role === 'ADMIN'
-              ? 'Administrador'
+              ? t('roles.admin')
               : initialProfile.role === 'PSYCHOLOGIST'
-                ? 'Psicólogo'
+                ? t('roles.psychologist')
                 : initialProfile.role === 'COMPANY'
-                  ? 'Gestor de RH'
-                  : 'Paciente',
+                  ? t('roles.companyFull')
+                  : t('roles.patient'),
           rawRole: initialProfile.role,
           avatar_url: initialProfile.avatar_url || undefined,
         }
@@ -121,21 +123,21 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
             profile?.role || (metaRole === 'PSYCHOLOGIST' ? 'PSYCHOLOGIST' : 'PATIENT')
           const displayRole =
             finalRole === 'ADMIN'
-              ? 'Administrador'
+              ? t('roles.admin')
               : finalRole === 'PSYCHOLOGIST'
-                ? 'Psicólogo'
+                ? t('roles.psychologist')
                 : finalRole === 'COMPANY'
-                  ? 'Gestor de RH'
-                  : 'Paciente'
+                  ? t('roles.companyFull')
+                  : t('roles.patient')
 
-          if (!initialProfile || !user?.name || user.name === 'Usuário') {
+          if (!initialProfile || !user?.name || user.name === t('roles.user') || user.name === 'Usuário') {
             setUser({
               name:
                 profile?.full_name ||
                 authUser.user_metadata?.full_name ||
                 authUser.user_metadata?.name ||
                 authUser.email?.split('@')[0] ||
-                'Usuário',
+                t('roles.user'),
               email: authUser.email || '',
               role: displayRole,
               rawRole: finalRole,
@@ -242,9 +244,9 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1.5 p-4 overflow-y-auto" aria-label="Navegação do dashboard">
+      <nav className="flex-1 space-y-1.5 p-4 overflow-y-auto" aria-label={t('sidebar.navigation')}>
         {menuItems.map((item) => {
-          const isActive = pathname === item.href
+          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
           return (
             <Link
               key={item.href}
@@ -266,7 +268,8 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
                 )}
                 aria-hidden="true"
               />
-              {item.label}
+              {/* @ts-ignore */}
+              {t(item.labelKey)}
             </Link>
           )
         })}
@@ -283,7 +286,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
           </Avatar>
           <div className="overflow-hidden">
             <p className="font-bold text-sm text-foreground truncate" title={user?.name}>
-              {user?.name || 'Carregando...'}
+              {user?.name || t('sidebar.loading')}
             </p>
             <p className="text-[10px] text-foreground/50 font-bold uppercase tracking-wider">
               {user?.role || ''}
@@ -297,7 +300,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-          Sair da Conta
+          {t('sidebar.logout')}
         </Button>
       </div>
     </aside>

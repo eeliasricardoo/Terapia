@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { Loader2, Package, Tag, Sparkles } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { BookingWidget } from '@/app/psicologo/[id]/_components/booking-widget'
-import { usePsychologistProfile } from '@/app/psicologo/[id]/_hooks/use-psychologist-profile'
+import { BookingWidget } from '@/app/[locale]/psicologo/[id]/_components/booking-widget'
+import { usePsychologistProfile } from '@/app/[locale]/psicologo/[id]/_hooks/use-psychologist-profile'
 import { getPatientBookingData, getPatientServicesView } from '@/lib/actions/services-config'
 import type { PatientBookingData, PatientServicesData } from '@/lib/actions/services-config'
 

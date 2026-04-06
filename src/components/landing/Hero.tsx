@@ -1,16 +1,18 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { RoleSelectionDialog } from '@/components/auth/RoleSelectionDialog'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Logo } from '@/components/ui/Logo'
 import { BRAND_NAME, BRAND_SLOGAN } from '@/lib/constants/branding'
 
 export function Hero() {
+  const t = useTranslations('Hero')
   return (
     <section className="w-full min-h-[75vh] flex items-center bg-background relative overflow-hidden">
       {/* Dynamic background accents - Sentirz Style */}
@@ -42,9 +44,9 @@ export function Hero() {
               className="space-y-6"
             >
               <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight leading-[0.9] text-foreground font-outfit">
-                Sinta a sua <br />
+                {t('titlePart1')} <br />
                 <span className="text-sentirz-gradient relative">
-                  evolução.
+                  {t('titleHighlight')}
                   {/* Decorative underline */}
                   <svg
                     className="absolute -bottom-2 left-0 w-full h-3 text-secondary/60"
@@ -63,8 +65,7 @@ export function Hero() {
                 </span>
               </h1>
               <p className="text-lg md:text-xl text-foreground/80 max-w-lg leading-relaxed font-medium">
-                Conectamos você aos melhores psicólogos para uma jornada de autodescoberta segura,
-                humana e moderna. Transforme sua mente com a{' '}
+                {t('description')}
                 <span className="text-foreground font-bold">Sentirz</span>.
               </p>
             </motion.div>
@@ -82,7 +83,7 @@ export function Hero() {
                 className="h-14 sm:h-16 px-8 sm:px-12 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-2xl shadow-primary/20 transition-all hover:-translate-y-1 group border-none w-full sm:w-auto"
               >
                 <Link href="/busca" className="flex items-center gap-2">
-                  Começar Jornada
+                  {t('buttons.startJourney')}
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
@@ -92,7 +93,7 @@ export function Hero() {
                   size="lg"
                   className="h-14 sm:h-16 px-8 sm:px-12 text-base font-bold border-2 border-primary/30 hover:bg-primary/5 rounded-full transition-all text-primary w-full sm:w-auto"
                 >
-                  Sou Psicólogo(a)
+                  {t('buttons.imPsychologist')}
                 </Button>
               </RoleSelectionDialog>
             </motion.div>
@@ -105,15 +106,15 @@ export function Hero() {
               className="flex flex-wrap items-center justify-center lg:justify-start gap-8 text-sm text-foreground/60 pt-4"
             >
               <span className="flex items-center gap-2">
-                <span className="font-extrabold text-foreground text-base">500+</span> profissionais
+                <span className="font-extrabold text-foreground text-base">500+</span> {t('stats.professionals')}
               </span>
               <span className="w-px h-5 bg-border hidden sm:block" />
               <span className="flex items-center gap-2">
-                <span className="font-extrabold text-foreground text-base">4.9</span> estrelas
+                <span className="font-extrabold text-foreground text-base">4.9</span> {t('stats.stars')}
               </span>
               <span className="w-px h-5 bg-border hidden sm:block" />
               <span className="flex items-center gap-2">
-                <span className="font-extrabold text-foreground text-base">2k+</span> evoluções
+                <span className="font-extrabold text-foreground text-base">2k+</span> {t('stats.evolutions')}
               </span>
             </motion.div>
           </div>
@@ -162,9 +163,9 @@ export function Hero() {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-sentirz-green/60 uppercase tracking-widest">
-                      Sessão
+                      {t('floatingCards.session')}
                     </p>
-                    <p className="text-sm font-black text-foreground">100% Online</p>
+                    <p className="text-sm font-black text-foreground">{t('floatingCards.online')}</p>
                   </div>
                 </div>
               </motion.div>
@@ -191,9 +192,9 @@ export function Hero() {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-sentirz-teal/60 uppercase tracking-widest">
-                      Sigilo
+                      {t('floatingCards.privacy')}
                     </p>
-                    <p className="text-sm font-black text-foreground">Garantido</p>
+                    <p className="text-sm font-black text-foreground">{t('floatingCards.guaranteed')}</p>
                   </div>
                 </div>
               </motion.div>

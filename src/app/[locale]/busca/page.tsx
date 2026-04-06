@@ -1,0 +1,135 @@
+import { Metadata } from 'next'
+import dynamic from 'next/dynamic'
+import { getTranslations } from 'next-intl/server'
+
+export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace: 'SearchPage' })
+  return {
+    title: t('meta.title'),
+    description: t('meta.description'),
+  }
+}
+
+const SearchClient = dynamic(() => import('./SearchClient'), {
+  loading: () => (
+    <div className="flex items-center justify-center py-20">
+      <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  ),
+})
+
+import { Footer } from '@/components/layout/Footer'
+import { Link } from '@/i18n/routing'
+import { ChevronRight } from 'lucide-react'
+import { unstable_cache } from 'next/cache'
+import {
+  PsychologistWithProfile,
+  PsychologistProfile,
+  Profile as UserProfile,
+} from '@/lib/supabase/types'
+import { createClient } from '@supabase/supabase-js'
+import { logger } from '@/lib/utils/logger'
+import { WeeklyScheduleData } from '@/lib/validations/availability'
+
+// Use a pure prisma call to fetch all verified psychologists
+const getCachedPsychologists = unstable_cache(
+  async () => {
+    try {
+      // Import Prisma specifically inside the action to keep it clean
+      const { prisma } = await import('@/lib/prisma')
+
+      const psychologists = await prisma.psychologistProfile.findMany({
+        where: {
+          isVerified: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+        include: {
+          user: {
+            include: {
+              profiles: true, // Prisma relation
+            },
+          },
+        },
+      })
+
+      if (!psychologists || psychologists.length === 0) {
+        return []
+      }
+
+      // Map data to the model used by the frontend components
+      return psychologists.map((psych) => {
+        const userProfile = psych.user?.profiles || null
+
+        const profile = userProfile
+          ? {
+              id: userProfile.id,
+              user_id: userProfile.user_id,
+              full_name: userProfile.fullName,
+              avatar_url: userProfile.avatarUrl,
+              role: userProfile.role,
+              birth_date: userProfile.birth_date ? userProfile.birth_date.toISOString() : null,
+              document: userProfile.document,
+              phone: userProfile.phone,
+              created_at: userProfile.createdAt.toISOString(),
+              updated_at: userProfile.updatedAt.toISOString(),
+            }
+          : null
+
+        return {
+          id: psych.id,
+          userId: psych.userId,
+          crp: psych.crp,
+          bio: psych.bio,
+          specialties: psych.specialties,
+          price_per_session: psych.pricePerSession ? Number(psych.pricePerSession) : null,
+          video_presentation_url: psych.videoPresentationUrl,
+          is_verified: psych.isVerified,
+          weekly_schedule: psych.weeklySchedule as WeeklyScheduleData | null,
+          timezone: psych.timezone,
+          academic_level: psych.academicLevel,
+          session_duration: psych.sessionDuration,
+          years_of_experience: psych.yearsOfExperience,
+          university: psych.university,
+          external_scheduling_url: psych.externalSchedulingUrl,
+          monthly_plan_discount: psych.monthlyPlanDiscount,
+          monthly_plan_enabled: psych.monthlyPlanEnabled,
+          monthly_plan_sessions: psych.monthlyPlanSessions,
+          created_at: psych.createdAt.toISOString(),
+          updated_at: psych.updatedAt.toISOString(),
+          profile,
+        }
+      }) as unknown as PsychologistWithProfile[]
+    } catch (error) {
+      logger.error('Failed to load psychologists API/DB:', error)
+      return []
+    }
+  },
+  ['psychologists-search-list-v6'],
+  { revalidate: 3600, tags: ['psychologists'] }
+)
+
+export default async function SearchPage({ params: { locale } }: { params: { locale: string } }) {
+  const psychologists = await getCachedPsychologists()
+  const t = await getTranslations({ locale, namespace: 'SearchPage' })
+
+  return (
+    <div className="min-h-screen flex flex-col bg-white">
+      <main className="flex-1 container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8 max-w-7xl">
+        <div className="mb-5">
+          <div className="flex items-center text-sm text-slate-500 gap-2 px-1">
+            <Link href="/" className="hover:text-orange-600 transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-slate-700 font-medium font-outfit">{t('exploreProfessionals')}</span>
+          </div>
+        </div>
+
+        <SearchClient initialPsychologists={psychologists} />
+      </main>
+
+      <Footer />
+    </div>
+  )
+}

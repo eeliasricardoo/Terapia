@@ -6,8 +6,10 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { CoreUsersIcon, CoreShieldIcon, CoreStarIcon } from '@/components/ui/exclusive-icons'
+import { useTranslations } from 'next-intl'
 
 export function CompaniesHero() {
+  const t = useTranslations('CompaniesPage')
   return (
     <section className="w-full pt-20 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 bg-[#F3F8FF] overflow-hidden relative bg-mesh-blue">
       {/* Animated Aesthetic Blobs - Blue/Indigo themed */}
@@ -26,7 +28,7 @@ export function CompaniesHero() {
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50/80 backdrop-blur-sm border border-blue-200/50 text-blue-800 text-sm font-medium mb-2 shadow-sm"
             >
               <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-              Terapia Corporativa
+              {t('hero.badge')}
             </motion.div>
 
             <div className="space-y-6">
@@ -36,10 +38,10 @@ export function CompaniesHero() {
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl/tight font-outfit"
               >
-                <span className="text-slate-900">Cuide da</span>
+                <span className="text-slate-900">{t('hero.title1')}</span>
                 <br />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-500 to-sky-600">
-                  saúde do seu time.
+                  {t('hero.titleHighlight')}
                 </span>
               </motion.h1>
               <motion.p
@@ -48,8 +50,7 @@ export function CompaniesHero() {
                 transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                 className="text-slate-600 md:text-xl font-light leading-relaxed max-w-[550px] mx-auto lg:mx-0"
               >
-                Reduza o burnout, aumente o engajamento e construa uma cultura de bem-estar com
-                nossa plataforma de terapia corporativa.
+                {t('hero.description')}
               </motion.p>
             </div>
 
@@ -64,14 +65,14 @@ export function CompaniesHero() {
                 size="lg"
                 className="h-16 px-10 text-lg shadow-2xl shadow-blue-600/20 hover:shadow-blue-600/40 transition-all hover:-translate-y-1 bg-gradient-to-br from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 border-0 rounded-2xl"
               >
-                <Link href="#contato">Falar com um consultor</Link>
+                <Link href="#contato">{t('hero.contact')}</Link>
               </Button>
               <Button
                 variant="outline"
                 size="lg"
                 className="h-16 px-10 text-lg border-2 border-slate-200/60 text-slate-700 hover:bg-white hover:border-blue-200 transition-all hover:-translate-y-1 bg-white/40 backdrop-blur-md rounded-2xl"
               >
-                Ver demonstração
+                {t('hero.demo')}
               </Button>
             </motion.div>
 
@@ -83,7 +84,7 @@ export function CompaniesHero() {
             >
               <div className="flex flex-col gap-1">
                 <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mb-2">
-                  Empresas que confiam
+                  {t('hero.trusted')}
                 </p>
                 <div className="flex items-center gap-6 opacity-40 grayscale">
                   <div className="h-6 w-24 bg-slate-400 rounded-md" />
@@ -132,9 +133,9 @@ export function CompaniesHero() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                    Equipe
+                    {t('floatCards.team')}
                   </p>
-                  <p className="text-sm font-bold text-slate-900">+ Engajamento</p>
+                  <p className="text-sm font-bold text-slate-900">{t('floatCards.engagement')}</p>
                 </div>
               </motion.div>
 
@@ -148,9 +149,9 @@ export function CompaniesHero() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                    Resultados
+                    {t('floatCards.results')}
                   </p>
-                  <p className="text-sm font-bold text-white">Relatórios em Tempo Real</p>
+                  <p className="text-sm font-bold text-white">{t('floatCards.reports')}</p>
                 </div>
               </motion.div>
             </div>

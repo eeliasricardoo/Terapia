@@ -54,11 +54,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { PatientData } from '@/lib/actions/patients'
 import { AnamnesisTab } from './AnamnesisTab'
+import { useTranslations } from 'next-intl'
 import { EvolutionsTab } from './EvolutionsTab'
 import { SessionHistoryTab } from './SessionHistoryTab'
 import Link from 'next/link'
 
 export function PatientsManager({ initialPatients }: { initialPatients: PatientData[] }) {
+  const t = useTranslations('PatientsManager')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
@@ -79,8 +81,8 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Pacientes</h2>
-          <p className="text-slate-500">Gerencie seus pacientes e acesse os prontuários.</p>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">{t('title')}</h2>
+          <p className="text-slate-500">{t('subtitle')}</p>
         </div>
       </div>
 
@@ -89,7 +91,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
-            placeholder="Buscar por nome ou email..."
+            placeholder={t('searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9 border-slate-200 bg-slate-50 focus:bg-white transition-colors"
@@ -103,11 +105,11 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
         <Table>
           <TableHeader className="bg-slate-50">
             <TableRow>
-              <TableHead className="w-[300px]">Paciente</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Última Sessão</TableHead>
-              <TableHead>Próxima Sessão</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              <TableHead className="w-[300px]">{t('table.patient')}</TableHead>
+              <TableHead>{t('table.status')}</TableHead>
+              <TableHead>{t('table.lastSession')}</TableHead>
+              <TableHead>{t('table.nextSession')}</TableHead>
+              <TableHead className="text-right">{t('table.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -139,7 +141,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                                             ${patient.status === 'inactive' ? 'bg-slate-100 text-slate-600 border-slate-200' : ''}
                                         `}
                   >
-                    {patient.status === 'active' ? 'Ativo' : 'Inativo'}
+                    {patient.status === 'active' ? t('table.active') : t('table.inactive')}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-slate-600">{patient.lastSession || '-'}</TableCell>
@@ -150,7 +152,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                       {patient.nextSession}
                     </div>
                   ) : (
-                    <span className="text-slate-400 text-sm italic">Não agendada</span>
+                    <span className="text-slate-400 text-sm italic">{t('table.notScheduled')}</span>
                   )}
                 </TableCell>
                 <TableCell className="text-right">
@@ -202,7 +204,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                         variant="secondary"
                         className="bg-white border border-slate-200 text-slate-700 shadow-sm font-medium"
                       >
-                        {selectedPatient.totalSessions} Sessões
+                        {t('sheet.sessionsCount', { count: selectedPatient.totalSessions })}
                       </Badge>
                       <Link
                         href={`/dashboard/pacientes/${selectedPatient.id}`}
@@ -210,7 +212,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                         onClick={() => setIsSheetOpen(false)}
                       >
                         <ChevronRight className="h-3 w-3" />
-                        Ver perfil completo
+                        {t('sheet.viewProfile')}
                       </Link>
                     </div>
                   </div>
@@ -220,19 +222,19 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                       value="records"
                       className="px-1 pb-3 text-sm font-medium text-slate-500 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none transition-all"
                     >
-                      Prontuário & Anotações
+                      {t('sheet.tabs.records')}
                     </TabsTrigger>
                     <TabsTrigger
                       value="history"
                       className="px-1 pb-3 text-sm font-medium text-slate-500 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none transition-all"
                     >
-                      Histórico de Sessões
+                      {t('sheet.tabs.history')}
                     </TabsTrigger>
                     <TabsTrigger
                       value="info"
                       className="px-1 pb-3 text-sm font-medium text-slate-500 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none transition-all"
                     >
-                      Dados Pessoais
+                      {t('sheet.tabs.info')}
                     </TabsTrigger>
                   </TabsList>
                 </div>
@@ -250,19 +252,19 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                             value="evolution"
                             className="text-xs px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all"
                           >
-                            Evoluções
+                            {t('sheet.evolution')}
                           </TabsTrigger>
                           <TabsTrigger
                             value="anamnesis"
                             className="text-xs px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all"
                           >
-                            Anamnese
+                            {t('sheet.anamnesis')}
                           </TabsTrigger>
                           <TabsTrigger
                             value="files"
                             className="text-xs px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all"
                           >
-                            Arquivos
+                            {t('sheet.files')}
                           </TabsTrigger>
                         </TabsList>
                       </div>
@@ -282,13 +284,13 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                               <FilePlus className="h-6 w-6 text-slate-400" />
                             </div>
                             <h3 className="text-sm font-medium text-slate-900">
-                              Nenhum arquivo anexado
+                              {t('sheet.noFiles')}
                             </h3>
                             <p className="text-xs text-slate-500 mt-1 mb-4 text-center max-w-[200px]">
-                              Faça upload de exames, encaminhamentos ou documentos assinados.
+                              {t('sheet.uploadDesc')}
                             </p>
                             <Button size="sm" variant="outline">
-                              Fazer Upload
+                              {t('sheet.uploadBtn')}
                             </Button>
                           </div>
                         </TabsContent>
@@ -308,13 +310,15 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                     className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-slate-900 text-lg">Ficha Cadastral</h3>
+                      <h3 className="font-semibold text-slate-900 text-lg">
+                        {t('sheet.cadastralForm')}
+                      </h3>
                       <Button
                         variant="ghost"
                         size="sm"
                         className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                       >
-                        Editar Dados
+                        {t('sheet.editData')}
                       </Button>
                     </div>
 
@@ -322,7 +326,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                            Nome Completo
+                            {t('sheet.fields.fullName')}
                           </label>
                           <Input
                             defaultValue={selectedPatient.name}
@@ -332,7 +336,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                         </div>
                         <div className="space-y-2">
                           <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                            CPF
+                            {t('sheet.fields.document')}
                           </label>
                           <Input
                             defaultValue={selectedPatient.document || ''}
@@ -345,7 +349,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                            Data de Nascimento
+                            {t('sheet.fields.birthDate')}
                           </label>
                           <Input
                             defaultValue={selectedPatient.birthDate || ''}
@@ -355,7 +359,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                         </div>
                         <div className="space-y-2">
                           <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                            Gênero
+                            {t('sheet.fields.gender')}
                           </label>
                           <Input
                             defaultValue={selectedPatient.gender || ''}
@@ -367,7 +371,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
 
                       <div className="space-y-2">
                         <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                          Email
+                          {t('sheet.fields.email')}
                         </label>
                         <Input
                           defaultValue={selectedPatient.email}
@@ -379,7 +383,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                            Telefone
+                            {t('sheet.fields.phone')}
                           </label>
                           <Input
                             defaultValue={selectedPatient.phone}
@@ -389,7 +393,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
                         </div>
                         <div className="space-y-2">
                           <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                            Profissão
+                            {t('sheet.fields.profession')}
                           </label>
                           <Input
                             defaultValue={selectedPatient.profession || ''}
@@ -401,7 +405,7 @@ export function PatientsManager({ initialPatients }: { initialPatients: PatientD
 
                       <div className="space-y-2">
                         <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                          Endereço
+                          {t('sheet.fields.address')}
                         </label>
                         <Input
                           defaultValue={selectedPatient.address?.line || ''}

@@ -21,7 +21,7 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "db:test": "node scripts/test-db-connection.js",
+    "db:test": "node scripts/check-db.js",
     "prepare": "husky"
   },
   "prisma": {
@@ -70,6 +70,7 @@
     "jotai": "^2.19.0",
     "lucide-react": "^0.555.0",
     "next": "^15.5.14",
+    "next-intl": "^4.8.4",
     "next-themes": "^0.3.0",
     "nodemailer": "^8.0.4",
     "pusher": "5.3.3",

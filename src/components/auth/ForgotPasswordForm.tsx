@@ -14,7 +14,8 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import { requestPasswordReset } from '@/lib/actions/auth'
 import { toast } from 'sonner'
 import * as z from 'zod'
@@ -27,6 +28,7 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>
 
 export function ForgotPasswordForm() {
+  const t = useTranslations('Auth.forgotPassword')
   const [isPending, startTransition] = useTransition()
   const [isSent, setIsSent] = useState(false)
 
@@ -42,13 +44,13 @@ export function ForgotPasswordForm() {
       try {
         const result = await requestPasswordReset(values.email)
         if (!result.success) {
-          toast.error(result.error || 'Erro ao enviar e-mail de recuperação.')
+          toast.error(result.error || t('errors.apiError'))
         } else {
           setIsSent(true)
-          toast.success('E-mail de recuperação enviado!')
+          toast.success(t('success'))
         }
       } catch {
-        toast.error('Erro ao processar solicitação.')
+        toast.error(t('errors.generic'))
       }
     })
   }
@@ -57,14 +59,14 @@ export function ForgotPasswordForm() {
     return (
       <Card className="mx-auto max-w-md w-full">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Verifique seu e-mail</CardTitle>
+          <CardTitle className="text-2xl font-bold">{t('successTitle')}</CardTitle>
           <CardDescription>
-            Enviamos as instruções para recuperação de senha para o seu e-mail.
+            {t('successDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <Button asChild className="w-full">
-            <Link href="/login/paciente">Voltar para o login</Link>
+            <Link href="/login/paciente">{t('backToLogin')}</Link>
           </Button>
         </CardContent>
       </Card>
@@ -79,12 +81,12 @@ export function ForgotPasswordForm() {
             href="/login/paciente"
             className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2"
           >
-            <ArrowLeft className="h-4 w-4" /> Voltar para o login
+            <ArrowLeft className="h-4 w-4" /> {t('backToLogin')}
           </Link>
         </div>
-        <CardTitle className="text-2xl font-bold">Recuperar senha</CardTitle>
+        <CardTitle className="text-2xl font-bold">{t('title')}</CardTitle>
         <CardDescription>
-          Informe seu e-mail para receber as instruções de recuperação.
+          {t('description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -95,9 +97,9 @@ export function ForgotPasswordForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t('email')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="seu@email.com" {...field} />
+                    <Input placeholder={t('emailPlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -107,10 +109,10 @@ export function ForgotPasswordForm() {
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enviando...
+                  {t('submitting')}
                 </>
               ) : (
-                'Enviar instruções'
+                t('submit')
               )}
             </Button>
           </form>

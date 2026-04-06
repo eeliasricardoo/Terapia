@@ -9,6 +9,7 @@ import {
   CoreClockIcon,
 } from '@/components/ui/exclusive-icons'
 import { motion, Variants } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 const fadeIn: Variants = {
   initial: { opacity: 0, y: 40 },
@@ -26,25 +27,23 @@ const staggerContainer: Variants = {
 }
 
 export function ProfessionalsFeatures() {
+  const t = useTranslations('ProfessionalsPage')
   const features = [
     {
-      title: 'Plataforma Completa',
-      description:
-        'Gestão de agenda, prontuários eletrônicos e faturamento em um único dashboard intuitivo.',
+      title: t('features.platform.title'),
+      description: t('features.platform.desc'),
       icon: <CoreShieldIcon className="h-10 w-10 text-indigo-600" />,
       bg: 'bg-indigo-50',
     },
     {
-      title: 'Atendimento Online',
-      description:
-        'Sala de vídeo própria com criptografia de ponta a ponta, sem necessidade de softwares externos.',
+      title: t('features.online.title'),
+      description: t('features.online.desc'),
       icon: <CoreVideoIcon className="h-10 w-10 text-blue-600" />,
       bg: 'bg-blue-50',
     },
     {
-      title: 'Remuneração Justa',
-      description:
-        'Processo de repasse transparente e rápido. Defina seus horários e receba por cada sessão realizada.',
+      title: t('features.payment.title'),
+      description: t('features.payment.desc'),
       icon: <CoreClockIcon className="h-10 w-10 text-violet-600" />,
       bg: 'bg-violet-50',
     },
@@ -64,11 +63,10 @@ export function ProfessionalsFeatures() {
           className="text-center mb-20 space-y-4"
         >
           <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900">
-            Sua clínica, agora digital e escalável
+            {t('features.sectionTitle')}
           </h2>
           <p className="text-xl text-slate-500 max-w-2xl mx-auto font-light">
-            Focamos na tecnologia para que você possa focar no que mais importa: o cuidado com seus
-            pacientes.
+            {t('features.sectionDesc')}
           </p>
         </motion.div>
 

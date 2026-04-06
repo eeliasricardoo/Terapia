@@ -36,11 +36,12 @@ import {
   Users,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { ptBR } from 'date-fns/locale'
+import { ptBR, es } from 'date-fns/locale'
 import { format } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { WeeklyScheduleData } from '@/lib/validations/availability'
+import { useTranslations, useLocale } from 'next-intl'
 
 // --- Types ---
 
@@ -77,15 +78,7 @@ type ScheduledAppointment = {
 
 // --- Constants ---
 
-const DAYS_OF_WEEK = [
-  { id: 'monday', label: 'Segunda', fullLabel: 'Segunda-feira' },
-  { id: 'tuesday', label: 'Terça', fullLabel: 'Terça-feira' },
-  { id: 'wednesday', label: 'Quarta', fullLabel: 'Quarta-feira' },
-  { id: 'thursday', label: 'Quinta', fullLabel: 'Quinta-feira' },
-  { id: 'friday', label: 'Sexta', fullLabel: 'Sexta-feira' },
-  { id: 'saturday', label: 'Sábado', fullLabel: 'Sábado' },
-  { id: 'sunday', label: 'Domingo', fullLabel: 'Domingo' },
-]
+// DAYS_OF_WEEK will be inside the component to use translations
 
 const HOURS = Array.from({ length: 24 }).map((_, i) => i.toString().padStart(2, '0') + ':00')
 
@@ -108,6 +101,20 @@ const TIMEZONES = [
 ]
 
 export function ScheduleManager() {
+  const t = useTranslations('ScheduleManager')
+  const locale = useLocale()
+  const dateLocale = locale === 'es' ? es : ptBR
+
+  const DAYS_OF_WEEK = [
+    { id: 'monday', label: t('days.mondayShort'), fullLabel: t('days.monday') },
+    { id: 'tuesday', label: t('days.tuesdayShort'), fullLabel: t('days.tuesday') },
+    { id: 'wednesday', label: t('days.wednesdayShort'), fullLabel: t('days.wednesday') },
+    { id: 'thursday', label: t('days.thursdayShort'), fullLabel: t('days.thursday') },
+    { id: 'friday', label: t('days.fridayShort'), fullLabel: t('days.friday') },
+    { id: 'saturday', label: t('days.saturdayShort'), fullLabel: t('days.saturday') },
+    { id: 'sunday', label: t('days.sundayShort'), fullLabel: t('days.sunday') },
+  ]
+
   // --- State ---
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [isLoading, setIsLoading] = useState(false)
@@ -373,7 +380,7 @@ export function ScheduleManager() {
     const key = format(selectedDate, 'yyyy-MM-dd')
     const { [key]: deleted, ...rest } = overrides
     setOverrides(rest)
-    toast('Restaurado para padrão', { description: 'Usando a configuração semanal.' })
+    toast(t('restoreDefault'))
   }
 
   const handleCustomSlotChange = (index: number, field: 'start' | 'end', value: string) => {
@@ -430,8 +437,8 @@ export function ScheduleManager() {
 
   const handleSave = async () => {
     if (hasAnyOverlap()) {
-      toast.error('Janelas sobrepostas', {
-        description: 'Corrija os horários conflitantes antes de salvar.',
+      toast.error(t('conflictError'), {
+        description: t('conflictErrorDesc'),
       })
       return
     }
@@ -449,14 +456,14 @@ export function ScheduleManager() {
       })
 
       if (result.success) {
-        toast.success('Alterações salvas!', { description: 'Sua disponibilidade foi atualizada.' })
+        toast.success(t('saveSuccess'), { description: t('saveSuccessDesc') })
       } else {
         throw new Error(result.error)
       }
     } catch (error) {
       logger.error('Error saving schedule changes:', error)
-      toast.error('Erro ao salvar', {
-        description: error instanceof Error ? error.message : 'Tente novamente mais tarde.',
+      toast.error(t('saveError'), {
+        description: error instanceof Error ? error.message : 'Error',
       })
     } finally {
       setIsLoading(false)
@@ -493,46 +500,44 @@ export function ScheduleManager() {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5 h-9 border-slate-200 text-slate-700">
           <Settings2 className="h-3.5 w-3.5" />
-          Rotina Semanal
+          {t('weeklyRoutine')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Configurações da Agenda</DialogTitle>
-          <DialogDescription>
-            Defina os horários base e a duração das suas sessões.
-          </DialogDescription>
+          <DialogTitle>{t('routineConfigTitle')}</DialogTitle>
+          <DialogDescription>{t('routineConfigDesc')}</DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-4 py-4 border-b border-slate-100 mb-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Duração da Sessão</label>
+            <label className="text-sm font-medium text-slate-700">{t('sessionDuration')}</label>
             <Select value={sessionDuration} onValueChange={setSessionDuration}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione..." />
+                <SelectValue placeholder="..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="30">30 minutos</SelectItem>
-                <SelectItem value="45">45 minutos</SelectItem>
-                <SelectItem value="50">50 minutos</SelectItem>
-                <SelectItem value="60">60 minutos</SelectItem>
-                <SelectItem value="90">90 minutos</SelectItem>
+                <SelectItem value="30">{t('minutes', { count: 30 })}</SelectItem>
+                <SelectItem value="45">{t('minutes', { count: 45 })}</SelectItem>
+                <SelectItem value="50">{t('minutes', { count: 50 })}</SelectItem>
+                <SelectItem value="60">{t('minutes', { count: 60 })}</SelectItem>
+                <SelectItem value="90">{t('minutes', { count: 90 })}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Intervalo entre Sessões</label>
+            <label className="text-sm font-medium text-slate-700">{t('breakDuration')}</label>
             <Select value={breakDuration} onValueChange={setBreakDuration}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione..." />
+                <SelectValue placeholder="..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0">Sem intervalo</SelectItem>
-                <SelectItem value="5">5 minutos</SelectItem>
-                <SelectItem value="10">10 minutos</SelectItem>
-                <SelectItem value="15">15 minutos</SelectItem>
-                <SelectItem value="20">20 minutos</SelectItem>
-                <SelectItem value="30">30 minutos</SelectItem>
+                <SelectItem value="0">{t('noBreak')}</SelectItem>
+                <SelectItem value="5">{t('minutes', { count: 5 })}</SelectItem>
+                <SelectItem value="10">{t('minutes', { count: 10 })}</SelectItem>
+                <SelectItem value="15">{t('minutes', { count: 15 })}</SelectItem>
+                <SelectItem value="20">{t('minutes', { count: 20 })}</SelectItem>
+                <SelectItem value="30">{t('minutes', { count: 30 })}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -569,7 +574,9 @@ export function ScheduleManager() {
                       {day.fullLabel}
                     </span>
                   </div>
-                  {!isAvailable && <span className="text-xs text-slate-400">Indisponível</span>}
+                  {!isAvailable && (
+                    <span className="text-xs text-slate-400">{t('unavailable')}</span>
+                  )}
                 </div>
 
                 {isAvailable && (
@@ -625,7 +632,7 @@ export function ScheduleManager() {
                       className="text-primary hover:text-primary/90 hover:bg-primary/10 text-xs h-7 px-2 gap-1"
                       onClick={() => handleWeeklyAddSlot(day.id)}
                     >
-                      <Plus className="h-3 w-3" /> Adicionar intervalo
+                      <Plus className="h-3 w-3" /> {t('addInterval')}
                     </Button>
                   </div>
                 )}
@@ -635,7 +642,7 @@ export function ScheduleManager() {
         </div>
         <DialogFooter>
           <Button onClick={() => setIsWeeklyConfigOpen(false)} className="bg-slate-900 text-white">
-            Concluir
+            {t('finish')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -647,16 +654,14 @@ export function ScheduleManager() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">Gerenciar Agenda</h2>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Controle seus dias e horários de atendimento
-          </p>
+          <h2 className="text-xl font-semibold text-slate-900">{t('title')}</h2>
+          <p className="text-sm text-slate-500 mt-0.5">{t('subtitle')}</p>
         </div>
 
         <div className="flex items-center gap-2">
           <Select value={timezone} onValueChange={setTimezone}>
             <SelectTrigger className="w-[160px] h-9 text-xs border-slate-200">
-              <SelectValue placeholder="Fuso..." />
+              <SelectValue placeholder={t('timezonePlaceholder')} />
             </SelectTrigger>
             <SelectContent>
               {TIMEZONES.map((tz) => (
@@ -676,14 +681,14 @@ export function ScheduleManager() {
             )}
             variant={hasConflicts ? 'outline' : 'default'}
             disabled={isLoading}
-            title={hasConflicts ? 'Existem janelas com horários conflitantes' : undefined}
+            title={hasConflicts ? t('conflictError') : undefined}
           >
             {hasConflicts ? (
               <AlertCircle className="h-3.5 w-3.5" />
             ) : (
               <Save className="h-3.5 w-3.5" />
             )}
-            {isLoading ? 'Salvando...' : hasConflicts ? 'Conflito' : 'Salvar'}
+            {isLoading ? t('saving') : hasConflicts ? t('conflict') : t('save')}
           </Button>
         </div>
       </div>
@@ -695,7 +700,7 @@ export function ScheduleManager() {
           <CardHeader className="border-b border-slate-100 py-3 px-5">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-slate-500">
               <CalendarIcon className="h-4 w-4" />
-              Visão Mensal
+              {t('monthlyView')}
             </CardTitle>
           </CardHeader>
           <div className="p-4 flex justify-center items-start">
@@ -761,11 +766,11 @@ export function ScheduleManager() {
           </div>
           <div className="border-t border-slate-100 px-4 py-3 flex flex-wrap items-center justify-center gap-3 sm:gap-5">
             {[
-              { color: 'bg-blue-500', label: 'Padrão' },
-              { color: 'bg-indigo-500', label: 'Personalizado' },
-              { color: 'bg-slate-200', label: 'Dia livre' },
-              { color: 'bg-red-400', label: 'Folga' },
-              { color: 'bg-emerald-500', label: 'Agendamento' },
+              { color: 'bg-blue-500', label: t('legend.standard') },
+              { color: 'bg-indigo-500', label: t('legend.custom') },
+              { color: 'bg-slate-200', label: t('legend.freeDay') },
+              { color: 'bg-red-400', label: t('legend.dayOff') },
+              { color: 'bg-emerald-500', label: t('legend.appointment') },
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-1.5 text-xs text-slate-500">
                 <div className={cn('h-1.5 w-1.5 rounded-full', color)} />
@@ -782,10 +787,8 @@ export function ScheduleManager() {
               <div className="h-14 w-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
                 <CalendarIcon className="h-7 w-7 text-slate-400" />
               </div>
-              <p className="font-semibold text-slate-600">Selecione um dia</p>
-              <p className="text-sm text-slate-400 mt-1 max-w-[180px]">
-                Clique em uma data para gerenciar os horários.
-              </p>
+              <p className="font-semibold text-slate-600">{t('selectDay')}</p>
+              <p className="text-sm text-slate-400 mt-1 max-w-[180px]">{t('selectDayDesc')}</p>
             </div>
           ) : (
             <>
@@ -811,15 +814,15 @@ export function ScheduleManager() {
                   >
                     {effective?.type === 'blocked' ? (
                       <>
-                        <Ban className="h-3 w-3" /> Folga
+                        <Ban className="h-3 w-3" /> {t('badgeDayOff')}
                       </>
                     ) : effective?.type === 'custom' ? (
                       <>
-                        <Settings2 className="h-3 w-3" /> Personalizado
+                        <Settings2 className="h-3 w-3" /> {t('badgeCustom')}
                       </>
                     ) : (
                       <>
-                        <Clock className="h-3 w-3" /> Rotina semanal
+                        <Clock className="h-3 w-3" /> {t('badgeRoutine')}
                       </>
                     )}
                   </span>
@@ -829,21 +832,21 @@ export function ScheduleManager() {
                       className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors"
                     >
                       <RotateCcw className="h-3 w-3" />
-                      Restaurar padrão
+                      {t('restoreDefault')}
                     </button>
                   )}
                 </div>
 
                 <div className="flex items-end gap-2.5">
                   <span className="text-4xl font-bold text-slate-900 leading-none">
-                    {format(selectedDate, 'dd', { locale: ptBR })}
+                    {format(selectedDate, 'dd', { locale: dateLocale })}
                   </span>
                   <div className="pb-0.5">
                     <p className="text-sm font-semibold text-slate-700 capitalize">
-                      {format(selectedDate, 'MMMM yyyy', { locale: ptBR })}
+                      {format(selectedDate, 'MMMM yyyy', { locale: dateLocale })}
                     </p>
                     <p className="text-xs text-slate-400 capitalize">
-                      {format(selectedDate, 'EEEE', { locale: ptBR })}
+                      {format(selectedDate, 'EEEE', { locale: dateLocale })}
                     </p>
                   </div>
                 </div>
@@ -856,17 +859,15 @@ export function ScheduleManager() {
                     <div className="h-12 w-12 bg-red-50 rounded-2xl flex items-center justify-center mb-3 border border-red-100">
                       <Ban className="h-6 w-6 text-red-400" />
                     </div>
-                    <p className="font-semibold text-slate-700">Dia de folga</p>
-                    <p className="text-sm text-slate-400 mt-1 max-w-[200px]">
-                      Nenhum horário disponível para seus pacientes.
-                    </p>
+                    <p className="font-semibold text-slate-700">{t('dayOffTitle')}</p>
+                    <p className="text-sm text-slate-400 mt-1 max-w-[200px]">{t('dayOffDesc')}</p>
                     <Button
                       variant="outline"
                       size="sm"
                       className="mt-4 border-slate-200 text-slate-600 hover:text-slate-900"
                       onClick={handleResetOverride}
                     >
-                      Ativar dia
+                      {t('activateDay')}
                     </Button>
                   </div>
                 ) : (
@@ -875,7 +876,7 @@ export function ScheduleManager() {
                     {effectiveOverlapping.size > 0 && (
                       <div className="mx-4 mt-4 flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 font-medium">
                         <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                        Janelas sobrepostas — corrija antes de salvar
+                        {t('conflictWarning')}
                       </div>
                     )}
 
@@ -884,19 +885,18 @@ export function ScheduleManager() {
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
                           <Clock className="h-3.5 w-3.5 text-slate-400" />
-                          Janelas de atendimento
+                          {t('attendanceWindows')}
                         </span>
                         {(effective?.slots?.length || 0) > 0 && (
                           <span className="text-xs text-slate-400">
-                            {effective?.slots?.length} bloco
-                            {(effective?.slots?.length || 0) !== 1 ? 's' : ''}
+                            {t('blocks', { count: effective?.slots?.length || 0 })}
                           </span>
                         )}
                       </div>
 
                       {(effective?.slots?.length || 0) === 0 ? (
                         <div className="text-center py-6 border border-dashed border-slate-200 rounded-lg">
-                          <p className="text-xs text-slate-400">Sem janelas definidas</p>
+                          <p className="text-xs text-slate-400">{t('noWindows')}</p>
                         </div>
                       ) : (
                         <div className="space-y-2">
@@ -967,7 +967,7 @@ export function ScheduleManager() {
                                     </Select>
                                     {isConflict && (
                                       <span className="text-xs text-red-500 font-medium shrink-0">
-                                        Conflito
+                                        {t('conflictLabel')}
                                       </span>
                                     )}
                                     <div className="flex-1" />
@@ -986,7 +986,9 @@ export function ScheduleManager() {
                                     <span className="text-sm font-semibold text-slate-800">
                                       {slot.start} — {slot.end}
                                     </span>
-                                    <span className="text-xs text-slate-400 ml-auto">Regular</span>
+                                    <span className="text-xs text-slate-400 ml-auto">
+                                      {t('regular')}
+                                    </span>
                                   </>
                                 )}
                               </div>
@@ -1001,15 +1003,15 @@ export function ScheduleManager() {
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
                           <Users className="h-3.5 w-3.5 text-slate-400" />
-                          Slots gerados
+                          {t('generatedSlots')}
                         </span>
                         <span className="text-xs font-medium text-emerald-600">
-                          {getGeneratedSlots(selectedDate!).length} vagas
+                          {t('vacancies', { count: getGeneratedSlots(selectedDate!).length })}
                         </span>
                       </div>
 
                       {getGeneratedSlots(selectedDate!).length === 0 ? (
-                        <p className="text-xs text-slate-400 py-1">Nenhum slot disponível.</p>
+                        <p className="text-xs text-slate-400 py-1">{t('noSlots')}</p>
                       ) : (
                         <div className="flex flex-wrap gap-1.5">
                           {getGeneratedSlots(selectedDate!).map((time) => {
@@ -1037,7 +1039,7 @@ export function ScheduleManager() {
                         </div>
                       )}
                       <p className="text-xs text-slate-400">
-                        Sessão de {sessionDuration}min · Intervalo de {breakDuration}min
+                        {t('sessionOf', { duration: sessionDuration, break: breakDuration })}
                       </p>
                     </div>
 
@@ -1048,7 +1050,7 @@ export function ScheduleManager() {
                       <div className="p-4 space-y-2">
                         <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
                           <Users className="h-3.5 w-3.5 text-slate-400" />
-                          Agendamentos
+                          {t('appointments')}
                         </span>
                         <div className="space-y-1.5">
                           {appointments
@@ -1134,14 +1136,14 @@ export function ScheduleManager() {
                         onClick={() => handleOverride('custom')}
                       >
                         <Settings2 className="h-3.5 w-3.5" />
-                        Personalizar dia
+                        {t('customizeDay')}
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         className="h-9 px-3 border-slate-200 text-slate-400 hover:border-red-200 hover:text-red-500 hover:bg-red-50 bg-white"
                         onClick={() => handleOverride('blocked')}
-                        title="Marcar folga"
+                        title={t('markDayOff')}
                       >
                         <Ban className="h-3.5 w-3.5" />
                       </Button>
@@ -1154,7 +1156,7 @@ export function ScheduleManager() {
                       onClick={handleAddCustomSlot}
                     >
                       <Plus className="h-3.5 w-3.5" />
-                      Adicionar janela
+                      {t('addWindow')}
                     </Button>
                   ) : null}
                 </div>

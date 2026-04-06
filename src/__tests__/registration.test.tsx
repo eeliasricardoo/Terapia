@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import RegistrationPage from '../app/(marketing)/cadastro/paciente/page'
+import RegistrationPage from '../app/[locale]/(marketing)/cadastro/paciente/page'
 import '@testing-library/jest-dom'
 
 import { useRouter, useSearchParams } from 'next/navigation'

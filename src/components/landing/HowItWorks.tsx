@@ -2,6 +2,7 @@
 
 import { motion, Variants } from 'framer-motion'
 import { Search, CalendarDays, Video, Heart } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 const fadeIn: Variants = {
   initial: { opacity: 0, y: 30 },
@@ -13,38 +14,36 @@ const stagger: Variants = {
   animate: { transition: { staggerChildren: 0.15 } },
 }
 
-const steps = [
+const stepsData = [
   {
     icon: Search,
-    title: 'Busque',
-    description: 'Encontre o profissional ideal por especialidade, abordagem ou afinidade.',
+    key: 'search',
     accent: 'bg-sentirz-teal',
     lightAccent: 'bg-sentirz-teal-pastel text-sentirz-teal',
   },
   {
     icon: CalendarDays,
-    title: 'Agende',
-    description: 'Escolha o melhor dia e horário diretamente na agenda do psicólogo.',
+    key: 'schedule',
     accent: 'bg-sentirz-green',
     lightAccent: 'bg-sentirz-green-pastel text-sentirz-green',
   },
   {
     icon: Video,
-    title: 'Conecte-se',
-    description: 'Entre na sessão online com vídeo de alta qualidade, direto do navegador.',
+    key: 'connect',
     accent: 'bg-sentirz-orange',
     lightAccent: 'bg-sentirz-orange-pastel text-sentirz-orange',
   },
   {
     icon: Heart,
-    title: 'Evolua',
-    description: 'Acompanhe seu progresso e construa uma jornada de autoconhecimento.',
+    key: 'evolve',
     accent: 'bg-sentirz-teal',
     lightAccent: 'bg-sentirz-teal-pastel text-sentirz-teal',
   },
 ]
 
 export function HowItWorks() {
+  const t = useTranslations('HowItWorks')
+
   return (
     <section className="w-full py-16 md:py-24 bg-background relative overflow-hidden">
       {/* Decorative dots */}
@@ -65,19 +64,19 @@ export function HowItWorks() {
               variants={fadeIn}
               className="text-xs font-semibold text-foreground/40 uppercase tracking-[0.2em]"
             >
-              Simples e rápido
+              {t('badge')}
             </motion.p>
             <motion.h2
               variants={fadeIn}
               className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground font-outfit"
             >
-              Como funciona?
+              {t('title')}
             </motion.h2>
             <motion.p
               variants={fadeIn}
               className="text-lg text-foreground/60 max-w-md mx-auto leading-relaxed"
             >
-              Em poucos passos você já estará cuidando de si.
+              {t('description')}
             </motion.p>
           </div>
 
@@ -90,7 +89,7 @@ export function HowItWorks() {
             />
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-6">
-              {steps.map((step, i) => (
+              {stepsData.map((step, i) => (
                 <motion.div
                   key={i}
                   variants={fadeIn}
@@ -113,9 +112,9 @@ export function HowItWorks() {
 
                   {/* Text */}
                   <div className="space-y-2">
-                    <h3 className="text-lg font-bold text-foreground">{step.title}</h3>
+                    <h3 className="text-lg font-bold text-foreground">{t(`steps.${step.key}.title`)}</h3>
                     <p className="text-sm text-foreground/60 leading-relaxed max-w-[200px] mx-auto">
-                      {step.description}
+                      {t(`steps.${step.key}.desc`)}
                     </p>
                   </div>
                 </motion.div>

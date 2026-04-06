@@ -9,6 +9,7 @@ import {
   CoreClockIcon,
 } from '@/components/ui/exclusive-icons'
 import { motion, Variants } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 const fadeIn: Variants = {
   initial: { opacity: 0, y: 40 },
@@ -26,25 +27,23 @@ const staggerContainer: Variants = {
 }
 
 export function CompaniesFeatures() {
+  const t = useTranslations('CompaniesPage')
   const features = [
     {
-      title: 'Terapia para Colaboradores',
-      description:
-        'Acesso facilitado a sessões individuais com psicólogos qualificados para todo o seu time.',
+      title: t('features.therapy.title'),
+      description: t('features.therapy.desc'),
       icon: <CoreHeartIcon className="h-10 w-10 text-blue-600" />,
       bg: 'bg-blue-50',
     },
     {
-      title: 'Palestras e Workshops',
-      description:
-        'Sessões em grupo sobre saúde mental, gestão de estresse e comunicação não-violenta.',
+      title: t('features.workshops.title'),
+      description: t('features.workshops.desc'),
       icon: <CoreUsersIcon className="h-10 w-10 text-indigo-600" />,
       bg: 'bg-indigo-50',
     },
     {
-      title: 'Relatórios de Impacto',
-      description:
-        'Acompanhe a evolução do bem-estar do seu time de forma anônima e segura com dados acionáveis.',
+      title: t('features.reports.title'),
+      description: t('features.reports.desc'),
       icon: <CoreShieldIcon className="h-10 w-10 text-sky-600" />,
       bg: 'bg-sky-50',
     },
@@ -64,11 +63,10 @@ export function CompaniesFeatures() {
           className="text-center mb-20 space-y-4"
         >
           <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900">
-            Como funciona a MindCare Business
+            {t('features.sectionTitle')}
           </h2>
           <p className="text-xl text-slate-500 max-w-2xl mx-auto font-light">
-            Uma solução completa e integrada para transformar a cultura de saúde mental da sua
-            organização.
+            {t('features.sectionDesc')}
           </p>
         </motion.div>
 

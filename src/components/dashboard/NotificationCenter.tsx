@@ -12,11 +12,16 @@ import {
   markAllAsRead,
 } from '@/lib/actions/notifications'
 import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { ptBR, es } from 'date-fns/locale'
 import Link from 'next/link'
 import { toast } from 'sonner'
+import { useTranslations, useLocale } from 'next-intl'
 
 export function NotificationCenter() {
+  const t = useTranslations('DashboardLayout.notifications')
+  const locale = useLocale()
+  const dateLocale = locale === 'es' ? es : ptBR
+
   const [notifications, setNotifications] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isOpen, setIsOpen] = useState(false)
@@ -61,9 +66,9 @@ export function NotificationCenter() {
     const res = await markAllAsRead()
     if (!res.success) {
       setNotifications(original)
-      toast.error('Erro ao marcar como lidas')
+      toast.error(t('errorMarkAll'))
     } else {
-      toast.success('Todas as notificações marcadas como lidas')
+      toast.success(t('successMarkAll'))
     }
   }
 
@@ -74,7 +79,7 @@ export function NotificationCenter() {
           variant="ghost"
           size="icon"
           className="rounded-full relative opacity-70 hover:opacity-100 transition-opacity"
-          aria-label="Notificações"
+          aria-label={t('title')}
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
@@ -92,7 +97,7 @@ export function NotificationCenter() {
         <div className="flex items-center justify-between p-4 border-b border-slate-50 bg-slate-50/50">
           <h3 className="font-bold text-slate-900 flex items-center gap-2">
             <Inbox className="h-4 w-4 text-slate-400" />
-            Notificações
+            {t('title')}
           </h3>
           {unreadCount > 0 && (
             <Button
@@ -101,7 +106,7 @@ export function NotificationCenter() {
               onClick={handleMarkAllAsRead}
               className="text-[10px] uppercase tracking-wider font-bold h-7 px-2 hover:bg-slate-100"
             >
-              Ler todas
+              {t('markAllRead')}
             </Button>
           )}
         </div>
@@ -110,17 +115,15 @@ export function NotificationCenter() {
           {loading ? (
             <div className="flex flex-col items-center justify-center p-12 text-slate-400 gap-3">
               <Loader2 className="h-6 w-6 animate-spin" />
-              <p className="text-xs font-medium">Carregando...</p>
+              <p className="text-xs font-medium">{t('loading')}</p>
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 text-center">
               <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
                 <Bell className="h-6 w-6 text-slate-300" />
               </div>
-              <p className="text-sm font-medium text-slate-900">Tudo limpo!</p>
-              <p className="text-xs text-slate-500 mt-1">
-                Você não tem novas notificações por enquanto.
-              </p>
+              <p className="text-sm font-medium text-slate-900">{t('emptyTitle')}</p>
+              <p className="text-xs text-slate-500 mt-1">{t('emptyDesc')}</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-50">
@@ -152,7 +155,7 @@ export function NotificationCenter() {
                         <span className="text-[10px] text-slate-400 font-medium">
                           {formatDistanceToNow(new Date(notification.createdAt), {
                             addSuffix: true,
-                            locale: ptBR,
+                            locale: dateLocale,
                           })}
                         </span>
                         {notification.link && (
@@ -161,7 +164,7 @@ export function NotificationCenter() {
                             onClick={() => handleMarkAsRead(notification.id)}
                             className="text-[10px] font-bold text-blue-600 flex items-center gap-1 hover:underline"
                           >
-                            Ver detalhes
+                            {t('viewDetails')}
                             <ExternalLink className="h-2.5 w-2.5" />
                           </Link>
                         )}

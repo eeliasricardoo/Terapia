@@ -1,4 +1,4 @@
-import { uploadProfileImage, updateUserProfile } from '../app/dashboard/perfil/actions'
+import { uploadProfileImage, updateUserProfile } from '../app/[locale]/dashboard/perfil/actions'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'

@@ -5,7 +5,8 @@ import { useState, useTransition } from 'react'
 import { cn } from '@/lib/utils'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -21,7 +22,7 @@ import { PasswordInput } from '@/components/ui/password-input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { PhoneInput } from '@/components/ui/phone-input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react'
 import { registrationSchema, type RegistrationInput } from '@/lib/validations/registration'
 import { toast } from 'sonner'
@@ -38,9 +39,11 @@ import { registerPatientSupabase } from '@/lib/actions/auth'
 import { auth } from '@/lib/supabase/auth'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { useRef } from 'react'
+import { useTranslations } from 'next-intl'
 
 export function RegistrationForm() {
   const router = useRouter()
+  const t = useTranslations('Auth.patientRegistration')
   const searchParams = useSearchParams()
   const returnTo = searchParams.get('returnTo')
   const [step, setStep] = useState(1)
@@ -84,12 +87,12 @@ export function RegistrationForm() {
   async function onSubmit(values: RegistrationInput) {
     if (honeypot) {
       logger.warn('Honeypot filled, rejecting bot.')
-      toast.error('Ocorreu um erro ao processar seu cadastro. Tente novamente.')
+      toast.error(t('errors.honeypot'))
       return
     }
 
     if (!captchaToken && process.env.NODE_ENV === 'production') {
-      toast.error('Por favor, complete a verificação de segurança.')
+      toast.error(t('errors.captcha'))
       return
     }
 
@@ -114,18 +117,16 @@ export function RegistrationForm() {
         )
 
         if (!result.success) {
-          toast.error(result.error || 'Erro ao criar conta. Verifique os dados.')
+          toast.error(result.error || t('errors.apiError'))
         } else {
-          toast.success(
-            'Conta criada com sucesso! Enviamos um código de confirmação para seu e-mail.'
-          )
+          toast.success(t('success'))
           router.push(
             `/cadastro/confirmar-email?email=${encodeURIComponent(values.email)}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`
           )
         }
       } catch (error) {
         logger.error('Registration error:', error)
-        toast.error('Erro ao criar conta. Tente novamente mais tarde.')
+        toast.error(t('errors.generic'))
       }
     })
   }
@@ -171,28 +172,28 @@ export function RegistrationForm() {
       <CardHeader>
         <CardTitle className="text-xl">
           {step === 1
-            ? 'Crie sua conta'
+            ? t('steps.1.title')
             : step === 2
-              ? 'Dados Necessários'
-              : 'Plano de Saúde (Opcional)'}
+              ? t('steps.2.title')
+              : t('steps.3.title')}
         </CardTitle>
         <CardDescription>
           {step === 1
-            ? 'Comece informando seus dados básicos.'
+            ? t('steps.1.description')
             : step === 2
-              ? 'Preencha as informações restantes para sua segurança.'
-              : 'Se você possui um plano de saúde, informe os dados abaixo.'}
+              ? t('steps.2.description')
+              : t('steps.3.description')}
         </CardDescription>
       </CardHeader>
       {step === 1 && (
         <div className="px-6 pb-4">
           <p className="text-sm text-muted-foreground text-left">
-            É um profissional?{' '}
+            {t('professionalPrompt')}{' '}
             <Link
               href="/cadastro/profissional"
               className="text-primary hover:underline font-medium"
             >
-              Cadastre-se como especialista
+              {t('registerAsProfessional')}
             </Link>
           </p>
         </div>
@@ -218,9 +219,9 @@ export function RegistrationForm() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome Completo</FormLabel>
+                      <FormLabel>{t('fields.name')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Como gostaria de ser chamado?" {...field} />
+                        <Input placeholder={t('fields.namePlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -232,9 +233,9 @@ export function RegistrationForm() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t('fields.email')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="seu@email.com" {...field} />
+                        <Input placeholder={t('fields.emailPlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -242,23 +243,23 @@ export function RegistrationForm() {
                 />
 
                 <Button type="button" onClick={nextStep} className="w-full">
-                  Continuar <ArrowRight className="ml-2 h-4 w-4" />
+                  {t('actions.continue')} <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
 
                 <p className="text-sm text-muted-foreground text-center pt-2">
-                  Já tem uma conta?{' '}
+                  {t('loginPrompt')}{' '}
                   <Link
                     href={`/login/paciente${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`}
                     className="text-primary hover:underline font-medium"
                   >
-                    Faça login
+                    {t('login')}
                   </Link>{' '}
-                  ou{' '}
+                  {t('or')}{' '}
                   <Link
                     href="/login/esqueci-senha"
                     className="text-primary hover:underline font-medium"
                   >
-                    recupere sua senha
+                    {t('recoverPassword')}
                   </Link>
                 </p>
               </div>
@@ -272,10 +273,10 @@ export function RegistrationForm() {
                     name="document"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>CPF</FormLabel>
+                        <FormLabel>{t('fields.document')}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="000.000.000-00"
+                            placeholder={t('fields.documentPlaceholder')}
                             maxLength={14}
                             {...field}
                             onChange={(e) => {
@@ -294,7 +295,7 @@ export function RegistrationForm() {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Celular</FormLabel>
+                        <FormLabel>{t('fields.phone')}</FormLabel>
                         <FormControl>
                           <PhoneInput
                             value={field.value}
@@ -302,7 +303,7 @@ export function RegistrationForm() {
                               field.onChange(value || '')
                             }}
                             defaultCountry="BR"
-                            placeholder="(00) 00000-0000"
+                            placeholder={t('fields.phonePlaceholder')}
                             className="h-[44px]"
                           />
                         </FormControl>
@@ -317,11 +318,11 @@ export function RegistrationForm() {
                   name="birthDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Data de Nascimento</FormLabel>
+                      <FormLabel>{t('fields.birthDate')}</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
-                      <FormDescription>Você deve ter pelo menos 18 anos</FormDescription>
+                      <FormDescription>{t('fields.birthDateHint')}</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -349,9 +350,9 @@ export function RegistrationForm() {
 
                       return (
                         <FormItem>
-                          <FormLabel>Senha</FormLabel>
+                          <FormLabel>{t('fields.password')}</FormLabel>
                           <FormControl>
-                            <PasswordInput placeholder="Sua senha forte" {...field} />
+                            <PasswordInput placeholder={t('fields.passwordPlaceholder')} {...field} />
                           </FormControl>
                           <div className="flex gap-1 h-1 mt-1">
                             {[...Array(5)].map((_, i) => (
@@ -379,9 +380,9 @@ export function RegistrationForm() {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirmar Senha</FormLabel>
+                        <FormLabel>{t('fields.confirmPassword')}</FormLabel>
                         <FormControl>
-                          <PasswordInput placeholder="Confirme sua senha" {...field} />
+                          <PasswordInput placeholder={t('fields.confirmPasswordPlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -398,13 +399,13 @@ export function RegistrationForm() {
                         <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel>Aceito os Termos de Uso</FormLabel>
+                        <FormLabel>{t('fields.terms')}</FormLabel>
                         <FormDescription>
-                          Você concorda com nossa{' '}
+                          {t('fields.termsAgreement')}{' '}
                           <Link href="/termos" className="text-primary hover:underline">
-                            Política de Privacidade
+                            {t('fields.privacyPolicy')}
                           </Link>{' '}
-                          e Termos de Serviço.
+                          {t('fields.and')} {t('fields.termsOfService')}
                         </FormDescription>
                         <FormMessage />
                       </div>
@@ -414,10 +415,10 @@ export function RegistrationForm() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Button type="button" variant="outline" onClick={prevStep} className="w-full">
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+                    <ArrowLeft className="mr-2 h-4 w-4" /> {t('actions.back')}
                   </Button>
                   <Button type="button" onClick={nextToStep3} className="w-full">
-                    Continuar <ArrowRight className="ml-2 h-4 w-4" />
+                    {t('actions.continue')} <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -430,15 +431,15 @@ export function RegistrationForm() {
                   name="healthInsuranceId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Plano de Saúde</FormLabel>
+                      <FormLabel>{t('fields.healthInsurance')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecione seu plano" />
+                            <SelectValue placeholder={t('fields.selectPlan')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="none">Nenhum / Prefiro não informar</SelectItem>
+                          <SelectItem value="none">{t('fields.noPlan')}</SelectItem>
                           {insurances.map((ins) => (
                             <SelectItem key={ins.id} value={ins.id}>
                               {ins.name}
@@ -447,7 +448,7 @@ export function RegistrationForm() {
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        Isso nos ajuda a encontrar profissionais que aceitam seu plano.
+                        {t('fields.planHint')}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -459,9 +460,9 @@ export function RegistrationForm() {
                   name="healthInsurancePolicy"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Número da Carteirinha / Apólice</FormLabel>
+                      <FormLabel>{t('fields.policyNumber')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="0000 0000 0000 0000" {...field} />
+                        <Input placeholder={t('fields.policyNumberPlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -485,16 +486,16 @@ export function RegistrationForm() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Button type="button" variant="outline" onClick={prevStep} className="w-full">
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+                    <ArrowLeft className="mr-2 h-4 w-4" /> {t('actions.back')}
                   </Button>
                   <Button type="submit" className="w-full" disabled={isPending}>
                     {isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Criando conta...
+                        {t('actions.submitting')}
                       </>
                     ) : (
-                      'Criar Conta'
+                      t('actions.submit')
                     )}
                   </Button>
                 </div>

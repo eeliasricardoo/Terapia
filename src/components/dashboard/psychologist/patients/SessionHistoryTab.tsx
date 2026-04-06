@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, Clock, Loader2, CalendarX } from 'lucide-react'
 import { getPatientSessionHistory, type SessionHistoryItem } from '@/lib/actions/patients'
+import { useTranslations } from 'next-intl'
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   SCHEDULED: { label: 'Agendada', className: 'bg-blue-50 text-blue-700' },
@@ -22,6 +23,7 @@ interface SessionHistoryTabProps {
 }
 
 export function SessionHistoryTab({ patientId }: SessionHistoryTabProps) {
+  const t = useTranslations('PatientsManager.sheet.historyTab')
   const [isLoading, setIsLoading] = useState(true)
   const [sessions, setSessions] = useState<SessionHistoryItem[]>([])
 
@@ -36,21 +38,21 @@ export function SessionHistoryTab({ patientId }: SessionHistoryTabProps) {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-slate-900 text-lg">Sessões Realizadas</h3>
+        <h3 className="font-semibold text-slate-900 text-lg">{t('title')}</h3>
         <Button variant="outline" size="sm" className="h-8 text-xs" disabled>
-          Exportar Histórico
+          {t('export')}
         </Button>
       </div>
 
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-12 gap-3 text-slate-400">
           <Loader2 className="h-5 w-5 animate-spin" />
-          <p className="text-sm">Carregando histórico...</p>
+          <p className="text-sm">{t('loadingState')}</p>
         </div>
       ) : sessions.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50 gap-3 text-slate-400">
           <CalendarX className="h-8 w-8" />
-          <p className="text-sm text-center">Nenhuma sessão registrada com este paciente ainda.</p>
+          <p className="text-sm text-center">{t('noSessions')}</p>
         </div>
       ) : (
         <div className="relative border-l-2 border-slate-100 ml-3 space-y-8 pl-8 py-2">
@@ -65,14 +67,12 @@ export function SessionHistoryTab({ patientId }: SessionHistoryTabProps) {
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 bg-white p-5 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <p className="font-bold text-slate-900 text-sm">
-                        Sessão de Terapia Individual
-                      </p>
+                      <p className="font-bold text-slate-900 text-sm">{t('sessionType')}</p>
                       <Badge
                         variant="secondary"
                         className={`text-[10px] h-5 px-1.5 hover:opacity-90 ${statusInfo.className}`}
                       >
-                        {statusInfo.label}
+                        {t(`status.${session.status.toUpperCase()}`) || statusInfo.label}
                       </Badge>
                     </div>
                     <p className="text-xs text-slate-500 flex items-center gap-1.5 font-medium">

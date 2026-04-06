@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getEvolutions, saveEvolution, type EvolutionData } from '@/lib/actions/patients'
+import { useTranslations } from 'next-intl'
 
 const MOODS = [
   {
@@ -62,6 +63,7 @@ interface EvolutionsTabProps {
 }
 
 export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
+  const t = useTranslations('PatientsManager.sheet.evolutionsTab')
   const [isLoading, setIsLoading] = useState(true)
   const [isPending, startTransition] = useTransition()
   const [evolutions, setEvolutions] = useState<EvolutionData[]>([])
@@ -84,8 +86,8 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
 
         // Notify user about restored draft
         if (publicSum || privateNot) {
-          toast.info('Rascunho da sessão restaurado automaticamente.', {
-            description: 'Os dados não salvos da última vez foram recuperados.',
+          toast.info(t('restoreToastTitle'), {
+            description: t('restoreToastDesc'),
             duration: 5000,
           })
         }
@@ -124,7 +126,7 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
 
   const handleSave = () => {
     if (!publicSummary && !privateNotes) {
-      toast.error('Preencha ao menos o resumo ou a análise técnica.')
+      toast.error(t('errorEmpty'))
       return
     }
     startTransition(async () => {
@@ -135,7 +137,7 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
         privateNotes,
       })
       if (result.success) {
-        toast.success('Registro salvo com sucesso!')
+        toast.success(t('saveSuccess'))
 
         // 3. Clear draft upon success
         localStorage.removeItem(`sentirz:draft:evolution:${patientId}`)
@@ -148,7 +150,7 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
         setPublicSummary('')
         setPrivateNotes('')
       } else {
-        toast.error(result.error || 'Erro ao salvar registro.')
+        toast.error(result.error || t('saveError'))
       }
     })
   }
@@ -161,7 +163,7 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
           <div className="flex justify-between items-center">
             <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-2">
               <Activity className="h-4 w-4 text-blue-600" />
-              Registro de Sessão
+              {t('title')}
             </CardTitle>
             <span className="text-xs text-slate-400 font-mono">
               {new Date().toLocaleDateString('pt-BR')}
@@ -171,7 +173,7 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
         <CardContent className="space-y-4 p-4">
           <div>
             <label className="text-xs font-medium text-slate-500 mb-2 block uppercase tracking-wide">
-              Como o paciente chegou hoje?
+              {t('moodLabel')}
             </label>
             <div className="flex gap-2 flex-wrap">
               {MOODS.map((mood) => {
@@ -187,7 +189,9 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
                     }`}
                   >
                     <mood.icon className={`h-4 w-4 ${mood.color}`} />
-                    <span className="text-xs font-medium text-slate-600">{mood.label}</span>
+                    <span className="text-xs font-medium text-slate-600">
+                      {t(`moods.${mood.label}`)}
+                    </span>
                   </button>
                 )
               })}
@@ -197,10 +201,10 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-500 block uppercase tracking-wide">
-                Resumo da Sessão (Público no Prontuário)
+                {t('publicSummaryLabel')}
               </label>
               <Textarea
-                placeholder="O que foi discutido hoje?"
+                placeholder={t('publicSummaryPlaceholder')}
                 value={publicSummary}
                 onChange={(e) => setPublicSummary(e.target.value)}
                 className="min-h-[100px] text-sm resize-none bg-white focus:bg-white"
@@ -208,16 +212,16 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
             </div>
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-500 block uppercase tracking-wide flex items-center gap-2">
-                Análise Técnica Privada
+                {t('privateNotesLabel')}
                 <Badge
                   variant="outline"
                   className="text-[9px] h-4 px-1 bg-slate-100 text-slate-500 border-slate-200"
                 >
-                  Sigiloso
+                  {t('confidential')}
                 </Badge>
               </label>
               <Textarea
-                placeholder="Suas impressões técnicas..."
+                placeholder={t('privateNotesPlaceholder')}
                 value={privateNotes}
                 onChange={(e) => setPrivateNotes(e.target.value)}
                 className="min-h-[100px] text-sm resize-none bg-amber-50/30 border-amber-100 focus:bg-amber-50/50 focus:border-amber-200"
@@ -234,11 +238,11 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
             >
               {isPending ? (
                 <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Salvando...
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('saving')}
                 </>
               ) : (
                 <>
-                  <FilePlus className="h-3.5 w-3.5" /> Salvar Registro
+                  <FilePlus className="h-3.5 w-3.5" /> {t('saveBtn')}
                 </>
               )}
             </Button>
@@ -249,21 +253,21 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
       {/* Timeline */}
       <div className="space-y-6 pt-2">
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">
-          Histórico Recente
+          {t('timelineTitle')}
         </h3>
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-10 gap-3 text-slate-400">
             <Loader2 className="h-5 w-5 animate-spin" />
-            <p className="text-sm">Carregando evoluções...</p>
+            <p className="text-sm">{t('loadingState')}</p>
           </div>
         ) : evolutions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50 gap-3 text-slate-400">
             <FilePlus className="h-8 w-8" />
             <p className="text-sm text-center">
-              Nenhum registro de evolução ainda.
+              {t('noEvolutions')}
               <br />
-              Use o formulário acima para criar o primeiro.
+              {t('createFirst')}
             </p>
           </div>
         ) : (
@@ -281,7 +285,7 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
                           variant="secondary"
                           className="bg-slate-100 text-slate-600 hover:bg-slate-200"
                         >
-                          Sessão Regular
+                          {t('regularSession')}
                         </Badge>
                         <span className="text-xs text-slate-400 flex items-center gap-1">
                           <Calendar className="h-3 w-3" /> {ev.date}
@@ -292,7 +296,7 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
                           variant="outline"
                           className={`flex items-center gap-1 px-2 ${moodInfo.className}`}
                         >
-                          <MoodIcon className="h-3 w-3" /> {moodInfo.label}
+                          <MoodIcon className="h-3 w-3" /> {t(`moods.${moodInfo.label}`)}
                         </Badge>
                       )}
                     </CardHeader>
@@ -303,7 +307,7 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
                       {ev.privateNotes && (
                         <div className="mt-3 pt-3 border-t border-slate-50">
                           <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-1">
-                            Análise Técnica
+                            {t('technicalAnalysis')}
                           </p>
                           <p className="text-xs text-slate-500 italic">{ev.privateNotes}</p>
                         </div>

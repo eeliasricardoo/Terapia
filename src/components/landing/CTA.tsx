@@ -1,10 +1,11 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 import { motion, Variants } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 const fadeIn: Variants = {
   initial: { opacity: 0, y: 30 },
@@ -12,6 +13,8 @@ const fadeIn: Variants = {
 }
 
 export function CTA() {
+  const t = useTranslations('CTA')
+
   return (
     <section className="w-full py-16 md:py-20 bg-background relative overflow-hidden">
       {/* Decorative organic dots */}
@@ -50,13 +53,13 @@ export function CTA() {
             <div className="relative z-10 space-y-8 max-w-2xl">
               <div className="space-y-6">
                 <p className="text-xs font-semibold text-primary uppercase tracking-[0.2em]">
-                  Comece sua jornada
+                  {t('badge')}
                 </p>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-tight font-outfit">
-                  Pronto para dar o
+                  {t('title1')}
                   <br />
                   <span className="text-sentirz-gradient relative">
-                    primeiro passo?
+                    {t('title2')}
                     {/* Decorative underline */}
                     <svg
                       className="absolute -bottom-2 left-0 w-full h-3 text-secondary/60"
@@ -75,8 +78,7 @@ export function CTA() {
                   </span>
                 </h2>
                 <p className="text-lg text-foreground/80 max-w-md leading-relaxed">
-                  Cuidar da mente não precisa ser um luxo. Descubra uma terapia profunda, humana e
-                  acessível.
+                  {t('description')}
                 </p>
               </div>
 
@@ -87,7 +89,7 @@ export function CTA() {
                   className="h-12 sm:h-14 px-6 sm:px-10 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg shadow-primary/10 transition-all hover:-translate-y-0.5 group border-none w-full sm:w-auto"
                 >
                   <Link href="/busca" className="flex items-center gap-2">
-                    Encontrar Meu Psicólogo
+                    {t('buttons.findPsychologist')}
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </Button>
@@ -97,7 +99,7 @@ export function CTA() {
                   size="lg"
                   className="h-12 sm:h-14 px-6 sm:px-10 text-base font-semibold text-foreground/70 hover:text-primary hover:bg-primary/5 rounded-full transition-all w-full sm:w-auto"
                 >
-                  <Link href="/cadastro?role=psychologist">Sou profissional</Link>
+                  <Link href="/cadastro?role=psychologist">{t('buttons.iamProfessional')}</Link>
                 </Button>
               </div>
 
@@ -117,7 +119,7 @@ export function CTA() {
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
-                  <span>Sigilo garantido</span>
+                  <span>{t('badges.privacy')}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-400">
                   <svg
@@ -133,7 +135,7 @@ export function CTA() {
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
-                  <span>Pagamento seguro</span>
+                  <span>{t('badges.security')}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-400">
                   <svg
@@ -149,7 +151,7 @@ export function CTA() {
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
-                  <span>Sem compromisso</span>
+                  <span>{t('badges.noCommitment')}</span>
                 </div>
               </div>
             </div>
