@@ -411,5 +411,95 @@
       "sessionDuration": "Valor da sessão",
       "viewProfile": "Ver Perfil"
     }
+  },
+  "DashboardLayout": {
+    "menu": {
+      "patient": {
+        "dashboard": "Dashboard",
+        "search": "Buscar Psicólogos",
+        "sessions": "Minhas Sessões",
+        "records": "Meu Prontuário",
+        "journal": "Diário",
+        "messages": "Mensagens",
+        "profile": "Meu Perfil"
+      },
+      "psychologist": {
+        "dashboard": "Dashboard",
+        "agenda": "Minha Agenda",
+        "patients": "Meus Pacientes",
+        "messages": "Canal de Mensagens",
+        "config": "Configurações",
+        "financial": "Financeiro",
+        "profile": "Gerenciar Perfil",
+        "settings": "Ajustes de Conta"
+      },
+      "admin": {
+        "dashboard": "Painel Admin",
+        "approvals": "Aprovações Pendentes",
+        "psychologists": "Gestão de Psicólogos",
+        "plans": "Planos & Assinaturas",
+        "profile": "Perfil"
+      },
+      "company": {
+        "dashboard": "Dashboard Empresa",
+        "employees": "Colaboradores",
+        "financial": "Financeiro",
+        "profile": "Dados Empresa",
+        "support": "Suporte Sentirz",
+        "settings": "Configurações"
+      }
+    },
+    "roles": {
+      "user": "Usuário",
+      "admin": "Administrador",
+      "psychologist": "Psicólogo(a)",
+      "companyFull": "Gestor de Empresa",
+      "patient": "Paciente"
+    },
+    "sidebar": {
+      "navigation": "Navegação Sentirz",
+      "loading": "Carregando...",
+      "logout": "Sair da Conta"
+    }
+  },
+  "PatientDashboard": {
+    "greeting": {
+      "morning": "Bom dia",
+      "afternoon": "Boa tarde",
+      "night": "Boa noite"
+    },
+    "title": "Olá, <gradient>{name}</gradient>!",
+    "subtitle": "Como você está se sentindo hoje? Vamos continuar sua jornada.",
+    "newSession": "Nova Sessão",
+    "dailyTracking": "Acompanhamento Diário",
+    "quickAccess": "Acesso Rápido",
+    "recentHistoryTitle": "Histórico Recente",
+    "hero": {
+      "noSessions": "Nenhuma sessão agendada",
+      "noSessionsDesc": "Você ainda não tem sessões marcadas. Encontre o profissional ideal para começar.",
+      "findPsychologist": "Encontrar Psicólogo",
+      "nextSession": "Próxima Sessão",
+      "enterRoom": "Entrar na Sala",
+      "documents": "Documentos",
+      "reschedule": "Reagendar"
+    },
+    "findCta": {
+      "title": "Encontre o psicólogo ideal agora",
+      "description": "Nossa curadoria especializada te conecta aos melhores profissionais do mercado.",
+      "button": "Explorar Profissionais"
+    },
+    "quickActions": {
+      "journal": "Diário de Sentimentos",
+      "journalDesc": "Anote como foi o seu dia e suas emoções."
+    },
+    "upcoming": {
+      "title": "Próximas Sessões",
+      "accessLink": "Acessar Link"
+    },
+    "recentHistory": {
+      "title": "Últimas Sessões",
+      "seeAll": "Ver todas",
+      "noSessions": "Nenhuma sessão realizada recentemente."
+    }
   }
 }
