@@ -8,12 +8,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { Stethoscope, Save, Loader2, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getAnamnesis, updateAnamnesis, type AnamnesisData } from '@/lib/actions/patients'
+import { useTranslations } from 'next-intl'
 
 interface AnamnesisTabProps {
   patientId: string
 }
 
 export function AnamnesisTab({ patientId }: AnamnesisTabProps) {
+  const t = useTranslations('PatientsManager.sheet.anamnesisTab')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaved, setIsSaved] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -65,9 +67,9 @@ export function AnamnesisTab({ patientId }: AnamnesisTabProps) {
       const result = await updateAnamnesis({ patientProfileId: patientId, data: form })
       if (result.success) {
         setIsSaved(true)
-        toast.success('Anamnese atualizada com sucesso!')
+        toast.success(t('success'))
       } else {
-        toast.error(result.error || 'Erro ao salvar a anamnese.')
+        toast.error(result.error || t('error'))
       }
     })
   }
@@ -77,28 +79,24 @@ export function AnamnesisTab({ patientId }: AnamnesisTabProps) {
       <CardHeader className="bg-slate-50 border-b border-slate-100 pb-4">
         <CardTitle className="text-base flex items-center gap-2">
           <Stethoscope className="h-4 w-4 text-blue-600" />
-          Anamnese &amp; Histórico
+          {t('title')}
         </CardTitle>
-        <CardDescription>
-          {isLoading
-            ? 'Carregando informações...'
-            : 'Informações clínicas do paciente. Apenas visíveis para o psicólogo.'}
-        </CardDescription>
+        <CardDescription>{isLoading ? t('loadingSubtitle') : t('subtitle')}</CardDescription>
       </CardHeader>
 
       <CardContent className="p-6 space-y-6">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-slate-400">
             <Loader2 className="h-6 w-6 animate-spin" />
-            <p className="text-sm">Carregando anamnese...</p>
+            <p className="text-sm">{t('loadingState')}</p>
           </div>
         ) : (
           <>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Queixa Principal</label>
+              <label className="text-sm font-medium text-slate-700">{t('mainComplaint')}</label>
               <Textarea
                 className="bg-slate-50 border-slate-200 focus:bg-white min-h-[80px] resize-none"
-                placeholder="Descreva a queixa principal do paciente..."
+                placeholder={t('mainComplaintPlaceholder')}
                 value={form.mainComplaint}
                 onChange={(e) => handleChange('mainComplaint', e.target.value)}
               />
@@ -106,19 +104,19 @@ export function AnamnesisTab({ patientId }: AnamnesisTabProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Histórico Familiar</label>
+                <label className="text-sm font-medium text-slate-700">{t('familyHistory')}</label>
                 <Textarea
                   className="bg-slate-50 border-slate-200 focus:bg-white min-h-[100px] resize-none"
-                  placeholder="Histórico de doenças na família..."
+                  placeholder={t('familyHistoryPlaceholder')}
                   value={form.familyHistory}
                   onChange={(e) => handleChange('familyHistory', e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Medicamentos em Uso</label>
+                <label className="text-sm font-medium text-slate-700">{t('medication')}</label>
                 <Textarea
                   className="bg-slate-50 border-slate-200 focus:bg-white min-h-[100px] resize-none"
-                  placeholder="Medicamentos atuais e dosagens..."
+                  placeholder={t('medicationPlaceholder')}
                   value={form.medication}
                   onChange={(e) => handleChange('medication', e.target.value)}
                 />
@@ -126,10 +124,12 @@ export function AnamnesisTab({ patientId }: AnamnesisTabProps) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Hipótese Diagnóstica</label>
+              <label className="text-sm font-medium text-slate-700">
+                {t('diagnosticHypothesis')}
+              </label>
               <Input
                 className="bg-slate-50 border-slate-200 focus:bg-white"
-                placeholder="Ex: TAG (Transtorno de Ansiedade Generalizada) - F41.1"
+                placeholder={t('diagnosticHypothesisPlaceholder')}
                 value={form.diagnosticHypothesis}
                 onChange={(e) => handleChange('diagnosticHypothesis', e.target.value)}
               />
@@ -148,17 +148,17 @@ export function AnamnesisTab({ patientId }: AnamnesisTabProps) {
                 {isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Salvando...
+                    {t('saving')}
                   </>
                 ) : isSaved ? (
                   <>
                     <CheckCircle2 className="h-4 w-4" />
-                    Salvo!
+                    {t('saved')}
                   </>
                 ) : (
                   <>
                     <Save className="h-4 w-4" />
-                    Salvar Anamnese
+                    {t('save')}
                   </>
                 )}
               </Button>

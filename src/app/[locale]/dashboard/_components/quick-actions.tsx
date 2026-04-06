@@ -4,8 +4,10 @@ import { FileText, ArrowRight } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export function QuickActions() {
+  const t = useTranslations('PatientDashboard.quickActions')
   return (
     <div className="space-y-4">
       <Link href="/dashboard/diario" className="block">
@@ -19,9 +21,9 @@ export function QuickActions() {
             </div>
             <div>
               <h3 className="font-bold text-slate-900 group-hover:text-slate-900 transition-colors">
-                Diário
+                {t('journal')}
               </h3>
-              <p className="text-xs font-medium text-slate-500">Suas notas pessoais</p>
+              <p className="text-xs font-medium text-slate-500">{t('journalDesc')}</p>
             </div>
           </div>
           <ArrowRight

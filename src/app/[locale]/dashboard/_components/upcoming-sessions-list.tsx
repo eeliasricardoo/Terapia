@@ -7,6 +7,7 @@ import { ptBR } from 'date-fns/locale'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 interface UpcomingSession {
   id: string
@@ -27,6 +28,7 @@ interface Props {
 }
 
 export function UpcomingSessionsList({ sessions }: Props) {
+  const t = useTranslations('PatientDashboard.upcoming')
   // If no sessions, handled by Hero or parent
   if (sessions.length <= 1) return null
 
@@ -38,7 +40,7 @@ export function UpcomingSessionsList({ sessions }: Props) {
   return (
     <div className="pt-8">
       <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">
-        Próximos Agendamentos
+        {t('title')}
       </h2>
       <div className="space-y-4">
         {otherSessions.map((session) => {
@@ -88,7 +90,7 @@ export function UpcomingSessionsList({ sessions }: Props) {
                       variant="ghost"
                       className="rounded-full h-10 px-5 text-xs font-bold text-blue-600 hover:bg-blue-50"
                     >
-                      Acessar Link
+                      {t('accessLink')}
                     </Button>
                   </Link>
                 </div>

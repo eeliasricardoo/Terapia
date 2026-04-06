@@ -23,7 +23,8 @@ interface PatientDashboardClientProps {
 export function PatientDashboardClient({ userName, patientData }: PatientDashboardClientProps) {
   const t = useTranslations('PatientDashboard')
   const hour = new Date().getHours()
-  const greeting = hour < 12 ? t('greeting.morning') : hour < 18 ? t('greeting.afternoon') : t('greeting.night')
+  const greeting =
+    hour < 12 ? t('greeting.morning') : hour < 18 ? t('greeting.afternoon') : t('greeting.night')
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -71,12 +72,10 @@ export function PatientDashboardClient({ userName, patientData }: PatientDashboa
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 font-outfit">
               {t.rich('title', {
                 name: userName,
-                gradient: (chunks) => <span className="text-sentirz-gradient">{chunks}</span>
+                gradient: (chunks) => <span className="text-sentirz-gradient">{chunks}</span>,
               })}
             </h1>
-            <p className="text-base text-slate-600 font-medium max-w-prose">
-              {t('subtitle')}
-            </p>
+            <p className="text-base text-slate-600 font-medium max-w-prose">{t('subtitle')}</p>
           </div>
 
           <div className="flex items-center gap-3 bg-white/80 backdrop-blur-md p-2 rounded-[2rem] shadow-sm border border-slate-100 self-start sm:self-auto group transition-all hover:shadow-md">
@@ -131,7 +130,7 @@ export function PatientDashboardClient({ userName, patientData }: PatientDashboa
 
             <motion.div variants={itemVariants}>
               <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
-                {t('recentHistory')}
+                {t('recentHistoryTitle')}
               </h2>
               <div className="hover:translate-x-1 transition-transform">
                 <RecentHistory history={patientData.recentSessions} />

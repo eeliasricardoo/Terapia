@@ -4,8 +4,11 @@ import { Search } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export function FindPsychologistCTA() {
+  const t = useTranslations('PatientDashboard.findCta')
+
   return (
     <Card className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-none shadow-lg overflow-hidden relative">
       <div className="absolute top-0 right-0 p-6 opacity-10" aria-hidden="true">
@@ -13,11 +16,8 @@ export function FindPsychologistCTA() {
       </div>
       <CardContent className="p-8 relative z-10">
         <div className="max-w-2xl">
-          <h2 className="text-3xl font-bold mb-4">Encontre o profissional ideal para você</h2>
-          <p className="text-primary-foreground/80 text-lg mb-8">
-            Nossa plataforma conta com especialistas em diversas áreas prontos para te ajudar.
-            Comece sua jornada de autoconhecimento hoje mesmo.
-          </p>
+          <h2 className="text-3xl font-bold mb-4">{t('title')}</h2>
+          <p className="text-primary-foreground/80 text-lg mb-8">{t('description')}</p>
           <Button
             size="lg"
             variant="secondary"
@@ -26,7 +26,7 @@ export function FindPsychologistCTA() {
           >
             <Link href="/busca">
               <Search className="h-5 w-5" />
-              Buscar Psicólogos
+              {t('button')}
             </Link>
           </Button>
         </div>

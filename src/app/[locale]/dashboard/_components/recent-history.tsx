@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { SessionSummaryDialog } from '@/components/dashboard/SessionSummaryDialog'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   history: {
@@ -16,17 +17,18 @@ interface Props {
 }
 
 export function RecentHistory({ history }: Props) {
+  const t = useTranslations('PatientDashboard.recentHistory')
   return (
     <div className="bg-white border border-slate-100 rounded-[2rem] shadow-sm overflow-hidden">
       <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between">
-        <h3 className="font-bold text-slate-900 italic">Histórico Recente</h3>
+        <h3 className="font-bold text-slate-900 italic">{t('title')}</h3>
         <Link href="/dashboard/sessoes">
           <Button
             variant="ghost"
             size="sm"
             className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 px-0"
           >
-            Ver tudo &rarr;
+            {t('seeAll')}
           </Button>
         </Link>
       </div>
@@ -66,7 +68,7 @@ export function RecentHistory({ history }: Props) {
           ))}
           {history.length === 0 && (
             <div className="p-12 text-center text-slate-400 bg-white">
-              <p className="text-xs font-medium italic">Nenhuma sessão recente.</p>
+              <p className="text-xs font-medium italic">{t('noSessions')}</p>
             </div>
           )}
         </div>

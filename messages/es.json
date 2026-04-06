@@ -176,6 +176,8 @@
     }
   },
   "Footer": {
+    "rights": "Todos los derechos reservados.",
+    "madeWithCare": "Hecho con cuidado para tu bienestar.",
     "description": "Te conectamos con los mejores profesionales de salud mental en un entorno seguro y acogedor.",
     "categories": {
       "platform": "Plataforma",
@@ -191,667 +193,6 @@
       "contact": "Contacto",
       "terms": "Términos de Uso",
       "privacy": "Privacidad"
-    },
-    "rights": "Todos los derechos reservados.",
-    "madeWithCare": "Hecho con cuidado para quienes sienten."
-  },
-  "SearchPage": {
-    "meta": {
-      "title": "Encontrar Psicólogos",
-      "description": "Explora nuestra lista de profesionales calificados y encuentra el terapeuta ideal para tu perfil y necesidades."
-    },
-    "exploreProfessionals": "Explorar Profesionales",
-    "header": {
-      "titlePart1": "¿Deseas iniciar tu viaje? Hemos encontrado",
-      "titlePart2": "{count} {count, plural, =1 {especialista} other {especialistas}}",
-      "titlePart3": "especialmente para ti."
-    },
-    "sort": {
-      "label": "Ordenar:",
-      "placeholder": "Relevancia",
-      "relevance": "Relevancia",
-      "priceAsc": "Menor Precio",
-      "priceDesc": "Mayor Precio"
-    },
-    "filters": {
-      "title": "Filtros",
-      "description": "Refina tu búsqueda para encontrar al profesional ideal.",
-      "clear": "Limpiar",
-      "quickSearch": "Búsqueda Rápida",
-      "searchPlaceholder": "Nombre o especialidad...",
-      "specialties": "Especialidades",
-      "insurances": "Seguros",
-      "noInsurances": "Ningún plan disponible.",
-      "investment": "Inversión",
-      "upTo": "Hasta {amount}",
-      "gender": "Género",
-      "female": "Femenino",
-      "male": "Masculino",
-      "moreComingSoon": "Más filtros pronto: Idiomas y horarios."
-    },
-    "empty": {
-      "title": "Ningún resultado",
-      "description": "Intenta ajustar tus filtros para encontrar otros profesionales.",
-      "button": "Limpiar filtros"
-    },
-    "loadingMore": "Cargando más...",
-    "card": {
-      "fallbackName": "Psicólogo",
-      "notInformed": "No informado",
-      "fallbackBio": "¡Hola! Soy especialista en salud mental y estoy aquí para ayudarte a alcanzar tus objetivos y bienestar. Mi consultorio es un espacio seguro y acogedor.",
-      "new": "Nuevo",
-      "online": "Online",
-      "brazil": "Brasil",
-      "sessionDuration": "Sesión (50 min)",
-      "viewProfile": "Ver Perfil"
-    }
-  },
-  "AboutPage": {
-    "meta": {
-      "title": "Sobre Nosotros | Sentirz",
-      "description": "Conoce la misión y el equipo detrás de la plataforma Sentirz."
-    },
-    "hero": {
-      "badge": "Nuestra Misión",
-      "titlePart1": "Salud Mental ",
-      "titleHighlight": "Accesible",
-      "titlePart2": " para Todos",
-      "description": "Creemos que cuidar la mente no debe ser un privilegio, sino un derecho. Sentirz nació para acortar distancias y romper estigmas."
-    },
-    "values": {
-      "empathy": {
-        "title": "Empatía",
-        "desc": "Ponemos al ser humano en el centro de todo lo que hacemos, con escucha activa y acogida."
-      },
-      "security": {
-        "title": "Seguridad",
-        "desc": "Privacidad absoluta y cifrado de extremo a extremo para garantizar tu total privacidad."
-      },
-      "technology": {
-        "title": "Tecnología",
-        "desc": "Innovamos constantemente para ofrecer la mejor experiencia de atención remota."
-      },
-      "community": {
-        "title": "Comunidad",
-        "desc": "Creamos lazos entre profesionales y pacientes para un viaje de evolución conjunta."
-      }
-    },
-    "history": {
-      "title": "Nuestra Historia",
-      "quote": "\"Sentirz nació de una conversación en 2024 sobre lo difícil que era encontrar ayuda calificada de forma rápida y segura. Decidimos crear la plataforma que nos gustaría usar.\"",
-      "p1": "Comenzamos nuestro viaje con un pequeño grupo de psicólogos visionarios que creían en el potencial de la telepsicología. Hoy somos cientos de profesionales cuidando miles de vidas en todo el país.",
-      "p2": "Nuestra plataforma no es solo un software de video; es un ecosistema completo que apoya al profesional en su gestión clínica y garantiza al paciente un entorno seguro para florecer."
-    },
-    "cta": {
-      "title": "¿Listo para empezar tu viaje?",
-      "description": "Encuentra al psicólogo ideal para ti en pocos minutos y empieza a cuidar de lo que más importa.",
-      "buttonPatient": "Encontrar Terapeuta",
-      "buttonProfessional": "Soy Psicólogo"
-    }
-  },
-  "ProfessionalsPage": {
-    "meta": {
-      "title": "Para Psicólogos - Transforma tu Atención Clínica",
-      "description": "Ten total autonomía, gestión completa y una agenda llena de pacientes calificados. La plataforma ideal para psicólogos que buscan crecer en la clínica online."
-    },
-    "hero": {
-      "badge": "Para Profesionales de la Salud",
-      "title1": "Transforma tu",
-      "titleHighlight": "práctica clínica.",
-      "description": "Únete a la mayor red de terapia solidaria. Gestiona a tus pacientes, tu agenda y tus ganancias en un solo lugar, con total seguridad y practicidad.",
-      "register": "Registrar mi perfil",
-      "howItWorks": "Cómo funciona",
-      "partners": "Psicólogos asociados"
-    },
-    "floatCards": {
-      "schedule": "Agenda",
-      "flexibility": "Total Flexibilidad",
-      "mission": "Misión",
-      "impact": "Impacto Social"
-    },
-    "features": {
-      "sectionTitle": "Tu clínica, ahora digital y escalable",
-      "sectionDesc": "Nos enfocamos en la tecnología para que tú puedas enfocarte en lo que más importa: el cuidado de tus pacientes.",
-      "platform": {
-        "title": "Plataforma Completa",
-        "desc": "Gestión de agenda, historias clínicas electrónicas y facturación en un panel único e intuitivo."
-      },
-      "online": {
-        "title": "Atención Online",
-        "desc": "Sala de video propia con cifrado de extremo a extremo, sin necesidad de software externo."
-      },
-      "payment": {
-        "title": "Remuneración Justa",
-        "desc": "Proceso de pago transparente y rápido. Define tus horarios y cobra por cada sesión completada."
-      }
-    }
-  },
-  "CompaniesPage": {
-    "meta": {
-      "title": "Para Empresas - Salud Mental y Bienestar Corporativo",
-      "description": "Lleva terapia de calidad a tus empleados y mejora el clima organizacional. Ofrece beneficios de salud mental con gestión simple y eficiente."
-    },
-    "hero": {
-      "badge": "Terapia Corporativa",
-      "title1": "Cuida la",
-      "titleHighlight": "salud de tu equipo.",
-      "description": "Reduce el burnout, aumenta el compromiso y construye una cultura de bienestar con nuestra plataforma de terapia corporativa.",
-      "contact": "Hablar con un consultor",
-      "demo": "Ver demostración",
-      "trusted": "Empresas que confían"
-    },
-    "floatCards": {
-      "team": "Equipo",
-      "engagement": "+ Compromiso",
-      "results": "Resultados",
-      "reports": "Informes en Tiempo Real"
-    },
-    "features": {
-      "sectionTitle": "Cómo funciona MindCare Business",
-      "sectionDesc": "Una solución completa e integrada para transformar la cultura de salud mental de tu organización.",
-      "therapy": {
-        "title": "Terapia para Colaboradores",
-        "desc": "Fácil acceso a sesiones individuales con psicólogos cualificados para todo tu equipo."
-      },
-      "workshops": {
-        "title": "Charlas y Talleres",
-        "desc": "Sesiones grupales sobre salud mental, manejo del estrés y comunicación no violenta."
-      },
-      "reports": {
-        "title": "Informes de Impacto",
-        "desc": "Sigue la evolución del bienestar de tu equipo de forma anónima y segura con datos procesable."
-      }
-    }
-  },
-  "Auth": {
-    "login": {
-      "title": "Entrar",
-      "description": "Ingresa tu correo y contraseña para acceder a tu cuenta",
-      "email": "Correo",
-      "emailPlaceholder": "tu@correo.com",
-      "password": "Contraseña",
-      "passwordPlaceholder": "******",
-      "forgotPassword": "Olvidé mi contraseña",
-      "rememberMe": "Mantener mi sesión iniciada",
-      "submit": "Entrar",
-      "submitting": "Entrando...",
-      "orContinueWith": "O continuar con",
-      "noAccount": "¿No tienes una cuenta?",
-      "register": "Regístrate",
-      "errors": {
-        "emailNotConfirmed": "Tu correo aún no ha sido confirmado.",
-        "invalidCredentials": "Credenciales inválidas",
-        "generic": "Error al iniciar sesión. Inténtalo de nuevo.",
-        "google": "Error al iniciar sesión con Google"
-      },
-      "success": "¡Inicio de sesión exitoso!"
-    },
-    "roleSelection": {
-      "patient": {
-        "title": "Cliente",
-        "description": "Quiero realizar sesiones de terapia y ver contenido sobre salud emocional"
-      },
-      "professional": {
-        "title": "Especialista",
-        "description": "Quiero atender pacientes en línea y gestionar mi carrera"
-      },
-      "company": {
-        "title": "Empresa",
-        "description": "Quiero promover el bienestar emocional de mis empleados"
-      }
-    },
-    "register": {
-      "howToCreate": "¿Cómo quieres crear tu cuenta?",
-      "selectOption": "Selecciona la opción con la que deseas crear tu cuenta:"
-    },
-    "patientRegistration": {
-      "steps": {
-        "1": {
-          "title": "Crea tu cuenta",
-          "description": "Comienza ingresando tus datos básicos."
-        },
-        "2": {
-          "title": "Datos Necesarios",
-          "description": "Completa la información restante por tu seguridad."
-        },
-        "3": {
-          "title": "Seguro Médico (Opcional)",
-          "description": "Si tienes un seguro médico, ingresa los datos a continuación."
-        }
-      },
-      "professionalPrompt": "¿Eres un profesional?",
-      "registerAsProfessional": "Regístrate como especialista",
-      "fields": {
-        "name": "Nombre Completo",
-        "namePlaceholder": "¿Cómo te gustaría que te llamen?",
-        "email": "Correo",
-        "emailPlaceholder": "tu@correo.com",
-        "document": "ID / DNI(CPF)",
-        "documentPlaceholder": "000.000.000-00",
-        "phone": "Celular",
-        "phonePlaceholder": "(00) 00000-0000",
-        "birthDate": "Fecha de Nacimiento",
-        "birthDateHint": "Debes tener al menos 18 años",
-        "password": "Contraseña",
-        "passwordPlaceholder": "Tu contraseña segura",
-        "confirmPassword": "Confirmar Contraseña",
-        "confirmPasswordPlaceholder": "Confirma tu contraseña",
-        "terms": "Acepto los Términos de Uso",
-        "termsAgreement": "Estás de acuerdo con nuestra",
-        "privacyPolicy": "Política de Privacidad",
-        "and": "y",
-        "termsOfService": "Términos de Servicio.",
-        "healthInsurance": "Seguro Médico",
-        "selectPlan": "Selecciona tu plan",
-        "noPlan": "Ninguno / Prefiero no informar",
-        "planHint": "Esto nos ayuda a encontrar profesionales que acepten tu plan.",
-        "policyNumber": "Número de Tarjeta / Póliza",
-        "policyNumberPlaceholder": "0000 0000 0000 0000"
-      },
-      "actions": {
-        "continue": "Continuar",
-        "back": "Volver",
-        "submit": "Crear Cuenta",
-        "submitting": "Creando cuenta..."
-      },
-      "loginPrompt": "¿Ya tienes una cuenta?",
-      "login": "Inicia sesión",
-      "or": "o",
-      "recoverPassword": "recupera tu contraseña",
-      "errors": {
-        "honeypot": "Ocurrió un error al procesar tu registro. Inténtalo de nuevo.",
-        "captcha": "Por favor, completa la verificación de seguridad.",
-        "apiError": "Error al crear la cuenta. Verifica los datos.",
-        "generic": "Error al crear la cuenta. Inténtalo de nuevo más tarde."
-      },
-      "success": "¡Cuenta creada con éxito! Hemos enviado un código de confirmación a tu correo."
-    },
-    "professionalRegistration": {
-      "hero": {
-        "title": "Únete a nuestra red profesional",
-        "description": "Conéctate con pacientes en todo el país y expande tu práctica online."
-      },
-      "fields": {
-        "name": "Nombre Completo",
-        "namePlaceholder": "Escribe tu nombre completo",
-        "email": "Correo",
-        "emailPlaceholder": "Escribe tu correo",
-        "password": "Crear Contraseña",
-        "passwordPlaceholder": "Escribe una contraseña segura",
-        "crp": "Número de Tarjeta Profesional / Colegiatura",
-        "crpPlaceholder": "XX/XXXXX o XX/XXXXXX",
-        "crpHint": "Ingresa tu número en el formato XX/XXXXX o XX/XXXXXX (ej: 06/123456)",
-        "terms": "Acepto los",
-        "termsOfService": "Términos de Servicio",
-        "and": "y la",
-        "privacyPolicy": "Política de Privacidad"
-      },
-      "actions": {
-        "submit": "Crear Cuenta",
-        "submitting": "Creando cuenta...",
-        "orRegisterWith": "O regístrate con"
-      },
-      "loginPrompt": "¿Ya tienes una cuenta?",
-      "login": "Entrar",
-      "psychologistRegistration": "Registro de Psicólogo",
-      "errors": {
-        "captcha": "Por favor, completa la verificación de seguridad.",
-        "apiError": "Error al crear la cuenta. Inténtalo de nuevo.",
-        "generic": "Error al crear la cuenta. Inténtalo de nuevo más tarde.",
-        "google": "Error al iniciar sesión con Google"
-      },
-      "success": "¡Cuenta creada con éxito!"
-    },
-    "forgotPassword": {
-      "title": "Recuperar contraseña",
-      "description": "Ingresa tu correo para recibir las instrucciones de recuperación.",
-      "email": "Correo",
-      "emailPlaceholder": "tu@correo.com",
-      "submit": "Enviar instrucciones",
-      "submitting": "Enviando...",
-      "backToLogin": "Volver al inicio de sesión",
-      "successTitle": "Verifica tu correo",
-      "successDescription": "Hemos enviado las instrucciones para recuperar la contraseña a tu correo.",
-      "errors": {
-        "apiError": "Error al enviar el correo de recuperación.",
-        "generic": "Error al procesar la solicitud."
-      },
-      "success": "¡Correo de recuperación enviado!"
-    },
-    "resetPassword": {
-      "title": "Nueva contraseña",
-      "description": "Ingresa tu nueva contraseña a continuación.",
-      "password": "Nueva Contraseña",
-      "passwordPlaceholder": "******",
-      "confirmPassword": "Confirmar Nueva Contraseña",
-      "confirmPasswordPlaceholder": "******",
-      "submit": "Actualizar contraseña",
-      "submitting": "Guardando...",
-      "errors": {
-        "apiError": "Error al actualizar la contraseña.",
-        "generic": "Error al procesar la solicitud."
-      },
-      "success": "¡Contraseña actualizada con éxito!"
-    },
-    "emailVerification": {
-      "title": "Verifica tu correo",
-      "descriptionPart1": "Hemos enviado un código de 6 dígitos a ",
-      "descriptionPart2": ". Ingrésalo a continuación para confirmar tu cuenta.",
-      "code": "Código de Verificación",
-      "codePlaceholder": "000000",
-      "submit": "Confirmar Correo",
-      "submitting": "Verificando...",
-      "notReceived": "¿No recibiste el código?",
-      "resend": "Reenviar código",
-      "resending": "Enviando...",
-      "resent": "¡Enviado!",
-      "changeEmail": "Cambiar correo",
-      "errors": {
-        "notFound": "Correo no encontrado.",
-        "apiError": "Código inválido o caducado.",
-        "generic": "Error al verificar el código. Inténtalo de nuevo.",
-        "resendApiError": "Error al reenviar el código.",
-        "resendGeneric": "Error al reenviar el código."
-      },
-      "success": "¡Correo confirmado con éxito!",
-      "resendSuccess": "¡Nuevo código enviado!"
-    }
-  },
-  "DashboardLayout": {
-    "skipToContent": "Ir al contenido principal",
-    "roles": {
-      "admin": "Administrador",
-      "psychologist": "Psicólogo",
-      "company": "Gerente",
-      "companyFull": "Gerente de RRHH",
-      "patient": "Cliente",
-      "user": "Usuario"
-    },
-    "menu": {
-      "patient": {
-        "dashboard": "Panel principal",
-        "search": "Buscar Especialista",
-        "sessions": "Mis Sesiones",
-        "records": "Mi Historial",
-        "journal": "Diario Emocional",
-        "messages": "Mensajes",
-        "profile": "Mi Perfil"
-      },
-      "psychologist": {
-        "dashboard": "Resumen",
-        "agenda": "Mi Agenda",
-        "patients": "Mis Pacientes",
-        "messages": "Mensajes",
-        "config": "Servicios y Tarifas",
-        "financial": "Finanzas",
-        "profile": "Mi Perfil",
-        "settings": "Ajustes"
-      },
-      "admin": {
-        "dashboard": "Resumen",
-        "approvals": "Aprobaciones",
-        "psychologists": "Especialistas",
-        "plans": "Seguros Médicos",
-        "profile": "Mi Perfil"
-      },
-      "company": {
-        "dashboard": "Resumen",
-        "employees": "Colaboradores",
-        "financial": "Finanzas",
-        "profile": "Perfil de la Empresa",
-        "support": "Soporte",
-        "settings": "Configuraciones"
-      }
-    },
-    "sidebar": {
-      "logout": "Cerrar sesión",
-      "loading": "Cargando...",
-      "openMenu": "Abrir menú",
-      "navigation": "Navegación del panel"
-    }
-  },
-  "PatientDashboard": {
-    "greeting": {
-      "morning": "Buenos días",
-      "afternoon": "Buenas tardes",
-      "night": "Buenas noches"
-    },
-    "title": "Hola, <gradient>{name}</gradient>.",
-    "subtitle": "Tu espacio de cuidado está listo para que continúes hoy.",
-    "newSession": "Nueva Sesión",
-    "dailyTracking": "Seguimiento diario",
-    "quickAccess": "Acceso Rápido",
-    "recentHistory": "Historial Reciente"
-  },
-  "PsychologistDashboard": {
-    "pendingVerification": {
-      "title": "Perfil en Análisis",
-      "description": "Tus datos y documentos han sido recibidos con éxito y están siendo validados por nuestro equipo de especialistas. Recibirás un correo electrónico tan pronto como tu acceso sea aprobado y puedas comenzar a atender pacientes a través de la plataforma.",
-      "nextStepsTitle": "Próximos Pasos",
-      "step1": "Validación de tu registro profesional.",
-      "step2": "Aprobación de tu perfil público y especialidades.",
-      "step3": "Apertura de tu agenda para citas de pacientes."
-    },
-    "greeting": "Hola, Dr(a). {name}.",
-    "scheduledToday": "Tienes {count} {count, plural, =1 {cita programada} other {citas programadas}} para hoy.",
-    "virtualRoom": "Sala Virtual",
-    "billing": {
-      "titlePending": "Facturación Pendiente",
-      "titleIncomplete": "Facturación Incompleta",
-      "descPending": "Tu perfil está <bold>oculto en la búsqueda</bold> hasta que conectes tu cuenta bancaria a través de Stripe Connect. Esto es necesario para que recibas los repagos de las sesiones automáticamente.",
-      "descIncomplete": "Has conectado tu cuenta, pero <bold>aún no has completado el registro en Stripe</bold>. Faltan datos obligatorios. Tu perfil seguirá oculto hasta su finalización.",
-      "ctaPending": "Conectar Cuenta Ahora",
-      "ctaIncomplete": "Finalizar Registro"
-    },
-    "stats": {
-      "sessions": "Sesiones",
-      "today": "HOY",
-      "activePatients": "Pacientes Activos",
-      "revenue": "Ingresos",
-      "performance": "Rendimiento",
-      "monthly": "MENSUAL"
-    },
-    "agenda": {
-      "upcomingSessions": "Próximas Sesiones",
-      "summary": "{todayCount, plural, !=0 {{todayCount} hoy}} {todayCount, plural, !=0 {·}} {futureCount, plural, !=0 {{futureCount} pronto}}",
-      "freeSchedule": "Agenda libre",
-      "noAppointments": "Sin citas agendadas.",
-      "viewAgenda": "VER AGENDA →",
-      "todayBadge": "— hoy",
-      "completedBadge": "Completada",
-      "nextBadge": "Siguiente",
-      "startSession": "Iniciar",
-      "reschedule": "Reagendar"
-    },
-    "quickActions": {
-      "title": "Acceso Rápido",
-      "manageSchedule": "Gestionar Horarios",
-      "configureAgenda": "Configura tu agenda",
-      "myPatients": "Mis Pacientes",
-      "viewRecords": "Ver expedientes"
-    },
-    "recentHistory": {
-      "title": "Historial Reciente",
-      "noPatients": "Sin pacientes recientes",
-      "seeAll": "Ver todos"
-    }
-  },
-  "SessionsList": {
-    "loginRequired": "Debes iniciar sesión para ver tus citas.",
-    "loginButton": "Iniciar sesión",
-    "title": "Mis Sesiones",
-    "description": "Gestiona tus citas y tu historial de consultas.",
-    "summaryPagination": "Mostrando {count} de {total} {total, plural, =1 {sesión} other {sesiones}}.",
-    "summaryTotal": "{total} {total, plural, =1 {sesión} other {sesiones}} en total.",
-    "emptyTitle": "No se encontraron sesiones.",
-    "emptyDesc": "Tus citas aparecerán aquí una vez que se hayan realizado.",
-    "searchPsychologists": "Buscar Psicólogos",
-    "badges": {
-      "scheduled": "Agendada",
-      "completed": "Completada",
-      "cancelled": "Cancelada"
-    },
-    "roles": {
-      "patient": "Paciente",
-      "psychologist": "Psicólogo(a)",
-      "specialist": "Especialista"
-    },
-    "online": "En línea",
-    "reschedule": "Reagendar",
-    "enterSession": "Entrar",
-    "receipt": "Recibo",
-    "scheduleAgain": "Agendar Nuevamente"
-  },
-  "ScheduleManager": {
-    "title": "Gestionar Agenda",
-    "subtitle": "Controla tus días y horarios de atención",
-    "save": "Guardar",
-    "saving": "Guardando...",
-    "conflict": "Conflicto",
-    "conflictError": "Ventanas de tiempo solapadas",
-    "conflictErrorDesc": "Corrige los horarios en conflicto antes de guardar.",
-    "saveSuccess": "¡Cambios guardados!",
-    "saveSuccessDesc": "Tu disponibilidad ha sido actualizada.",
-    "saveError": "Error al guardar",
-    "monthlyView": "Vista Mensual",
-    "timezonePlaceholder": "Zona horaria...",
-    "weeklyRoutine": "Rutina Semanal",
-    "routineConfigTitle": "Configuraciones de la Agenda",
-    "routineConfigDesc": "Define los horarios base y la duración de tus sesiones.",
-    "sessionDuration": "Duración de la sesión",
-    "breakDuration": "Intervalo entre sesiones",
-    "minutes": "{count} minutos",
-    "noBreak": "Sin intervalo",
-    "unavailable": "No disponible",
-    "addInterval": "Añadir intervalo",
-    "finish": "Terminar",
-    "legend": {
-      "standard": "Estándar",
-      "custom": "Personalizado",
-      "freeDay": "Día libre",
-      "dayOff": "Día de descanso",
-      "appointment": "Cita"
-    },
-    "selectDay": "Selecciona un día",
-    "selectDayDesc": "Haz clic en una fecha para gestionar los horarios.",
-    "dayOffTitle": "Día de descanso",
-    "dayOffDesc": "No hay horarios disponibles para tus pacientes.",
-    "activateDay": "Activar día",
-    "restoreDefault": "Restaurar predeterminado",
-    "badgeDayOff": "Descanso",
-    "badgeCustom": "Personalizado",
-    "badgeRoutine": "Rutina semanal",
-    "conflictWarning": "Horarios solapados — corrige antes de guardar",
-    "attendanceWindows": "Ventanas de atención",
-    "blocks": "{count} {count, plural, =1 {bloque} other {bloques}}",
-    "noWindows": "Sin ventanas definidas",
-    "conflictLabel": "Conflicto",
-    "regular": "Regular",
-    "generatedSlots": "Espacios generados",
-    "vacancies": "{count} {count, plural, =1 {espacio} other {espacios}}",
-    "noSlots": "No hay espacios disponibles.",
-    "sessionOf": "Sesión de {duration}min · Intervalo de {break}min",
-    "appointments": "Citas",
-    "customizeDay": "Personalizar día",
-    "markDayOff": "Marcar descanso",
-    "addWindow": "Añadir ventana",
-    "days": {
-      "monday": "Lunes",
-      "mondayShort": "Lun",
-      "tuesday": "Martes",
-      "tuesdayShort": "Mar",
-      "wednesday": "Miércoles",
-      "wednesdayShort": "Mié",
-      "thursday": "Jueves",
-      "thursdayShort": "Jue",
-      "friday": "Viernes",
-      "fridayShort": "Vie",
-      "saturday": "Sábado",
-      "saturdayShort": "Sáb",
-      "sunday": "Domingo",
-      "sundayShort": "Dom"
-    }
-  },
-  "ProfilePage": {
-    "title": "Mi Perfil",
-    "description": "Gestiona tu información personal y de seguridad.",
-    "tabs": {
-      "general": "Información General",
-      "plans": "Mis Planes",
-      "benefits": "Beneficios",
-      "security": "Seguridad"
-    },
-    "avatar": {
-      "errorUpdate": "Error al actualizar la foto",
-      "successDesc": "Tu foto de perfil ha sido cambiada con éxito.",
-      "success": "¡Foto actualizada!",
-      "loading": "Cargando...",
-      "recommendation": "Recomendamos una imagen cuadrada (ej: 500x500px) para una mejor visualización en las historias clínicas y chats.",
-      "roles": {
-        "admin": "Administrador",
-        "psychologist": "Psicólogo",
-        "company": "Gerente",
-        "patient": "Paciente"
-      }
-    },
-    "personal": {
-      "errorUpdate": "Error al guardar el perfil",
-      "successDesc": "Tus datos han sido guardados con éxito.",
-      "success": "¡Perfil actualizado!",
-      "title": "Datos Personales",
-      "subtitle": "Mantén tu información básica siempre actualizada.",
-      "fullName": "Nombre Completo",
-      "document": "DNI / Documento",
-      "birthDate": "Fecha de Nacimiento",
-      "gender": "Género",
-      "genderPlaceholder": "Selecciona tu género",
-      "genderMale": "Masculino",
-      "genderFemale": "Femenino",
-      "genderNonBinary": "No binario",
-      "genderPreferNotSay": "Prefiero no decirlo",
-      "genderOther": "Otro",
-      "profession": "Profesión",
-      "phone": "Teléfono / WhatsApp",
-      "email": "Correo electrónico",
-      "notEditable": "(no modificable)",
-      "saving": "Guardando...",
-      "save": "Guardar Cambios"
-    },
-    "address": {
-      "errorUpdate": "Error al guardar la dirección",
-      "successDesc": "Tus datos de dirección han sido guardados con éxito.",
-      "success": "¡Dirección actualizada!",
-      "title": "Dirección",
-      "subtitle": "Información de ubicación para facturación e historial.",
-      "addressLine": "Dirección y Número",
-      "addressLinePlaceholder": "Ej: Calle Las Flores, 123 - Apto 10",
-      "zipCode": "Código Postal",
-      "zipCodePlaceholder": "000000",
-      "city": "Ciudad",
-      "state": "Provincia / Estado",
-      "statePlaceholder": "Ej: BA",
-      "saving": "Guardando...",
-      "save": "Guardar Dirección"
-    },
-    "professional": {
-      "success": "¡Perfil profesional guardado!",
-      "successDesc": "Tus datos han sido actualizados en la plataforma.",
-      "errorUpdate": "Error al guardar el perfil profesional",
-      "title": "Perfil Profesional",
-      "subtitle": "Configura cómo aparecerás para los pacientes en la búsqueda.",
-      "crp": "Matrícula Institucional / Colegiatura",
-      "crpPlaceholder": "Ej: 00/00000",
-      "price": "Valor de la sesión",
-      "pricePlaceholder": "Ej: 150",
-      "specialties": "Especialidades (separadas por coma)",
-      "specialtiesPlaceholder": "Ej: Psicología Clínica, TCC, ansiedad",
-      "videoUrl": "URL del Vídeo de Presentación",
-      "videoUrlPlaceholder": "Enlace de YouTube o Vimeo",
-      "bio": "Biografía",
-      "bioPlaceholder": "Cuéntanos un poco sobre tu enfoque, experiencia y cómo puedes ayudar al paciente...",
-      "chars": "{count} caracteres",
-      "saving": "Guardando...",
-      "save": "Guardar Perfil Profesional"
     },
     "plans": {
       "title": "Planes y Suscripciones",
@@ -916,6 +257,160 @@
       "feat2Desc": "Ninguna información sensible se envía a la empresa.",
       "feat3Title": "Simple y Rápido",
       "feat3Desc": "Actívalo en segundos con tu código corporativo."
+    }
+  },
+  "PatientsManager": {
+    "title": "Pacientes",
+    "subtitle": "Gestiona tus pacientes y accede a los historiales clínicos.",
+    "searchPlaceholder": "Buscar por nombre o correo...",
+    "table": {
+      "patient": "Paciente",
+      "status": "Estado",
+      "lastSession": "Última Sesión",
+      "nextSession": "Próxima Sesión",
+      "actions": "Acciones",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "notScheduled": "No programada"
+    },
+    "sheet": {
+      "sessionsCount": "{count} Sesiones",
+      "viewProfile": "Ver perfil completo",
+      "tabs": {
+        "records": "Historial y Notas",
+        "history": "Historial de Sesiones",
+        "info": "Datos Personales"
+      },
+      "evolution": "Evoluciones",
+      "anamnesis": "Anamnesis",
+      "files": "Archivos",
+      "noFiles": "Ningún archivo adjunto",
+      "uploadDesc": "Sube exámenes, derivaciones o documentos firmados.",
+      "uploadBtn": "Subir Archivo",
+      "cadastralForm": "Ficha de Registro",
+      "editData": "Editar Datos",
+      "fields": {
+        "fullName": "Nombre Completo",
+        "document": "DNI / Documento",
+        "birthDate": "Fecha de Nacimiento",
+        "gender": "Género",
+        "email": "Correo electrónico",
+        "phone": "Teléfono",
+        "profession": "Profesión",
+        "address": "Dirección"
+      },
+      "anamnesisTab": {
+        "success": "¡Anamnesis actualizada con éxito!",
+        "error": "Error al guardar la anamnesis.",
+        "title": "Anamnesis e Historial",
+        "loadingSubtitle": "Cargando información...",
+        "subtitle": "Información clínica del paciente. Solo visible para el psicólogo.",
+        "loadingState": "Cargando anamnesis...",
+        "mainComplaint": "Motivo de Consulta",
+        "mainComplaintPlaceholder": "Describe el motivo de consulta del paciente...",
+        "familyHistory": "Antecedentes Familiares",
+        "familyHistoryPlaceholder": "Historial de enfermedades en la familia...",
+        "medication": "Medicamentos en Uso",
+        "medicationPlaceholder": "Medicamentos actuales y dosis...",
+        "diagnosticHypothesis": "Hipótesis Diagnóstica",
+        "diagnosticHypothesisPlaceholder": "Ej: TAG (Trastorno de Ansiedad Generalizada) - F41.1",
+        "saving": "Guardando...",
+        "saved": "¡Guardado!",
+        "save": "Guardar Anamnesis"
+      },
+      "historyTab": {
+        "title": "Sesiones Realizadas",
+        "export": "Exportar Historial",
+        "loadingState": "Cargando historial...",
+        "noSessions": "Aún no se ha registrado ninguna sesión con este paciente.",
+        "sessionType": "Sesión de Terapia Individual",
+        "status": {
+          "SCHEDULED": "Programada",
+          "COMPLETED": "Confirmada",
+          "CANCELED": "Cancelada",
+          "NO_SHOW": "No Asistió"
+        }
+      },
+      "evolutionsTab": {
+        "restoreToastTitle": "Borrador de la sesión restaurado automáticamente.",
+        "restoreToastDesc": "Los datos no guardados de la última vez se han recuperado.",
+        "errorEmpty": "Complete al menos el resumen o el análisis técnico.",
+        "saveSuccess": "¡Registro guardado con éxito!",
+        "saveError": "Error al guardar el registro.",
+        "title": "Registro de Sesión",
+        "moodLabel": "¿Cómo llegó el paciente hoy?",
+        "moods": {
+          "Bem": "Bien",
+          "Neutro": "Neutro",
+          "Mal": "Mal",
+          "Crise": "Crisis"
+        },
+        "publicSummaryLabel": "Resumen de la Sesión (Público en Historial)",
+        "publicSummaryPlaceholder": "¿Qué se discutió hoy?",
+        "privateNotesLabel": "Análisis Técnico Privado",
+        "confidential": "Confidencial",
+        "privateNotesPlaceholder": "Tus impresiones técnicas...",
+        "saving": "Guardando...",
+        "saveBtn": "Guardar Registro",
+        "timelineTitle": "Historial Reciente",
+        "loadingState": "Cargando evoluciones...",
+        "noEvolutions": "Ningún registro de evolución todavía.",
+        "createFirst": "Usa el formulario arriba para crear el primero.",
+        "regularSession": "Sesión Regular",
+        "technicalAnalysis": "Análisis Técnico"
+      }
+    }
+  },
+  "SearchPage": {
+    "exploreProfessionals": "Explorar Profesionales",
+    "meta": {
+      "title": "Psicólogos Online | Terapia",
+      "description": "Encuentra el psicólogo ideal para ti."
+    },
+    "header": {
+      "titlePart1": "Encontramos",
+      "titlePart2": "{count}",
+      "titlePart3": "profesionales para ti"
+    },
+    "sort": {
+      "label": "Ordenar por:",
+      "placeholder": "Relevancia",
+      "relevance": "Relevancia",
+      "priceAsc": "Menor precio",
+      "priceDesc": "Mayor precio"
+    },
+    "filters": {
+      "title": "Filtros",
+      "description": "Refina tu búsqueda.",
+      "clear": "Limpiar Todo",
+      "quickSearch": "Búsqueda Rápida",
+      "searchPlaceholder": "Nombre, enfoques...",
+      "specialties": "Especialidades",
+      "insurances": "Planes",
+      "noInsurances": "Ningún plan",
+      "investment": "Inversión Máxima",
+      "upTo": "Hasta {amount}",
+      "gender": "Género",
+      "female": "Femenino",
+      "male": "Masculino",
+      "moreComingSoon": "¡Más filtros pronto!"
+    },
+    "empty": {
+      "title": "Ningún resultado",
+      "description": "Intenta ajustar tus filtros.",
+      "button": "Limpiar Filtros"
+    },
+    "loadingMore": "Cargando...",
+    "card": {
+      "fallbackName": "Usuario",
+      "notInformed": "No informado",
+      "fallbackBio": "Sin descripción.",
+      "new": "Nuevo",
+      "online": "Online",
+      "brazil": "Brasil",
+      "sessionDuration": "Valor de la sesión",
+      "viewProfile": "Ver Perfil",
+      "noTimes": "Sin horarios"
     }
   }
 }

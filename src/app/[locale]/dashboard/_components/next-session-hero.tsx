@@ -12,6 +12,7 @@ import { formatInTimeZone } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   session: {
@@ -30,19 +31,19 @@ interface Props {
 }
 
 export function NextSessionHero({ session }: Props) {
+  const t = useTranslations('PatientDashboard.hero')
+
   if (!session) {
     return (
       <Card className="border-none shadow-md overflow-hidden relative p-6 sm:p-8 flex flex-col items-center justify-center text-center bg-white min-h-[200px]">
         <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
           <CalendarIcon className="h-6 w-6 text-slate-400" />
         </div>
-        <h2 className="text-base font-bold text-slate-900 mb-1">Sem sessões agendadas</h2>
-        <p className="text-sm text-slate-500 mb-4">
-          Você não possui atendimentos marcados para os próximos dias.
-        </p>
+        <h2 className="text-base font-bold text-slate-900 mb-1">{t('noSessions')}</h2>
+        <p className="text-sm text-slate-500 mb-4">{t('noSessionsDesc')}</p>
         <Link href="/busca">
           <Button className="bg-primary text-primary-foreground hover:bg-primary/90 text-sm">
-            Encontrar um Psicólogo
+            {t('findPsychologist')}
           </Button>
         </Link>
       </Card>
@@ -74,7 +75,7 @@ export function NextSessionHero({ session }: Props) {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/8 px-2.5 py-1 rounded-full border border-primary/10">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                  Próxima sessão
+                  {t('nextSession')}
                 </span>
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
                   {session.type}
@@ -121,7 +122,7 @@ export function NextSessionHero({ session }: Props) {
               <Link href={`/sala/${session.id}`} className="w-full sm:w-auto">
                 <Button className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-10 px-5 text-sm font-bold shadow-sm transition-all active:scale-95 flex items-center gap-2">
                   <Video className="w-4 h-4" />
-                  Entrar na Sala
+                  {t('enterRoom')}
                   <ArrowRight className="w-3.5 h-3.5 opacity-60" />
                 </Button>
               </Link>
@@ -132,7 +133,7 @@ export function NextSessionHero({ session }: Props) {
                     variant="ghost"
                     className="h-9 rounded-xl px-3 text-sm font-medium text-slate-400 hover:text-slate-700 hover:bg-slate-50"
                   >
-                    Documentos
+                    {t('documents')}
                   </Button>
                 </SessionDetailsDialog>
 
@@ -155,7 +156,7 @@ export function NextSessionHero({ session }: Props) {
                     className="h-9 rounded-xl px-3 text-sm font-medium text-slate-400 hover:text-rose-500 hover:bg-rose-50 flex items-center gap-1.5"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    Reagendar
+                    {t('reschedule')}
                   </Button>
                 </RescheduleDialog>
               </div>
