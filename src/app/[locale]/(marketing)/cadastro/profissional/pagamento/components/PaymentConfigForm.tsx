@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import { savePaymentConfig } from '@/lib/actions/professional-onboarding'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -47,6 +48,7 @@ const ID_TYPES = [
 ]
 
 export function PaymentConfigForm() {
+  const t = useTranslations('Onboarding.professional.payment')
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -80,11 +82,11 @@ export function PaymentConfigForm() {
         return
       }
 
-      toast.success('Configurações de pagamento salvas!')
+      toast.success(t('success'))
       router.push('/cadastro/profissional/sucesso')
     } catch (error) {
       console.error('Error saving payment config:', error)
-      toast.error('Erro inesperado ao salvar configurações.')
+      toast.error(t('error'))
     } finally {
       setIsSubmitting(false)
     }
@@ -104,31 +106,28 @@ export function PaymentConfigForm() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 py-8">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Configuración de Pago</h1>
-        <p className="text-muted-foreground">
-          Ingresa tus datos bancarios y tributarios de forma segura para recibir los pagos de tus
-          consultas. Tu información está protegida con encriptación de punta a punta.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('description')}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Banking Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Información Bancaria para Pagos</CardTitle>
+            <CardTitle>{t('bankHeader')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Bank */}
             <div className="space-y-2">
               <Label htmlFor="bank">
-                Banco <span className="text-destructive">*</span>
+                {t('bank')} <span className="text-destructive">*</span>
               </Label>
               <Select
                 value={formData.bank}
                 onValueChange={(value) => handleInputChange('bank', value)}
               >
                 <SelectTrigger id="bank">
-                  <SelectValue placeholder="Selecciona tu banco" />
+                  <SelectValue placeholder={t('bankPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {BANKS.map((bank) => (
@@ -144,7 +143,7 @@ export function PaymentConfigForm() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="accountNumber">
-                  Número de Cuenta <span className="text-destructive">*</span>
+                  {t('accountNumber')} <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <Input
@@ -161,14 +160,14 @@ export function PaymentConfigForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="accountType">
-                  Tipo de Cuenta <span className="text-destructive">*</span>
+                  {t('accountType')} <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={formData.accountType}
                   onValueChange={(value) => handleInputChange('accountType', value)}
                 >
                   <SelectTrigger id="accountType">
-                    <SelectValue placeholder="Selecciona un tipo" />
+                    <SelectValue placeholder={t('accountPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {ACCOUNT_TYPES.map((type) => (
@@ -186,23 +185,21 @@ export function PaymentConfigForm() {
         {/* Tax Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Información Tributaria</CardTitle>
-            <CardDescription>
-              Este número es necesario para la facturación y relaciones.
-            </CardDescription>
+            <CardTitle>{t('taxHeader')}</CardTitle>
+            <CardDescription>{t('taxDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="taxIdType">
-                  Tipo de Identificación <span className="text-destructive">*</span>
+                  {t('idType')} <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={formData.taxIdType}
                   onValueChange={(value) => handleInputChange('taxIdType', value)}
                 >
                   <SelectTrigger id="taxIdType">
-                    <SelectValue placeholder="Selecciona un tipo" />
+                    <SelectValue placeholder={t('idPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {ID_TYPES.map((type) => (
@@ -216,14 +213,13 @@ export function PaymentConfigForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="taxIdNumber">
-                  Número de Identificación Tributaria (NIT / Cédula){' '}
-                  <span className="text-destructive">*</span>
+                  {t('taxId')} <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <Input
                     id="taxIdNumber"
                     type="text"
-                    placeholder="Ingresa tu número"
+                    placeholder={t('taxIdPlaceholder')}
                     value={formData.taxIdNumber}
                     onChange={(e) => handleInputChange('taxIdNumber', e.target.value)}
                     maxLength={15}
@@ -238,10 +234,10 @@ export function PaymentConfigForm() {
         {/* Actions */}
         <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
-            Cancelar
+            {t('cancel')}
           </Button>
           <Button type="submit" disabled={!isFormValid || isSubmitting}>
-            {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
+            {isSubmitting ? t('saving') : t('save')}
           </Button>
         </div>
       </form>

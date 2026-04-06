@@ -1,4 +1,11 @@
 {
+  "Metadata": {
+    "title": "Terapia Online de Alta Qualidade",
+    "description": "Encontre psicólogos qualificados e comece sua jornada de autocuidado através de sessões online com total segurança.",
+    "keywords": "terapia online, psicólogo online, saúde mental, ansiedade, depressão, bem-estar, sentirz",
+    "ogTitle": "Terapia Online com Psicólogos Qualificados",
+    "ogDescription": "Comece sua jornada de autocuidado hoje mesmo na plataforma de terapia mais completa."
+  },
   "Index": {
     "title": "Terapia"
   },
@@ -581,6 +588,104 @@
       "success": "Conta criada com sucesso!",
       "alreadyHaveAccount": "Já tem uma conta?",
       "login": "Entrar"
+    },
+    "professionalRegistration": {
+      "hero": {
+        "title": "Transforme sua prática em digital.",
+        "description": "Junte-se a centenas de psicólogos na maior plataforma de teleterapia da América Latina."
+      },
+      "fields": {
+        "name": "Nome Completo",
+        "namePlaceholder": "ex. Dr. João Silva",
+        "email": "E-mail Profissional",
+        "emailPlaceholder": "seu@email.com",
+        "password": "Senha",
+        "passwordPlaceholder": "Crie uma senha forte",
+        "crp": "CRP (Carteira Profissional)",
+        "crpPlaceholder": "XX/XXXXX",
+        "crpHint": "O número da sua carteira profissional deve seguir o padrão do seu conselho regional.",
+        "terms": "Eu aceito os",
+        "termsOfService": "Termos de Serviço",
+        "and": "e",
+        "privacyPolicy": "Políticas de Privacidade"
+      },
+      "actions": {
+        "submit": "Criar minha conta",
+        "submitting": "Criando conta...",
+        "orRegisterWith": "Ou cadastre-se com"
+      },
+      "psychologistRegistration": "Cadastro do Profissional",
+      "loginPrompt": "Já tem conta?",
+      "login": "Entrar",
+      "success": "Cadastro realizado com sucesso!",
+      "errors": {
+        "captcha": "Por favor, complete o desafio de segurança.",
+        "apiError": "Ocorreu um erro no servidor. Tente novamente.",
+        "generic": "Ocorreu um erro ao processar seu cadastro.",
+        "google": "Erro ao autenticar com Google."
+      }
+    },
+    "patientRegistration": {
+      "steps": {
+        "1": {
+          "title": "Dados Iniciais",
+          "description": "Conte-nos quem você é para começar."
+        },
+        "2": {
+          "title": "Informações Pessoais",
+          "description": "Precisamos de alguns dados para sua segurança e prontuário."
+        },
+        "3": {
+          "title": "Plano de Saúde",
+          "description": "Se tiver um plano, podemos verificar a cobertura para suas sessões."
+        }
+      },
+      "fields": {
+        "name": "Nome Completo",
+        "namePlaceholder": "Seu nome completo",
+        "email": "E-mail",
+        "emailPlaceholder": "seu@email.com",
+        "document": "CPF",
+        "documentPlaceholder": "000.000.000-00",
+        "phone": "Telefone / WhatsApp",
+        "phonePlaceholder": "(00) 00000-0000",
+        "birthDate": "Data de Nascimento",
+        "birthDateHint": "Usado para verificar maioridade e prontuário.",
+        "password": "Senha",
+        "passwordPlaceholder": "Sua melhor senha",
+        "confirmPassword": "Confirmar Senha",
+        "confirmPasswordPlaceholder": "Repita a senha",
+        "terms": "Termos e Condições",
+        "termsAgreement": "Concordo que li e aceito os",
+        "privacyPolicy": "Políticas de Privacidade",
+        "termsOfService": "Termos de Uso",
+        "and": "e",
+        "healthInsurance": "Plano de Saúde",
+        "selectPlan": "Selecione seu plano",
+        "noPlan": "Não possuo plano / Particular",
+        "planHint": "Alguns planos permitem reembolso ou atendimento direto.",
+        "policyNumber": "Número da Carteirinha",
+        "policyNumberPlaceholder": "00000000000000"
+      },
+      "actions": {
+        "continue": "Continuar",
+        "back": "Voltar",
+        "submit": "Criar minha conta",
+        "submitting": "Criando conta...",
+        "recoverPassword": "Recuperar senha"
+      },
+      "success": "Cadastro realizado com sucesso! Verifique seu e-mail.",
+      "loginPrompt": "Já tem uma conta?",
+      "login": "Entrar",
+      "or": "ou",
+      "professionalPrompt": "É psicólogo?",
+      "registerAsProfessional": "Cadastre-se como Profissional",
+      "errors": {
+        "honeypot": "Bot detectado. Por favor, tente novamente de forma humana.",
+        "captcha": "Por favor, complete o desafio de segurança.",
+        "apiError": "Ocorreu um erro no servidor. Tente novamente.",
+        "generic": "Ocorreu um erro ao processar seu cadastro."
+      }
     }
   },
   "PsychologistDashboard": {
@@ -861,6 +966,96 @@
       "saturdayShort": "Sab",
       "sunday": "Domingo",
       "sundayShort": "Dom"
+    }
+  },
+  "Onboarding": {
+    "professional": {
+      "profile": {
+        "title": "Dados Profissionais",
+        "subtitle": "Complete suas informações profissionais para continuar.",
+        "academicHeader": "Formação Acadêmica",
+        "university": "Universidade",
+        "universityPlaceholder": "ex. Universidade de São Paulo",
+        "academicLevel": "Nível Acadêmico",
+        "academicLevelPlaceholder": "Selecione o nível",
+        "levels": {
+          "graduacao": "Graduação",
+          "especializacao": "Especialização",
+          "mestrado": "Mestrado",
+          "doutorado": "Doutorado"
+        },
+        "academicTitle": "Título",
+        "academicTitlePlaceholder": "ex. Psicologia",
+        "diploma": "Diploma",
+        "licenseHeader": "Licenças e Registros",
+        "registrationNumber": "Número de Registro Profissional",
+        "expirationDate": "Data de Expiração",
+        "expirationPlaceholder": "dd/mm/aaaa",
+        "licenseFile": "Licença Profissional",
+        "specializationHeader": "Especialização e Experiência",
+        "yearsExperience": "Anos de Experiência",
+        "yearsPlaceholder": "ex. 5",
+        "next": "Próximo",
+        "saving": "Salvando...",
+        "success": "Dados profissionais salvos com sucesso!",
+        "error": "Ocorreu um erro ao salvar os dados."
+      },
+      "availability": {
+        "title": "Configurar sua Disponibilidade",
+        "description": "Selecione os dias e horários em que você estará disponível para atender seus pacientes.",
+        "tip": "💡 **Não se preocupe!** Você poderá configurar exceções (feriados, folgas, dias específicos) e alterar essa rotina a qualquer momento através da página de Agenda no seu painel.",
+        "sessionDuration": "Duração da Sessão:",
+        "timezone": "Fuso Horário Local:",
+        "weeklyRoutine": "Sua Rotina Semanal",
+        "routineDesc": "Defina os horários base para cada dia da semana. Ative apenas os dias que deseja trabalhar.",
+        "copyToWeekdays": "Copiar p/ dias úteis",
+        "copySuccess": "Horários copiados para todos os dias úteis!",
+        "copySuccessDesc": "A rotina foi aplicada de segunda a sexta-feira.",
+        "unavailable": "Indisponível neste dia",
+        "noSlots": "Nenhum horário definido. Clique abaixo para adicionar.",
+        "to": "até",
+        "addInterval": "Adicionar intervalo",
+        "back": "Voltar",
+        "finish": "Finalizar Cadastro",
+        "saving": "Salvando...",
+        "saveSuccess": "Disponibilidade salva e cadastro concluído!",
+        "conflict": "Conflito de horários",
+        "conflictDesc": "O intervalo selecionado conflita com outro horário já definido para este dia."
+      },
+      "payment": {
+        "title": "Configuração de Pagamento",
+        "description": "Insira seus dados bancários e tributários de forma segura para receber os pagamentos de suas consultas. Suas informações estão protegidas com criptografia de ponta a ponta.",
+        "bankHeader": "Informações Bancárias para Recebimento",
+        "bank": "Banco",
+        "bankPlaceholder": "Selecione seu banco",
+        "accountNumber": "Número da Conta",
+        "accountType": "Tipo de Conta",
+        "accountPlaceholder": "Selecione um tipo",
+        "taxHeader": "Informações Tributárias",
+        "taxDesc": "Este número é necessário para faturamento e obrigações fiscais.",
+        "idType": "Tipo de Documento",
+        "idPlaceholder": "Selecione um tipo",
+        "taxId": "Número de Identificação (CPF / CNPJ)",
+        "taxIdPlaceholder": "Insira o número",
+        "cancel": "Cancelar",
+        "save": "Salvar Configurações",
+        "saving": "Salvando...",
+        "success": "Configurações de pagamento salvas!",
+        "error": "Erro ao salvar configurações de pagamento."
+      },
+      "shared": {
+        "fileUpload": {
+          "clickOrDrag": "Clique para enviar ou arraste e solte",
+          "acceptedTypes": "PDF, PNG ou JPG",
+          "maxSize": "MÁX. 5MB"
+        },
+        "specializations": {
+          "label": "Áreas de Especialização",
+          "add": "Adicionar especialização",
+          "search": "Buscar ou adicionar especialização...",
+          "addNew": "Adicionar \"{name}\""
+        }
+      }
     }
   }
 }

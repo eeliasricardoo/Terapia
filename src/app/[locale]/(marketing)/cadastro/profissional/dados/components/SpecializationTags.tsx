@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { X, Plus, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,6 +25,7 @@ interface SpecializationTagsProps {
 const defaultSpecializations = Array.from(SPECIALIZATIONS)
 
 export function SpecializationTags({ value = [], onChange }: SpecializationTagsProps) {
+  const t = useTranslations('Onboarding.professional.shared.specializations')
   const [open, setOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
 
@@ -54,7 +56,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">Áreas de Especialização</label>
+      <label className="text-sm font-medium">{t('label')}</label>
       <div className="flex flex-wrap items-center gap-2 p-3 border rounded-md bg-muted/30 min-h-[44px]">
         {value.map((tag) => (
           <div
@@ -79,7 +81,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
               className="h-8 px-2 text-muted-foreground hover:text-foreground"
             >
               <Plus className="h-4 w-4 mr-1" />
-              Adicionar especialização
+              {t('add')}
             </Button>
           </PopoverTrigger>
           <PopoverContent
@@ -89,7 +91,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
           >
             <Command shouldFilter={false}>
               <CommandInput
-                placeholder="Buscar ou adicionar especialização..."
+                placeholder={t('search')}
                 value={inputValue}
                 onValueChange={setInputValue}
               />
@@ -107,7 +109,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
                         }}
                       >
                         <Plus className="mr-2 h-4 w-4" />
-                        Adicionar &quot;{inputValue}&quot;
+                        {t('addNew', { name: inputValue })}
                       </Button>
                     </div>
                   )}
@@ -148,7 +150,7 @@ export function SpecializationTags({ value = [], onChange }: SpecializationTagsP
                         }}
                       >
                         <Plus className="mr-2 h-4 w-4" />
-                        Adicionar &quot;{inputValue}&quot;
+                        {t('addNew', { name: inputValue })}
                       </div>
                     )}
                 </CommandGroup>

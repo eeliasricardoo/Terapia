@@ -1,6 +1,7 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
+import { useTranslations, useLocale } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -30,7 +31,7 @@ import { Calendar as CalendarIcon } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { ptBR, es } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { saveProfessionalData } from '@/lib/actions/professional-onboarding'
 import { toast } from 'sonner'
@@ -49,6 +50,9 @@ const formSchema = z.object({
 })
 
 export function ProfessionalDataForm() {
+  const t = useTranslations('Onboarding.professional.profile')
+  const locale = useLocale()
+  const dateLocale = locale === 'es' ? es : ptBR
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
@@ -93,10 +97,10 @@ export function ProfessionalDataForm() {
         return
       }
 
-      toast.success('Dados profissionais salvos com sucesso!')
+      toast.success(t('success'))
       router.push('/cadastro/profissional/disponibilidade')
     } catch (error) {
-      toast.error('Ocorreu um erro ao salvar os dados.')
+      toast.error(t('error'))
     } finally {
       setIsSubmitting(false)
     }
@@ -105,10 +109,8 @@ export function ProfessionalDataForm() {
   return (
     <>
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Dados Profissionais</h1>
-        <p className="text-muted-foreground">
-          Complete suas informações profissionais para continuar.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       <Form {...form}>
@@ -116,7 +118,7 @@ export function ProfessionalDataForm() {
           {/* Formação Acadêmica */}
           <Card>
             <CardHeader>
-              <CardTitle>Formação Acadêmica</CardTitle>
+              <CardTitle>{t('academicHeader')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -124,11 +126,11 @@ export function ProfessionalDataForm() {
                 name="university"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Universidade</FormLabel>
+                    <FormLabel>{t('university')}</FormLabel>
                     <FormControl>
                       <Input
                         className="h-[44px]"
-                        placeholder="ex. Universidade de São Paulo"
+                        placeholder={t('universityPlaceholder')}
                         {...field}
                       />
                     </FormControl>
@@ -143,18 +145,20 @@ export function ProfessionalDataForm() {
                   name="academicLevel"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Nível Acadêmico</FormLabel>
+                      <FormLabel>{t('academicLevel')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger className="!h-[44px] w-full">
-                            <SelectValue placeholder="Selecione o nível" />
+                            <SelectValue placeholder={t('academicLevelPlaceholder')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="graduacao">Graduação</SelectItem>
-                          <SelectItem value="especializacao">Especialização</SelectItem>
-                          <SelectItem value="mestrado">Mestrado</SelectItem>
-                          <SelectItem value="doutorado">Doutorado</SelectItem>
+                          <SelectItem value="graduacao">{t('levels.graduacao')}</SelectItem>
+                          <SelectItem value="especializacao">
+                            {t('levels.especializacao')}
+                          </SelectItem>
+                          <SelectItem value="mestrado">{t('levels.mestrado')}</SelectItem>
+                          <SelectItem value="doutorado">{t('levels.doutorado')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <div className="min-h-[20px]">
@@ -169,9 +173,13 @@ export function ProfessionalDataForm() {
                   name="title"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Título</FormLabel>
+                      <FormLabel>{t('academicTitle')}</FormLabel>
                       <FormControl>
-                        <Input className="h-[44px]" placeholder="ex. Psicologia" {...field} />
+                        <Input
+                          className="h-[44px]"
+                          placeholder={t('academicTitlePlaceholder')}
+                          {...field}
+                        />
                       </FormControl>
                       <div className="min-h-[20px]">
                         <FormMessage />
@@ -188,7 +196,7 @@ export function ProfessionalDataForm() {
                   <FormItem>
                     <FormControl>
                       <FileUpload
-                        label="Diploma"
+                        label={t('diploma')}
                         value={field.value || null}
                         onChange={field.onChange}
                       />
@@ -203,7 +211,7 @@ export function ProfessionalDataForm() {
           {/* Licenças e Registros */}
           <Card>
             <CardHeader>
-              <CardTitle>Licenças e Registros</CardTitle>
+              <CardTitle>{t('licenseHeader')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -212,7 +220,7 @@ export function ProfessionalDataForm() {
                   name="registrationNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Número de Registro Profissional</FormLabel>
+                      <FormLabel>{t('registrationNumber')}</FormLabel>
                       <FormControl>
                         <Input className="h-[44px]" placeholder="ex. 123456" {...field} />
                       </FormControl>
@@ -226,7 +234,7 @@ export function ProfessionalDataForm() {
                   name="expirationDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Data de Expiração</FormLabel>
+                      <FormLabel>{t('expirationDate')}</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
@@ -239,9 +247,9 @@ export function ProfessionalDataForm() {
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {field.value ? (
-                              format(field.value, 'dd/MM/yyyy', { locale: ptBR })
+                              format(field.value, 'dd/MM/yyyy', { locale: dateLocale })
                             ) : (
-                              <span>dd/mm/aaaa</span>
+                              <span>{t('expirationPlaceholder')}</span>
                             )}
                           </Button>
                         </PopoverTrigger>
@@ -269,7 +277,7 @@ export function ProfessionalDataForm() {
                   <FormItem>
                     <FormControl>
                       <FileUpload
-                        label="Licença Profissional"
+                        label={t('licenseFile')}
                         value={field.value || null}
                         onChange={field.onChange}
                       />
@@ -284,7 +292,7 @@ export function ProfessionalDataForm() {
           {/* Especialização e Experiência */}
           <Card>
             <CardHeader>
-              <CardTitle>Especialização e Experiência</CardTitle>
+              <CardTitle>{t('specializationHeader')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -305,9 +313,14 @@ export function ProfessionalDataForm() {
                 name="yearsOfExperience"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Anos de Experiência</FormLabel>
+                    <FormLabel>{t('yearsExperience')}</FormLabel>
                     <FormControl>
-                      <Input className="h-[44px]" type="number" placeholder="ex. 5" {...field} />
+                      <Input
+                        className="h-[44px]"
+                        type="number"
+                        placeholder={t('yearsPlaceholder')}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -335,7 +348,7 @@ export function ProfessionalDataForm() {
               className="font-bold h-[44px] px-8"
               disabled={!form.formState.isValid || isSubmitting}
             >
-              {isSubmitting ? 'Salvando...' : 'Próximo'}
+              {isSubmitting ? t('saving') : t('next')}
             </Button>
           </div>
         </form>

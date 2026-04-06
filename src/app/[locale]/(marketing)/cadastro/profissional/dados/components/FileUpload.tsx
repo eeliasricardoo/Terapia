@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -12,13 +13,8 @@ interface FileUploadProps {
   onChange?: (file: File | null) => void
 }
 
-export function FileUpload({
-  label,
-  acceptedTypes = 'PDF, PNG, or JPG',
-  maxSize = 'MAX. 5MB',
-  value,
-  onChange,
-}: FileUploadProps) {
+export function FileUpload({ label, acceptedTypes, maxSize, value, onChange }: FileUploadProps) {
+  const t = useTranslations('Onboarding.professional.shared.fileUpload')
   const [file, setFile] = useState<File | null>(value || null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -84,11 +80,9 @@ export function FileUpload({
         ) : (
           <>
             <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground text-center">
-              Click to upload or drag and drop
-            </p>
+            <p className="text-sm text-muted-foreground text-center">{t('clickOrDrag')}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              {acceptedTypes} ({maxSize})
+              {acceptedTypes || t('acceptedTypes')} ({maxSize || t('maxSize')})
             </p>
           </>
         )}

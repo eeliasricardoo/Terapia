@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
@@ -71,6 +72,7 @@ const TIMEZONES = [
 ]
 
 export function AvailabilityForm() {
+  const t = useTranslations('Onboarding.professional.availability')
   const router = useRouter()
   // --- State ---
   const [isLoading, setIsLoading] = useState(false)
@@ -240,8 +242,8 @@ export function AvailabilityForm() {
       return updated
     })
 
-    toast.success('Horários copiados para todos os dias úteis!', {
-      description: 'A rotina foi aplicada de segunda a sexta-feira.',
+    toast.success(t('copySuccess'), {
+      description: t('copySuccessDesc'),
     })
   }
 
@@ -255,7 +257,7 @@ export function AvailabilityForm() {
       if (!user) {
         if (process.env.NODE_ENV === 'development') {
           console.warn('Simulated success for availability without auth in dev')
-          toast.success('Disponibilidade salva!')
+          toast.success(t('saveSuccess'))
           router.push('/cadastro/profissional/sucesso')
           return
         }
@@ -284,13 +286,13 @@ export function AvailabilityForm() {
 
       if (error) {
         console.error('Error saving schedule:', error)
-        toast.error('Erro ao salvar', {
-          description: 'Tente novamente mais tarde.',
+        toast.error(t('conflict'), {
+          description: t('conflictDesc'),
         })
         return
       }
 
-      toast.success('Disponibilidade salva e cadastro concluído!', {
+      toast.success(t('saveSuccess'), {
         description: 'Página de sucesso',
       })
       router.push('/cadastro/profissional/sucesso')
@@ -308,25 +310,21 @@ export function AvailabilityForm() {
       {/* Header */}
       <div className="flex flex-col gap-4">
         <div>
-          <h2 className="text-3xl font-black tracking-tight text-slate-900">
-            Configurar sua Disponibilidade
-          </h2>
-          <p className="text-slate-500 mt-2 text-lg">
-            Selecione os dias e horários em que você estará disponível para atender seus pacientes.
-          </p>
+          <h2 className="text-3xl font-black tracking-tight text-slate-900">{t('title')}</h2>
+          <p className="text-slate-500 mt-2 text-lg">{t('description')}</p>
           <div className="mt-4 p-4 bg-emerald-50 border border-emerald-100/50 rounded-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 bg-emerald-500 w-32 h-32 rounded-full -mr-16 -mt-16 blur-2xl"></div>
             <p className="text-sm text-emerald-800 font-medium relative z-10">
-              💡 <strong>Não se preocupe!</strong> Você poderá configurar exceções (feriados,
-              folgas, dias específicos) e alterar essa rotina a qualquer momento através da página
-              de Agenda no seu painel.
+              {t.rich('tip', {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}
             </p>
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-6 mt-2 pt-4 border-t border-slate-100">
           <div className="flex flex-col gap-2">
-            <span className="text-sm font-semibold text-slate-700">Duração da Sessão:</span>
+            <span className="text-sm font-semibold text-slate-700">{t('sessionDuration')}</span>
             <Select value={sessionDuration} onValueChange={setSessionDuration}>
               <SelectTrigger className="w-[180px] h-[44px] bg-white">
                 <SelectValue placeholder="Selecione..." />
@@ -341,7 +339,7 @@ export function AvailabilityForm() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <span className="text-sm font-semibold text-slate-700">Fuso Horário Local:</span>
+            <span className="text-sm font-semibold text-slate-700">{t('timezone')}</span>
             <Select value={timezone} onValueChange={setTimezone}>
               <SelectTrigger className="w-[280px] h-[44px] bg-white">
                 <SelectValue placeholder="Selecione..." />
@@ -361,10 +359,9 @@ export function AvailabilityForm() {
       {/* Routine list inline */}
       <Card className="border border-slate-200/60 shadow-xl shadow-slate-200/20 bg-white/70 backdrop-blur-xl overflow-hidden rounded-2xl">
         <CardHeader className="border-b border-slate-100 pb-5 bg-white/50">
-          <CardTitle className="text-xl font-bold text-slate-800">Sua Rotina Semanal</CardTitle>
+          <CardTitle className="text-xl font-bold text-slate-800">{t('weeklyRoutine')}</CardTitle>
           <CardDescription className="text-slate-500 text-[15px]">
-            Defina os horários base para cada dia da semana. Ative apenas os dias que deseja
-            trabalhar.
+            {t('routineDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
@@ -398,20 +395,20 @@ export function AvailabilityForm() {
                           onClick={() => handleCopyToAllWeekdays(day.id)}
                           className="text-xs text-primary hover:text-primary-foreground hover:bg-primary font-medium flex items-center gap-1.5 transition-all sm:ml-0 ml-auto bg-primary/10 px-2 py-1.5 rounded-md border border-primary/20"
                         >
-                          <Copy className="h-3.5 w-3.5" /> Copiar p/ dias úteis
+                          <Copy className="h-3.5 w-3.5" /> {t('copyToWeekdays')}
                         </button>
                       )}
                   </div>
                   <div className="flex-1 transition-all">
                     {!isAvailable ? (
                       <span className="text-sm font-medium text-slate-400 tracking-wide flex items-center h-10 px-2">
-                        Indisponível neste dia
+                        {t('unavailable')}
                       </span>
                     ) : (
                       <div className="space-y-4">
                         {daySchedule.slots.length === 0 && (
                           <div className="text-[14px] text-slate-500 italic pb-2">
-                            Nenhum horário definido. Clique abaixo para adicionar.
+                            {t('noSlots')}
                           </div>
                         )}
                         {daySchedule.slots.map((slot, idx) => (
@@ -434,7 +431,9 @@ export function AvailabilityForm() {
                                   ))}
                                 </SelectContent>
                               </Select>
-                              <span className="text-slate-400 font-medium px-1 text-sm">até</span>
+                              <span className="text-slate-400 font-medium px-1 text-sm">
+                                {t('to')}
+                              </span>
                               <Select
                                 value={slot.end}
                                 onValueChange={(v) => handleWeeklySlotChange(day.id, idx, 'end', v)}
@@ -469,7 +468,7 @@ export function AvailabilityForm() {
                           className="text-primary hover:text-primary hover:bg-primary/10 text-[14px] h-10 px-3 font-bold mt-1 -ml-3 rounded-lg transition-colors"
                           onClick={() => handleWeeklyAddSlot(day.id)}
                         >
-                          <Plus className="h-4 w-4 mr-2" /> Adicionar intervalo
+                          <Plus className="h-4 w-4 mr-2" /> {t('addInterval')}
                         </Button>
                       </div>
                     )}
@@ -488,14 +487,14 @@ export function AvailabilityForm() {
           onClick={() => router.push('/cadastro/profissional/dados')}
           className="h-[48px] px-6 font-semibold border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50"
         >
-          Voltar
+          {t('back')}
         </Button>
         <Button
           onClick={handleSave}
           disabled={isLoading}
           className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 font-bold h-[48px] px-10 rounded-xl"
         >
-          {isLoading ? 'Salvando...' : 'Finalizar Cadastro'}
+          {isLoading ? t('saving') : t('finish')}
         </Button>
       </div>
     </div>
