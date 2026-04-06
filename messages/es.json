@@ -461,6 +461,16 @@
       "navigation": "Navegação Sentirz",
       "loading": "Cargando...",
       "logout": "Cerrar Sesión"
+    },
+    "notifications": {
+      "title": "Notificaciones",
+      "markAllRead": "Leer todas",
+      "errorMarkAll": "Error al marcar como leídas",
+      "successMarkAll": "Todas las notificaciones marcadas como leídas",
+      "loading": "Cargando...",
+      "emptyTitle": "¡Todo despejado!",
+      "emptyDesc": "No tienes nuevas notificaciones por ahora.",
+      "viewDetails": "Ver detalles"
     }
   },
   "PatientDashboard": {
@@ -501,6 +511,21 @@
       "title": "Últimas Sesiones",
       "seeAll": "Ver todas",
       "noSessions": "No se han realizado sesiones recientemente."
+    },
+    "moodTracker": {
+      "title": "¿Cómo te sientes?",
+      "subtitle": "Tu saúde mental es prioridad.",
+      "verySad": "Muy mal",
+      "sad": "Mal",
+      "neutral": "Neutral",
+      "good": "Bien",
+      "veryGood": "Muy bien",
+      "journey": "Tu Camino",
+      "sessions": "{completed} de {total} sesiones",
+      "toastSuccess": "¡Estado de ánimo guardado!",
+      "toastSuccessDesc": "Gracias por compartir. Te sientes",
+      "toastError": "Error al guardar",
+      "toastErrorDesc": "No se pudo registrar tu estado de ánimo."
     }
   }
 }

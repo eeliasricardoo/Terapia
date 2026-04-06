@@ -460,6 +460,16 @@
       "navigation": "Navegação Sentirz",
       "loading": "Carregando...",
       "logout": "Sair da Conta"
+    },
+    "notifications": {
+      "title": "Notificações",
+      "markAllRead": "Ler todas",
+      "errorMarkAll": "Erro ao marcar como lidas",
+      "successMarkAll": "Todas as notificações marcadas como lidas",
+      "loading": "Carregando...",
+      "emptyTitle": "Tudo limpo!",
+      "emptyDesc": "Você não tem novas notificações por enquanto.",
+      "viewDetails": "Ver detalhes"
     }
   },
   "PatientDashboard": {
@@ -500,6 +510,21 @@
       "title": "Últimas Sessões",
       "seeAll": "Ver todas",
       "noSessions": "Nenhuma sessão realizada recentemente."
+    },
+    "moodTracker": {
+      "title": "Como você está?",
+      "subtitle": "Sua saúde mental é prioridade.",
+      "verySad": "Muito triste",
+      "sad": "Triste",
+      "neutral": "Neutro",
+      "good": "Bem",
+      "veryGood": "Muito bem",
+      "journey": "Sua Jornada",
+      "sessions": "{completed} de {total} sessões",
+      "toastSuccess": "Humor registrado!",
+      "toastSuccessDesc": "Que bom que você compartilhou. Você está se sentindo",
+      "toastError": "Erro ao salvar",
+      "toastErrorDesc": "Não foi possível registrar seu humor agora."
     }
   }
 }
