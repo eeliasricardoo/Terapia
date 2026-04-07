@@ -29,34 +29,43 @@ export function SearchHighlight({ totalPsychologists = 500 }: SearchHighlightPro
       value: `${totalPsychologists}+`,
       label: t('stats.verified.label'),
       description: t('stats.verified.desc'),
-      accent: 'bg-blue-50 text-blue-600',
+      iconBg: 'bg-sentirz-teal-pastel',
+      iconColor: 'text-sentirz-teal',
+      hoverBorder: 'hover:border-sentirz-teal/30',
+      glow: 'hover:shadow-sentirz-teal/10',
     },
     {
       icon: Star,
       value: '4.9/5',
       label: t('stats.rating.label'),
       description: t('stats.rating.desc'),
-      accent: 'bg-amber-50 text-amber-600',
+      iconBg: 'bg-sentirz-orange-pastel',
+      iconColor: 'text-sentirz-orange',
+      hoverBorder: 'hover:border-sentirz-orange/30',
+      glow: 'hover:shadow-sentirz-orange/10',
     },
     {
       icon: Clock,
       value: '24/7',
       label: t('stats.availability.label'),
       description: t('stats.availability.desc'),
-      accent: 'bg-emerald-50 text-emerald-600',
+      iconBg: 'bg-sentirz-green-pastel',
+      iconColor: 'text-sentirz-green',
+      hoverBorder: 'hover:border-sentirz-green/30',
+      glow: 'hover:shadow-sentirz-green/10',
     },
   ]
 
   return (
-    <section className="w-full py-16 md:py-24 bg-slate-50 relative overflow-hidden">
-      {/* Subtle grid pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.015)_1px,transparent_1px)] bg-[length:64px_64px] pointer-events-none" />
+    <section className="w-full py-16 md:py-24 bg-transparent relative overflow-hidden">
+      {/* Grid pattern sutil */}
+      <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--border)/0.4)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.4)_1px,transparent_1px)] bg-[length:64px_64px] pointer-events-none" />
 
-      {/* Organic dots */}
-      <div className="absolute top-24 left-[12%] w-2.5 h-2.5 rounded-full bg-blue-200/50" />
-      <div className="absolute bottom-20 right-[18%] w-2 h-2 rounded-full bg-indigo-200/60" />
+      {/* Blobs decorativos */}
+      <div className="absolute top-0 left-[5%] w-64 h-64 rounded-full bg-sentirz-teal/8 blur-[80px] pointer-events-none" />
+      <div className="absolute bottom-0 right-[8%] w-56 h-56 rounded-full bg-sentirz-green/8 blur-[80px] pointer-events-none" />
 
-      <div className="container px-6 relative z-10 mx-auto max-w-5xl">
+      <div className="container px-4 sm:px-6 relative z-10 mx-auto max-w-5xl">
         <motion.div
           variants={stagger}
           initial="initial"
@@ -68,47 +77,47 @@ export function SearchHighlight({ totalPsychologists = 500 }: SearchHighlightPro
           <div className="text-center space-y-5">
             <motion.p
               variants={fadeIn}
-              className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em]"
+              className="text-xs font-semibold text-foreground/40 uppercase tracking-[0.2em]"
             >
               {t('badge')}
             </motion.p>
             <motion.h2
               variants={fadeIn}
-              className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight font-outfit"
+              className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-tight font-outfit"
             >
               {t('title1')}
               <br />
-              <span className="text-slate-400 font-light">{t('title2')}</span>
+              <span className="text-foreground/35 font-light">{t('title2')}</span>
             </motion.h2>
             <motion.p
               variants={fadeIn}
-              className="text-lg text-slate-500 max-w-md mx-auto leading-relaxed"
+              className="text-lg text-foreground/60 max-w-md mx-auto leading-relaxed"
             >
               {t('description')}
             </motion.p>
           </div>
 
-          {/* Stats grid with icons */}
-          <motion.div variants={stagger} className="grid md:grid-cols-3 gap-6">
+          {/* Stats grid */}
+          <motion.div variants={stagger} className="grid md:grid-cols-3 gap-5">
             {stats.map((stat, i) => (
               <motion.div
                 key={i}
                 variants={fadeIn}
-                className="bg-white border border-slate-100 rounded-3xl p-10 flex flex-col gap-5 group hover:shadow-lg hover:shadow-slate-100/80 hover:-translate-y-1 transition-all duration-500"
+                className={`bg-card border border-border rounded-3xl p-8 flex flex-col gap-5 group ${stat.hoverBorder} hover:shadow-xl ${stat.glow} hover:-translate-y-1 transition-all duration-500`}
               >
                 <div
-                  className={`h-12 w-12 rounded-2xl ${stat.accent} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
+                  className={`h-12 w-12 rounded-2xl ${stat.iconBg} ${stat.iconColor} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
                 >
                   <stat.icon className="h-5 w-5" />
                 </div>
-                <div className="space-y-2">
-                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight font-outfit">
+                <div className="space-y-1.5">
+                  <span className="text-4xl font-extrabold text-foreground tracking-tight font-outfit block">
                     {stat.value}
                   </span>
-                  <p className="text-sm font-semibold text-slate-900 uppercase tracking-wide">
+                  <p className="text-sm font-bold text-foreground/80 uppercase tracking-wide">
                     {stat.label}
                   </p>
-                  <p className="text-sm text-slate-500 leading-relaxed">{stat.description}</p>
+                  <p className="text-sm text-foreground/55 leading-relaxed">{stat.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -119,7 +128,7 @@ export function SearchHighlight({ totalPsychologists = 500 }: SearchHighlightPro
             <Button
               asChild
               size="lg"
-              className="h-14 px-10 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-lg shadow-slate-900/10 transition-all hover:-translate-y-0.5 group"
+              className="h-14 px-10 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg shadow-primary/15 transition-all hover:-translate-y-0.5 group border-none"
             >
               <Link href="/busca" className="flex items-center gap-2">
                 {t('button')}

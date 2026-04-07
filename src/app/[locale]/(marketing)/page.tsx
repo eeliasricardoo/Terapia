@@ -47,14 +47,23 @@ export default async function Home() {
   const displayCount = Math.max(500, totalVerifiedPsychologists + 500)
 
   return (
-    <main className="flex min-h-screen flex-col overflow-x-hidden">
-      <Hero />
-      <Marquee />
-      <SearchHighlight totalPsychologists={displayCount} />
-      <HowItWorks />
-      <Features />
-      <Testimonials />
-      <CTA />
+    <main className="flex min-h-screen flex-col overflow-x-hidden relative bg-white">
+      {/* Global Background Elements — Connected across the scroll */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-sentirz-teal/[0.03] blur-[120px] animate-blob" />
+        <div className="absolute top-[40%] right-[-10%] w-[40%] h-[40%] rounded-full bg-sentirz-green/[0.02] blur-[100px] animate-blob animation-delay-2000" />
+        <div className="absolute bottom-[-10%] left-[20%] w-[60%] h-[40%] rounded-full bg-sentirz-orange/[0.02] blur-[140px] animate-blob animation-delay-4000" />
+      </div>
+
+      <div className="relative z-10 w-full">
+        <Hero />
+        <Marquee />
+        <SearchHighlight totalPsychologists={displayCount} />
+        <HowItWorks />
+        <Features />
+        <Testimonials />
+        <CTA />
+      </div>
     </main>
   )
 }

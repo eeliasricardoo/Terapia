@@ -5,51 +5,49 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { RoleSelectionDialog } from '@/components/auth/RoleSelectionDialog'
 import { motion } from 'framer-motion'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Shield, CheckCircle2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-
-import { Logo } from '@/components/ui/Logo'
 import { BRAND_NAME, BRAND_SLOGAN } from '@/lib/constants/branding'
 
 export function Hero() {
   const t = useTranslations('Hero')
-  return (
-    <section className="w-full min-h-[75vh] flex items-center bg-background relative overflow-hidden">
-      {/* Dynamic background accents - Sentirz Style */}
-      <div className="absolute top-20 left-10 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] bg-sentirz-teal/10 rounded-full blur-[80px] sm:blur-[120px] pointer-events-none animate-blob" />
-      <div className="absolute bottom-20 right-20 w-[250px] h-[250px] sm:w-[500px] sm:h-[500px] bg-sentirz-green/10 rounded-full blur-[60px] sm:blur-[100px] pointer-events-none animate-blob animation-delay-2000" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] sm:w-[400px] sm:h-[400px] bg-sentirz-orange/5 rounded-full blur-[60px] sm:blur-[100px] pointer-events-none animate-blob animation-delay-4000" />
 
-      <div className="container relative z-10 mx-auto py-12 sm:py-16 lg:py-0">
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
-          {/* Text content */}
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-8 sm:space-y-10">
+  return (
+    <section className="w-full min-h-[90vh] flex items-center bg-transparent relative overflow-hidden">
+      {/* Background blobs — visíveis e com identidade */}
+      <div className="absolute -top-10 -left-20 w-[500px] h-[500px] sm:w-[800px] sm:h-[800px] bg-sentirz-teal/[0.08] rounded-full blur-[120px] sm:blur-[160px] pointer-events-none animate-blob" />
+      <div className="absolute -bottom-20 -right-10 w-[400px] h-[400px] sm:w-[700px] sm:h-[700px] bg-sentirz-green/[0.05] rounded-full blur-[100px] sm:blur-[140px] pointer-events-none animate-blob animation-delay-2000" />
+      <div className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-sentirz-orange/[0.03] rounded-full blur-[80px] sm:blur-[120px] pointer-events-none animate-blob animation-delay-4000" />
+
+      <div className="container relative z-10 mx-auto px-4 sm:px-6 py-16 sm:py-20 lg:py-0">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* ── Lado esquerdo: conteúdo ── */}
+          <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-8">
             {/* Badge */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full border border-sentirz-teal/20 bg-sentirz-teal-pastel shadow-sm"
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-sentirz-teal/25 bg-sentirz-teal-pastel text-primary text-xs font-bold tracking-widest uppercase shadow-sm"
             >
-              <span className="text-xs font-bold text-primary tracking-widest uppercase">
-                {BRAND_NAME} — {BRAND_SLOGAN}
-              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-sentirz-teal animate-pulse" />
+              {BRAND_NAME} — {BRAND_SLOGAN}
             </motion.div>
 
             {/* Headline */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="space-y-6"
+              transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              className="space-y-4"
             >
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight leading-[0.9] text-foreground font-outfit">
-                {t('titlePart1')} <br />
-                <span className="text-sentirz-gradient relative">
+              <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[0.88] text-foreground font-outfit">
+                {t('titlePart1')}
+                <br />
+                <span className="text-sentirz-gradient relative inline-block">
                   {t('titleHighlight')}
-                  {/* Decorative underline */}
                   <svg
-                    className="absolute -bottom-2 left-0 w-full h-3 text-secondary/60"
+                    className="absolute -bottom-2 left-0 w-full h-3 text-secondary/50"
                     viewBox="0 0 200 12"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -64,137 +62,122 @@ export function Hero() {
                   </svg>
                 </span>
               </h1>
-              <p className="text-lg md:text-xl text-foreground/80 max-w-lg leading-relaxed font-medium">
+              <p className="text-lg md:text-xl text-foreground/70 max-w-md leading-relaxed">
                 {t('description')}
-                <span className="text-foreground font-bold">Sentirz</span>.
+                <span className="text-foreground font-bold"> {BRAND_NAME}</span>.
               </p>
             </motion.div>
 
             {/* CTAs */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full sm:w-auto"
+              transition={{ duration: 0.6, delay: 0.25 }}
+              className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto"
             >
               <Button
                 asChild
                 size="lg"
-                className="h-14 sm:h-16 px-8 sm:px-12 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-2xl shadow-primary/20 transition-all hover:-translate-y-1 group border-none w-full sm:w-auto"
+                className="h-14 px-10 text-base font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-xl shadow-primary/25 transition-all hover:-translate-y-1 group border-none"
               >
                 <Link href="/busca" className="flex items-center gap-2">
                   {t('buttons.startJourney')}
-                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
               <RoleSelectionDialog mode="register">
                 <Button
                   variant="outline"
                   size="lg"
-                  className="h-14 sm:h-16 px-8 sm:px-12 text-base font-bold border-2 border-primary/30 hover:bg-primary/5 rounded-full transition-all text-primary w-full sm:w-auto"
+                  className="h-14 px-10 text-base font-bold border-2 border-primary/25 hover:bg-primary/5 hover:border-primary/40 rounded-full transition-all text-primary"
                 >
                   {t('buttons.imPsychologist')}
                 </Button>
               </RoleSelectionDialog>
             </motion.div>
 
-            {/* Social proof — minimal */}
+            {/* Trust chips */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="flex flex-wrap items-center justify-center lg:justify-start gap-8 text-sm text-foreground/60 pt-4"
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="flex flex-wrap items-center justify-center lg:justify-start gap-3"
             >
-              <span className="flex items-center gap-2">
-                <span className="font-extrabold text-foreground text-base">500+</span> {t('stats.professionals')}
-              </span>
-              <span className="w-px h-5 bg-border hidden sm:block" />
-              <span className="flex items-center gap-2">
-                <span className="font-extrabold text-foreground text-base">4.9</span> {t('stats.stars')}
-              </span>
-              <span className="w-px h-5 bg-border hidden sm:block" />
-              <span className="flex items-center gap-2">
-                <span className="font-extrabold text-foreground text-base">2k+</span> {t('stats.evolutions')}
-              </span>
+              {[
+                { icon: CheckCircle2, label: `500+ ${t('stats.professionals')}` },
+                { icon: Shield, label: t('stats.stars') },
+                { icon: CheckCircle2, label: `2k+ ${t('stats.evolutions')}` },
+              ].map(({ icon: Icon, label }, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground/60 bg-muted/60 border border-border/60 px-3 py-1.5 rounded-full"
+                >
+                  <Icon className="h-3.5 w-3.5 text-primary" />
+                  {label}
+                </span>
+              ))}
             </motion.div>
           </div>
 
-          {/* Illustration */}
+          {/* ── Lado direito: ilustração ── */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="relative hidden lg:block"
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            className="relative hidden lg:flex items-center justify-center"
           >
-            {/* Soft glow behind illustration */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-100/30 to-indigo-100/20 rounded-full blur-3xl scale-75 pointer-events-none" />
+            {/* Glow de fundo com cores da marca */}
+            <div className="absolute inset-0 bg-gradient-to-br from-sentirz-teal/25 via-sentirz-green/10 to-sentirz-orange/10 rounded-full blur-3xl scale-90 pointer-events-none" />
 
-            <div className="relative">
+            {/* Ilustração principal */}
+            <div className="relative z-10">
               <Image
                 src="/hero-illustration.png"
                 alt="Pessoa em sessão de terapia online, sentada confortavelmente enquanto conversa com seu psicólogo"
-                width={580}
-                height={580}
-                className="relative z-10 drop-shadow-2xl"
+                width={560}
+                height={560}
+                className="drop-shadow-2xl"
                 priority
               />
 
-              {/* Floating accent card */}
-              {/* Floating accent card 1 - Session */}
+              {/* Card flutuante — Sessão */}
               <motion.div
-                animate={{ y: [-8, 8, -8] }}
+                animate={{ y: [-6, 6, -6] }}
                 transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -left-6 bottom-1/4 bg-sentirz-green-pastel backdrop-blur-xl border border-sentirz-green/20 px-5 py-4 rounded-2xl shadow-xl z-20"
+                className="absolute -left-8 bottom-[28%] bg-sentirz-green-pastel/90 backdrop-blur-xl border border-sentirz-green/20 px-4 py-3 rounded-2xl shadow-lg z-20"
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-sentirz-green/20 flex items-center justify-center">
-                    <svg
-                      className="h-5 w-5 text-sentirz-green"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                      <polyline points="22 4 12 14.01 9 11.01" />
-                    </svg>
+                  <div className="h-9 w-9 rounded-xl bg-sentirz-green/20 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="h-4 w-4 text-sentirz-green" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-sentirz-green/60 uppercase tracking-widest">
+                    <p className="text-[10px] font-bold text-sentirz-green/60 uppercase tracking-widest leading-none mb-0.5">
                       {t('floatingCards.session')}
                     </p>
-                    <p className="text-sm font-black text-foreground">{t('floatingCards.online')}</p>
+                    <p className="text-sm font-black text-foreground leading-none">
+                      {t('floatingCards.online')}
+                    </p>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Floating accent card 2 - Sigilo */}
+              {/* Card flutuante — Sigilo */}
               <motion.div
-                animate={{ y: [8, -8, 8] }}
+                animate={{ y: [6, -6, 6] }}
                 transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-                className="absolute -right-4 top-1/4 bg-sentirz-teal-pastel backdrop-blur-xl border border-sentirz-teal/20 px-5 py-4 rounded-2xl shadow-xl z-20"
+                className="absolute -right-6 top-[22%] bg-sentirz-teal-pastel/90 backdrop-blur-xl border border-sentirz-teal/20 px-4 py-3 rounded-2xl shadow-lg z-20"
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-sentirz-teal/20 flex items-center justify-center">
-                    <svg
-                      className="h-5 w-5 text-sentirz-teal"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    </svg>
+                  <div className="h-9 w-9 rounded-xl bg-sentirz-teal/20 flex items-center justify-center shrink-0">
+                    <Shield className="h-4 w-4 text-sentirz-teal" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-sentirz-teal/60 uppercase tracking-widest">
+                    <p className="text-[10px] font-bold text-sentirz-teal/60 uppercase tracking-widest leading-none mb-0.5">
                       {t('floatingCards.privacy')}
                     </p>
-                    <p className="text-sm font-black text-foreground">{t('floatingCards.guaranteed')}</p>
+                    <p className="text-sm font-black text-foreground leading-none">
+                      {t('floatingCards.guaranteed')}
+                    </p>
                   </div>
                 </div>
               </motion.div>
