@@ -33,6 +33,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<LoginInput>({
+    // zodResolver infers input type (rememberMe?: boolean) but output type (rememberMe: boolean) — cast needed
     resolver: zodResolver(loginSchema) as any,
     defaultValues: {
       email: '',
@@ -87,9 +88,7 @@ export function LoginForm() {
     <Card className="mx-auto max-w-md w-full">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-center">{t('title')}</CardTitle>
-        <CardDescription className="text-center">
-          {t('description')}
-        </CardDescription>
+        <CardDescription className="text-center">{t('description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

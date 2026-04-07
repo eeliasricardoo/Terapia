@@ -23,6 +23,9 @@ import { Link } from '@/i18n/routing'
 import { useTranslations } from 'next-intl'
 
 import { PsychologistDashboardData } from '@/lib/actions/dashboard'
+
+type AppointmentItem = PsychologistDashboardData['upcomingSessions'][number]
+type ScheduleOverrideMap = Record<string, { date: string; type: string; [key: string]: unknown }>
 import { RescheduleDialog } from '@/components/dashboard/RescheduleDialog'
 import { format } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
@@ -38,13 +41,15 @@ interface Props {
 export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
   const t = useTranslations('PsychologistDashboard')
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
-  const [allAppointments, setAllAppointments] = useState<any[]>([
+  const [allAppointments, setAllAppointments] = useState<AppointmentItem[]>([
     ...dashboardData.upcomingSessions,
     ...dashboardData.futureSessions,
   ])
   const [unreadCount] = useState(dashboardData.unreadNotifications)
-  const [overrides, setOverrides] = useState<any>({})
-  const [weeklySchedule, setWeeklySchedule] = useState<any>({
+  const [overrides, setOverrides] = useState<ScheduleOverrideMap>({})
+  const [weeklySchedule, setWeeklySchedule] = useState<
+    Record<string, { enabled: boolean; slots: unknown[] }>
+  >({
     monday: { enabled: true, slots: [] },
     tuesday: { enabled: true, slots: [] },
     wednesday: { enabled: true, slots: [] },
@@ -95,17 +100,20 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
           .eq('psychologist_id', profile.id)
 
         if (appts) {
-          const mappedAppts = appts.map((a: any) => ({
-            id: a.id,
-            patientName: a.patient?.full_name || 'Paciente',
-            time: format(new Date(a.scheduled_at), 'HH:mm'),
-            scheduledAt: a.scheduled_at,
-            psychologistId: profile.id,
-            type: a.session_type || 'Sessão',
-            status: a.status.toLowerCase(),
-            image: a.patient?.avatar_url || undefined,
-            duration: a.duration_minutes,
-          }))
+          const mappedAppts = appts.map((a) => {
+            const patient = Array.isArray(a.patient) ? a.patient[0] : a.patient
+            return {
+              id: a.id,
+              patientName: (patient as { full_name?: string } | null)?.full_name || 'Paciente',
+              time: format(new Date(a.scheduled_at), 'HH:mm'),
+              scheduledAt: a.scheduled_at,
+              psychologistId: profile.id,
+              type: a.session_type || 'Sessão',
+              status: a.status.toLowerCase(),
+              image: (patient as { avatar_url?: string } | null)?.avatar_url || undefined,
+              duration: a.duration_minutes,
+            }
+          })
           setAllAppointments(mappedAppts)
         }
 
@@ -116,8 +124,8 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
           .eq('psychologist_id', profile.id)
 
         if (ovr) {
-          const ovrMap: any = {}
-          ovr.forEach((o: any) => {
+          const ovrMap: ScheduleOverrideMap = {}
+          ovr.forEach((o) => {
             ovrMap[o.date] = o
           })
           setOverrides(ovrMap)
@@ -150,6 +158,14 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
       isToday: date === todayStr,
     }))
   }, [allAppointments, upcomingSessions])
+
+  const agendaSummary = useMemo(() => {
+    const todayCount = sessionsByDate.find((g) => g.isToday)?.sessions.length ?? 0
+    const futureCount = sessionsByDate
+      .filter((g) => !g.isToday)
+      .reduce((acc, g) => acc + g.sessions.length, 0)
+    return { todayCount, futureCount }
+  }, [sessionsByDate])
 
   return (
     <div className="space-y-6 sm:space-y-8 lg:space-y-12 animate-in fade-in duration-700 max-w-6xl mx-auto pb-8">
@@ -242,14 +258,14 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 </div>
                 <div>
                   <h3 className="text-amber-900 font-bold font-serif italic text-base sm:text-lg tracking-tight">
-                    {!dashboardData.hasStripeAccount ? t('billing.titlePending') : t('billing.titleIncomplete')}
+                    {!dashboardData.hasStripeAccount
+                      ? t('billing.titlePending')
+                      : t('billing.titleIncomplete')}
                   </h3>
                   <p className="text-amber-700/80 text-xs sm:text-sm leading-relaxed max-w-xl font-medium">
-                    {!dashboardData.hasStripeAccount ? (
-                      t.rich('billing.descPending', { bold: (chunks) => <b>{chunks}</b> })
-                    ) : (
-                      t.rich('billing.descIncomplete', { bold: (chunks) => <b>{chunks}</b> })
-                    )}
+                    {!dashboardData.hasStripeAccount
+                      ? t.rich('billing.descPending', { bold: (chunks) => <b>{chunks}</b> })
+                      : t.rich('billing.descIncomplete', { bold: (chunks) => <b>{chunks}</b> })}
                   </p>
                 </div>
               </div>
@@ -258,7 +274,9 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                 className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl px-6 sm:px-8 shadow-lg shadow-amber-600/20 whitespace-nowrap h-10 sm:h-12 w-full sm:w-auto text-sm"
               >
                 <Link href="/dashboard/financeiro">
-                  {!dashboardData.hasStripeAccount ? t('billing.ctaPending') : t('billing.ctaIncomplete')}
+                  {!dashboardData.hasStripeAccount
+                    ? t('billing.ctaPending')
+                    : t('billing.ctaIncomplete')}
                 </Link>
               </Button>
             </div>
@@ -336,15 +354,9 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                         {t('agenda.upcomingSessions')}
                       </CardTitle>
                       <CardDescription>
-                        {(() => {
-                          const todayCount =
-                            sessionsByDate.find((g) => g.isToday)?.sessions.length ?? 0
-                          const futureCount = sessionsByDate
-                            .filter((g) => !g.isToday)
-                            .reduce((acc, g) => acc + g.sessions.length, 0)
-                          if (todayCount === 0 && futureCount === 0) return t('agenda.freeSchedule')
-                          return t('agenda.summary', { todayCount, futureCount })
-                        })()}
+                        {agendaSummary.todayCount === 0 && agendaSummary.futureCount === 0
+                          ? t('agenda.freeSchedule')
+                          : t('agenda.summary', agendaSummary)}
                       </CardDescription>
                     </div>
                     <Button
@@ -363,7 +375,9 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                       <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm mb-4">
                         <CalendarIcon className="h-6 w-6 text-slate-400" />
                       </div>
-                      <h3 className="text-sm font-medium text-slate-900">{t('agenda.freeSchedule')}</h3>
+                      <h3 className="text-sm font-medium text-slate-900">
+                        {t('agenda.freeSchedule')}
+                      </h3>
                       <p className="text-slate-500 text-xs mt-1">{t('agenda.noAppointments')}</p>
                     </div>
                   ) : (
@@ -386,7 +400,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                             )}
                           </div>
                           {/* Sessions */}
-                          {sessions.map((session: any, idx: number) => {
+                          {sessions.map((session, idx) => {
                             const isNext = isToday && idx === 0 && session.status === 'scheduled'
                             const scheduledDate = new Date(session.scheduledAt)
                             const startTimeStr = formatInTimeZone(
@@ -548,7 +562,9 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                         <p className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">
                           {t('quickActions.manageSchedule')}
                         </p>
-                        <p className="text-xs text-slate-400 mt-0.5">{t('quickActions.configureAgenda')}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {t('quickActions.configureAgenda')}
+                        </p>
                       </div>
                       <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-slate-400 group-hover:translate-x-0.5 transition-all" />
                     </div>
@@ -566,7 +582,9 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                         <p className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">
                           {t('quickActions.myPatients')}
                         </p>
-                        <p className="text-xs text-slate-400 mt-0.5">{t('quickActions.viewRecords')}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {t('quickActions.viewRecords')}
+                        </p>
                       </div>
                       <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-slate-400 group-hover:translate-x-0.5 transition-all" />
                     </div>

@@ -45,8 +45,8 @@ export default function VideoTestPage() {
       }
       const newCo = DailyIframe.createCallObject()
       setCallObject(newCo)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err))
     } finally {
       setIsLoading(false)
     }

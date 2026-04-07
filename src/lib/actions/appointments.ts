@@ -109,7 +109,7 @@ export const createInsuranceAppointment = createSafeAction(
       revalidatePath('/', 'layout')
 
       return { id: newSession.id }
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof AppointmentConflictError) {
         throw new Error(
           error.conflictType === 'psychologist'

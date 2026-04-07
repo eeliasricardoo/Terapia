@@ -1,17 +1,23 @@
 'use client'
 
+import { useCallback } from 'react'
 import { Calendar } from '@/components/ui/calendar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { CalendarIcon } from 'lucide-react'
 
+interface OverrideEntry {
+  type: string
+  [key: string]: unknown
+}
+
 interface Props {
   selected: Date | undefined
   onSelect: (date: Date | undefined) => void
-  appointments: any[]
-  overrides: any
-  weeklySchedule: any
+  appointments: { scheduled_at?: string; scheduledAt?: string }[]
+  overrides: Record<string, OverrideEntry>
+  weeklySchedule: Record<string, { enabled: boolean; slots: unknown[] }>
 }
 
 export function DashboardCalendar({
@@ -21,10 +27,10 @@ export function DashboardCalendar({
   overrides,
   weeklySchedule,
 }: Props) {
-  const getWeekDayKey = (date: Date) => {
+  const getWeekDayKey = useCallback((date: Date) => {
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
     return days[date.getDay()]
-  }
+  }, [])
 
   return (
     <Card className="border-none shadow-sm bg-white overflow-hidden">

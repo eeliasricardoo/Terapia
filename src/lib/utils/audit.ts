@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { headers } from 'next/headers'
 import { logger } from './logger'
 
@@ -7,8 +8,8 @@ export async function createAuditLog(data: {
   action: string
   entity: string
   entityId?: string
-  oldData?: any
-  newData?: any
+  oldData?: Prisma.InputJsonValue
+  newData?: Prisma.InputJsonValue
 }) {
   try {
     const ipAddress = (await headers()).get('x-forwarded-for') || 'unknown'

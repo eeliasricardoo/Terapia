@@ -61,9 +61,9 @@ export function useRoomConnection(appointmentId: string) {
           durationMinutes: data.durationMinutes,
           isPsychologist: data.isPsychologist,
         })
-      } catch (err: any) {
+      } catch (err: unknown) {
         logger.error('Failed to init room connection:', err)
-        setError(err.message)
+        setError(err instanceof Error ? err.message : String(err))
       } finally {
         setIsLoading(false)
       }

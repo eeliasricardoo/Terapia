@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   getPendingPsychologists,
   verifyPsychologist,
@@ -35,11 +35,29 @@ import {
   FileText,
 } from 'lucide-react'
 
+interface PendingPsychologist {
+  id: string
+  userId: string
+  fullName: string
+  email: string
+  crp: string | null
+  specialties: string[]
+  bio: string | null
+  pricePerSession: number
+  yearsOfExperience: number | null
+  university: string | null
+  academicLevel: string | null
+  diplomaUrl: string | null | undefined
+  licenseUrl: string | null | undefined
+  createdAt: string
+  avatarUrl: string | null | undefined
+}
+
 export function AdminVerificationManager() {
-  const [pending, setPending] = useState<any[]>([])
+  const [pending, setPending] = useState<PendingPsychologist[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [verifyingId, setVerifyingId] = useState<string | null>(null)
-  const [selectedPsychologist, setSelectedPsychologist] = useState<any | null>(null)
+  const [selectedPsychologist, setSelectedPsychologist] = useState<PendingPsychologist | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
 
@@ -101,7 +119,7 @@ export function AdminVerificationManager() {
     }
   }
 
-  function openReview(p: any) {
+  function openReview(p: PendingPsychologist) {
     setSelectedPsychologist(p)
     setIsDialogOpen(true)
   }
@@ -145,7 +163,7 @@ export function AdminVerificationManager() {
                 >
                   <div className="flex items-center gap-5">
                     <Avatar className="h-14 w-14 border-2 border-white shadow-sm ring-1 ring-slate-100">
-                      <AvatarImage src={p.avatarUrl} />
+                      <AvatarImage src={p.avatarUrl ?? undefined} />
                       <AvatarFallback className="bg-slate-100 text-slate-500 font-bold text-lg">
                         {p.fullName[0]}
                       </AvatarFallback>
@@ -201,7 +219,7 @@ export function AdminVerificationManager() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar className="h-16 w-16 border-4 border-slate-50 shadow-sm">
-                      <AvatarImage src={selectedPsychologist?.avatarUrl} />
+                      <AvatarImage src={selectedPsychologist?.avatarUrl ?? undefined} />
                       <AvatarFallback className="bg-slate-50 text-slate-400 font-bold text-xl">
                         {selectedPsychologist?.fullName?.[0]}
                       </AvatarFallback>
@@ -269,7 +287,9 @@ export function AdminVerificationManager() {
                     variant="outline"
                     className="justify-start gap-3 h-14 border-slate-200 bg-white hover:bg-slate-100 rounded-xl"
                     disabled={!selectedPsychologist?.diplomaUrl}
-                    onClick={() => window.open(selectedPsychologist?.diplomaUrl, '_blank')}
+                    onClick={() =>
+                      window.open(selectedPsychologist?.diplomaUrl ?? undefined, '_blank')
+                    }
                   >
                     <FileText className="h-5 w-5 text-slate-400" />
                     <div className="text-left">
@@ -283,7 +303,9 @@ export function AdminVerificationManager() {
                     variant="outline"
                     className="justify-start gap-3 h-14 border-slate-200 bg-white hover:bg-slate-100 rounded-xl"
                     disabled={!selectedPsychologist?.licenseUrl}
-                    onClick={() => window.open(selectedPsychologist?.licenseUrl, '_blank')}
+                    onClick={() =>
+                      window.open(selectedPsychologist?.licenseUrl ?? undefined, '_blank')
+                    }
                   >
                     <FileText className="h-5 w-5 text-slate-400" />
                     <div className="text-left">
@@ -337,7 +359,7 @@ export function AdminVerificationManager() {
           <div className="absolute bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-md border-t border-slate-100">
             <SheetFooter className="flex justify-end gap-3">
               <Button
-                onClick={() => handleVerify(selectedPsychologist?.id)}
+                onClick={() => selectedPsychologist && handleVerify(selectedPsychologist.id)}
                 disabled={verifyingId === selectedPsychologist?.id}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 rounded-xl shadow-lg shadow-emerald-100 order-first"
               >
@@ -352,7 +374,8 @@ export function AdminVerificationManager() {
                 className="text-red-600 hover:bg-red-50 font-bold rounded-xl px-4"
                 disabled={verifyingId === selectedPsychologist?.id || !rejectReason.trim()}
                 onClick={() =>
-                  handleReject(selectedPsychologist?.id, selectedPsychologist?.fullName)
+                  selectedPsychologist &&
+                  handleReject(selectedPsychologist.id, selectedPsychologist.fullName)
                 }
               >
                 {verifyingId === selectedPsychologist?.id ? (
@@ -376,7 +399,14 @@ export function AdminVerificationManager() {
   )
 }
 
-function InfoItem({ icon: Icon, label, value, color }: any) {
+interface InfoItemProps {
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  value: string | null | undefined
+  color: string
+}
+
+function InfoItem({ icon: Icon, label, value, color }: InfoItemProps) {
   const colors = {
     slate: 'bg-slate-100 text-slate-500',
     primary: 'bg-primary/5 text-primary',

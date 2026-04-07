@@ -194,9 +194,10 @@ export const cancelSession = createSafeAction(z.string().uuid(), async (sessionI
       logger.info(
         `Refund issued for session ${sessionId} (${isPsychologist ? 'by psychologist' : 'by patient > 24h'})`
       )
-    } catch (e: any) {
+    } catch (e: unknown) {
       logger.error(`Refund failed for ${sessionId}:`, e)
-      throw new Error(`Erro no estorno: ${e.message}. Tente novamente ou contate o suporte.`)
+      const eMsg = e instanceof Error ? e.message : String(e)
+      throw new Error(`Erro no estorno: ${eMsg}. Tente novamente ou contate o suporte.`)
     }
   }
 

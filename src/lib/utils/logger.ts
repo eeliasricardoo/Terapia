@@ -67,7 +67,7 @@ class Logger {
     return data
   }
 
-  private log(level: LogLevel, message: string, ...args: any[]) {
+  private log(level: LogLevel, message: string, ...args: unknown[]) {
     if (!this.isDevelopment && level === 'debug') {
       return // Skip debug logs in production
     }
@@ -102,25 +102,25 @@ class Logger {
     }
   }
 
-  info(msg: string, ...args: any[]) {
+  info(msg: string, ...args: unknown[]) {
     this.log('info', msg, ...args)
   }
 
-  warn(msg: string, ...args: any[]) {
+  warn(msg: string, ...args: unknown[]) {
     this.log('warn', msg, ...args)
     this.syncToRedis('warn', msg, ...args).catch(() => {})
   }
 
-  error(msg: string, ...args: any[]) {
+  error(msg: string, ...args: unknown[]) {
     this.log('error', msg, ...args)
     this.syncToRedis('error', msg, ...args).catch(() => {})
   }
 
-  debug(msg: string, ...args: any[]) {
+  debug(msg: string, ...args: unknown[]) {
     this.log('debug', msg, ...args)
   }
 
-  private async syncToRedis(level: LogLevel, msg: string, ...args: any[]) {
+  private async syncToRedis(level: LogLevel, msg: string, ...args: unknown[]) {
     if (this.isDevelopment) return
 
     try {

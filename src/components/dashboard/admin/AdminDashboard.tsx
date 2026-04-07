@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { AdminVerificationManager } from './AdminVerificationManager'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -131,7 +132,14 @@ export function AdminDashboard({ userProfile, dashboardData }: Props) {
   )
 }
 
-function StatCard({ title, value, icon: Icon, color }: any) {
+interface StatCardProps {
+  title: string
+  value: string | number
+  icon: React.ComponentType<{ className?: string }>
+  color: string
+}
+
+function StatCard({ title, value, icon: Icon, color }: StatCardProps) {
   const colors = {
     slate: 'bg-slate-50 text-slate-500 ring-1 ring-slate-100',
     primary: 'bg-primary/5 text-primary',

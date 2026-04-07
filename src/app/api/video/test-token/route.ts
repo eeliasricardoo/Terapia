@@ -17,12 +17,13 @@ export async function POST(req: Request) {
     try {
       const roomData = await createDailyRoom(testRoomName)
       roomUrl = roomData.url
-    } catch (error: any) {
-      if (error.message.includes('already exists')) {
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : ''
+      if (errMsg.includes('already exists')) {
         try {
           const roomData = await getDailyRoom(testRoomName)
           roomUrl = roomData.url
-        } catch (innerError: any) {
+        } catch (innerError: unknown) {
           logger.error('Error fetching existing Daily room for test:', innerError)
           return NextResponse.json(
             { error: 'Falha ao recuperar sala de teste existente' },

@@ -67,7 +67,7 @@ export async function sendEmail(
   maxRetries: number = 3,
   initialDelayMs: number = 1000
 ) {
-  let lastError: any = null
+  let lastError: unknown = null
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {

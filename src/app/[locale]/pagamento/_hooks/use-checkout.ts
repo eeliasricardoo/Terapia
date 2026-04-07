@@ -101,13 +101,10 @@ export function useCheckout() {
           }
 
           // Check for insurance match
-          const psychWithInsurance = psych as typeof psych & {
-            acceptedInsurances?: { id: string }[]
-          }
-          if (patientProfile?.healthInsuranceId && psychWithInsurance.acceptedInsurances) {
-            const match = psychWithInsurance.acceptedInsurances.find(
-              (ins) => ins.id === patientProfile.healthInsuranceId
-            )
+          const insurances = (psych as { acceptedInsurances?: { id: string; name: string }[] })
+            .acceptedInsurances
+          if (patientProfile?.healthInsuranceId && insurances) {
+            const match = insurances.find((ins) => ins.id === patientProfile.healthInsuranceId)
             if (match) {
               setMatchedInsurance(match)
             }
@@ -225,9 +222,9 @@ export function useCheckout() {
         // Redirect user to Stripe Checkout
         window.location.href = result.data.url
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Stripe error:', error)
-      alert(error.message || 'Erro ao iniciar o pagamento.')
+      alert(error instanceof Error ? error.message : 'Erro ao iniciar o pagamento.')
     } finally {
       setIsProcessing(false)
     }

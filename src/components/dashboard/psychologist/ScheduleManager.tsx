@@ -1,7 +1,7 @@
 'use client'
 import { logger } from '@/lib/utils/logger'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
@@ -493,7 +493,38 @@ export function ScheduleManager() {
   const effective = selectedDate ? getEffectiveSchedule(selectedDate) : null
   const effectiveOverlapping =
     effective?.source === 'override' ? getOverlappingIndices(effective.slots) : new Set<number>()
-  const hasConflicts = hasAnyOverlap()
+  const hasConflicts = useMemo(() => hasAnyOverlap(), [weeklySchedule, overrides]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const generatedSlots = useMemo(
+    () => (selectedDate ? getGeneratedSlots(selectedDate) : []),
+    [selectedDate, sessionDuration, breakDuration, overrides, weeklySchedule] // eslint-disable-line react-hooks/exhaustive-deps
+  )
+
+  const selectedDayAppointments = useMemo(
+    () =>
+      selectedDate
+        ? appointments
+            .filter((a) => a.scheduled_at.startsWith(format(selectedDate, 'yyyy-MM-dd')))
+            .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+        : [],
+    [appointments, selectedDate]
+  )
+
+  const calendarModifiers = useMemo(
+    () => ({
+      blocked: (date: Date) => overrides[format(date, 'yyyy-MM-dd')]?.type === 'blocked',
+      custom: (date: Date) => overrides[format(date, 'yyyy-MM-dd')]?.type === 'custom',
+      hasRoutine: (date: Date) => {
+        const key = getWeekDayKey(date)
+        return weeklySchedule[key]?.enabled && !overrides[format(date, 'yyyy-MM-dd')]
+      },
+      hasAppointment: (date: Date) => {
+        const dateStr = format(date, 'yyyy-MM-dd')
+        return appointments.some((a) => a.scheduled_at.startsWith(dateStr))
+      },
+    }),
+    [overrides, weeklySchedule, appointments]  
+  )
 
   const WeeklyConfigDialog = (
     <Dialog open={isWeeklyConfigOpen} onOpenChange={setIsWeeklyConfigOpen}>
@@ -725,18 +756,7 @@ export function ScheduleManager() {
                   'bg-slate-900 text-white hover:bg-slate-800 hover:text-white shadow-sm',
                 day_today: 'bg-slate-50 text-slate-900 font-bold ring-1 ring-slate-200',
               }}
-              modifiers={{
-                blocked: (date: Date) => overrides[format(date, 'yyyy-MM-dd')]?.type === 'blocked',
-                custom: (date: Date) => overrides[format(date, 'yyyy-MM-dd')]?.type === 'custom',
-                hasRoutine: (date: Date) => {
-                  const key = getWeekDayKey(date)
-                  return weeklySchedule[key]?.enabled && !overrides[format(date, 'yyyy-MM-dd')]
-                },
-                hasAppointment: (date: Date) => {
-                  const dateStr = format(date, 'yyyy-MM-dd')
-                  return appointments.some((a) => a.scheduled_at.startsWith(dateStr))
-                },
-              }}
+              modifiers={calendarModifiers}
               components={{
                 DayContent: ({ date }: { date: Date }) => {
                   const dateStr = format(date, 'yyyy-MM-dd')
@@ -1006,15 +1026,15 @@ export function ScheduleManager() {
                           {t('generatedSlots')}
                         </span>
                         <span className="text-xs font-medium text-emerald-600">
-                          {t('vacancies', { count: getGeneratedSlots(selectedDate!).length })}
+                          {t('vacancies', { count: generatedSlots.length })}
                         </span>
                       </div>
 
-                      {getGeneratedSlots(selectedDate!).length === 0 ? (
+                      {generatedSlots.length === 0 ? (
                         <p className="text-xs text-slate-400 py-1">{t('noSlots')}</p>
                       ) : (
                         <div className="flex flex-wrap gap-1.5">
-                          {getGeneratedSlots(selectedDate!).map((time) => {
+                          {generatedSlots.map((time) => {
                             const isBooked = appointments.some(
                               (a) =>
                                 a.scheduled_at.startsWith(format(selectedDate!, 'yyyy-MM-dd')) &&
@@ -1044,79 +1064,68 @@ export function ScheduleManager() {
                     </div>
 
                     {/* Appointments for this day */}
-                    {appointments.filter((a) =>
-                      a.scheduled_at.startsWith(format(selectedDate!, 'yyyy-MM-dd'))
-                    ).length > 0 && (
+                    {selectedDayAppointments.length > 0 && (
                       <div className="p-4 space-y-2">
                         <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
                           <Users className="h-3.5 w-3.5 text-slate-400" />
                           {t('appointments')}
                         </span>
                         <div className="space-y-1.5">
-                          {appointments
-                            .filter((a) =>
-                              a.scheduled_at.startsWith(format(selectedDate!, 'yyyy-MM-dd'))
-                            )
-                            .sort(
-                              (a, b) =>
-                                new Date(a.scheduled_at).getTime() -
-                                new Date(b.scheduled_at).getTime()
-                            )
-                            .map((appt) => (
-                              <div
-                                key={appt.id}
-                                className="flex items-center gap-3 p-2.5 rounded-lg border border-slate-100 bg-white hover:border-slate-200 transition-colors"
-                              >
-                                <div className="h-8 w-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center font-semibold text-xs border border-indigo-100 uppercase shrink-0">
-                                  {appt.patient_name.charAt(0)}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-slate-800 truncate">
-                                    {appt.patient_name}
-                                  </p>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-xs text-slate-400 flex items-center gap-1">
-                                      <Clock className="h-2.5 w-2.5" />
-                                      {format(new Date(appt.scheduled_at), 'HH:mm')}
-                                    </span>
-                                    <span
-                                      className={cn(
-                                        'text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded',
-                                        appt.status === 'COMPLETED'
-                                          ? 'bg-slate-100 text-slate-500'
-                                          : 'bg-emerald-100 text-emerald-700'
-                                      )}
-                                    >
-                                      {appt.status}
-                                    </span>
-                                  </div>
-                                </div>
-                                {appt.status === 'scheduled' && (
-                                  <div className="flex items-center gap-1 shrink-0">
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      className="h-8 w-8 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600"
-                                      onClick={() =>
-                                        handleUpdateAppointmentStatus(appt.id, 'COMPLETED')
-                                      }
-                                    >
-                                      <CheckCircle2 className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      className="h-8 w-8 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500"
-                                      onClick={() =>
-                                        handleUpdateAppointmentStatus(appt.id, 'cancelled')
-                                      }
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                )}
+                          {selectedDayAppointments.map((appt) => (
+                            <div
+                              key={appt.id}
+                              className="flex items-center gap-3 p-2.5 rounded-lg border border-slate-100 bg-white hover:border-slate-200 transition-colors"
+                            >
+                              <div className="h-8 w-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center font-semibold text-xs border border-indigo-100 uppercase shrink-0">
+                                {appt.patient_name.charAt(0)}
                               </div>
-                            ))}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-slate-800 truncate">
+                                  {appt.patient_name}
+                                </p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-xs text-slate-400 flex items-center gap-1">
+                                    <Clock className="h-2.5 w-2.5" />
+                                    {format(new Date(appt.scheduled_at), 'HH:mm')}
+                                  </span>
+                                  <span
+                                    className={cn(
+                                      'text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded',
+                                      appt.status === 'COMPLETED'
+                                        ? 'bg-slate-100 text-slate-500'
+                                        : 'bg-emerald-100 text-emerald-700'
+                                    )}
+                                  >
+                                    {appt.status}
+                                  </span>
+                                </div>
+                              </div>
+                              {appt.status === 'scheduled' && (
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600"
+                                    onClick={() =>
+                                      handleUpdateAppointmentStatus(appt.id, 'COMPLETED')
+                                    }
+                                  >
+                                    <CheckCircle2 className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500"
+                                    onClick={() =>
+                                      handleUpdateAppointmentStatus(appt.id, 'cancelled')
+                                    }
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}

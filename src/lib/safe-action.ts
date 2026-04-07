@@ -108,12 +108,17 @@ export function createSafeAction<Schema extends z.ZodTypeAny, T>(
       const result = await handler(validationResult.data, userContext)
 
       return { success: true, data: result }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('SafeAction Error:', error)
+      const msg = error instanceof Error ? error.message : 'Ocorreu um erro inesperado.'
+      const code =
+        error instanceof Error && 'code' in error
+          ? String((error as { code: unknown }).code)
+          : 'INTERNAL_ERROR'
       return {
         success: false,
-        error: error.message || 'Ocorreu um erro inesperado.',
-        code: error.code || 'INTERNAL_ERROR',
+        error: msg,
+        code,
       }
     }
   }

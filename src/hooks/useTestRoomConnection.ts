@@ -42,9 +42,9 @@ export function useTestRoomConnection(role: 'psychologist' | 'patient' | null) {
           durationMinutes: data.durationMinutes,
           isPsychologist: data.isPsychologist,
         })
-      } catch (err: any) {
+      } catch (err: unknown) {
         logger.error('Failed to init test room connection:', err)
-        setError(err.message)
+        setError(err instanceof Error ? err.message : String(err))
       } finally {
         setIsLoading(false)
       }

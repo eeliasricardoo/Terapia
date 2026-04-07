@@ -119,9 +119,10 @@ export async function uploadProfileImage(formData: FormData) {
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/perfil')
     return { success: true, publicUrl }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Unexpected Error:', error)
-    return { error: `Erro inesperado: ${error.message || error}` }
+    const msg = error instanceof Error ? error.message : String(error)
+    return { error: `Erro inesperado: ${msg}` }
   }
 }
 
@@ -199,8 +200,9 @@ export async function updateUserProfile(data: {
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/perfil')
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Unexpected Error:', error)
-    return { error: `Erro inesperado: ${error.message || error}` }
+    const msg = error instanceof Error ? error.message : String(error)
+    return { error: `Erro inesperado: ${msg}` }
   }
 }

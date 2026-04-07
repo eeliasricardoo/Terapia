@@ -22,8 +22,9 @@ export function RoomChat() {
   }, [messages])
 
   const handleAppMessage = useCallback(
-    (e: any) => {
+    (e: { data?: { message?: string }; fromId?: string }) => {
       if (e && e.data && e.data.message) {
+        const message = e.data.message
         const senderName =
           e.fromId && daily
             ? daily.participants()[e.fromId]?.user_name || 'Participante'
@@ -32,7 +33,7 @@ export function RoomChat() {
           ...prev,
           {
             sender: senderName,
-            text: e.data.message,
+            text: message,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             isSelf: false,
           },

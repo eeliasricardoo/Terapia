@@ -66,7 +66,7 @@ export function DiaryHistory({ entries, isLoading, deletingId, handleDelete }: D
                               </span>
                             </div>
                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-1">
-                              {moodInfo?.label}
+                              {moodInfo?.tKey}
                             </span>
                           </div>
 

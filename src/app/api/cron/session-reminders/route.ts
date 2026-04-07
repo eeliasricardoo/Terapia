@@ -106,8 +106,9 @@ export async function GET(req: NextRequest) {
 
     logger.info(`[CRON] Session reminders processed: ${sent}`)
     return NextResponse.json({ sent })
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('[CRON] session-reminders error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const msg = error instanceof Error ? error.message : 'Erro interno'
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

@@ -260,9 +260,10 @@ export const createStripeConnectAccountLink = createSafeAction(
         })
 
         accountId = account.id
-      } catch (error: any) {
+      } catch (error: unknown) {
         logger.error('Connect Account Creation Failed:', error)
-        if (error.message?.includes('Connect')) {
+        const errMsg = error instanceof Error ? error.message : ''
+        if (errMsg?.includes('Connect')) {
           throw new Error(
             'A plataforma ainda não está habilitada para o Stripe Connect. Por favor, entre em contato com o suporte técnico para ativar os pagamentos diretos.'
           )

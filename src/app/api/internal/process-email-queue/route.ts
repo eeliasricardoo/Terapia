@@ -49,8 +49,9 @@ export async function POST(req: NextRequest) {
             throw new Error(`Send failed: ${res.status} - ${errText}`)
           }
           return { id: item.id, success: true }
-        } catch (err: any) {
-          logger.error(`[EMAIL-WORKER] Failed to send email ${item.id}:`, err?.message)
+        } catch (err: unknown) {
+          const errMsg = err instanceof Error ? err.message : String(err)
+          logger.error(`[EMAIL-WORKER] Failed to send email ${item.id}:`, errMsg)
           // Note: In a more complex system, we would push back to queue if attempts < max
           throw err
         }

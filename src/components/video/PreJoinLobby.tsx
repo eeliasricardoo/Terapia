@@ -73,10 +73,10 @@ export function PreJoinLobby({ roomUrl, token }: PreJoinLobbyProps) {
 
         await daily.startCamera()
         setPreviewError(null)
-      } catch (err: any) {
+      } catch (err: unknown) {
         logger.error('Failed to start camera preview', err)
         hasStartedCamera.current = false
-        setPreviewError(err.message || 'Erro ao iniciar preview de câmera')
+        setPreviewError(err instanceof Error ? err.message : 'Erro ao iniciar preview de câmera')
       }
     }
 
@@ -112,9 +112,9 @@ export function PreJoinLobby({ roomUrl, token }: PreJoinLobbyProps) {
       setIsJoining(true)
       await daily.join({ url: roomUrl, token: token })
       setPreviewError(null)
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('Failed to join room', err)
-      setPreviewError(`Erro ao entrar na sala: ${err.message}`)
+      setPreviewError(`Erro ao entrar na sala: ${err instanceof Error ? err.message : String(err)}`)
       setIsJoining(false)
     }
   }

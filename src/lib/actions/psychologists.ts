@@ -3,10 +3,15 @@
 import { prisma } from '@/lib/prisma'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 import { PsychologistWithProfile } from '@/lib/supabase/types'
 import { WeeklyScheduleData } from '@/lib/validations/availability'
 
-function mapPsychologist(psych: any): PsychologistWithProfile {
+type PsychologistWithRelations = Prisma.PsychologistProfileGetPayload<{
+  include: { user: { include: { profiles: true } } }
+}>
+
+function mapPsychologist(psych: PsychologistWithRelations): PsychologistWithProfile {
   const userProfile = psych.user?.profiles || null
 
   const profile = userProfile
@@ -90,7 +95,7 @@ export const getPsychologistById = createSafeAction(
     return {
       ...mapPsychologist(psych),
       acceptedInsurances: psych.acceptedInsurances
-        .map((i: any) => i.healthInsurance)
+        .map((i: { healthInsurance: unknown }) => i.healthInsurance)
         .filter(Boolean),
     }
   },
@@ -123,6 +128,7 @@ export const searchPsychologists = createSafeAction(
     } = filters
     const skip = (page - 1) * pageSize
 
+    // Using type assertion here because we build the where object incrementally
     const where: any = {
       isVerified: true,
     }
