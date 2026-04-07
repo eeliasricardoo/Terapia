@@ -47,7 +47,7 @@ const featuresData = [
 export function Features() {
   const t = useTranslations('Features')
   return (
-    <section className="w-full py-16 md:py-24 bg-background relative overflow-hidden">
+    <section className="w-full py-16 md:py-24 bg-transparent relative overflow-hidden">
       {/* Decorative organic shapes - Sentirz Style */}
       <div className="absolute top-20 right-10 w-40 h-40 rounded-full bg-sentirz-teal/10 blur-[80px]" />
       <div className="absolute bottom-32 left-16 w-32 h-32 rounded-full bg-sentirz-orange/10 blur-[60px]" />
@@ -89,9 +89,9 @@ export function Features() {
               <motion.div
                 key={feature.number}
                 variants={fadeIn}
-                className="group relative bg-white border border-primary/10 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-500"
+                className="group relative bg-card border border-border rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-500"
               >
-                {/* Subtle gradient bg on hover */}
+                {/* Gradient bg no hover */}
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${feature.color} rounded-[2rem] sm:rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
                 />
@@ -104,7 +104,7 @@ export function Features() {
 
                   {/* Icon */}
                   <div
-                    className={`h-14 w-14 rounded-2xl bg-sentirz-bg border ${feature.borderColor} flex items-center justify-center ${feature.hoverBg} group-hover:border-transparent transition-all duration-300`}
+                    className={`h-14 w-14 rounded-2xl bg-background border ${feature.borderColor} flex items-center justify-center ${feature.hoverBg} group-hover:border-transparent transition-all duration-300`}
                   >
                     <feature.icon
                       className={`h-6 w-6 ${feature.iconColor} group-hover:text-primary-foreground transition-colors duration-300`}
@@ -113,30 +113,13 @@ export function Features() {
 
                   {/* Text */}
                   <div className="space-y-3">
-                    <h3 className="text-xl font-bold text-foreground">{t(`cards.${feature.key}.title`)}</h3>
+                    <h3 className="text-xl font-bold text-foreground">
+                      {t(`cards.${feature.key}.title`)}
+                    </h3>
                     <p className="text-foreground/60 leading-relaxed text-[15px]">
                       {t(`cards.${feature.key}.desc`)}
                     </p>
                   </div>
-                </div>
-
-                {/* Decorative corner element */}
-                <div className="absolute top-8 right-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <svg
-                    className="h-6 w-6 text-foreground/10"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M7 17L17 7M17 7H7M17 7V17"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
                 </div>
               </motion.div>
             ))}

@@ -124,9 +124,7 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>{t('registration.cancelTitle')}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {t('registration.cancelDesc')}
-                  </AlertDialogDescription>
+                  <AlertDialogDescription>{t('registration.cancelDesc')}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>{t('registration.backToRegister')}</AlertDialogCancel>
@@ -146,7 +144,7 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-xl border-b border-slate-100">
+    <header className="sticky top-0 z-50 w-full bg-transparent border-none">
       <div className="container flex h-16 sm:h-20 items-center justify-between">
         <div className="flex items-center gap-4 sm:gap-10">
           <Link href={isLoggedIn ? '/dashboard' : '/'} className="flex items-center gap-2.5">
@@ -208,7 +206,9 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{fullName || t('menu.user')}</p>
+                      <p className="text-sm font-medium leading-none">
+                        {fullName || t('menu.user')}
+                      </p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {role === 'PSYCHOLOGIST' ? t('roles.psychologist') : t('roles.patient')}
                       </p>

@@ -21,7 +21,9 @@ const testimonialsData = [
     rating: 5,
     initials: 'MC',
     image: '/testimonials/maria.png',
-    color: 'bg-blue-50 text-blue-600',
+    avatarBg: 'bg-sentirz-teal-pastel',
+    avatarColor: 'text-sentirz-teal',
+    accentBorder: 'hover:border-sentirz-teal/25',
   },
   {
     key: 'pedro',
@@ -29,7 +31,9 @@ const testimonialsData = [
     rating: 5,
     initials: 'PA',
     image: '/testimonials/pedro.png',
-    color: 'bg-emerald-50 text-emerald-600',
+    avatarBg: 'bg-sentirz-green-pastel',
+    avatarColor: 'text-sentirz-green',
+    accentBorder: 'hover:border-sentirz-green/25',
   },
   {
     key: 'ana',
@@ -37,28 +41,28 @@ const testimonialsData = [
     rating: 5,
     initials: 'AL',
     image: '/testimonials/ana.png',
-    color: 'bg-amber-50 text-amber-600',
+    avatarBg: 'bg-sentirz-orange-pastel',
+    avatarColor: 'text-sentirz-orange',
+    accentBorder: 'hover:border-sentirz-orange/25',
   },
 ]
 
 export function Testimonials() {
   const t = useTranslations('Testimonials')
+
   return (
-    <section className="w-full py-16 md:py-24 bg-slate-50 relative overflow-hidden">
-      {/* Decorative quotes */}
-      <div className="absolute top-20 left-[5%] text-slate-100 hidden sm:block" aria-hidden="true">
-        <Quote className="h-24 w-24 sm:h-32 sm:w-32 rotate-180" />
+    <section className="w-full py-16 md:py-24 bg-transparent relative overflow-hidden">
+      {/* Aspas decorativas */}
+      <div className="absolute top-16 left-[5%] text-border hidden sm:block" aria-hidden="true">
+        <Quote className="h-20 w-20 sm:h-28 sm:w-28 rotate-180 opacity-40" />
       </div>
-      <div
-        className="absolute bottom-16 right-[5%] text-slate-100 hidden sm:block"
-        aria-hidden="true"
-      >
-        <Quote className="h-16 w-16 sm:h-24 sm:w-24" />
+      <div className="absolute bottom-16 right-[5%] text-border hidden sm:block" aria-hidden="true">
+        <Quote className="h-14 w-14 sm:h-20 sm:w-20 opacity-40" />
       </div>
 
-      {/* Organic dots */}
-      <div className="absolute top-1/3 right-[10%] w-2 h-2 rounded-full bg-amber-200/50" />
-      <div className="absolute bottom-1/4 left-[12%] w-2.5 h-2.5 rounded-full bg-blue-200/40" />
+      {/* Blobs de fundo */}
+      <div className="absolute top-0 right-[10%] w-72 h-72 rounded-full bg-sentirz-orange/8 blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-0 left-[8%] w-64 h-64 rounded-full bg-sentirz-teal/8 blur-[90px] pointer-events-none" />
 
       <div className="container px-4 sm:px-6 relative z-10 mx-auto max-w-5xl">
         <motion.div
@@ -69,16 +73,16 @@ export function Testimonials() {
           className="space-y-12"
         >
           {/* Section header */}
-          <div className="text-center space-y-5">
+          <div className="text-center space-y-4">
             <motion.p
               variants={fadeIn}
-              className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em]"
+              className="text-xs font-semibold text-foreground/40 uppercase tracking-[0.2em]"
             >
               {t('badge')}
             </motion.p>
             <motion.h2
               variants={fadeIn}
-              className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 font-outfit"
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground font-outfit"
             >
               {t('title')}
             </motion.h2>
@@ -90,40 +94,32 @@ export function Testimonials() {
               <motion.div
                 key={i}
                 variants={fadeIn}
-                className="bg-white border border-slate-100 rounded-2xl sm:rounded-3xl p-5 sm:p-8 hover:shadow-lg hover:shadow-slate-100/80 hover:-translate-y-1 transition-all duration-500 flex flex-col justify-between gap-6 group"
+                className={`bg-card border border-border ${item.accentBorder} rounded-2xl sm:rounded-3xl p-5 sm:p-8 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-500 flex flex-col justify-between gap-6 group`}
               >
-                <div className="space-y-5">
+                <div className="space-y-4">
                   {/* Stars */}
-                  <div className="flex gap-1">
+                  <div className="flex gap-0.5">
                     {Array.from({ length: item.rating }).map((_, j) => (
-                      <Star key={j} className="h-4 w-4 text-amber-400 fill-amber-400" />
+                      <Star key={j} className="h-4 w-4 text-sentirz-orange fill-sentirz-orange" />
                     ))}
                   </div>
 
                   {/* Quote */}
-                  <p className="text-slate-600 leading-relaxed text-[15px]">
+                  <p className="text-foreground/70 leading-relaxed text-[15px]">
                     &ldquo;{t(`${item.key}.quote`)}&rdquo;
                   </p>
                 </div>
 
                 {/* Author */}
-                <div className="flex items-center gap-3 pt-2 border-t border-slate-50">
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="h-12 w-12 rounded-full object-cover shadow-sm ring-2 ring-slate-50"
-                    />
-                  ) : (
-                    <div
-                      className={`h-12 w-12 rounded-full ${item.color} flex items-center justify-center text-xs font-bold`}
-                    >
-                      {item.initials}
-                    </div>
-                  )}
+                <div className="flex items-center gap-3 pt-3 border-t border-border/60">
+                  <div
+                    className={`h-11 w-11 rounded-full ${item.avatarBg} ${item.avatarColor} flex items-center justify-center text-xs font-bold shrink-0`}
+                  >
+                    {item.initials}
+                  </div>
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">{item.name}</p>
-                    <p className="text-xs text-slate-400">{t(`${item.key}.role`)}</p>
+                    <p className="text-sm font-semibold text-foreground">{item.name}</p>
+                    <p className="text-xs text-foreground/45">{t(`${item.key}.role`)}</p>
                   </div>
                 </div>
               </motion.div>
