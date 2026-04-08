@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { Link } from '@/i18n/routing'
 
 export default function NotFound() {
   return (
@@ -9,12 +10,12 @@ export default function NotFound() {
         <p className="text-slate-600 mb-8">
           O perfil que você está procurando não existe ou foi removido.
         </p>
-        <a
+        <Link
           href="/busca"
           className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
         >
           Voltar para busca
-        </a>
+        </Link>
       </div>
     </div>
   )

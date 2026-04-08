@@ -4,7 +4,12 @@ import { Heart, Shield, Video, Users } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/routing'
 
-export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'AboutPage' })
   return {
     title: t('meta.title'),
@@ -12,7 +17,8 @@ export async function generateMetadata({ params: { locale } }: { params: { local
   }
 }
 
-export default async function SobrePage({ params: { locale } }: { params: { locale: string } }) {
+export default async function SobrePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'AboutPage' })
 
   return (
@@ -56,24 +62,24 @@ export default async function SobrePage({ params: { locale } }: { params: { loca
                 <Heart className="h-6 w-6" />
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">{t('values.empathy.title')}</h3>
-              <p className="text-slate-500 text-sm leading-relaxed">
-                {t('values.empathy.desc')}
-              </p>
+              <p className="text-slate-500 text-sm leading-relaxed">{t('values.empathy.desc')}</p>
             </div>
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 transition-all hover:shadow-lg hover:-translate-y-1">
               <div className="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6">
                 <Shield className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">{t('values.security.title')}</h3>
-              <p className="text-slate-500 text-sm leading-relaxed">
-                {t('values.security.desc')}
-              </p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
+                {t('values.security.title')}
+              </h3>
+              <p className="text-slate-500 text-sm leading-relaxed">{t('values.security.desc')}</p>
             </div>
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 transition-all hover:shadow-lg hover:-translate-y-1">
               <div className="h-12 w-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-6">
                 <Video className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">{t('values.technology.title')}</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
+                {t('values.technology.title')}
+              </h3>
               <p className="text-slate-500 text-sm leading-relaxed">
                 {t('values.technology.desc')}
               </p>
@@ -82,10 +88,10 @@ export default async function SobrePage({ params: { locale } }: { params: { loca
               <div className="h-12 w-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-6">
                 <Users className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">{t('values.community.title')}</h3>
-              <p className="text-slate-500 text-sm leading-relaxed">
-                {t('values.community.desc')}
-              </p>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">
+                {t('values.community.title')}
+              </h3>
+              <p className="text-slate-500 text-sm leading-relaxed">{t('values.community.desc')}</p>
             </div>
           </div>
         </div>
@@ -102,12 +108,8 @@ export default async function SobrePage({ params: { locale } }: { params: { loca
               {t('history.quote')}
             </p>
             <div className="space-y-8 text-slate-600 font-medium">
-              <p>
-                {t('history.p1')}
-              </p>
-              <p>
-                {t('history.p2')}
-              </p>
+              <p>{t('history.p1')}</p>
+              <p>{t('history.p2')}</p>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Link } from '@/i18n/routing'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
@@ -136,7 +137,7 @@ export function SettingsManager({ initialSettings }: SettingsManagerProps) {
             </div>
             <div className="border-t border-slate-100 pt-6">
               <Button variant="outline" className="text-slate-600" asChild>
-                <a href="/dashboard/perfil?tab=security">Alterar Senha de Acesso</a>
+                <Link href="/dashboard/perfil?tab=security">Alterar Senha de Acesso</Link>
               </Button>
             </div>
           </CardContent>

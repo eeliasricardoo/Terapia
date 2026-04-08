@@ -2,7 +2,12 @@ import { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { getTranslations } from 'next-intl/server'
 
-export async function generateMetadata({ params: { locale } }: { params: { locale: string } }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'SearchPage' })
   return {
     title: t('meta.title'),
@@ -109,7 +114,8 @@ const getCachedPsychologists = unstable_cache(
   { revalidate: 3600, tags: ['psychologists'] }
 )
 
-export default async function SearchPage({ params: { locale } }: { params: { locale: string } }) {
+export default async function SearchPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
   const psychologists = await getCachedPsychologists()
   const t = await getTranslations({ locale, namespace: 'SearchPage' })
 
@@ -122,7 +128,9 @@ export default async function SearchPage({ params: { locale } }: { params: { loc
               Home
             </Link>
             <ChevronRight className="h-4 w-4" />
-            <span className="text-slate-700 font-medium font-outfit">{t('exploreProfessionals')}</span>
+            <span className="text-slate-700 font-medium font-outfit">
+              {t('exploreProfessionals')}
+            </span>
           </div>
         </div>
 

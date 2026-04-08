@@ -6,7 +6,14 @@ import { getCurrentUserProfile } from '@/lib/actions/profile'
 import { cn } from '@/lib/utils'
 import { getTranslations } from 'next-intl/server'
 
-export default async function DashboardLayout({ children, params: { locale } }: { children: React.ReactNode, params: { locale: string } }) {
+export default async function DashboardLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
   const profile = await getCurrentUserProfile()
   const themeClass = profile?.role === 'ADMIN' ? 'admin-theme' : ''
   const t = await getTranslations({ locale, namespace: 'DashboardLayout' })
