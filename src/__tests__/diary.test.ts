@@ -25,14 +25,14 @@ const mockPrismaUserUpsert = jest.fn()
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     diaryEntry: {
-      findMany: (...args: any[]) => mockPrismaDiaryFindMany(...args),
-      create: (...args: any[]) => mockPrismaDiaryCreate(...args),
-      delete: (...args: any[]) => mockPrismaDiaryDelete(...args),
-      findFirst: (...args: any[]) => mockPrismaDiaryFindFirst(...args),
-      update: (...args: any[]) => mockPrismaDiaryUpdate(...args),
+      findMany: (...args: unknown[]) => mockPrismaDiaryFindMany(...args),
+      create: (...args: unknown[]) => mockPrismaDiaryCreate(...args),
+      delete: (...args: unknown[]) => mockPrismaDiaryDelete(...args),
+      findFirst: (...args: unknown[]) => mockPrismaDiaryFindFirst(...args),
+      update: (...args: unknown[]) => mockPrismaDiaryUpdate(...args),
     },
     user: {
-      upsert: (...args: any[]) => mockPrismaUserUpsert(...args),
+      upsert: (...args: unknown[]) => mockPrismaUserUpsert(...args),
     },
   },
 }))
@@ -100,8 +100,9 @@ describe('diary actions', () => {
   describe('saveDiaryEntry', () => {
     it('should return error if user is not authenticated', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } })
-      const result: any = await saveDiaryEntry({ mood: 3, emotions: [], content: 'test' })
+      const result = await saveDiaryEntry({ mood: 3, emotions: [], content: 'test' })
       expect(result.success).toBe(false)
+      if (result.success) return
       expect(result.code).toBe('UNAUTHENTICATED')
     })
 
@@ -109,9 +110,10 @@ describe('diary actions', () => {
       mockPrismaUserUpsert.mockResolvedValue({})
       mockPrismaDiaryCreate.mockResolvedValue({ id: VALID_UUID })
 
-      const result: any = await saveDiaryEntry({ mood: 4, emotions: ['feliz'], content: 'Bom dia' })
+      const result = await saveDiaryEntry({ mood: 4, emotions: ['feliz'], content: 'Bom dia' })
 
       expect(result.success).toBe(true)
+      if (!result.success) return
       expect(result.data.id).toBe(VALID_UUID)
     })
   })
@@ -119,15 +121,16 @@ describe('diary actions', () => {
   describe('deleteDiaryEntry', () => {
     it('should return error if user is not authenticated', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } })
-      const result: any = await deleteDiaryEntry({ id: VALID_UUID })
+      const result = await deleteDiaryEntry({ id: VALID_UUID })
       expect(result.success).toBe(false)
+      if (result.success) return
       expect(result.code).toBe('UNAUTHENTICATED')
     })
 
     it('should delete entry owned by user', async () => {
       mockPrismaDiaryDelete.mockResolvedValue({})
 
-      const result: any = await deleteDiaryEntry({ id: VALID_UUID })
+      const result = await deleteDiaryEntry({ id: VALID_UUID })
       expect(result.success).toBe(true)
       expect(mockPrismaDiaryDelete).toHaveBeenCalledWith({
         where: { id: VALID_UUID, userId: VALID_UUID },

@@ -523,7 +523,7 @@ export function ScheduleManager() {
         return appointments.some((a) => a.scheduled_at.startsWith(dateStr))
       },
     }),
-    [overrides, weeklySchedule, appointments]  
+    [overrides, weeklySchedule, appointments]
   )
 
   const WeeklyConfigDialog = (
@@ -745,8 +745,10 @@ export function ScheduleManager() {
                 caption: 'flex justify-start pt-1 relative items-center pl-2',
                 caption_label: 'text-sm font-bold text-slate-900',
                 nav: 'space-x-1 flex items-center absolute right-1 inset-y-0',
-                prev: 'h-7 w-7 bg-transparent hover:opacity-100 p-0 text-slate-400 hover:text-slate-900',
-                next: 'h-7 w-7 bg-transparent hover:opacity-100 p-0 text-slate-400 hover:text-slate-900',
+                nav_button_previous:
+                  'h-7 w-7 bg-transparent hover:opacity-100 p-0 text-slate-400 hover:text-slate-900',
+                nav_button_next:
+                  'h-7 w-7 bg-transparent hover:opacity-100 p-0 text-slate-400 hover:text-slate-900',
                 table: 'w-full border-collapse space-y-1',
                 head_row: 'flex w-full justify-between mb-1',
                 row: 'flex w-full mt-1 justify-between',

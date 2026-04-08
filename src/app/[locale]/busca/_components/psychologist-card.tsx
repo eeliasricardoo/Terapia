@@ -8,8 +8,10 @@ import { Link } from '@/i18n/routing'
 import { memo } from 'react'
 import { useTranslations, useFormatter } from 'next-intl'
 
+import { PsychologistWithProfile } from '@/lib/supabase/types'
+
 interface PsychologistCardProps {
-  psychologist: any
+  psychologist: PsychologistWithProfile
 }
 
 export const PsychologistCard = memo(function PsychologistCard({

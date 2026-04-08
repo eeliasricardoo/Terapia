@@ -277,9 +277,10 @@ export function AvailabilityForm() {
       const { error } = await supabase
         .from('psychologist_profiles')
         .update({
-          weekly_schedule: { ...weeklySchedule, sessionDuration } as unknown as {
-            [key: string]: any
-          },
+          weekly_schedule: { ...weeklySchedule, sessionDuration } as unknown as Record<
+            string,
+            unknown
+          >,
           timezone: timezone,
         })
         .eq('id', profile.id)

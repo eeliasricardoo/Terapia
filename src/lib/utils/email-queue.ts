@@ -1,10 +1,13 @@
 import { redis, EMAIL_QUEUE_KEY } from '@/lib/upstash/redis'
 import { logger } from './logger'
 
-type EmailPayload = {
+export type EmailPayload = {
+  id?: string
   to: string
   subject: string
   html: string
+  createdAt?: string
+  attempts?: number
 }
 
 /**
@@ -38,13 +41,13 @@ export async function pushToEmailQueue(payload: EmailPayload): Promise<boolean> 
 /**
  * Shifts (removes from start) up to `count` items from the queue.
  */
-export async function popFromEmailQueue(count: number = 10): Promise<any[]> {
+export async function popFromEmailQueue(count: number = 10): Promise<EmailPayload[]> {
   if (!redis) return []
 
   try {
     // LPOP returns a string or null (or array if count is supported)
     // Using pipeline for efficiency if we need multiple
-    const items: any[] = []
+    const items: EmailPayload[] = []
 
     for (let i = 0; i < count; i++) {
       const item = await redis.lpop(EMAIL_QUEUE_KEY)

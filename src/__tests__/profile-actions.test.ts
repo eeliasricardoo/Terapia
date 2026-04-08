@@ -87,7 +87,10 @@ describe('profile actions', () => {
       const formData = new FormData()
       const validFile = new File(['dummy content'], 'avatar.png', { type: 'image/png' })
       // Polyfill arrayBuffer for jsdom if missing
-      ;(validFile as any).arrayBuffer = jest.fn().mockResolvedValue(new ArrayBuffer(13))
+      Object.defineProperty(validFile, 'arrayBuffer', {
+        value: jest.fn().mockResolvedValue(new ArrayBuffer(13)),
+        writable: true,
+      })
       formData.append('file', validFile)
 
       const result = await uploadProfileImage(formData)

@@ -48,8 +48,9 @@ describe('financial actions', () => {
         },
       })
 
-      const result: any = await getFinancialStats({})
+      const result = await getFinancialStats({})
       expect(result.success).toBe(false)
+      if (result.success) return
       expect(result.code).toBe('UNAUTHENTICATED')
     })
 
@@ -96,8 +97,9 @@ describe('financial actions', () => {
       // 11. allCompletedAppts (and fallback)
       findManyMock.mockResolvedValue([])
 
-      const result: any = await getFinancialStats({})
+      const result = await getFinancialStats({})
       expect(result.success).toBe(true)
+      if (!result.success) return
       const stats = result.data
 
       // Total revenue should be 100 + 150 = 250
@@ -116,9 +118,10 @@ describe('financial actions', () => {
         .mockResolvedValueOnce([]) // Pending
         .mockResolvedValue([]) // 6 months
 
-      const result: any = await getFinancialStats({})
+      const result = await getFinancialStats({})
       expect(result.success).toBe(true)
-      expect(result.data?.revenueChange).toBe(0)
+      if (!result.success) return
+      expect(result.data.revenueChange).toBe(0)
     })
   })
 })

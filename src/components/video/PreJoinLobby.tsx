@@ -2,6 +2,7 @@
 
 import { logger } from '@/lib/utils/logger'
 import { useDaily, useLocalParticipant, useMediaTrack, useAudioLevel } from '@daily-co/daily-react'
+import type { DailyEventObjectCameraError, DailyEventObjectFatalError } from '@daily-co/daily-js'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -56,12 +57,12 @@ export function PreJoinLobby({ roomUrl, token }: PreJoinLobbyProps) {
         hasStartedCamera.current = true
         logger.debug('Starting camera preview with credentials...')
 
-        daily.on('camera-error', (event: any) => {
+        daily.on('camera-error', (event: DailyEventObjectCameraError) => {
           logger.error('Camera error:', event)
           setPreviewError(`Erro na câmera: ${event.error?.msg || 'Desconhecido'}`)
         })
 
-        daily.on('error', (event: any) => {
+        daily.on('error', (event: DailyEventObjectFatalError) => {
           logger.error('Daily error:', event)
           setPreviewError(`Erro: ${event.errorMsg || 'Desconhecido'}`)
         })

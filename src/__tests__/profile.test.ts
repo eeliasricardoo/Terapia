@@ -28,7 +28,7 @@ jest.mock('next/cache', () => ({
 
 jest.mock('react', () => ({
   ...jest.requireActual('react'),
-  cache: (fn: any) => fn, // bypass React cache for testing
+  cache: (fn: () => unknown) => typeof fn, // bypass React cache for testing
 }))
 
 describe('profile actions', () => {

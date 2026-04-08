@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import type { Resolver } from 'react-hook-form'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useSearchParams } from 'next/navigation'
@@ -34,7 +35,7 @@ export function LoginForm() {
 
   const form = useForm<LoginInput>({
     // zodResolver infers input type (rememberMe?: boolean) but output type (rememberMe: boolean) — cast needed
-    resolver: zodResolver(loginSchema) as any,
+    resolver: zodResolver(loginSchema) as Resolver<LoginInput>,
     defaultValues: {
       email: '',
       password: '',

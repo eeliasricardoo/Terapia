@@ -5,20 +5,23 @@ import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react
 import { DayPicker } from 'react-day-picker'
 
 import { cn } from '@/lib/utils'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
+
+export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
+  buttonVariant?: 'ghost' | 'outline' | 'default' | 'link' | 'secondary' | 'destructive'
+}
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+   
   captionLayout = 'label' as any,
   buttonVariant = 'ghost',
   formatters,
   components,
   ...props
-}: any) {
-  // const defaultClassNames = getDefaultClassNames()
-
+}: CalendarProps & { captionLayout?: string; buttonVariant?: string }) {
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -28,93 +31,49 @@ function Calendar({
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className
       )}
+       
       captionLayout={captionLayout as any}
-      formatters={{
-        formatMonthDropdown: (date: Date) => date.toLocaleString('default', { month: 'short' }),
-        ...formatters,
-      }}
+      formatters={formatters}
       classNames={{
         root: cn('w-fit'),
         months: cn('flex gap-4 flex-col md:flex-row relative'),
         month: cn('flex flex-col w-full gap-4'),
         nav: cn('flex items-center gap-1 w-full absolute top-0 inset-x-0 justify-between'),
-        button_previous: cn(
-          buttonVariants({ variant: buttonVariant }),
+        nav_button_previous: cn(
+          buttonVariants({ variant: buttonVariant as 'ghost' }),
           'size-(--cell-size) aria-disabled:opacity-50 p-0 select-none'
         ),
-        button_next: cn(
-          buttonVariants({ variant: buttonVariant }),
+        nav_button_next: cn(
+          buttonVariants({ variant: buttonVariant as 'ghost' }),
           'size-(--cell-size) aria-disabled:opacity-50 p-0 select-none'
         ),
-        month_caption: cn(
-          'flex items-center justify-center h-(--cell-size) w-full px-(--cell-size)'
-        ),
-        dropdowns: cn(
-          'w-full flex items-center text-sm font-medium justify-center h-(--cell-size) gap-1.5'
-        ),
-        dropdown_root: cn(
-          'relative has-focus:border-ring border border-input shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] rounded-md'
-        ),
-        dropdown: cn('absolute bg-popover inset-0 opacity-0'),
-        caption_label: cn(
-          'select-none font-medium',
-          captionLayout === 'label'
-            ? 'text-sm'
-            : 'rounded-md pl-2 pr-1 flex items-center gap-1 text-sm h-8 [&>svg]:text-muted-foreground [&>svg]:size-3.5'
-        ),
+        caption: cn('flex items-center justify-center h-(--cell-size) w-full px-(--cell-size)'),
+        vhidden: cn('hidden'),
+        caption_label: cn('select-none font-medium text-sm'),
         table: 'w-full border-collapse',
-        weekdays: cn('flex'),
-        weekday: cn(
+        head_row: cn('flex'),
+        head_cell: cn(
           'text-muted-foreground rounded-md flex-1 font-normal text-[0.8rem] select-none'
         ),
-        week: cn('flex w-full mt-2'),
-        week_number_header: cn('select-none w-(--cell-size)'),
-        week_number: cn('text-[0.8rem] select-none text-muted-foreground'),
-        day: cn(
-          'relative w-full h-full p-0 text-center [&:last-child[data-selected=true]_button]:rounded-r-md group/day aspect-square select-none',
-          props.showWeekNumber
-            ? '[&:nth-child(2)[data-selected=true]_button]:rounded-l-md'
-            : '[&:first-child[data-selected=true]_button]:rounded-l-md'
+        row: cn('flex w-full mt-2'),
+        cell: cn('relative w-full h-full p-0 text-center aspect-square select-none'),
+        day: cn(buttonVariants({ variant: 'ghost' }), 'size-(--cell-size) p-0 font-normal'),
+        day_selected: cn(
+          'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground'
         ),
-        range_start: cn('rounded-l-md bg-accent'),
-        range_middle: cn('rounded-none'),
-        range_end: cn('rounded-r-md bg-accent'),
-        today: cn('bg-accent text-accent-foreground rounded-md data-[selected=true]:rounded-none'),
-        outside: cn('text-muted-foreground aria-selected:text-muted-foreground'),
-        disabled: cn('text-muted-foreground opacity-50'),
-        hidden: cn('invisible'),
+        day_today: cn('bg-accent text-accent-foreground'),
+        day_outside: cn('text-muted-foreground opacity-50 aria-selected:text-muted-foreground'),
+        day_disabled: cn('text-muted-foreground opacity-50'),
+        day_range_middle: cn('aria-selected:bg-accent aria-selected:text-accent-foreground'),
+        day_hidden: cn('invisible'),
         ...classNames,
       }}
       components={{
-        Root: ({ className, rootRef, ...props }: any) => {
-          return <div data-slot="calendar" ref={rootRef} className={cn(className)} {...props} />
-        },
-        Chevron: ({ className, orientation, ...props }: any) => {
-          if (orientation === 'left') {
-            return <ChevronLeftIcon className={cn('size-4', className)} {...props} />
-          }
-
-          if (orientation === 'right') {
-            return <ChevronRightIcon className={cn('size-4', className)} {...props} />
-          }
-
-          return <ChevronDownIcon className={cn('size-4', className)} {...props} />
-        },
-        WeekNumber: ({
-          children,
-          ...props
-        }: React.ComponentPropsWithoutRef<'td'> & { children?: React.ReactNode }) => {
-          return (
-            <td {...props}>
-              <div className="flex size-(--cell-size) items-center justify-center text-center">
-                {children}
-              </div>
-            </td>
-          )
-        },
+        IconLeft: ({ ...iconProps }) => <ChevronLeftIcon className="size-4" {...iconProps} />,
+        IconRight: ({ ...iconProps }) => <ChevronRightIcon className="size-4" {...iconProps} />,
         ...components,
       }}
-      {...(props as any)}
+      {...props}
     />
   )
 }

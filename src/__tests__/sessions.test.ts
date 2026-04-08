@@ -58,21 +58,21 @@ const mockPrismaTransaction = jest.fn()
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     appointment: {
-      findMany: (...args: any[]) => mockPrismaAppointmentFindMany(...args),
-      findFirst: (...args: any[]) => mockPrismaAppointmentFindFirst(...args),
-      findUnique: (...args: any[]) => mockPrismaAppointmentFindUnique(...args),
-      count: (...args: any[]) => mockPrismaAppointmentCount(...args),
-      update: (...args: any[]) => mockPrismaAppointmentUpdate(...args),
-      create: (...args: any[]) => mockPrismaAppointmentCreate(...args),
+      findMany: (...args: unknown[]) => mockPrismaAppointmentFindMany(...args),
+      findFirst: (...args: unknown[]) => mockPrismaAppointmentFindFirst(...args),
+      findUnique: (...args: unknown[]) => mockPrismaAppointmentFindUnique(...args),
+      count: (...args: unknown[]) => mockPrismaAppointmentCount(...args),
+      update: (...args: unknown[]) => mockPrismaAppointmentUpdate(...args),
+      create: (...args: unknown[]) => mockPrismaAppointmentCreate(...args),
     },
-    $transaction: (...args: any[]) => {
+    $transaction: (...args: unknown[]) => {
       // If called with a callback (interactive transaction), execute it
       if (typeof args[0] === 'function') {
         const tx = {
           appointment: {
-            findFirst: (...a: any[]) => mockPrismaAppointmentFindFirst(...a),
-            update: (...a: any[]) => mockPrismaAppointmentUpdate(...a),
-            create: (...a: any[]) => mockPrismaAppointmentCreate(...a),
+            findFirst: (...a: unknown[]) => mockPrismaAppointmentFindFirst(...a),
+            update: (...a: unknown[]) => mockPrismaAppointmentUpdate(...a),
+            create: (...a: unknown[]) => mockPrismaAppointmentCreate(...a),
           },
         }
         return args[0](tx)
@@ -145,8 +145,9 @@ describe('sessions actions', () => {
     it('should return empty sessions when Prisma throws an error', async () => {
       mockPrismaTransaction.mockRejectedValue(new Error('DB error'))
 
-      const result: any = await getUserSessions({ limit: 20 })
+      const result = await getUserSessions({ limit: 20 })
       expect(result.success).toBe(false)
+      if (result.success) return
       expect(result.code).toBe('INTERNAL_ERROR')
     })
 
@@ -154,11 +155,12 @@ describe('sessions actions', () => {
       const appt = makePrismaAppointment()
       mockPrismaTransaction.mockResolvedValue([[appt], 1])
 
-      const result: any = await getUserSessions({ limit: 20 })
+      const result = await getUserSessions({ limit: 20 })
 
       expect(result.success).toBe(true)
+      if (!result.success) return
       expect(result.data.sessions).toHaveLength(1)
-      expect(result.data.sessions[0].patient_id).toBe(VALID_UUID)
+      expect(result.data.sessions[0].patientId).toBe(VALID_UUID)
       expect(result.data.total).toBe(1)
     })
   })
@@ -169,15 +171,17 @@ describe('sessions actions', () => {
   describe('cancelSession', () => {
     it('should return error if user is not authenticated', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } })
-      const result: any = await cancelSession(VALID_UUID)
+      const result = await cancelSession(VALID_UUID)
       expect(result.success).toBe(false)
+      if (result.success) return
       expect(result.code).toBe('UNAUTHENTICATED')
     })
 
     it('should return error if session is not found', async () => {
       mockPrismaAppointmentFindUnique.mockResolvedValue(null)
-      const result: any = await cancelSession(VALID_UUID)
+      const result = await cancelSession(VALID_UUID)
       expect(result.success).toBe(false)
+      if (result.success) return
       expect(result.error).toBe('Sessão não encontrada')
     })
 
@@ -189,8 +193,9 @@ describe('sessions actions', () => {
         psychologist: { userId: 'real-psych-id' },
       })
 
-      const result: any = await cancelSession(VALID_UUID)
+      const result = await cancelSession(VALID_UUID)
       expect(result.success).toBe(false)
+      if (result.success) return
       expect(result.error).toContain('permissão')
     })
   })
@@ -201,22 +206,24 @@ describe('sessions actions', () => {
   describe('rescheduleSession', () => {
     it('should return error if user is not authenticated', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } })
-      const result: any = await rescheduleSession({
+      const result = await rescheduleSession({
         sessionId: VALID_UUID,
         newScheduledAt: new Date().toISOString(),
       })
       expect(result.success).toBe(false)
+      if (result.success) return
       expect(result.code).toBe('UNAUTHENTICATED')
     })
 
     it('should return error if session is not found', async () => {
       mockPrismaAppointmentFindUnique.mockResolvedValue(null)
-      const result: any = await rescheduleSession({
+      const result = await rescheduleSession({
         sessionId: VALID_UUID,
         newScheduledAt: new Date().toISOString(),
       })
 
       expect(result.success).toBe(false)
+      if (result.success) return
       expect(result.error).toBe('Sessão não encontrada')
     })
 
@@ -228,12 +235,13 @@ describe('sessions actions', () => {
         psychologist: { userId: 'real-psych-id' },
       })
 
-      const result: any = await rescheduleSession({
+      const result = await rescheduleSession({
         sessionId: VALID_UUID,
         newScheduledAt: new Date().toISOString(),
       })
 
       expect(result.success).toBe(false)
+      if (result.success) return
       expect(result.error).toContain('Acesso negado')
     })
 
@@ -257,12 +265,13 @@ describe('sessions actions', () => {
         durationMinutes: 50,
       })
 
-      const result: any = await rescheduleSession({
+      const result = await rescheduleSession({
         sessionId: VALID_UUID,
         newScheduledAt: now.toISOString(),
       })
 
       expect(result.success).toBe(false)
+      if (result.success) return
       expect(result.error).toContain('compromisso')
     })
   })

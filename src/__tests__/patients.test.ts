@@ -26,21 +26,21 @@ const mockPrismaEvolutionCreate = jest.fn()
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     psychologistProfile: {
-      findUnique: (...args: any[]) => mockPrismaPsychProfileFindUnique(...args),
+      findUnique: (...args: unknown[]) => mockPrismaPsychProfileFindUnique(...args),
     },
     appointment: {
-      findMany: (...args: any[]) => mockPrismaApptFindMany(...args),
-      findFirst: (...args: any[]) => mockPrismaApptFindFirst(...args),
+      findMany: (...args: unknown[]) => mockPrismaApptFindMany(...args),
+      findFirst: (...args: unknown[]) => mockPrismaApptFindFirst(...args),
     },
     patientPsychologistLink: {
-      findMany: (...args: any[]) => mockPrismaLinkFindMany(...args),
+      findMany: (...args: unknown[]) => mockPrismaLinkFindMany(...args),
       findFirst: jest.fn(),
     },
     anamnesis: {
-      findFirst: (...args: any[]) => mockPrismaAnamnesisFindFirst(...args),
+      findFirst: (...args: unknown[]) => mockPrismaAnamnesisFindFirst(...args),
     },
     evolution: {
-      create: (...args: any[]) => mockPrismaEvolutionCreate(...args),
+      create: (...args: unknown[]) => mockPrismaEvolutionCreate(...args),
     },
   },
 }))
@@ -75,7 +75,9 @@ describe('patients actions', () => {
   describe('getPsychologistPatients', () => {
     it('should return empty list if profile missing', async () => {
       mockPrismaPsychProfileFindUnique.mockResolvedValue(null)
-      const res: any = await getPsychologistPatients(undefined)
+      const res = await getPsychologistPatients(undefined)
+      expect(res.success).toBe(true)
+      if (!res.success) return
       expect(res.data).toEqual([])
     })
   })
@@ -86,7 +88,9 @@ describe('patients actions', () => {
         id: VALID_UUID,
         mainComplaint: 'encrypted-complaint',
       })
-      const res: any = await getAnamnesis(OTHER_UUID)
+      const res = await getAnamnesis(OTHER_UUID)
+      expect(res.success).toBe(true)
+      if (!res.success || !res.data) return
       expect(res.data.mainComplaint).toBe('complaint')
     })
   })
@@ -94,7 +98,7 @@ describe('patients actions', () => {
   describe('saveEvolution', () => {
     it('should succeed with correct role and profile', async () => {
       mockPrismaEvolutionCreate.mockResolvedValue({ id: VALID_UUID })
-      const res: any = await saveEvolution({
+      const res = await saveEvolution({
         patientId: OTHER_UUID,
         publicSummary: 'ps',
         privateNotes: 'pn',

@@ -17,7 +17,7 @@ async function main() {
 
   console.log(`Found ${psychs.length} profiles.`)
 
-  psychs.forEach((p: any) => {
+  psychs.forEach((p) => {
     console.log('--------------------------------------------------')
     console.log(`Name: ${p.user?.profiles?.fullName || 'N/A'}`)
     console.log(`UserID: ${p.userId}`)

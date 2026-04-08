@@ -29,7 +29,7 @@ import { getPatientPublicEvolutions } from '@/lib/actions/evolutions'
 
 const MOCK_USER = { id: 'user-1', email: 'test@test.com' }
 
-function mockAuth(user: any) {
+function mockAuth(user: Record<string, unknown> | null) {
   ;(createClient as jest.Mock).mockResolvedValue({
     auth: { getUser: jest.fn().mockResolvedValue({ data: { user } }) },
   })

@@ -68,7 +68,7 @@ export function PsychologistOnboardingWizard() {
   const docInputRef = useRef<HTMLInputElement>(null)
   const selfieInputRef = useRef<HTMLInputElement>(null)
 
-  const updateField = (field: string, value: any) => {
+  const updateField = (field: string, value: string | boolean | string[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 

@@ -128,39 +128,34 @@ export const searchPsychologists = createSafeAction(
     } = filters
     const skip = (page - 1) * pageSize
 
-    // Using type assertion here because we build the where object incrementally
-    const where: any = {
+    // Build typed Prisma where input - profile conditions collected first
+    const profileAndConditions: Prisma.ProfileWhereInput[] = []
+
+    if (genders && genders.length > 0) {
+      profileAndConditions.push({ gender: { in: genders } })
+    }
+
+    if (searchQuery) {
+      profileAndConditions.push({ fullName: { contains: searchQuery, mode: 'insensitive' } })
+    }
+
+    const where: Prisma.PsychologistProfileWhereInput = {
       isVerified: true,
-    }
-
-    if (specialties && specialties.length > 0) {
-      where.specialties = { hasSome: specialties }
-    }
-
-    if (healthInsurances && healthInsurances.length > 0) {
-      where.acceptedInsurances = {
-        some: { healthInsuranceId: { in: healthInsurances } },
-      }
-    }
-
-    if (minPrice !== undefined || maxPrice !== undefined) {
-      where.pricePerSession = {}
-      if (minPrice !== undefined) where.pricePerSession.gte = minPrice
-      if (maxPrice !== undefined) where.pricePerSession.lte = maxPrice
-    }
-
-    if ((genders && genders.length > 0) || searchQuery) {
-      where.user = {
-        profiles: {
-          AND: [],
-        },
-      }
-      if (genders && genders.length > 0) {
-        where.user.profiles.AND.push({ gender: { in: genders } })
-      }
-      if (searchQuery) {
-        where.user.profiles.AND.push({ fullName: { contains: searchQuery, mode: 'insensitive' } })
-      }
+      ...(specialties && specialties.length > 0 ? { specialties: { hasSome: specialties } } : {}),
+      ...(healthInsurances && healthInsurances.length > 0
+        ? { acceptedInsurances: { some: { healthInsuranceId: { in: healthInsurances } } } }
+        : {}),
+      ...(minPrice !== undefined || maxPrice !== undefined
+        ? {
+            pricePerSession: {
+              ...(minPrice !== undefined ? { gte: minPrice } : {}),
+              ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
+            },
+          }
+        : {}),
+      ...(profileAndConditions.length > 0
+        ? { user: { profiles: { AND: profileAndConditions } } }
+        : {}),
     }
 
     const [psychologists, total] = await Promise.all([

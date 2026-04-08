@@ -13,7 +13,7 @@ const mockPrismaFindFirst = jest.fn()
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     appointment: {
-      findFirst: (...args: any[]) => mockPrismaFindFirst(...args),
+      findFirst: (...args: unknown[]) => mockPrismaFindFirst(...args),
     },
   },
 }))

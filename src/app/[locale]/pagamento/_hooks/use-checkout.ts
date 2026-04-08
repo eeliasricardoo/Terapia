@@ -29,7 +29,12 @@ export function useCheckout() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [psychTimezone, setPsychTimezone] = useState('America/Sao_Paulo')
-  const [patientProfile, setPatientProfile] = useState<any>(null)
+  const [patientProfile, setPatientProfile] = useState<{
+    id?: string
+    healthInsuranceId?: string | null
+    healthInsurancePolicy?: string | null
+    [key: string]: unknown
+  } | null>(null)
   const [matchedInsurance, setMatchedInsurance] = useState<{ id: string; name: string } | null>(
     null
   )

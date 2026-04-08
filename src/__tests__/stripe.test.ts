@@ -30,18 +30,18 @@ jest.mock('@/lib/prisma', () => ({
     psychologistProfile: { findUnique: jest.fn() },
     appointment: {
       findMany: jest.fn(),
-      findFirst: (...args: any[]) => mockAppointmentFindFirst(...args),
-      create: (...args: any[]) => mockAppointmentCreate(...args),
-      update: (...args: any[]) => mockAppointmentUpdate(...args),
+      findFirst: (...args: unknown[]) => mockAppointmentFindFirst(...args),
+      create: (...args: unknown[]) => mockAppointmentCreate(...args),
+      update: (...args: unknown[]) => mockAppointmentUpdate(...args),
     },
     coupon: { findFirst: jest.fn(), update: jest.fn() },
     patientProfile: { findUnique: jest.fn() },
-    $transaction: jest.fn((cb: any) => {
+    $transaction: jest.fn((cb: (tx: Record<string, unknown>) => unknown) => {
       const tx = {
         appointment: {
-          findFirst: (...args: any[]) => mockAppointmentFindFirst(...args),
-          create: (...args: any[]) => mockAppointmentCreate(...args),
-          update: (...args: any[]) => mockAppointmentUpdate(...args),
+          findFirst: (...args: unknown[]) => mockAppointmentFindFirst(...args),
+          create: (...args: unknown[]) => mockAppointmentCreate(...args),
+          update: (...args: unknown[]) => mockAppointmentUpdate(...args),
         },
       }
       return cb(tx)
@@ -82,7 +82,7 @@ const MOCK_USER = {
   app_metadata: { role: 'PATIENT' },
 }
 
-function mockAuth(user: any) {
+function mockAuth(user: Record<string, unknown> | null) {
   ;(createClient as jest.Mock).mockResolvedValue({
     auth: { getUser: jest.fn().mockResolvedValue({ data: { user } }) },
   })

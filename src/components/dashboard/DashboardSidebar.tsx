@@ -105,7 +105,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
   const [loading, setLoading] = useState(!initialProfile)
 
   useEffect(() => {
-    let channel: any
+    let channel: ReturnType<typeof supabase.channel> | undefined
     async function loadUser() {
       try {
         const {
@@ -130,7 +130,12 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
                   ? t('roles.companyFull')
                   : t('roles.patient')
 
-          if (!initialProfile || !user?.name || user.name === t('roles.user') || user.name === 'Usuário') {
+          if (
+            !initialProfile ||
+            !user?.name ||
+            user.name === t('roles.user') ||
+            user.name === 'Usuário'
+          ) {
             setUser({
               name:
                 profile?.full_name ||
@@ -246,7 +251,8 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
 
       <nav className="flex-1 space-y-1.5 p-4 overflow-y-auto" aria-label={t('sidebar.navigation')}>
         {menuItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
+          const isActive =
+            pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
           return (
             <Link
               key={item.href}

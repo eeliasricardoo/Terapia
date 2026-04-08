@@ -10,11 +10,17 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { PreJoinLobby } from '@/components/video/PreJoinLobby'
 import { ActiveRoomInterface } from './_components/ActiveRoomInterface'
 
+interface VideoTestAppointmentInfo {
+  scheduledAt: string
+  durationMinutes: number
+  isPsychologist: boolean
+}
+
 export default function VideoTestPage() {
   const [roomData, setRoomData] = useState<{
     url: string
     token: string
-    appointmentInfo: any
+    appointmentInfo: VideoTestAppointmentInfo
   } | null>(null)
   const [callObject, setCallObject] = useState<DailyCall | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -115,7 +121,7 @@ function RoomManager({
 }: {
   roomUrl: string
   token: string
-  appointmentInfo: any
+  appointmentInfo: VideoTestAppointmentInfo
 }) {
   const meetingState = useMeetingState()
 

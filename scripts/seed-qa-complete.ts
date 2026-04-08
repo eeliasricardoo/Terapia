@@ -416,7 +416,16 @@ async function main() {
   // ── 7. CUPONS (vinculados à Ana Silva) ─────────────────────────
   console.log('\n🏷️  Criando cupons para Ana Silva...')
 
-  const coupons = [
+  const coupons: Array<{
+    code: string
+    type: string
+    value: number
+    maxUses: number | null
+    used?: number
+    active: boolean
+    expiresAt: Date | null
+    desc: string
+  }> = [
     {
       code: 'QA10',
       type: 'percentage',
@@ -495,7 +504,7 @@ async function main() {
           type: c.type,
           value: c.value,
           maxUses: c.maxUses,
-          used: (c as any).used ?? 0,
+          used: c.used ?? 0,
           active: c.active,
           expiresAt: c.expiresAt,
         },
@@ -508,7 +517,7 @@ async function main() {
           type: c.type,
           value: c.value,
           maxUses: c.maxUses,
-          used: (c as any).used ?? 0,
+          used: c.used ?? 0,
           active: c.active,
           expiresAt: c.expiresAt,
         },

@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 import { useRef } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 import { Camera } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,7 +12,7 @@ import { UserProfile } from '../_hooks/use-profile-data'
 
 interface ProfileAvatarCardProps {
   user: UserProfile | null
-  setUser: (user: any) => void
+  setUser: Dispatch<SetStateAction<UserProfile | null>>
   isLoading: boolean
   setIsLoading: (loading: boolean) => void
 }
@@ -43,7 +44,7 @@ export function ProfileAvatarCard({
       }
 
       if (result.publicUrl) {
-        setUser((prev: any) => (prev ? { ...prev, image: result.publicUrl } : null))
+        setUser((prev) => (prev ? { ...prev, image: result.publicUrl } : null))
         toast.success(t('avatar.success'), {
           description: t('avatar.successDesc'),
         })

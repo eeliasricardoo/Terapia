@@ -20,6 +20,21 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { getPatientInfoByAppointment, getPatientSessionHistory } from '@/lib/actions/patients'
+import type { SessionHistoryItem } from '@/lib/actions/patients'
+
+// Extended type for room display, including extra UI-only fields
+type RoomPatientData = {
+  id?: string
+  name?: string
+  phone?: string
+  birthDate?: string
+  complaint?: string
+  age?: string
+  sex?: string
+  gender?: string
+  profession?: string
+  document?: string
+}
 
 interface RoomRecordProps {
   appointmentId?: string
@@ -27,8 +42,8 @@ interface RoomRecordProps {
 
 export function RoomRecord({ appointmentId }: RoomRecordProps) {
   const [isLoading, setIsLoading] = useState(true)
-  const [patientData, setPatientData] = useState<any>(null)
-  const [history, setHistory] = useState<any[]>([])
+  const [patientData, setPatientData] = useState<RoomPatientData | null>(null)
+  const [history, setHistory] = useState<SessionHistoryItem[]>([])
 
   useEffect(() => {
     async function loadData() {
@@ -60,7 +75,7 @@ export function RoomRecord({ appointmentId }: RoomRecordProps) {
       try {
         const res = await getPatientInfoByAppointment(appointmentId)
         if (res.success && res.data) {
-          setPatientData(res.data)
+          setPatientData(res.data as unknown as RoomPatientData)
           const historyRes = await getPatientSessionHistory(res.data.id)
           if (historyRes.success) {
             setHistory(historyRes.data || [])

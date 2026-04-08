@@ -158,6 +158,8 @@ export type Database = {
           role: Database['public']['Enums']['UserRole']
           updated_at: string
           user_id: string
+          city: string | null
+          state: string | null
         }
         Insert: {
           avatar_url?: string | null

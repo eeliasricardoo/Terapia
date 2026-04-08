@@ -26,7 +26,15 @@ export async function createDailyRoom(roomName?: string): Promise<CreateRoomResp
     Authorization: `Bearer ${DAILY_API_KEY}`,
   }
 
-  const body: any = {
+  const body: {
+    privacy: string
+    name?: string
+    properties: {
+      enable_chat: boolean
+      enable_screenshare: boolean
+      exp: number
+    }
+  } = {
     privacy: 'private',
     properties: {
       enable_chat: true,

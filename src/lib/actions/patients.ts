@@ -65,7 +65,17 @@ export const getPsychologistPatients = createSafeAction(
       }),
     ])
 
-    const patientsMap = new Map<string, any>()
+    type AppointmentWithPatient = (typeof appointments)[0]
+    type ProfileType = NonNullable<AppointmentWithPatient['patient']['profiles']>
+    type UserType = AppointmentWithPatient['patient']
+
+    type PatientMapEntry = {
+      user: UserType | Record<string, unknown>
+      profile: ProfileType | Record<string, unknown>
+      appointments: AppointmentWithPatient[]
+      status: string
+    }
+    const patientsMap = new Map<string, PatientMapEntry>()
 
     for (const appt of appointments) {
       const patientId = appt.patientId
@@ -79,13 +89,13 @@ export const getPsychologistPatients = createSafeAction(
           status: 'active',
         })
       }
-      patientsMap.get(patientId).appointments.push(appt)
+      patientsMap.get(patientId)!.appointments.push(appt)
     }
 
     for (const link of explicitLinks) {
       const patientId = link.patient.user_id
       if (patientsMap.has(patientId)) {
-        patientsMap.get(patientId).status = link.status
+        patientsMap.get(patientId)!.status = link.status
       } else {
         patientsMap.set(patientId, {
           user: link.patient.users,
@@ -98,8 +108,8 @@ export const getPsychologistPatients = createSafeAction(
 
     const now = new Date()
     return Array.from(patientsMap.values()).map((data) => {
-      const { user, profile, appointments, status } = data
-      const sortedAppts = [...appointments].sort(
+      const { user, profile, appointments: appts, status } = data
+      const sortedAppts = [...appts].sort(
         (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
       )
       const pastAppts = sortedAppts.filter((a) => new Date(a.scheduledAt) < now)
@@ -118,28 +128,28 @@ export const getPsychologistPatients = createSafeAction(
           minute: '2-digit',
         }).format(date)
 
+      const p = profile as Record<string, unknown>
+      const u = user as Record<string, unknown>
       return {
-        id: profile.id,
-        userId: user.id,
-        name: profile.fullName || user.name || 'Paciente',
-        email: user.email,
-        phone: profile.phone || '',
-        image: profile.avatarUrl || user.image || undefined,
+        id: p.id as string,
+        userId: u.id as string,
+        name: (p.fullName || u.name || 'Paciente') as string,
+        email: u.email as string,
+        phone: (p.phone || '') as string,
+        image: ((p.avatarUrl || u.image) as string | null) || undefined,
         status: status as 'active' | 'inactive' | 'archived',
-        totalSessions: appointments.length,
+        totalSessions: appts.length,
         lastSession: lastSession ? formatDate(lastSession) : undefined,
         nextSession: nextSession ? formatDate(nextSession) : undefined,
-        gender: profile.gender || '',
-        profession: profile.profession || '',
-        document: profile.document || '',
-        birthDate: profile.birth_date
-          ? new Date(profile.birth_date).toLocaleDateString('pt-BR')
-          : '',
+        gender: (p.gender || '') as string,
+        profession: (p.profession || '') as string,
+        document: (p.document || '') as string,
+        birthDate: p.birth_date ? new Date(p.birth_date as string).toLocaleDateString('pt-BR') : '',
         address: {
-          line: profile.addressLine || '',
-          city: profile.city || '',
-          state: profile.state || '',
-          zip: profile.zipCode || '',
+          line: (p.addressLine || '') as string,
+          city: (p.city || '') as string,
+          state: (p.state || '') as string,
+          zip: (p.zipCode || '') as string,
         },
       }
     })

@@ -23,11 +23,11 @@ const mockPrismaEvolutionCreate = jest.fn()
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     appointment: {
-      findUnique: (...args: any[]) => mockPrismaAppointmentFindUnique(...args),
-      update: (...args: any[]) => mockPrismaAppointmentUpdate(...args),
+      findUnique: (...args: unknown[]) => mockPrismaAppointmentFindUnique(...args),
+      update: (...args: unknown[]) => mockPrismaAppointmentUpdate(...args),
     },
     evolution: {
-      create: (...args: any[]) => mockPrismaEvolutionCreate(...args),
+      create: (...args: unknown[]) => mockPrismaEvolutionCreate(...args),
     },
   },
 }))
@@ -71,20 +71,22 @@ describe('createSessionEvolution', () => {
 
   it('fails if no user', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } })
-    const res: any = await createSessionEvolution(VALID_INPUT)
+    const res = await createSessionEvolution(VALID_INPUT)
     expect(res.success).toBe(false)
+    if (res.success) return
     expect(res.code).toBe('UNAUTHENTICATED')
   })
 
   it('fails if session not found', async () => {
     mockPrismaAppointmentFindUnique.mockResolvedValue(null)
-    const res: any = await createSessionEvolution(VALID_INPUT)
+    const res = await createSessionEvolution(VALID_INPUT)
     expect(res.success).toBe(false)
+    if (res.success) return
     expect(res.error).toBe('Agendamento não encontrado')
   })
 
   it('succeeds if valid', async () => {
-    const res: any = await createSessionEvolution(VALID_INPUT)
+    const res = await createSessionEvolution(VALID_INPUT)
     expect(res.success).toBe(true)
   })
 })

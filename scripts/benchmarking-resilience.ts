@@ -10,6 +10,7 @@
 import { prisma } from '../src/lib/prisma'
 import { createStripeCheckoutSession } from '../src/lib/actions/stripe'
 import { logger } from '../src/lib/utils/logger'
+import type { ActionResponse } from '../src/lib/safe-action'
 
 async function runBenchmark() {
   const PSY_ID = 'your-test-psych-id' // Replace with a valid ID from your DB
@@ -36,9 +37,11 @@ async function runBenchmark() {
   const results = await Promise.allSettled(promises)
 
   const succeeded = results.filter(
-    (r) => r.status === 'fulfilled' && (r.value as any).success
+    (r) => r.status === 'fulfilled' && (r.value as ActionResponse<unknown>).success
   ).length
-  const failed = results.filter((r) => r.status === 'rejected' || !(r.value as any).success).length
+  const failed = results.filter(
+    (r) => r.status === 'rejected' || !(r.value as ActionResponse<unknown>).success
+  ).length
 
   console.log('------------------------------------')
   console.log(`Benchmark Finished for ${attempts} concurrent attempts:`)

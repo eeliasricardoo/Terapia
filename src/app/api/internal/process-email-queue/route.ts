@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     // Process in parallel but wait for all to finish (within this invocation)
     const results = await Promise.allSettled(
       items.map(async (item) => {
+        const emailId = item.id || 'unknown'
         try {
           const res = await fetch(sendUrl, {
             method: 'POST',
@@ -48,10 +49,10 @@ export async function POST(req: NextRequest) {
             const errText = await res.text()
             throw new Error(`Send failed: ${res.status} - ${errText}`)
           }
-          return { id: item.id, success: true }
+          return { id: emailId, success: true }
         } catch (err: unknown) {
           const errMsg = err instanceof Error ? err.message : String(err)
-          logger.error(`[EMAIL-WORKER] Failed to send email ${item.id}:`, errMsg)
+          logger.error(`[EMAIL-WORKER] Failed to send email ${emailId}:`, errMsg)
           // Note: In a more complex system, we would push back to queue if attempts < max
           throw err
         }

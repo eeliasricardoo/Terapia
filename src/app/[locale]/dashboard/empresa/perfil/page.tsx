@@ -40,7 +40,17 @@ import { getCompanyProfile, updateCompanyBenefit } from '../actions'
 
 export default function CompanyProfilePage() {
   const [loading, setLoading] = useState(true)
-  const [profile, setProfile] = useState<any>(null)
+  const [profile, setProfile] = useState<{
+    name?: string | null
+    cnpj?: string | null
+    benefitConfig?: {
+      sessionsPerMonth?: number
+      allowedDomains?: string[]
+      [key: string]: unknown
+    } | null
+    _count?: { members: number }
+    user?: { email?: string | null }
+  } | null>(null)
   const [domains, setDomains] = useState<string[]>([])
   const [newDomain, setNewDomain] = useState('')
   const [isSaving, setIsSaving] = useState(false)

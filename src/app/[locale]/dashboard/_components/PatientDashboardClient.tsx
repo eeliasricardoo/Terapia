@@ -14,10 +14,11 @@ import { QuickActions } from './quick-actions'
 import { UpcomingSessionsList } from './upcoming-sessions-list'
 import { NotificationCenter } from '@/components/dashboard/NotificationCenter'
 import { PaymentStatusToast } from './payment-status-toast'
+import type { PatientDashboardData } from '@/lib/actions/dashboard'
 
 interface PatientDashboardClientProps {
   userName: string
-  patientData: any
+  patientData: PatientDashboardData
 }
 
 export function PatientDashboardClient({ userName, patientData }: PatientDashboardClientProps) {

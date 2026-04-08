@@ -15,6 +15,7 @@ import {
   Quote,
   Loader2,
   AlertCircle,
+  type LucideIcon,
 } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
@@ -312,7 +313,15 @@ export function ApprovalList({ initialPending }: { initialPending: PendingPsycho
   )
 }
 
-function InfoItem({ icon: Icon, label, value }: { icon: any; label: string; value: any }) {
+function InfoItem({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon
+  label: string
+  value: string | number | null | undefined
+}) {
   return (
     <div className="flex items-center gap-3 p-4 bg-white rounded-2xl ring-1 ring-slate-100">
       <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
