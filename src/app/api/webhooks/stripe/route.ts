@@ -76,15 +76,12 @@ export async function POST(req: Request) {
         })
 
         // 3. Sync Coupon Usage if present
+        // Note: no .catch() here — errors should propagate and trigger a full rollback
         if (metadata.couponId) {
-          await tx.coupon
-            .update({
-              where: { id: metadata.couponId },
-              data: { used: { increment: 1 } },
-            })
-            .catch((err) =>
-              logger.error(`Error updating coupon usage during fulfillment: ${err.message}`)
-            )
+          await tx.coupon.update({
+            where: { id: metadata.couponId },
+            data: { used: { increment: 1 } },
+          })
         }
 
         return appt
