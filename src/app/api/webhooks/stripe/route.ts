@@ -37,11 +37,31 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing session metadata' }, { status: 400 })
     }
 
+    const { appointmentId, patientId, psychologistId, scheduledAt, durationMinutes, price } =
+      metadata
+
+    if (!appointmentId || !patientId || !psychologistId || !scheduledAt || !durationMinutes) {
+      logger.error(`Incomplete metadata in session ${session.id}`, {
+        appointmentId,
+        patientId,
+        psychologistId,
+        scheduledAt,
+        durationMinutes,
+      })
+      return NextResponse.json({ error: 'Incomplete session metadata' }, { status: 400 })
+    }
+
+    const parsedDuration = parseInt(durationMinutes, 10)
+    if (isNaN(parsedDuration) || parsedDuration <= 0) {
+      logger.error(`Invalid durationMinutes in session ${session.id}: "${durationMinutes}"`)
+      return NextResponse.json({ error: 'Invalid durationMinutes in metadata' }, { status: 400 })
+    }
+
     try {
       // Find the pending appointment created during checkout initiation
       const pendingAppointment = await prisma.appointment.findFirst({
         where: {
-          OR: [{ stripeSessionId: session.id }, { id: metadata.appointmentId }],
+          OR: [{ stripeSessionId: session.id }, { id: appointmentId }],
         },
       })
 
@@ -62,11 +82,11 @@ export async function POST(req: Request) {
         const appt = await tx.appointment.update({
           where: { id: pendingAppointment.id },
           data: {
-            patientId: metadata.patientId,
-            psychologistId: metadata.psychologistId,
-            scheduledAt: new Date(metadata.scheduledAt),
-            durationMinutes: parseInt(metadata.durationMinutes),
-            price: Number(metadata.price),
+            patientId,
+            psychologistId,
+            scheduledAt: new Date(scheduledAt),
+            durationMinutes: parsedDuration,
+            price: Number(price ?? 0),
             status: 'SCHEDULED',
             paymentMethod: 'Stripe',
             stripeSessionId: session.id,
