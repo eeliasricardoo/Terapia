@@ -26,7 +26,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  // Stable ref: createClient() must not be called on every render or the
+  // supabase.auth object reference changes, causing the useEffect to re-run
+  // and re-subscribe on every render (memory leak + race conditions).
+  const [supabase] = useState(() => createClient())
 
   useEffect(() => {
     // Get initial session
@@ -46,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  }, [supabase])
 
   const userMetadata = user?.user_metadata as UserMetadata | undefined
 
