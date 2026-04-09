@@ -47,8 +47,13 @@ export async function dispatchEmailAsync(payload: EmailPayload): Promise<void> {
 
   // FALLBACK: Old fetch mechanism if Redis is down or not configured
   if (!appUrl || !secret) {
-    logger.warn('[EMAIL-DISPATCH] No Redis and no API Secret. Email DROPPED!', payload.to)
-    return
+    logger.error(
+      '[EMAIL-DISPATCH] CRITICAL: Redis unavailable and INTERNAL_API_SECRET/NEXT_PUBLIC_APP_URL not set. Email cannot be delivered.',
+      { to: payload.to, subject: payload.subject }
+    )
+    throw new Error(
+      `Email delivery failed: missing configuration (INTERNAL_API_SECRET or NEXT_PUBLIC_APP_URL). Email to ${payload.to} was not sent.`
+    )
   }
 
   const url = `${appUrl}/api/internal/send-email`
