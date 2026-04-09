@@ -28,6 +28,7 @@ interface BookingWidgetProps {
   availableSlotsForSelectedDay: string[]
   selectedTime: string | null
   onSubmit: () => void
+  isSubmitting?: boolean
   currentMonth: number
   externalSchedulingUrl?: string | null
 }
@@ -53,6 +54,7 @@ export function BookingWidget({
   availableSlotsForSelectedDay,
   selectedTime,
   onSubmit,
+  isSubmitting = false,
   currentMonth,
   externalSchedulingUrl,
 }: BookingWidgetProps) {
@@ -286,15 +288,17 @@ export function BookingWidget({
 
           <Button
             className="w-full h-14 text-base font-bold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20"
-            disabled={!selectedTime}
+            disabled={!selectedTime || isSubmitting}
             onClick={onSubmit}
           >
-            {selectedTime
-              ? selectedPlan === 'monthly'
-                ? 'Contratar Pacote Mensal'
-                : 'Confirmar Agendamento'
-              : 'Escolha um horário'}
-            {selectedTime && <ArrowRight className="h-5 w-5 ml-2" />}
+            {isSubmitting
+              ? 'Aguarde...'
+              : selectedTime
+                ? selectedPlan === 'monthly'
+                  ? 'Contratar Pacote Mensal'
+                  : 'Confirmar Agendamento'
+                : 'Escolha um horário'}
+            {selectedTime && !isSubmitting && <ArrowRight className="h-5 w-5 ml-2" />}
           </Button>
 
           <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">

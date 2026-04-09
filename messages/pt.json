@@ -409,6 +409,7 @@
       "specialties": "Especialidades",
       "insurances": "Planos de Saúde",
       "noInsurances": "Nenhum plano",
+      "insurancesError": "Erro ao carregar planos de saúde",
       "investment": "Investimento Máximo",
       "upTo": "Até {amount}",
       "gender": "Gênero",

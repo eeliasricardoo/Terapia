@@ -69,7 +69,9 @@ export function NotificationListener() {
         .subscribe()
     }
 
-    setup()
+    setup().catch((err) => {
+      console.error('[NotificationListener] Failed to setup realtime channel:', err)
+    })
 
     return () => {
       if (channel) {
