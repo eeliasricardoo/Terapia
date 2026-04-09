@@ -28,6 +28,7 @@ interface Props {
 export function PsychologistProfileClient({ psychologist, availability, stats }: Props) {
   const { isAuthenticated } = useAuth()
   const [isGuestDialogOpen, setIsGuestDialogOpen] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   const {
     selectedDay,
@@ -46,7 +47,7 @@ export function PsychologistProfileClient({ psychologist, availability, stats }:
   const firstSpecialty = psychologist.specialties?.[0] || 'Psicologia Clínica'
 
   const handleBooking = () => {
-    if (!selectedTime || selectedDay === null) return
+    if (!selectedTime || selectedDay === null || isRedirecting) return
 
     const bookingUrl = `/pagamento?doctor=${psychologist.userId}&date=${calendar.currentYear}-${currentDate.getMonth() + 1}-${selectedDay}&time=${selectedTime}&plan=${selectedPlan}`
 
@@ -55,6 +56,7 @@ export function PsychologistProfileClient({ psychologist, availability, stats }:
       return
     }
 
+    setIsRedirecting(true)
     window.location.href = bookingUrl
   }
 
@@ -137,6 +139,7 @@ export function PsychologistProfileClient({ psychologist, availability, stats }:
                 availableSlotsForSelectedDay={calendar.availableSlotsForSelectedDay}
                 selectedTime={selectedTime}
                 onSubmit={handleBooking}
+                isSubmitting={isRedirecting}
                 currentMonth={currentDate.getMonth()}
                 externalSchedulingUrl={psychologist.external_scheduling_url}
               />
@@ -169,6 +172,7 @@ export function PsychologistProfileClient({ psychologist, availability, stats }:
           </div>
           <Button
             className="h-12 px-8 font-bold shadow-lg transition-all rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20"
+            disabled={isRedirecting}
             onClick={() => {
               if (selectedTime) {
                 handleBooking()
@@ -177,7 +181,13 @@ export function PsychologistProfileClient({ psychologist, availability, stats }:
               }
             }}
           >
-            {selectedTime ? (selectedPlan === 'monthly' ? 'Contratar' : 'Agendar') : 'Ver Horários'}
+            {isRedirecting
+              ? 'Aguarde...'
+              : selectedTime
+                ? selectedPlan === 'monthly'
+                  ? 'Contratar'
+                  : 'Agendar'
+                : 'Ver Horários'}
           </Button>
         </div>
       </div>

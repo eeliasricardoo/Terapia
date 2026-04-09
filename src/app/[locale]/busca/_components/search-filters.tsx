@@ -22,12 +22,19 @@ export const SearchFilters = memo(function SearchFilters({
 }: SearchFiltersProps) {
   const t = useTranslations('SearchPage')
   const [insurances, setInsurances] = useState<{ id: string; name: string }[]>([])
+  const [insurancesError, setInsurancesError] = useState(false)
 
   useEffect(() => {
     async function fetchInsurances() {
-      const result = await getHealthInsurances()
-      if (result.success && result.data) {
-        setInsurances(result.data)
+      try {
+        const result = await getHealthInsurances()
+        if (result.success && result.data) {
+          setInsurances(result.data)
+        } else {
+          setInsurancesError(true)
+        }
+      } catch {
+        setInsurancesError(true)
       }
     }
     fetchInsurances()
@@ -132,7 +139,9 @@ export const SearchFilters = memo(function SearchFilters({
 
       {/* Health Insurances */}
       <div className="space-y-2.5">
-        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">{t('filters.insurances')}</h4>
+        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">
+          {t('filters.insurances')}
+        </h4>
         <div className="grid grid-cols-1 gap-1.5 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
           {insurances.map((ins) => (
             <div key={ins.id} className="flex items-center space-x-2 group">
@@ -150,7 +159,10 @@ export const SearchFilters = memo(function SearchFilters({
               </label>
             </div>
           ))}
-          {insurances.length === 0 && (
+          {insurancesError && (
+            <p className="text-xs text-red-400 italic">{t('filters.insurancesError')}</p>
+          )}
+          {!insurancesError && insurances.length === 0 && (
             <p className="text-xs text-slate-400 italic">{t('filters.noInsurances')}</p>
           )}
         </div>
@@ -164,7 +176,9 @@ export const SearchFilters = memo(function SearchFilters({
           <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">
             {t('filters.investment')}
           </h4>
-          <span className="text-xs font-bold text-primary">{t('filters.upTo', { amount: `R$ ${filters.maxPrice || 500}` })}</span>
+          <span className="text-xs font-bold text-primary">
+            {t('filters.upTo', { amount: `R$ ${filters.maxPrice || 500}` })}
+          </span>
         </div>
         <Slider
           defaultValue={[filters.maxPrice || 500]}
@@ -184,7 +198,9 @@ export const SearchFilters = memo(function SearchFilters({
 
       {/* Gender */}
       <div className="space-y-2.5">
-        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">{t('filters.gender')}</h4>
+        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">
+          {t('filters.gender')}
+        </h4>
         <div className="grid grid-cols-2 gap-2">
           {[
             { id: 'Feminino', label: t('filters.female') },

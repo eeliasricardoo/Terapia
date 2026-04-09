@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import Link from 'next/link'
@@ -29,12 +29,16 @@ export function MoodTracker({ monthlyProgress }: MoodTrackerProps) {
   const [selectedMood, setSelectedMood] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  // Track the last confirmed server value so rollback always reverts to the
+  // correct state even when the user clicks multiple times rapidly.
+  const confirmedMoodRef = useRef<number | null>(null)
 
   useEffect(() => {
     async function loadMood() {
       const res = await getTodayMood()
       if (res.success && res.data) {
         setSelectedMood(res.data.mood)
+        confirmedMoodRef.current = res.data.mood
       }
       setIsLoading(false)
     }
@@ -42,13 +46,13 @@ export function MoodTracker({ monthlyProgress }: MoodTrackerProps) {
   }, [])
 
   const handleMoodSelect = async (value: number, emoji: string) => {
-    const previousMood = selectedMood
     setSelectedMood(value)
     setIsSaving(true)
 
     const result = await saveQuickMood({ mood: value })
 
     if (result.success) {
+      confirmedMoodRef.current = value
       const moodDef = MOODS.find((m) => m.value === value)
       const moodLabel = moodDef ? t(moodDef.tKey) : ''
       toast.success(t('toastSuccess'), {
@@ -56,7 +60,8 @@ export function MoodTracker({ monthlyProgress }: MoodTrackerProps) {
         duration: 3000,
       })
     } else {
-      setSelectedMood(previousMood)
+      // Revert to the last server-confirmed value, not just the previous local state
+      setSelectedMood(confirmedMoodRef.current)
       toast.error(t('toastError'), {
         description: t('toastErrorDesc'),
       })

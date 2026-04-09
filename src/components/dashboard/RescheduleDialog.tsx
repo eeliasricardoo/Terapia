@@ -97,7 +97,11 @@ export function RescheduleDialog({ children, session }: RescheduleDialogProps) {
       }
       loadInfo()
     }
-  }, [open, session.psychologistId, psychologist, session.id])
+    // `psychologist` intentionally omitted from deps: it's only set inside this
+    // effect and including it would cause self-referential re-runs. The guard
+    // `!psychologist` prevents duplicate fetches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, session.psychologistId, session.id])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

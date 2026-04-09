@@ -84,13 +84,32 @@ export default function SearchClient({
   useEffect(() => {
     if (!hasInteracted) return // Skip initial mount
 
+    let cancelled = false
+
     const delayDebounceFn = setTimeout(() => {
       setPage(1)
       setHasMore(true)
-      handleSearch(filters, 1, false)
+
+      startTransition(async () => {
+        const response = await searchPsychologists({
+          ...filters,
+          page: 1,
+          pageSize,
+        })
+        if (cancelled) return // Discard stale response
+        if (!response.success) return
+        const { results, total: newTotal } = response.data
+        setTotal(newTotal)
+        setPsychologists(results)
+        if (results.length < pageSize) setHasMore(false)
+      })
     }, 400)
 
-    return () => clearTimeout(delayDebounceFn)
+    return () => {
+      cancelled = true
+      clearTimeout(delayDebounceFn)
+    }
+     
   }, [filters, hasInteracted])
 
   const handleSearch = async (
@@ -213,9 +232,7 @@ export default function SearchClient({
             <SheetContent side="left" className="w-[min(85vw,24rem)] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>{t('filters.title')}</SheetTitle>
-                <SheetDescription>
-                  {t('filters.description')}
-                </SheetDescription>
+                <SheetDescription>{t('filters.description')}</SheetDescription>
               </SheetHeader>
               <div className="py-6">
                 <SearchFilters filters={filters} onFilterChange={handleFilterChange} />

@@ -44,12 +44,12 @@ export function useDiary() {
         content: content.trim(),
       })
       if (result.success) {
-        toast.success('Entrada salva com sucesso!')
         const updated = await getDiaryEntries()
         setEntries(updated.success ? updated.data : [])
         setSelectedMood(null)
         setSelectedEmotions([])
         setContent('')
+        toast.success('Entrada salva com sucesso!')
       } else {
         toast.error(result.error || 'Erro ao salvar. Tente novamente.')
       }
