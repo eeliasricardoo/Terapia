@@ -61,8 +61,23 @@ export async function GET(req: NextRequest) {
     // Process in smaller batches if necessary to avoid timeouts,
     // though dispatchEmailAsync is now extremely fast via Redis.
     for (const appt of appointments) {
+      if (!appt.patient || !appt.psychologist?.user) {
+        logger.warn(
+          `[CRON] Skipping appointment ${appt.id}: missing patient or psychologist relationship`
+        )
+        continue
+      }
+
       const patientEmail = appt.patient.email
       const psychEmail = appt.psychologist.user.email
+
+      if (!patientEmail || !psychEmail) {
+        logger.warn(
+          `[CRON] Skipping appointment ${appt.id}: missing email for patient or psychologist`
+        )
+        continue
+      }
+
       const patientName = appt.patient.name || 'Paciente'
       const psychName =
         appt.psychologist.user.profiles?.fullName || appt.psychologist.user.name || 'Psicólogo'
