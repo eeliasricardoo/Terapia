@@ -180,6 +180,13 @@ export const cancelSession = createSafeAction(z.string().uuid(), async (sessionI
     )
   }
 
+  // Update DB first; if Stripe refund fails we roll back the status change.
+  // This ensures we never end up with a refunded-but-still-SCHEDULED appointment.
+  await prisma.appointment.update({
+    where: { id: sessionId },
+    data: { status: 'CANCELED' },
+  })
+
   let refunded = false
   if (isRefundEligible) {
     try {
@@ -189,22 +196,37 @@ export const cancelSession = createSafeAction(z.string().uuid(), async (sessionI
       refunded = refund.status === 'succeeded' || refund.status === 'pending'
 
       if (!refunded) {
+        // Roll back the status change since the refund didn't go through
+        await prisma.appointment.update({
+          where: { id: sessionId },
+          data: { status: 'SCHEDULED' },
+        })
         throw new Error('Falha ao processar estorno no Stripe. A sessão permanece ativa.')
       }
       logger.info(
         `Refund issued for session ${sessionId} (${isPsychologist ? 'by psychologist' : 'by patient > 24h'})`
       )
     } catch (e: unknown) {
+      if (e instanceof Error && e.message.includes('Falha ao processar estorno')) {
+        throw e
+      }
+      // Roll back the status change on unexpected Stripe errors
+      await prisma.appointment
+        .update({
+          where: { id: sessionId },
+          data: { status: 'SCHEDULED' },
+        })
+        .catch((rollbackErr) =>
+          logger.error(
+            `Failed to roll back appointment ${sessionId} after refund error:`,
+            rollbackErr
+          )
+        )
       logger.error(`Refund failed for ${sessionId}:`, e)
       const eMsg = e instanceof Error ? e.message : String(e)
       throw new Error(`Erro no estorno: ${eMsg}. Tente novamente ou contate o suporte.`)
     }
   }
-
-  await prisma.appointment.update({
-    where: { id: sessionId },
-    data: { status: 'CANCELED' },
-  })
 
   sendCancellationNotifications(sessionId, user.id).catch((e) => logger.error(e))
   revalidateTag('appointments')
