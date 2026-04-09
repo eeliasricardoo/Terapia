@@ -77,10 +77,12 @@ export async function POST(req: Request) {
         return NextResponse.json({ received: true })
       }
 
-      // Fulfill the purchase by updating the pending appointment
+      // Fulfill the purchase using a conditional update to prevent double-fulfillment
+      // from concurrent webhook retries. Only one concurrent process will match
+      // status='PENDING_PAYMENT' and proceed; the other will see count=0 and skip.
       const updatedAppt = await prisma.$transaction(async (tx) => {
-        const appt = await tx.appointment.update({
-          where: { id: pendingAppointment.id },
+        const { count } = await tx.appointment.updateMany({
+          where: { id: pendingAppointment.id, status: 'PENDING_PAYMENT' },
           data: {
             patientId,
             psychologistId,
@@ -95,7 +97,16 @@ export async function POST(req: Request) {
           },
         })
 
-        // 3. Sync Coupon Usage if present
+        if (count === 0) {
+          // Another concurrent webhook already fulfilled this appointment
+          return null
+        }
+
+        const appt = await tx.appointment.findUniqueOrThrow({
+          where: { id: pendingAppointment.id },
+        })
+
+        // Sync Coupon Usage if present — inside transaction so it rolls back on failure
         // Note: no .catch() here — errors should propagate and trigger a full rollback
         if (metadata.couponId) {
           await tx.coupon.update({
@@ -106,6 +117,13 @@ export async function POST(req: Request) {
 
         return appt
       })
+
+      if (!updatedAppt) {
+        logger.info(
+          `Appointment ${pendingAppointment.id} already fulfilled by concurrent webhook, skipping.`
+        )
+        return NextResponse.json({ received: true })
+      }
 
       // Send notifications asynchronously
       sendAppointmentNotifications(updatedAppt.id).catch((err) =>
