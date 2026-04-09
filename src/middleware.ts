@@ -62,7 +62,7 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
   const session = !!user
-  
+
   // Extract custom route logic skipping locale
   const { pathname } = request.nextUrl
   const segments = pathname.split('/')
@@ -71,7 +71,10 @@ export async function middleware(request: NextRequest) {
   const pathnameWithoutLocale = hasLocale ? `/${segments.slice(2).join('/')}` : pathname
 
   // Protect dashboard and admin routes
-  if (pathnameWithoutLocale.startsWith('/dashboard') || pathnameWithoutLocale.startsWith('/admin')) {
+  if (
+    pathnameWithoutLocale.startsWith('/dashboard') ||
+    pathnameWithoutLocale.startsWith('/admin')
+  ) {
     if (!session) {
       const url = request.nextUrl.clone()
       url.pathname = `${localePrefix}/login/paciente`
@@ -90,7 +93,10 @@ export async function middleware(request: NextRequest) {
   // Redirect authenticated users away from home, login, and register pages
   // BUT allow them to access onboarding/profile completion and verification
   if (
-    (pathnameWithoutLocale === '/' || pathnameWithoutLocale === '' || pathnameWithoutLocale.startsWith('/login') || pathnameWithoutLocale.startsWith('/cadastro')) &&
+    (pathnameWithoutLocale === '/' ||
+      pathnameWithoutLocale === '' ||
+      pathnameWithoutLocale.startsWith('/login') ||
+      pathnameWithoutLocale.startsWith('/cadastro')) &&
     session &&
     !pathnameWithoutLocale.includes('completar-perfil') &&
     !pathnameWithoutLocale.includes('onboarding') &&

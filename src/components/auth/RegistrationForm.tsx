@@ -171,11 +171,7 @@ export function RegistrationForm() {
     >
       <CardHeader>
         <CardTitle className="text-xl">
-          {step === 1
-            ? t('steps.1.title')
-            : step === 2
-              ? t('steps.2.title')
-              : t('steps.3.title')}
+          {step === 1 ? t('steps.1.title') : step === 2 ? t('steps.2.title') : t('steps.3.title')}
         </CardTitle>
         <CardDescription>
           {step === 1
@@ -352,7 +348,10 @@ export function RegistrationForm() {
                         <FormItem>
                           <FormLabel>{t('fields.password')}</FormLabel>
                           <FormControl>
-                            <PasswordInput placeholder={t('fields.passwordPlaceholder')} {...field} />
+                            <PasswordInput
+                              placeholder={t('fields.passwordPlaceholder')}
+                              {...field}
+                            />
                           </FormControl>
                           <div className="flex gap-1 h-1 mt-1">
                             {[...Array(5)].map((_, i) => (
@@ -382,7 +381,10 @@ export function RegistrationForm() {
                       <FormItem>
                         <FormLabel>{t('fields.confirmPassword')}</FormLabel>
                         <FormControl>
-                          <PasswordInput placeholder={t('fields.confirmPasswordPlaceholder')} {...field} />
+                          <PasswordInput
+                            placeholder={t('fields.confirmPasswordPlaceholder')}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -447,9 +449,7 @@ export function RegistrationForm() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <FormDescription>
-                        {t('fields.planHint')}
-                      </FormDescription>
+                      <FormDescription>{t('fields.planHint')}</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

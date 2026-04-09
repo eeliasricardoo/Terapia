@@ -104,7 +104,11 @@ export function RegistrationForm() {
               <FormItem>
                 <FormLabel>{t('fields.name')}</FormLabel>
                 <FormControl>
-                  <Input className="h-[44px]" placeholder={t('fields.namePlaceholder')} {...field} />
+                  <Input
+                    className="h-[44px]"
+                    placeholder={t('fields.namePlaceholder')}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -166,9 +170,7 @@ export function RegistrationForm() {
                     }}
                   />
                 </FormControl>
-                <FormDescription>
-                  {t('fields.crpHint')}
-                </FormDescription>
+                <FormDescription>{t('fields.crpHint')}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -241,7 +243,9 @@ export function RegistrationForm() {
       <SocialLoginButtons />
 
       <div className="flex items-center justify-between pt-4">
-        <h2 className="text-sm font-medium text-muted-foreground">{t('psychologistRegistration')}</h2>
+        <h2 className="text-sm font-medium text-muted-foreground">
+          {t('psychologistRegistration')}
+        </h2>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>{t('loginPrompt')}</span>
           <Button variant="link" className="h-auto p-0 font-medium" asChild>

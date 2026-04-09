@@ -116,7 +116,8 @@ export function EmailVerificationForm() {
         <CardTitle className="text-2xl">{t('title')}</CardTitle>
         <CardDescription>
           {t('descriptionPart1')}
-          <span className="font-semibold text-foreground">{displayEmail}</span>{t('descriptionPart2')}
+          <span className="font-semibold text-foreground">{displayEmail}</span>
+          {t('descriptionPart2')}
         </CardDescription>
       </CardHeader>
       <CardContent>

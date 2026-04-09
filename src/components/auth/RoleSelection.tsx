@@ -14,9 +14,7 @@ export function RoleSelection() {
             <CardTitle>{t('patient.title')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
-              {t('patient.description')}
-            </p>
+            <p className="text-muted-foreground">{t('patient.description')}</p>
           </CardContent>
         </Card>
       </Link>
@@ -28,9 +26,7 @@ export function RoleSelection() {
             <CardTitle>{t('professional.title')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
-              {t('professional.description')}
-            </p>
+            <p className="text-muted-foreground">{t('professional.description')}</p>
           </CardContent>
         </Card>
       </Link>
@@ -42,9 +38,7 @@ export function RoleSelection() {
             <CardTitle>{t('company.title')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
-              {t('company.description')}
-            </p>
+            <p className="text-muted-foreground">{t('company.description')}</p>
           </CardContent>
         </Card>
       </Link>

@@ -60,9 +60,7 @@ export function ForgotPasswordForm() {
       <Card className="mx-auto max-w-md w-full">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">{t('successTitle')}</CardTitle>
-          <CardDescription>
-            {t('successDescription')}
-          </CardDescription>
+          <CardDescription>{t('successDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <Button asChild className="w-full">
@@ -85,9 +83,7 @@ export function ForgotPasswordForm() {
           </Link>
         </div>
         <CardTitle className="text-2xl font-bold">{t('title')}</CardTitle>
-        <CardDescription>
-          {t('description')}
-        </CardDescription>
+        <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

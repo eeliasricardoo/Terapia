@@ -105,12 +105,12 @@ export function ActiveRoomInterface({ appointmentId, appointmentInfo }: ActiveRo
               <div
                 className={cn(
                   'px-3 py-1.5 rounded-xl text-sm font-mono font-bold transition-all tabular-nums shadow-inner',
-                  remainingSeconds <= 300 && remainingSeconds > 0
+                  remainingSeconds != null && remainingSeconds <= 300 && remainingSeconds > 0
                     ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse'
                     : 'bg-zinc-900/80 text-emerald-400 border border-emerald-500/20'
                 )}
               >
-                {formatTime(remainingSeconds)}
+                {formatTime(remainingSeconds ?? 0)}
               </div>
               <div className="h-4 w-px bg-zinc-800" />
               <div className="flex flex-col">
