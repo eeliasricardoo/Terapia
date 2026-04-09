@@ -236,7 +236,7 @@ function TestActiveRoomInterface({ appointmentInfo }: { appointmentInfo: Appoint
           <div className="flex items-center gap-2">
             <div className="h-1.5 w-1.5 bg-green-500 rounded-full" />
             <div className="bg-zinc-900 text-zinc-300 border border-zinc-800 px-3 py-1 rounded-md text-xs font-mono">
-              {formatTime(remainingSeconds)}
+              {formatTime(remainingSeconds ?? 0)}
             </div>
           </div>
         </div>

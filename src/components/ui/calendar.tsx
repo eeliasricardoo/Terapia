@@ -15,7 +15,7 @@ function Calendar({
   className,
   classNames,
   showOutsideDays = true,
-   
+
   captionLayout = 'label' as any,
   buttonVariant = 'ghost',
   formatters,
@@ -31,7 +31,6 @@ function Calendar({
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className
       )}
-       
       captionLayout={captionLayout as any}
       formatters={formatters}
       classNames={{

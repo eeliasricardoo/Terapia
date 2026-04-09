@@ -109,7 +109,6 @@ export default function SearchClient({
       cancelled = true
       clearTimeout(delayDebounceFn)
     }
-     
   }, [filters, hasInteracted])
 
   const handleSearch = async (

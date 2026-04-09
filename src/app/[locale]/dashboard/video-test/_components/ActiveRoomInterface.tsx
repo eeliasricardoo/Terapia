@@ -98,12 +98,12 @@ export function ActiveRoomInterface({
             <div
               className={cn(
                 'px-3 py-1 rounded-md text-xs font-mono transition-all',
-                remainingSeconds <= 300
+                remainingSeconds != null && remainingSeconds <= 300
                   ? 'bg-red-500/10 text-red-500 border border-red-500/20 animate-pulse'
                   : 'bg-zinc-900 text-zinc-300 border border-zinc-800'
               )}
             >
-              {formatTime(remainingSeconds)}
+              {formatTime(remainingSeconds ?? 0)}
             </div>
           </div>
         </div>

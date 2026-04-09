@@ -117,9 +117,7 @@ export function Footer() {
           <p className="text-sm text-foreground/50">
             © {new Date().getFullYear()} {BRAND_NAME}. {t('rights')}
           </p>
-          <p className="text-xs text-foreground/40 font-medium">
-            {t('madeWithCare')}
-          </p>
+          <p className="text-xs text-foreground/40 font-medium">{t('madeWithCare')}</p>
         </div>
       </div>
     </footer>

@@ -1,25 +1,30 @@
-'use client';
+'use client'
 
-import { useLocale, useTranslations } from 'next-intl';
-import { usePathname, useRouter } from '@/i18n/routing';
-import { useTransition } from 'react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { Globe } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl'
+import { usePathname, useRouter } from '@/i18n/routing'
+import { useTransition } from 'react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
+import { Globe } from 'lucide-react'
 
 export function LanguageSwitcher() {
-  const t = useTranslations('LanguageSwitcher');
-  const locale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
-  const [isPending, startTransition] = useTransition();
+  const t = useTranslations('LanguageSwitcher')
+  const locale = useLocale()
+  const router = useRouter()
+  const pathname = usePathname()
+  const [isPending, startTransition] = useTransition()
 
   const handleLocaleChange = (newLocale: 'pt' | 'es') => {
     startTransition(() => {
-      router.replace(pathname, { locale: newLocale });
-      router.refresh();
-    });
-  };
+      router.replace(pathname, { locale: newLocale })
+      router.refresh()
+    })
+  }
 
   return (
     <DropdownMenu>
@@ -38,5 +43,5 @@ export function LanguageSwitcher() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

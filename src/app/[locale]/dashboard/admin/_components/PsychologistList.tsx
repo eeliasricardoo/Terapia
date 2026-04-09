@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { suspendPsychologistAccess } from '@/lib/actions/admin'
-import { ShieldAlert, ShieldCheck, Mail, Calendar, Ban, Eye } from 'lucide-react'
+import { suspendPsychologistAccess, unsuspendPsychologist } from '@/lib/actions/admin'
+import { ShieldAlert, ShieldCheck, Mail, Calendar, Ban, Eye, ShieldOff } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -112,6 +112,22 @@ export function PsychologistList({
   const openReasonDialog = (p: Psychologist) => {
     setViewReasonData(p)
     setIsReasonDialogOpen(true)
+  }
+
+  const handleUnsuspend = async (p: Psychologist) => {
+    setLoadingId(p.id)
+    const result = await unsuspendPsychologist({ psychologistId: p.id })
+    if (result.success) {
+      toast.success(`O acesso de ${p.fullName} foi reativado com sucesso.`)
+      setPsychologists((prev) =>
+        prev.map((item) =>
+          item.id === p.id ? { ...item, isVerified: true, suspensionReason: null } : item
+        )
+      )
+    } else {
+      toast.error(result.error || 'Ocorreu um erro ao reativar a conta.')
+    }
+    setLoadingId(null)
   }
 
   return (
@@ -285,7 +301,7 @@ export function PsychologistList({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    {p.isVerified && (
+                    {p.isVerified ? (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -296,7 +312,18 @@ export function PsychologistList({
                         <Ban className="w-4 h-4 mr-2" />
                         Suspender
                       </Button>
-                    )}
+                    ) : p.suspensionReason ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-green-600 hover:text-green-800 hover:bg-green-50 disabled:opacity-50"
+                        onClick={() => handleUnsuspend(p)}
+                        disabled={loadingId === p.id}
+                      >
+                        <ShieldOff className="w-4 h-4 mr-2" />
+                        {loadingId === p.id ? 'Aguarde...' : 'Reativar'}
+                      </Button>
+                    ) : null}
                   </td>
                 </tr>
               ))}

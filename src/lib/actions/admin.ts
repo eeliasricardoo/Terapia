@@ -90,14 +90,14 @@ export const getPendingPsychologists = createSafeAction(
         if (p.diplomaUrl) {
           const { data: signData } = await supabaseAdmin.storage
             .from('documents')
-            .createSignedUrl(p.diplomaUrl, 3600)
+            .createSignedUrl(p.diplomaUrl, 86400)
           diplomaSignedUrl = signData?.signedUrl
         }
 
         if (p.licenseUrl) {
           const { data: signData } = await supabaseAdmin.storage
             .from('documents')
-            .createSignedUrl(p.licenseUrl, 3600)
+            .createSignedUrl(p.licenseUrl, 86400)
           licenseSignedUrl = signData?.signedUrl
         }
 
@@ -260,6 +260,47 @@ export const suspendPsychologistAccess = createSafeAction(
       entity: 'PsychologistProfile',
       entityId: data.psychologistId,
       newData: { reason: data.reason },
+    })
+
+    revalidatePath('/dashboard/admin/psicologos')
+    return { success: true }
+  },
+  { requiredRole: 'ADMIN' }
+)
+
+/**
+ * Reactivates a previously suspended psychologist.
+ */
+export const unsuspendPsychologist = createSafeAction(
+  z.object({ psychologistId: z.string().uuid() }),
+  async (data, user) => {
+    const psychologist = await prisma.psychologistProfile.update({
+      where: { id: data.psychologistId },
+      data: { isVerified: true, suspensionReason: null },
+      include: {
+        user: { include: { profiles: true } },
+      },
+    })
+
+    await sendEmail({
+      to: psychologist.user.email,
+      subject: 'Seu acesso foi reativado na Sentirz',
+      html: `
+        <h2>Olá, ${psychologist.user.profiles?.fullName || 'Psicólogo'}.</h2>
+        <p>Seu acesso à plataforma Sentirz foi reativado pela equipe de moderação.</p>
+        <p>Você já pode receber novos agendamentos normalmente.</p>
+        <br/>
+        <p>Atenciosamente,</p>
+        <p>Equipe Sentirz</p>
+      `,
+    })
+
+    await createAuditLog({
+      userId: user.id,
+      action: 'UNSUSPEND_PSYCHOLOGIST',
+      entity: 'PsychologistProfile',
+      entityId: data.psychologistId,
+      newData: { isVerified: true },
     })
 
     revalidatePath('/dashboard/admin/psicologos')

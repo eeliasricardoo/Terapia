@@ -194,7 +194,9 @@ export function MobileNav() {
           {/* Nav */}
           <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
             {menuItems.map((item) => {
-              const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
+              const isActive =
+                pathname === item.href ||
+                (item.href !== '/dashboard' && pathname.startsWith(item.href))
               return (
                 <Link
                   key={item.href}
