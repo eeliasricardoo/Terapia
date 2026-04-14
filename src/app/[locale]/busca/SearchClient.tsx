@@ -20,8 +20,8 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Search, Filter, ListFilter } from 'lucide-react'
-import { motion, Variants } from 'framer-motion'
 import { useRef, useCallback, useState, useTransition, useEffect } from 'react'
+import { AnimatePresence, motion, Variants } from 'framer-motion'
 import { useAuth } from '@/components/providers/auth-provider'
 import { searchPsychologists } from '@/lib/actions/psychologists'
 import { PsychologistSearchFilters, PsychologistWithProfile } from '@/lib/supabase/types'
@@ -75,7 +75,11 @@ export default function SearchClient({
   // trigger a fresh search on mount so the user sees results without needing to interact.
   useEffect(() => {
     if (initialPsychologists.length === 0) {
-      handleSearch({ specialties: [], searchQuery: '', genders: [] }, 1, false)
+      handleSearch(
+        { specialties: [], healthInsurances: [], searchQuery: '', genders: [] },
+        1,
+        false
+      )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -178,6 +182,7 @@ export default function SearchClient({
     setHasInteracted(true)
     setFilters({
       specialties: [],
+      healthInsurances: [],
       maxPrice: 500,
       searchQuery: '',
       genders: [],
@@ -299,16 +304,30 @@ export default function SearchClient({
             </div>
           ) : (
             <>
-              <motion.div
-                variants={containerVars}
-                className="grid grid-cols-1 md:grid-cols-2 gap-6"
-              >
-                {psychologists.map((psychologist) => (
-                  <motion.div key={psychologist.id} variants={itemVars} className="h-full">
-                    <PsychologistCard psychologist={psychologist} />
-                  </motion.div>
-                ))}
-              </motion.div>
+              <AnimatePresence mode="popLayout">
+                <motion.div
+                  key="results-grid"
+                  variants={containerVars}
+                  initial="initial"
+                  animate="animate"
+                  layout
+                  className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                >
+                  {psychologists.map((psychologist) => (
+                    <motion.div
+                      key={psychologist.id}
+                      variants={itemVars}
+                      layout
+                      initial="initial"
+                      animate="animate"
+                      exit="initial"
+                      className="h-full"
+                    >
+                      <PsychologistCard psychologist={psychologist} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
 
               {/* Infinite Scroll Trigger */}
               <div ref={loaderRef} className="h-20 flex items-center justify-center mt-8">

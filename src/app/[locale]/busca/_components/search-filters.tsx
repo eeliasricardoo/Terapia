@@ -181,7 +181,7 @@ export const SearchFilters = memo(function SearchFilters({
           </span>
         </div>
         <Slider
-          defaultValue={[filters.maxPrice || 500]}
+          value={[filters.maxPrice || 500]}
           max={500}
           min={50}
           step={10}

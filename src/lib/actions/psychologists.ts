@@ -145,11 +145,11 @@ export const searchPsychologists = createSafeAction(
       ...(healthInsurances && healthInsurances.length > 0
         ? { acceptedInsurances: { some: { healthInsuranceId: { in: healthInsurances } } } }
         : {}),
-      ...(minPrice !== undefined || maxPrice !== undefined
+      ...(minPrice !== undefined || (maxPrice !== undefined && maxPrice < 500)
         ? {
             pricePerSession: {
               ...(minPrice !== undefined ? { gte: minPrice } : {}),
-              ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
+              ...(maxPrice !== undefined && maxPrice < 500 ? { lte: maxPrice } : {}),
             },
           }
         : {}),
