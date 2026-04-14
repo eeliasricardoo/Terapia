@@ -408,6 +408,7 @@
       "searchPlaceholder": "Nome, abordagens...",
       "specialties": "Especialidades",
       "insurances": "Planos de Saúde",
+      "insurance": "Plano",
       "noInsurances": "Nenhum plano",
       "insurancesError": "Erro ao carregar planos de saúde",
       "investment": "Investimento Máximo",

@@ -22,6 +22,10 @@ import {
 import { Search, Filter, ListFilter } from 'lucide-react'
 import { useRef, useCallback, useState, useTransition, useEffect } from 'react'
 import { AnimatePresence, motion, Variants } from 'framer-motion'
+import { useSearchParams } from 'next/navigation'
+import { useRouter, usePathname } from '@/i18n/routing'
+import { Badge } from '@/components/ui/badge'
+import { X } from 'lucide-react'
 import { useAuth } from '@/components/providers/auth-provider'
 import { searchPsychologists } from '@/lib/actions/psychologists'
 import { PsychologistSearchFilters, PsychologistWithProfile } from '@/lib/supabase/types'
@@ -54,16 +58,24 @@ export default function SearchClient({
 }) {
   const t = useTranslations('SearchPage')
   const { isAuthenticated } = useAuth()
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
   const [psychologists, setPsychologists] =
     useState<PsychologistWithProfile[]>(initialPsychologists)
   const [total, setTotal] = useState(initialPsychologists.length)
   const [isPending, startTransition] = useTransition()
 
-  const [filters, setFilters] = useState<PsychologistSearchFilters>({
-    specialties: [],
-    maxPrice: 500,
-    searchQuery: '',
-    genders: [],
+  // Initialize filters from URL search params
+  const [filters, setFilters] = useState<PsychologistSearchFilters>(() => {
+    return {
+      specialties: searchParams.get('s')?.split(',').filter(Boolean) || [],
+      healthInsurances: searchParams.get('i')?.split(',').filter(Boolean) || [],
+      maxPrice: searchParams.get('p') ? Number(searchParams.get('p')) : 500,
+      searchQuery: searchParams.get('q') || '',
+      genders: searchParams.get('g')?.split(',').filter(Boolean) || [],
+    }
   })
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(initialPsychologists.length >= 12)
@@ -114,6 +126,21 @@ export default function SearchClient({
       clearTimeout(delayDebounceFn)
     }
   }, [filters, hasInteracted])
+
+  // Sync filters state to URL
+  useEffect(() => {
+    if (!hasInteracted) return
+
+    const params = new URLSearchParams()
+    if (filters.searchQuery) params.set('q', filters.searchQuery)
+    if (filters.specialties?.length) params.set('s', filters.specialties.join(','))
+    if (filters.healthInsurances?.length) params.set('i', filters.healthInsurances.join(','))
+    if (filters.maxPrice && filters.maxPrice < 500) params.set('p', filters.maxPrice.toString())
+    if (filters.genders?.length) params.set('g', filters.genders.join(','))
+
+    const query = params.toString()
+    router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false })
+  }, [filters, hasInteracted, pathname, router])
 
   const handleSearch = async (
     currentFilters: PsychologistSearchFilters,
@@ -278,7 +305,117 @@ export default function SearchClient({
         </motion.aside>
 
         {/* Results Grid */}
-        <div className="flex-1">
+        <div className="flex-1 space-y-6">
+          {/* Active Filters Chips */}
+          <div className="flex flex-wrap gap-2 min-h-[40px] items-center">
+            <AnimatePresence>
+              {hasInteracted &&
+                (filters.specialties?.length ||
+                  filters.healthInsurances?.length ||
+                  filters.genders?.length ||
+                  filters.searchQuery ||
+                  (filters.maxPrice && filters.maxPrice < 500)) && (
+                  <>
+                    {filters.searchQuery && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                      >
+                        <Badge variant="secondary" className="px-3 py-1 gap-2 rounded-full">
+                          <Search className="w-3 h-3" />
+                          {filters.searchQuery}
+                          <X
+                            className="w-3 h-3 cursor-pointer hover:text-red-500"
+                            onClick={() => handleFilterChange({ ...filters, searchQuery: '' })}
+                          />
+                        </Badge>
+                      </motion.div>
+                    )}
+                    {filters.specialties?.map((s) => (
+                      <motion.div
+                        key={s}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                      >
+                        <Badge variant="secondary" className="px-3 py-1 gap-2 rounded-full">
+                          {s}
+                          <X
+                            className="w-3 h-3 cursor-pointer hover:text-red-500"
+                            onClick={() =>
+                              handleFilterChange({
+                                ...filters,
+                                specialties: filters.specialties?.filter((item) => item !== s),
+                              })
+                            }
+                          />
+                        </Badge>
+                      </motion.div>
+                    ))}
+                    {filters.genders?.map((g) => (
+                      <motion.div
+                        key={g}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                      >
+                        <Badge variant="secondary" className="px-3 py-1 gap-2 rounded-full">
+                          {g === 'Feminino' ? t('filters.female') : t('filters.male')}
+                          <X
+                            className="w-3 h-3 cursor-pointer hover:text-red-500"
+                            onClick={() =>
+                              handleFilterChange({
+                                ...filters,
+                                genders: filters.genders?.filter((item) => item !== g),
+                              })
+                            }
+                          />
+                        </Badge>
+                      </motion.div>
+                    ))}
+                    {filters.healthInsurances?.map((i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                      >
+                        <Badge variant="secondary" className="px-3 py-1 gap-2 rounded-full">
+                          {t('filters.insurance')} #{i.slice(0, 4)}
+                          <X
+                            className="w-3 h-3 cursor-pointer hover:text-red-500"
+                            onClick={() =>
+                              handleFilterChange({
+                                ...filters,
+                                healthInsurances: filters.healthInsurances?.filter(
+                                  (item) => item !== i
+                                ),
+                              })
+                            }
+                          />
+                        </Badge>
+                      </motion.div>
+                    ))}
+                    {filters.maxPrice && filters.maxPrice < 500 && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                      >
+                        <Badge variant="secondary" className="px-3 py-1 gap-2 rounded-full">
+                          {t('filters.upTo', { amount: `R$ ${filters.maxPrice}` })}
+                          <X
+                            className="w-3 h-3 cursor-pointer hover:text-red-500"
+                            onClick={() => handleFilterChange({ ...filters, maxPrice: 500 })}
+                          />
+                        </Badge>
+                      </motion.div>
+                    )}
+                  </>
+                )}
+            </AnimatePresence>
+          </div>
           {isPending && psychologists.length === 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
