@@ -253,7 +253,7 @@ export default function SearchClient({
 
         {/* Desktop Filters Sidebar */}
         <motion.aside variants={itemVars} className="hidden lg:block w-72 flex-shrink-0">
-          <div className="bg-white p-5 rounded-[2.5rem] border border-slate-200/60 shadow-lg shadow-slate-200/20 sticky top-24">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-lg shadow-slate-200/20 sticky top-24">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
               <h3 className="font-black text-xs flex items-center gap-2 text-slate-400 uppercase tracking-[0.2em]">
                 <ListFilter className="w-4 h-4 text-primary" />
@@ -281,7 +281,7 @@ export default function SearchClient({
               ))}
             </div>
           ) : psychologists.length === 0 && !isPending ? (
-            <div className="text-center py-16 bg-white rounded-[2.5rem] border border-slate-200/60 shadow-sm">
+            <div className="text-center py-16 bg-white rounded-2xl border border-slate-200/60 shadow-sm">
               <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="h-8 w-8 text-slate-300" />
               </div>

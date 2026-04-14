@@ -435,6 +435,7 @@
     }
   },
   "DashboardLayout": {
+    "skipToContent": "Pular para o conteúdo",
     "menu": {
       "patient": {
         "dashboard": "Dashboard",
@@ -476,9 +477,11 @@
       "admin": "Administrador",
       "psychologist": "Psicólogo(a)",
       "companyFull": "Gestor de Empresa",
+      "company": "Empresa",
       "patient": "Paciente"
     },
     "sidebar": {
+      "openMenu": "Abrir menu",
       "navigation": "Navegação Sentirz",
       "loading": "Carregando...",
       "logout": "Sair da Conta"
@@ -686,13 +689,13 @@
         "continue": "Continuar",
         "back": "Voltar",
         "submit": "Criar minha conta",
-        "submitting": "Criando conta...",
-        "recoverPassword": "Recuperar senha"
+        "submitting": "Criando conta..."
       },
       "success": "Cadastro realizado com sucesso! Verifique seu e-mail.",
       "loginPrompt": "Já tem uma conta?",
       "login": "Entrar",
       "or": "ou",
+      "recoverPassword": "Recuperar senha",
       "professionalPrompt": "É psicólogo?",
       "registerAsProfessional": "Cadastre-se como Profissional",
       "errors": {

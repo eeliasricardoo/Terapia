@@ -28,7 +28,7 @@ export const PsychologistCard = memo(function PsychologistCard({
   const bio = psychologist.bio || t('card.fallbackBio')
 
   return (
-    <Card className="overflow-hidden hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-300 border-slate-200/60 rounded-[2.5rem] group flex flex-col bg-white h-full relative hover:-translate-y-1">
+    <Card className="overflow-hidden hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-300 border-slate-200/60 rounded-2xl group flex flex-col bg-white h-full relative hover:-translate-y-1">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
       <CardContent className="p-0 flex flex-col flex-1 relative z-10">

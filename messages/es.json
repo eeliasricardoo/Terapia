@@ -436,6 +436,7 @@
     }
   },
   "DashboardLayout": {
+    "skipToContent": "Saltar al contenido",
     "menu": {
       "patient": {
         "dashboard": "Dashboard",
@@ -477,9 +478,11 @@
       "admin": "Administrador",
       "psychologist": "Psicólogo(a)",
       "companyFull": "Gestor de Empresa",
+      "company": "Empresa",
       "patient": "Paciente"
     },
     "sidebar": {
+      "openMenu": "Abrir menú",
       "navigation": "Navegação Sentirz",
       "loading": "Cargando...",
       "logout": "Cerrar Sesión"
@@ -687,13 +690,13 @@
         "continue": "Continuar",
         "back": "Volver",
         "submit": "Crear mi cuenta",
-        "submitting": "Creando cuenta...",
-        "recoverPassword": "Recuperar contraseña"
+        "submitting": "Creando cuenta..."
       },
       "success": "¡Registro exitoso! Verifica tu correo.",
       "loginPrompt": "¿Ya tienes una cuenta?",
       "login": "Entrar",
       "or": "o",
+      "recoverPassword": "Recuperar contraseña",
       "professionalPrompt": "¿Eres psicólogo?",
       "registerAsProfessional": "Regístrate como Profesional",
       "errors": {

@@ -20,8 +20,7 @@ export function FindPsychologistCTA() {
           <p className="text-primary-foreground/80 text-lg mb-8">{t('description')}</p>
           <Button
             size="lg"
-            variant="secondary"
-            className="text-primary hover:bg-white/90 gap-2 text-base font-semibold px-8 h-12"
+            className="bg-white text-primary hover:bg-white/90 gap-2 text-base font-semibold px-8 h-12 shadow-sm border-none"
             asChild
           >
             <Link href="/busca">
