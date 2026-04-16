@@ -1,7 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { Save } from 'lucide-react'
+import { Save, Share2, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,6 +16,7 @@ import {
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { UserProfile } from '../_hooks/use-profile-data'
+import { BRAND_NAME } from '@/lib/constants/branding'
 
 interface ProfessionalProfileCardProps {
   user: UserProfile
@@ -50,6 +51,16 @@ export function ProfessionalProfileCard({
 }: ProfessionalProfileCardProps) {
   const supabase = createClient()
   const t = useTranslations('ProfilePage')
+
+  const handleCopyProfileLink = () => {
+    const baseUrl = window.location.origin
+    const profileUrl = `${baseUrl}/psicologo/${user.id}`
+
+    navigator.clipboard.writeText(profileUrl)
+    toast.success(t('professional.linkCopied'), {
+      description: t('professional.linkCopiedDesc'),
+    })
+  }
 
   const handleSaveProfessionalProfile = async () => {
     try {
@@ -86,9 +97,31 @@ export function ProfessionalProfileCard({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{t('professional.title')}</CardTitle>
-        <CardDescription>{t('professional.subtitle')}</CardDescription>
+      <CardHeader className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-4 sm:space-y-0">
+        <div>
+          <CardTitle>{t('professional.title')}</CardTitle>
+          <CardDescription>{t('professional.subtitle')}</CardDescription>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 rounded-xl font-bold bg-slate-50 border-slate-200 hover:bg-slate-100"
+            onClick={() => window.open(`/psicologo/${user.id}`, '_blank')}
+          >
+            <ExternalLink className="mr-2 h-4 w-4 text-slate-400" />
+            {t('professional.viewPublic')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 rounded-xl font-bold bg-slate-50 border-slate-200 hover:bg-slate-100"
+            onClick={handleCopyProfileLink}
+          >
+            <Share2 className="mr-2 h-4 w-4 text-slate-400" />
+            {t('professional.copyLink')}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

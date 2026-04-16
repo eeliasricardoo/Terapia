@@ -54,14 +54,12 @@ const envSchema = z.object({
   // Internal API secret (used by email-dispatch → /api/internal/send-email)
   INTERNAL_API_SECRET: z
     .string()
-    .min(16, 'INTERNAL_API_SECRET must be at least 16 characters')
-    .default('temporary-placeholder-auth-will-fail-on-vercel-set-it-in-dashboard'),
+    .min(16, 'INTERNAL_API_SECRET must be at least 16 characters'),
 
   // Cron job secret (Vercel sets this automatically; must also be in env)
   CRON_SECRET: z
     .string()
-    .min(16, 'CRON_SECRET must be at least 16 characters')
-    .default('temporary-placeholder-auth-will-fail-on-vercel-set-it-in-dashboard'),
+    .min(16, 'CRON_SECRET must be at least 16 characters'),
 
   // Application URL
   NEXT_PUBLIC_APP_URL: z
@@ -89,7 +87,29 @@ function parseEnv(): Env {
   }
 
   try {
-    return envSchema.parse(process.env)
+    const validatedEnv = envSchema.parse(process.env)
+
+    // Additional production-only checks
+    if (validatedEnv.NODE_ENV === 'production') {
+      const placeholders = ['placeholder', 'your-', 'example', '...', 'temp']
+      const secretsToCheck: (keyof Env)[] = [
+        'STRIPE_SECRET_KEY',
+        'DAILY_API_KEY',
+        'SUPABASE_SERVICE_ROLE_KEY',
+        'INTERNAL_API_SECRET',
+        'CRON_SECRET',
+        'ENCRYPTION_KEY',
+      ]
+
+      for (const key of secretsToCheck) {
+        const val = String(validatedEnv[key]).toLowerCase()
+        if (placeholders.some((p) => val.includes(p))) {
+          throw new Error(`CRITICAL: Environment variable ${key} contains a placeholder value in production!`)
+        }
+      }
+    }
+
+    return validatedEnv
   } catch (error) {
     if (error instanceof z.ZodError) {
       const missingVars = error.errors.map((err) => `  - ${err.path.join('.')}: ${err.message}`)
