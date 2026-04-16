@@ -242,21 +242,27 @@ const IV_LENGTH = 16
 
 /**
  * Criptografa strings sensíveis (Prontuários, Laudos Médicos) antes de inserir no banco
+ * Usando AES-256-GCM para criptografia autenticada (Garante confidencialidade + integridade)
  */
 export function encryptData(text: string): string {
   if (!text) return text
   const key = getEncryptionKey()
-  if (!key) {
+  if (!key || key.length < 32) {
     throw new Error(
-      'ENCRYPTION_KEY não configurada. Não é possível criptografar dados sensíveis de saúde. ' +
+      'ENCRYPTION_KEY inválida ou não configurada. ' +
         'Defina ENCRYPTION_KEY no .env com exatamente 32 caracteres.'
     )
   }
-  const iv = randomBytes(IV_LENGTH)
-  const cipher = createCipheriv('aes-256-cbc', Buffer.from(key.padEnd(32).slice(0, 32)), iv)
-  let encrypted = cipher.update(text)
-  encrypted = Buffer.concat([encrypted, cipher.final()])
-  return iv.toString('hex') + ':' + encrypted.toString('hex')
+
+  const iv = randomBytes(12) // GCM recomenda IV de 12 bytes
+  const cipher = createCipheriv('aes-256-gcm', Buffer.from(key.slice(0, 32)), iv)
+
+  let encrypted = cipher.update(text, 'utf8', 'hex')
+  encrypted += cipher.final('hex')
+  const authTag = cipher.getAuthTag().toString('hex')
+
+  // Retorna no formato iv:authTag:encrypted
+  return `${iv.toString('hex')}:${authTag}:${encrypted}`
 }
 
 /**
@@ -268,17 +274,44 @@ export function decryptData(text: string): string {
   if (!key) {
     return '🔒 [Dados Criptografados - Chave Não Configurada]'
   }
+
   try {
-    const textParts = text.split(':')
-    const iv = Buffer.from(textParts.shift() as string, 'hex')
-    const encryptedText = Buffer.from(textParts.join(':'), 'hex')
+    const [ivHex, authTagHex, encryptedHex] = text.split(':')
+
+    // Legado: suporte para CBC (caso existam dados antigos no banco)
+    if (!encryptedHex) {
+      // Tenta descriptografar usando o método antigo CBC se houver apenas 2 partes
+      return decryptLegacyCBC(text, key)
+    }
+
+    const iv = Buffer.from(ivHex, 'hex')
+    const authTag = Buffer.from(authTagHex, 'hex')
+    const decipher = createDecipheriv('aes-256-gcm', Buffer.from(key.slice(0, 32)), iv)
+    decipher.setAuthTag(authTag)
+
+    let decrypted = decipher.update(encryptedHex, 'hex', 'utf8')
+    decrypted += decipher.final('utf8')
+    return decrypted
+  } catch (error) {
+    logger.error('Falha ao descriptografar dado sensível (GCM)', error)
+    return '🔒 [Dados Corrompidos ou Chave Inválida]'
+  }
+}
+
+/**
+ * Fallback para descriptografar dados salvos no formato antigo (CBC)
+ */
+function decryptLegacyCBC(text: string, key: string): string {
+  try {
+    const [ivHex, encryptedHex] = text.split(':')
+    const iv = Buffer.from(ivHex, 'hex')
+    const encryptedText = Buffer.from(encryptedHex, 'hex')
     const decipher = createDecipheriv('aes-256-cbc', Buffer.from(key.padEnd(32).slice(0, 32)), iv)
     let decrypted = decipher.update(encryptedText)
     decrypted = Buffer.concat([decrypted, decipher.final()])
     return decrypted.toString()
-  } catch (error) {
-    logger.error('Falha ao descriptografar dado sensível', error)
-    return '🔒 [Dados Criptografados - Chave Inválida]'
+  } catch (e) {
+    return '🔒 [Dados Legados Incompatíveis]'
   }
 }
 
