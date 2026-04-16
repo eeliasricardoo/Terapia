@@ -40,7 +40,7 @@ import { Logo } from '@/components/ui/Logo'
 
 // @ts-ignore
 export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: NavbarProps) {
-  const { isAuthenticated, role, fullName, avatarUrl } = useAuth()
+  const { isAuthenticated, role, fullName, avatarUrl, signOut } = useAuth()
   const t = useTranslations('Navbar')
   const [loginOpen, setLoginOpen] = useState(false)
   const [registerOpen, setRegisterOpen] = useState(false)
@@ -218,7 +218,9 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                   <DropdownMenuItem>{t('menu.profile')}</DropdownMenuItem>
                   <DropdownMenuItem>{t('menu.settings')}</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>{t('buttons.logout')}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    {t('buttons.logout')}
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
@@ -256,7 +258,7 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                       </Button>
                     </>
                   ) : (
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full" onClick={() => signOut()}>
                       {t('buttons.logout')}
                     </Button>
                   )}

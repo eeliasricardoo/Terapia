@@ -13,6 +13,7 @@ interface AuthContextType {
   role?: string
   fullName?: string
   avatarUrl?: string
+  signOut: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   isAuthenticated: false,
+  signOut: async () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -51,6 +53,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [supabase])
 
+  const signOut = async () => {
+    await supabase.auth.signOut()
+    // The state will be updated automatically by onAuthStateChange
+  }
+
   const userMetadata = user?.user_metadata as UserMetadata | undefined
 
   return (
@@ -63,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: userMetadata?.role,
         fullName: userMetadata?.full_name,
         avatarUrl: userMetadata?.avatar_url,
+        signOut,
       }}
     >
       {children}
