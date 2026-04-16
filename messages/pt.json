@@ -935,6 +935,30 @@
       "success": "Perfil atualizado!",
       "successDesc": "Suas informações foram salvas com sucesso.",
       "errorUpdate": "Erro ao atualizar"
+    },
+    "professional": {
+      "title": "Perfil Profissional",
+      "subtitle": "Informações que serão exibidas em sua página pública na Sentirz.",
+      "crp": "CRP",
+      "crpPlaceholder": "ex: 06/123456",
+      "price": "Valor da Sessão (BRL)",
+      "pricePlaceholder": "ex: 150",
+      "specialties": "Especialidades (separadas por vírgula)",
+      "specialtiesPlaceholder": "ex: Ansiedade, Depressão, Terapia de Casal",
+      "videoUrl": "Vídeo de Apresentação (Link YouTube/Vimeo)",
+      "videoUrlPlaceholder": "https://...",
+      "bio": "Bio / Descrição",
+      "bioPlaceholder": "Conte um pouco sobre sua trajetória...",
+      "chars": "{count} caracteres",
+      "save": "Salvar Perfil Profissional",
+      "saving": "Salvando...",
+      "success": "Perfil profissional atualizado!",
+      "successDesc": "Seus dados agora estão disponíveis para seus pacientes.",
+      "errorUpdate": "Erro ao atualizar dados profissionais.",
+      "copyLink": "Copiar Link",
+      "viewPublic": "Ver Perfil Público",
+      "linkCopied": "Link Copiado!",
+      "linkCopiedDesc": "URL do seu perfil copiada para a área de transferência."
     }
   },
   "ScheduleManager": {
