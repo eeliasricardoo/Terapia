@@ -90,7 +90,7 @@ export async function createDailyToken(
   roomName: string,
   userName: string,
   isOwner: boolean = false,
-  durationInSeconds: number = 3600 // 1 hour default
+  durationInSeconds: number = 5400 // 90 minutes default (safe margin for 50-60min sessions)
 ): Promise<string> {
   const headers = {
     'Content-Type': 'application/json',

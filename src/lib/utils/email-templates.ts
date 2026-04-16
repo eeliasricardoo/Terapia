@@ -213,7 +213,7 @@ export function getRejectionEmailTemplate(name: string, reason: string) {
           <p>Você pode tentar se cadastrar novamente após corrigir os apontamentos acima ou entrar em contato com nosso suporte.</p>
           
           <div style="text-align: center; margin-top: 40px;">
-            <a href="mailto:ajuda@mindcares.com.br" style="background-color: #f1f5f9; color: #475569; padding: 14px 28px; border-radius: 40px; text-decoration: none; font-weight: bold; display: inline-block; border: 1px solid #e2e8f0;">
+            <a href="mailto:ajuda@sentirz.com.br" style="background-color: #f1f5f9; color: #475569; padding: 14px 28px; border-radius: 40px; text-decoration: none; font-weight: bold; display: inline-block; border: 1px solid #e2e8f0;">
               Falar com o Suporte
             </a>
           </div>
