@@ -95,7 +95,7 @@ export function EvolutionsTab({ patientId }: EvolutionsTabProps) {
         console.error('Failed to load draft:', e)
       }
     }
-  }, [patientId])
+  }, [patientId, t])
 
   // 2. Save draft to localStorage whenever fields change
   useEffect(() => {

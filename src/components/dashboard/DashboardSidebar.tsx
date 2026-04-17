@@ -188,7 +188,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
     return () => {
       if (channel) supabase.removeChannel(channel)
     }
-  }, [supabase, initialProfile])
+  }, [supabase, initialProfile, t, user?.name])
 
   const getInitials = (name: string) =>
     name

@@ -181,7 +181,9 @@ function TestActiveRoomInterface({ appointmentInfo }: { appointmentInfo: Appoint
       if (localParticipant.audio !== isMicOn) setIsMicOn(localParticipant.audio)
       if (localParticipant.video !== isCamOn) setIsCamOn(localParticipant.video)
     }
-  }, [localParticipant?.audio, localParticipant?.video])
+    // Intentionally exclude isMicOn/isCamOn to avoid echo-loop: effect syncs FROM Daily state TO local state
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localParticipant?.audio, localParticipant?.video, localParticipant])
 
   const remainingSeconds = useRoomTimer(
     appointmentInfo.scheduledAt,

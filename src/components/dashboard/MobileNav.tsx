@@ -113,7 +113,7 @@ export function MobileNav() {
       }
     }
     loadUser()
-  }, [supabase])
+  }, [supabase, t])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()

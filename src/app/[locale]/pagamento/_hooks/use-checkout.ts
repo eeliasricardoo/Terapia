@@ -119,7 +119,7 @@ export function useCheckout() {
       setIsFetchingInfo(false)
     }
     loadCheckoutInfo()
-  }, [doctorId, patientProfile?.id])
+  }, [doctorId, patientProfile?.id, patientProfile?.healthInsuranceId, date, plan])
 
   useEffect(() => {
     const payment = searchParams?.get('payment')

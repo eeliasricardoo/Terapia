@@ -63,7 +63,7 @@ export function EmailVerificationForm() {
       }
     }
     checkSession()
-  }, [displayEmail, router])
+  }, [displayEmail, router, t])
 
   async function onSubmit(values: VerificationInput) {
     if (!displayEmail) return
