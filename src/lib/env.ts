@@ -64,6 +64,13 @@ const envSchema = z.object({
     .refine((val) => !val.endsWith('/'), {
       message: 'NEXT_PUBLIC_APP_URL must not end with a slash',
     }),
+
+  // Sentry (observability) - all optional; enable by setting DSN
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional().or(z.literal('')),
+  SENTRY_DSN: z.string().url().optional().or(z.literal('')),
+  SENTRY_ORG: z.string().optional(),
+  SENTRY_PROJECT: z.string().optional(),
+  SENTRY_AUTH_TOKEN: z.string().optional(),
 })
 
 /**
@@ -140,6 +147,11 @@ export const isRedisConfigured = Boolean(env.UPSTASH_REDIS_REST_URL && env.UPSTA
  * Check if email service is configured
  */
 export const isEmailConfigured = Boolean(env.RESEND_API_KEY)
+
+/**
+ * Check if Sentry observability is configured
+ */
+export const isSentryConfigured = Boolean(env.NEXT_PUBLIC_SENTRY_DSN || env.SENTRY_DSN)
 
 /**
  * Check if running in production
