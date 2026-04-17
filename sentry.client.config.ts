@@ -2,16 +2,40 @@
 
 import * as Sentry from '@sentry/nextjs'
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN
 
-  // Replay is only available in the browser
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
+if (dsn) {
+  Sentry.init({
+    dsn,
+    environment: process.env.NODE_ENV,
+    enabled: process.env.NODE_ENV === 'production',
 
-  // Performance Monitoring
-  tracesSampleRate: 1.0,
+    // Replay (capture on error only in production to save cost)
+    replaysSessionSampleRate: 0,
+    replaysOnErrorSampleRate: 1.0,
 
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
-})
+    // Performance Monitoring — trace only a fraction in production
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+
+    sendDefaultPii: false,
+
+    integrations: [
+      Sentry.replayIntegration({
+        // Mask all text & inputs — patient data must never leave the browser in replays
+        maskAllText: true,
+        maskAllInputs: true,
+        blockAllMedia: true,
+      }),
+    ],
+
+    beforeSend(event) {
+      if (event.user) {
+        delete event.user.ip_address
+        delete event.user.email
+      }
+      return event
+    },
+
+    ignoreErrors: ['ResizeObserver loop', 'Network request failed', 'NEXT_REDIRECT'],
+  })
+}

@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
-const withNextIntl = require('next-intl/plugin')();
+const withNextIntl = require('next-intl/plugin')()
+const { withSentryConfig } = require('@sentry/nextjs')
 
 const nextConfig = {
   images: {
@@ -65,4 +66,16 @@ const nextConfig = {
   },
 }
 
-module.exports = withNextIntl(nextConfig)
+const sentryWebpackPluginOptions = {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+  // Only upload source maps in production builds when auth is set
+  dryRun: !process.env.SENTRY_AUTH_TOKEN,
+}
+
+module.exports = withSentryConfig(withNextIntl(nextConfig), sentryWebpackPluginOptions)
