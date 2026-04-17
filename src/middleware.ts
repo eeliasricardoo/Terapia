@@ -88,6 +88,46 @@ export async function middleware(request: NextRequest) {
       url.searchParams.set('email', user.email || '')
       return NextResponse.redirect(url)
     }
+
+    // ── RBAC: Role-Based Access Control ──────────────────────────────
+    // Read role from JWT metadata (set at signup, no extra DB call needed)
+    const userRole =
+      (user?.user_metadata?.role as string) || (user?.app_metadata?.role as string) || 'PATIENT'
+
+    // Admin routes: only ADMIN role
+    if (pathnameWithoutLocale.startsWith('/dashboard/admin')) {
+      if (userRole !== 'ADMIN') {
+        const url = request.nextUrl.clone()
+        url.pathname = `${localePrefix}/dashboard`
+        url.searchParams.set('error', 'forbidden')
+        return NextResponse.redirect(url)
+      }
+    }
+
+    // Psychologist-only routes
+    const psychologistOnlyRoutes = [
+      '/dashboard/pacientes',
+      '/dashboard/prontuario',
+      '/dashboard/agenda',
+    ]
+    if (psychologistOnlyRoutes.some((route) => pathnameWithoutLocale.startsWith(route))) {
+      if (userRole !== 'PSYCHOLOGIST' && userRole !== 'ADMIN') {
+        const url = request.nextUrl.clone()
+        url.pathname = `${localePrefix}/dashboard`
+        url.searchParams.set('error', 'forbidden')
+        return NextResponse.redirect(url)
+      }
+    }
+
+    // Company-only routes
+    if (pathnameWithoutLocale.startsWith('/dashboard/empresa')) {
+      if (userRole !== 'COMPANY' && userRole !== 'ADMIN') {
+        const url = request.nextUrl.clone()
+        url.pathname = `${localePrefix}/dashboard`
+        url.searchParams.set('error', 'forbidden')
+        return NextResponse.redirect(url)
+      }
+    }
   }
 
   // Redirect authenticated users away from home, login, and register pages
