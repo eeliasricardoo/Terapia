@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Bell, Shield, Smartphone, Globe, Mail } from 'lucide-react'
 import { toast } from 'sonner'
+import { DeleteAccountSection } from '@/components/dashboard/DeleteAccountSection'
 
 import { updateNotificationSettings, type NotificationSettings } from '@/lib/actions/settings'
 
@@ -200,6 +201,9 @@ export function SettingsManager({ initialSettings }: SettingsManagerProps) {
             {isLoading ? 'Salvando...' : 'Salvar Preferências'}
           </Button>
         </div>
+
+        {/* --- LGPD: DELETE ACCOUNT (Art. 18) --- */}
+        <DeleteAccountSection />
       </div>
     </div>
   )
