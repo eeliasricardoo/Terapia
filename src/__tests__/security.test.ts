@@ -5,8 +5,8 @@ jest.mock('@upstash/redis', () => ({
   Redis: jest.fn(),
 }))
 
-// Set ENCRYPTION_KEY for tests to avoid the new validation error
-process.env.ENCRYPTION_KEY = 'test_encryption_key_32chars_ok!'
+// Set ENCRYPTION_KEY for tests (must be exactly 32 chars)
+process.env.ENCRYPTION_KEY = 'test_encryption_key_32chars_ok12'
 
 import {
   sanitizeText,
@@ -64,9 +64,8 @@ describe('security utilities', () => {
     it('should return error message when decryption fails (e.g. invalid format)', () => {
       const invalidData = 'somehex:invaliddata'
       const result = decryptData(invalidData)
-      // Can be either "Chave Inválida" (when key exists but data is bad)
-      // or "Chave Não Configurada" (when key is missing)
-      expect(result).toMatch(/🔒 \[Dados Criptografados/)
+      // Accepts any of the sentinel error prefixes (GCM, CBC legacy, missing key)
+      expect(result).toMatch(/🔒 \[(Dados Criptografados|Dados Corrompidos|Dados Legados)/)
     })
 
     it('should handle empty input in encryption', () => {

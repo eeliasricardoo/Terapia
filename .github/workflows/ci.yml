@@ -9,9 +9,16 @@ on:
 env:
   NEXT_PUBLIC_SUPABASE_URL: https://test.supabase.co
   NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTYwMDAwMDAwMCwiZXhwIjoxOTAwMDAwMDAwfQ.test
+  SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjAwMDAwMDAwLCJleHAiOjE5MDAwMDAwMDB9.test
   DATABASE_URL: postgresql://test:test@localhost:5432/test
   DIRECT_URL: postgresql://test:test@localhost:5432/test
   STRIPE_SECRET_KEY: sk_test_fake_key_for_ci
+  STRIPE_WEBHOOK_SECRET: whsec_fake_webhook_secret_for_ci
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_fake_publishable_key_for_ci
+  DAILY_API_KEY: fake_daily_api_key_for_ci_0123456789abcdef
+  ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef
+  INTERNAL_API_SECRET: fake_internal_secret_for_ci_not_a_real_value_01234567
+  CRON_SECRET: fake_cron_secret_for_ci_not_a_real_value_0123456789
   NEXT_PUBLIC_APP_URL: http://localhost:3000
 
 jobs:
@@ -77,8 +84,6 @@ jobs:
     name: 🏗️ Build
     runs-on: ubuntu-latest
     needs: [unit-tests]
-    env:
-      NODE_ENV: production
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -90,7 +95,7 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
       - name: Build Next.js
-        run: npm run build
+        run: NODE_ENV=production npm run build
 
   e2e:
     name: 🎭 E2E Tests

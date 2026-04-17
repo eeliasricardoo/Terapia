@@ -34,8 +34,8 @@ jest.mock('@/lib/prisma', () => ({
   },
 }))
 
-// Set ENCRYPTION_KEY for tests
-process.env.ENCRYPTION_KEY = 'test_encryption_key_32chars_ok!'
+// Set ENCRYPTION_KEY for tests (must be exactly 32 chars)
+process.env.ENCRYPTION_KEY = 'test_encryption_key_32chars_ok12'
 
 import { prisma } from '@/lib/prisma'
 import {

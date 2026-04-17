@@ -22,7 +22,7 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:test": "node scripts/check-db.js",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

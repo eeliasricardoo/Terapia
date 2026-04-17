@@ -40,7 +40,7 @@ describe('Registration Page', () => {
   it('renders Step 1 initially', () => {
     render(<RegistrationPage />)
 
-    expect(screen.getByText(/Crie sua conta/i)).toBeInTheDocument()
+    expect(screen.getByText(/Dados Iniciais/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/Nome Completo/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Continuar/i })).toBeInTheDocument()
 
@@ -55,14 +55,14 @@ describe('Registration Page', () => {
     const nameInput = screen.getByLabelText(/Nome Completo/i)
     fireEvent.change(nameInput, { target: { value: 'João Silva' } })
 
-    const emailInput = screen.getByLabelText(/Email/i)
+    const emailInput = screen.getByLabelText(/E-mail/i)
     fireEvent.change(emailInput, { target: { value: 'joao@example.com' } })
 
     const continueButton = screen.getByRole('button', { name: /Continuar/i })
     fireEvent.click(continueButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/Dados Necessários/i)).toBeInTheDocument()
+      expect(screen.getByText(/Informações Pessoais/i)).toBeInTheDocument()
     })
 
     expect(screen.getByLabelText(/CPF/i)).toBeInTheDocument()
