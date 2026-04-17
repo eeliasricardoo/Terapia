@@ -1,12 +1,13 @@
 import { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Termos de Uso | Sentirz',
-  description: 'Leia os termos de uso e condições da plataforma Sentirz.',
+  description: 'Termos de uso e condições da plataforma Sentirz — telemedicina em saúde mental.',
 }
 
 export default function TermosPage() {
-  const lastUpdate = '19 de Março de 2026'
+  const lastUpdate = '17 de Abril de 2026'
 
   return (
     <div className="bg-slate-50 min-h-screen py-16 md:py-24">
@@ -36,8 +37,16 @@ export default function TermosPage() {
               <p>
                 Sentirz é uma plataforma tecnológica que conecta pacientes a profissionais de saúde
                 mental (psicólogos) para a realização de sessões de vídeo-atendimento. Atuamos como
-                intermediários, facilitando o agendamento, pagamento e a tecnologia de comunicação.
+                intermediários tecnológicos, facilitando o agendamento, pagamento e a tecnologia de
+                comunicação.
               </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-3">
+                <p className="text-sm text-amber-800 font-medium mb-0">
+                  ⚠️ <strong>Importante:</strong> A Sentirz NÃO é um serviço médico ou de
+                  emergência. Em caso de crise ou emergência psicológica, ligue para o{' '}
+                  <strong>CVV: 188</strong> ou procure atendimento presencial imediato.
+                </p>
+              </div>
             </section>
 
             <section className="mb-10">
@@ -49,17 +58,59 @@ export default function TermosPage() {
               </p>
               <ul className="list-disc pl-6 space-y-2 mt-4">
                 <li>
-                  O uso da plataforma por menores de 18 anos deve ser autorizado pelos responsáveis.
+                  O uso da plataforma por menores de 18 anos deve ser expressamente autorizado e
+                  supervisionado pelos responsáveis legais, conforme Art. 14 da LGPD.
                 </li>
                 <li>
                   Você concorda em nos notificar imediatamente sobre qualquer acesso não autorizado
                   à sua conta.
                 </li>
+                <li>
+                  Informações falsas ou fraudulentas podem resultar no cancelamento imediato da
+                  conta.
+                </li>
               </ul>
             </section>
 
             <section className="mb-10">
-              <h2 className="text-2xl font-bold mb-4">4. Política de Pagamentos e Reembolsos</h2>
+              <h2 className="text-2xl font-bold mb-4">
+                4. Consentimento para Tratamento de Dados Sensíveis
+              </h2>
+              <p>
+                Ao utilizar a Sentirz para sessões de terapia, você consente de forma{' '}
+                <strong>específica, informada e destacada</strong> com o tratamento de dados
+                sensíveis de saúde (LGPD Art. 11, I), incluindo:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 mt-4">
+                <li>
+                  Armazenamento de anotações de prontuário pelo seu psicólogo (criptografadas com
+                  AES-256-GCM).
+                </li>
+                <li>Processamento de registros de evolução clínica.</li>
+                <li>Armazenamento voluntário de diário emocional e dados de humor.</li>
+              </ul>
+              <p className="mt-3">
+                Você pode revogar este consentimento a qualquer momento nas{' '}
+                <Link href="/dashboard/ajustes" className="text-blue-600 font-bold hover:underline">
+                  configurações da sua conta
+                </Link>
+                , ou entrando em contato com nosso DPO em{' '}
+                <a
+                  href="mailto:privacidade@sentirz.com.br"
+                  className="text-blue-600 font-bold hover:underline"
+                >
+                  privacidade@sentirz.com.br
+                </a>
+                . Para detalhes completos, consulte nossa{' '}
+                <Link href="/privacidade" className="text-blue-600 font-bold hover:underline">
+                  Política de Privacidade
+                </Link>
+                .
+              </p>
+            </section>
+
+            <section className="mb-10">
+              <h2 className="text-2xl font-bold mb-4">5. Política de Pagamentos e Reembolsos</h2>
               <p>Os pagamentos das sessões são processados de forma segura através do Stripe.</p>
               <ul className="list-disc pl-6 space-y-2 mt-4">
                 <li>
@@ -71,26 +122,73 @@ export default function TermosPage() {
                   menos de 24 horas, será cobrada uma taxa de 50% do valor da sessão devido ao tempo
                   reservado pelo profissional.
                 </li>
+                <li>
+                  <strong>Reembolsos:</strong> Processados via Stripe em até 5-10 dias úteis,
+                  dependendo da operadora do cartão.
+                </li>
               </ul>
             </section>
 
             <section className="mb-10">
-              <h2 className="text-2xl font-bold mb-4">5. Responsabilidades do Profissional</h2>
+              <h2 className="text-2xl font-bold mb-4">6. Responsabilidades do Profissional</h2>
               <p>
                 Todos os profissionais cadastrados na Sentirz são responsáveis pela veracidade de
                 seus dados e pela manutenção de sua inscrição ativa nos órgãos de classe (CRP). A
-                plataforma realiza uma verificação inicial, mas a conduta ética e profissional é de
-                inteira responsabilidade do psicólogo.
+                plataforma realiza uma verificação inicial de documentos (CRP e diploma), mas a
+                conduta ética e profissional é de inteira responsabilidade do psicólogo, nos termos
+                da Resolução CFP nº 10/2005.
+              </p>
+            </section>
+
+            <section className="mb-10">
+              <h2 className="text-2xl font-bold mb-4">7. Sigilo Profissional</h2>
+              <p>
+                A Sentirz garante a infraestrutura tecnológica para a manutenção do sigilo
+                profissional previsto no Art. 9 do Código de Ética do Psicólogo. As sessões de vídeo
+                são criptografadas, os prontuários são criptografados em repouso, e o acesso aos
+                dados clínicos é restrito ao profissional responsável.
+              </p>
+              <p className="mt-2">
+                A Sentirz, enquanto operadora de tecnologia, não acessa o conteúdo das sessões de
+                vídeo nem o conteúdo dos prontuários dos pacientes.
+              </p>
+            </section>
+
+            <section className="mb-10">
+              <h2 className="text-2xl font-bold mb-4">8. Exclusão de Conta e Dados</h2>
+              <p>
+                Conforme a LGPD Art. 18, você pode solicitar a exclusão da sua conta e dados
+                pessoais a qualquer momento através das{' '}
+                <Link href="/dashboard/ajustes" className="text-blue-600 font-bold hover:underline">
+                  configurações da sua conta
+                </Link>
+                .
+              </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-3">
+                <p className="text-sm text-blue-800 font-medium mb-0">
+                  <strong>Nota:</strong> Registros clínicos (prontuários e evoluções) serão
+                  anonimizados conforme Resolução CFP 001/2009, que determina a guarda mínima de 5
+                  anos. Dados pessoais identificáveis são removidos imediatamente.
+                </p>
+              </div>
+            </section>
+
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold mb-4">9. Modificações dos Termos</h2>
+              <p>
+                Reservamo-nos o direito de modificar estes termos. Modificações significativas serão
+                comunicadas por e-mail ou notificação na plataforma com{' '}
+                <strong>30 dias de antecedência</strong>. Seu uso continuado da plataforma após o
+                período de aviso constituirá sua aceitação dos novos termos.
               </p>
             </section>
 
             <section className="mb-12">
-              <h2 className="text-2xl font-bold mb-4">6. Modificações dos Termos</h2>
+              <h2 className="text-2xl font-bold mb-4">10. Foro e Legislação Aplicável</h2>
               <p>
-                Reservamo-nos o direito de modificar estes termos a qualquer momento. Modificações
-                entrarão em vigor imediatamente após sua publicação na plataforma. Seu uso
-                continuado da plataforma após tais mudanças constituirá sua aceitação dos novos
-                termos.
+                Estes termos são regidos pelas leis da República Federativa do Brasil. Qualquer
+                litígio será submetido ao foro da comarca de [a ser preenchido], Brasil, com
+                renúncia a qualquer outro.
               </p>
             </section>
 
