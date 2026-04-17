@@ -41,7 +41,7 @@ export default function CompanySupportPage() {
         </h1>
         <p className="text-slate-500 font-medium text-lg max-w-2xl mx-auto">
           Estamos aqui para garantir que sua empresa e seus colaboradores tenham a melhor
-          experiência possível com a Terapia.
+          experiência possível com a Sentirz.
         </p>
       </div>
 
@@ -77,7 +77,7 @@ export default function CompanySupportPage() {
               variant="outline"
               className="w-full border-blue-100 text-blue-600 hover:bg-blue-50 rounded-xl h-12 font-bold gap-2"
             >
-              contato@terapia.com
+              contato@sentirz.com
             </Button>
           </CardContent>
         </Card>

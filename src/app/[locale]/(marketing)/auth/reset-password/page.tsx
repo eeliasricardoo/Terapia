@@ -1,7 +1,7 @@
 import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm'
 
 export const metadata = {
-  title: 'Nova Senha | Terapia',
+  title: 'Nova Senha | Sentirz',
 }
 
 export default function ResetPasswordPage() {

@@ -3,8 +3,8 @@ import { Suspense } from 'react'
 import { Loader2 } from 'lucide-react'
 
 export const metadata = {
-  title: 'Confirmar E-mail | Terapia',
-  description: 'Confirme seu e-mail para ativar sua conta na Terapia.',
+  title: 'Confirmar E-mail | Sentirz',
+  description: 'Confirme seu e-mail para ativar sua conta na Sentirz.',
 }
 
 export default function ConfirmEmailPage() {
