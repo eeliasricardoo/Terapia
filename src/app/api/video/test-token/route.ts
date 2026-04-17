@@ -3,6 +3,11 @@ import { NextResponse } from 'next/server'
 import { logger } from '@/lib/utils/logger'
 
 export async function POST(req: Request) {
+  // Test-only endpoint: disabled in production to prevent unauthenticated Daily.co room creation
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
   try {
     const body = await req.json()
     const { role } = body
