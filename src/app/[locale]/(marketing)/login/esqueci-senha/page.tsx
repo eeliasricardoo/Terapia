@@ -1,7 +1,7 @@
 import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm'
 
 export const metadata = {
-  title: 'Recuperar Senha | Terapia',
+  title: 'Recuperar Senha | Sentirz',
 }
 
 export default function ForgotPasswordPage() {

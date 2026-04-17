@@ -41,7 +41,7 @@ export const Logo: React.FC<LogoProps> = ({
           <span
             className={`font-sans font-medium text-[#3b6b6b]/80 tracking-tight ${subtitleSize} opacity-90`}
           >
-            Plataforma de Terapia Online
+            Plataforma de terapia online
           </span>
         </div>
       )}

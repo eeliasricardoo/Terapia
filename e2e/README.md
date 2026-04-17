@@ -1,4 +1,4 @@
-# E2E Tests - Terapia Platform
+# E2E Tests - Sentirz Platform
 
 ## Problema Corrigido
 
