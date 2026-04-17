@@ -18,7 +18,7 @@ const config: Config = {
   },
   testPathIgnorePatterns: ['<rootDir>/e2e/', '<rootDir>/node_modules/'],
   transformIgnorePatterns: [
-    'node_modules/(?!(uncrypto|@upstash|@lucia-auth|framer-motion|@marsidev/react-turnstile)/)',
+    'node_modules/(?!(uncrypto|@upstash|@lucia-auth|framer-motion|@marsidev/react-turnstile|next-intl|use-intl)/)',
   ],
   collectCoverageFrom: [
     'src/lib/**/*.{ts,tsx}',
