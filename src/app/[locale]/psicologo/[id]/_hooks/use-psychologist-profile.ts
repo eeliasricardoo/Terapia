@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { format, isBefore, startOfDay, addMinutes } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import type { PsychologistWithProfile } from '@/lib/supabase/types'
@@ -35,97 +35,101 @@ export function usePsychologistProfile(
 
   const todayStr = format(today, 'yyyy-MM-dd')
 
-  const getAvailableSlotsForDay = (date: Date) => {
-    if (!availability) return []
+  const getAvailableSlotsForDay = useCallback(
+    (date: Date) => {
+      if (!availability) return []
 
-    const dateStr = format(date, 'yyyy-MM-dd')
+      const dateStr = format(date, 'yyyy-MM-dd')
 
-    // 1. Check if the day is outdated
-    if (dateStr < todayStr) return []
+      // 1. Check if the day is outdated
+      if (dateStr < todayStr) return []
 
-    // 2. Check if the day is blocked in overrides
-    if (availability.overrides[dateStr] && availability.overrides[dateStr].type === 'blocked') {
-      return []
-    }
-
-    // 3. Get slot definitions (from custom overrides or weekly schedule)
-    let slotsDef: { start: string; end: string }[] = []
-    const ws = availability.weeklySchedule as WeeklyScheduleData | null
-
-    if (availability.overrides[dateStr] && availability.overrides[dateStr].type === 'custom') {
-      slotsDef = availability.overrides[dateStr].slots
-    } else if (ws) {
-      const dayOfWeekIndex = date.getDay()
-      const daysMap = [
-        'sunday',
-        'monday',
-        'tuesday',
-        'wednesday',
-        'thursday',
-        'friday',
-        'saturday',
-      ] as const
-      const dayKey = daysMap[dayOfWeekIndex]
-      const wsDay = ws[dayKey]
-      if (!wsDay?.enabled) return []
-      slotsDef = wsDay.slots || []
-    }
-
-    if (slotsDef.length === 0) return []
-
-    // 4. Calculate free slots considering duration, breaks and existing appointments
-    const durationMinutes = ws?.sessionDuration ? parseInt(ws.sessionDuration) : 50
-    const breakMinutes = ws?.breakDuration !== undefined ? parseInt(ws.breakDuration) : 10
-    const generatedSlots: string[] = []
-
-    const apptsOnThisDay = (availability.appointments || []).filter((appt) => {
-      const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
-      return format(zonedAppt, 'yyyy-MM-dd') === dateStr
-    })
-
-    const nowZoned = toZonedTime(new Date(), timezone)
-    const isToday = format(nowZoned, 'yyyy-MM-dd') === dateStr
-    const nowMinutes = nowZoned.getHours() * 60 + nowZoned.getMinutes()
-
-    slotsDef.forEach((slot) => {
-      let current = new Date(`1970-01-01T${slot.start}:00`)
-      const end = new Date(`1970-01-01T${slot.end}:00`)
-
-      while (current < end) {
-        const hour = current.getHours().toString().padStart(2, '0')
-        const min = current.getMinutes().toString().padStart(2, '0')
-        const slotStartMin = current.getHours() * 60 + current.getMinutes()
-        const slotEndMin = slotStartMin + durationMinutes
-
-        // Overlap check
-        const hasConflict = apptsOnThisDay.some((appt) => {
-          const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
-          const apptStartMin = zonedAppt.getHours() * 60 + zonedAppt.getMinutes()
-          const apptEndMin = apptStartMin + (appt.duration_minutes || durationMinutes)
-          return slotStartMin < apptEndMin && slotEndMin > apptStartMin
-        })
-
-        const isPast = isToday && slotStartMin <= nowMinutes + 30
-
-        if (
-          !hasConflict &&
-          !isPast &&
-          slotStartMin + durationMinutes <= end.getHours() * 60 + end.getMinutes()
-        ) {
-          generatedSlots.push(`${hour}:${min}`)
-        }
-
-        current = addMinutes(current, durationMinutes + breakMinutes)
-        if (addMinutes(current, durationMinutes) > end) break
+      // 2. Check if the day is blocked in overrides
+      if (availability.overrides[dateStr] && availability.overrides[dateStr].type === 'blocked') {
+        return []
       }
-    })
 
-    return generatedSlots
-  }
+      // 3. Get slot definitions (from custom overrides or weekly schedule)
+      let slotsDef: { start: string; end: string }[] = []
+      const ws = availability.weeklySchedule as WeeklyScheduleData | null
 
-  const isDayAvailable = (date: Date) => {
-    return getAvailableSlotsForDay(date).length > 0
-  }
+      if (availability.overrides[dateStr] && availability.overrides[dateStr].type === 'custom') {
+        slotsDef = availability.overrides[dateStr].slots
+      } else if (ws) {
+        const dayOfWeekIndex = date.getDay()
+        const daysMap = [
+          'sunday',
+          'monday',
+          'tuesday',
+          'wednesday',
+          'thursday',
+          'friday',
+          'saturday',
+        ] as const
+        const dayKey = daysMap[dayOfWeekIndex]
+        const wsDay = ws[dayKey]
+        if (!wsDay?.enabled) return []
+        slotsDef = wsDay.slots || []
+      }
+
+      if (slotsDef.length === 0) return []
+
+      // 4. Calculate free slots considering duration, breaks and existing appointments
+      const durationMinutes = ws?.sessionDuration ? parseInt(ws.sessionDuration) : 50
+      const breakMinutes = ws?.breakDuration !== undefined ? parseInt(ws.breakDuration) : 10
+      const generatedSlots: string[] = []
+
+      const apptsOnThisDay = (availability.appointments || []).filter((appt) => {
+        const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
+        return format(zonedAppt, 'yyyy-MM-dd') === dateStr
+      })
+
+      const nowZoned = toZonedTime(new Date(), timezone)
+      const isToday = format(nowZoned, 'yyyy-MM-dd') === dateStr
+      const nowMinutes = nowZoned.getHours() * 60 + nowZoned.getMinutes()
+
+      slotsDef.forEach((slot) => {
+        let current = new Date(`1970-01-01T${slot.start}:00`)
+        const end = new Date(`1970-01-01T${slot.end}:00`)
+
+        while (current < end) {
+          const hour = current.getHours().toString().padStart(2, '0')
+          const min = current.getMinutes().toString().padStart(2, '0')
+          const slotStartMin = current.getHours() * 60 + current.getMinutes()
+          const slotEndMin = slotStartMin + durationMinutes
+
+          // Overlap check
+          const hasConflict = apptsOnThisDay.some((appt) => {
+            const zonedAppt = toZonedTime(new Date(appt.scheduled_at), timezone)
+            const apptStartMin = zonedAppt.getHours() * 60 + zonedAppt.getMinutes()
+            const apptEndMin = apptStartMin + (appt.duration_minutes || durationMinutes)
+            return slotStartMin < apptEndMin && slotEndMin > apptStartMin
+          })
+
+          const isPast = isToday && slotStartMin <= nowMinutes + 30
+
+          if (
+            !hasConflict &&
+            !isPast &&
+            slotStartMin + durationMinutes <= end.getHours() * 60 + end.getMinutes()
+          ) {
+            generatedSlots.push(`${hour}:${min}`)
+          }
+
+          current = addMinutes(current, durationMinutes + breakMinutes)
+          if (addMinutes(current, durationMinutes) > end) break
+        }
+      })
+
+      return generatedSlots
+    },
+    [availability, timezone, todayStr]
+  )
+
+  const isDayAvailable = useCallback(
+    (date: Date) => getAvailableSlotsForDay(date).length > 0,
+    [getAvailableSlotsForDay]
+  )
 
   // Find first available day
   const initialAvailableDay = useMemo(() => {
@@ -140,7 +144,7 @@ export function usePsychologistProfile(
       if (isDayAvailable(checkDate)) return d
     }
     return null
-  }, [currentDate, availability])
+  }, [currentDate, today, isDayAvailable])
 
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
 
@@ -156,7 +160,7 @@ export function usePsychologistProfile(
     } else {
       setSelectedDay(null)
     }
-  }, [initialAvailableDay, currentDate])
+  }, [initialAvailableDay, currentDate, selectedDay, isDayAvailable])
 
   const handlePrevMonth = () => {
     setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1))
@@ -176,7 +180,7 @@ export function usePsychologistProfile(
           new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDay)
         )
       : []
-  }, [selectedDay, currentDate, availability])
+  }, [selectedDay, currentDate, getAvailableSlotsForDay])
 
   return {
     selectedDay,
