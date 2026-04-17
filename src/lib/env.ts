@@ -52,14 +52,10 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().min(1, 'RESEND_API_KEY is required').optional(),
 
   // Internal API secret (used by email-dispatch → /api/internal/send-email)
-  INTERNAL_API_SECRET: z
-    .string()
-    .min(16, 'INTERNAL_API_SECRET must be at least 16 characters'),
+  INTERNAL_API_SECRET: z.string().min(16, 'INTERNAL_API_SECRET must be at least 16 characters'),
 
   // Cron job secret (Vercel sets this automatically; must also be in env)
-  CRON_SECRET: z
-    .string()
-    .min(16, 'CRON_SECRET must be at least 16 characters'),
+  CRON_SECRET: z.string().min(16, 'CRON_SECRET must be at least 16 characters'),
 
   // Application URL
   NEXT_PUBLIC_APP_URL: z
@@ -104,7 +100,9 @@ function parseEnv(): Env {
       for (const key of secretsToCheck) {
         const val = String(validatedEnv[key]).toLowerCase()
         if (placeholders.some((p) => val.includes(p))) {
-          throw new Error(`CRITICAL: Environment variable ${key} contains a placeholder value in production!`)
+          throw new Error(
+            `CRITICAL: Environment variable ${key} contains a placeholder value in production!`
+          )
         }
       }
     }
