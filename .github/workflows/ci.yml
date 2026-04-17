@@ -16,7 +16,7 @@ env:
   STRIPE_WEBHOOK_SECRET: whsec_fake_webhook_secret_for_ci
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_fake_publishable_key_for_ci
   DAILY_API_KEY: fake_daily_api_key_for_ci_0123456789abcdef
-  ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+  ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef
   INTERNAL_API_SECRET: fake_internal_secret_for_ci_not_a_real_value_01234567
   CRON_SECRET: fake_cron_secret_for_ci_not_a_real_value_0123456789
   NEXT_PUBLIC_APP_URL: http://localhost:3000
