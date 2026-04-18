@@ -400,6 +400,10 @@
       "priceAsc": "Menor precio",
       "priceDesc": "Mayor precio"
     },
+    "view": {
+      "grid": "Vista en cuadrícula",
+      "list": "Vista en lista"
+    },
     "filters": {
       "title": "Filtros",
       "description": "Refina tu búsqueda.",

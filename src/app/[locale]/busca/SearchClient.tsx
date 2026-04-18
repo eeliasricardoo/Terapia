@@ -19,7 +19,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { Search, Filter, ListFilter } from 'lucide-react'
+import { Search, Filter, ListFilter, LayoutGrid, List } from 'lucide-react'
 import { useRef, useCallback, useState, useTransition, useEffect } from 'react'
 import { AnimatePresence, motion, Variants } from 'framer-motion'
 import { useSearchParams } from 'next/navigation'
@@ -31,8 +31,10 @@ import { searchPsychologists } from '@/lib/actions/psychologists'
 import { PsychologistSearchFilters, PsychologistWithProfile } from '@/lib/supabase/types'
 
 import { PsychologistCard } from './_components/psychologist-card'
+import { PsychologistListItem } from './_components/psychologist-list-item'
 import { SearchFilters } from './_components/search-filters'
 import { PsychologistCardSkeleton } from './_components/psychologist-card-skeleton'
+import { PsychologistListItemSkeleton } from './_components/psychologist-list-item-skeleton'
 
 const containerVars: Variants = {
   initial: { opacity: 0 },
@@ -80,6 +82,7 @@ export default function SearchClient({
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(initialPsychologists.length >= 12)
   const [hasInteracted, setHasInteracted] = useState(false)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const loaderRef = useRef<HTMLDivElement>(null)
   const pageSize = 12
 
@@ -228,20 +231,49 @@ export default function SearchClient({
           {t('header.titlePart3')}
         </p>
 
-        <div className="hidden sm:flex items-center gap-3 bg-white p-1 rounded-full border border-slate-200">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-3">
-            {t('sort.label')}
-          </span>
-          <Select defaultValue="relevance">
-            <SelectTrigger className="w-[140px] h-8 text-xs rounded-full bg-slate-50 border-none shadow-none font-bold text-slate-700">
-              <SelectValue placeholder={t('sort.placeholder')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="relevance">{t('sort.relevance')}</SelectItem>
-              <SelectItem value="price_asc">{t('sort.priceAsc')}</SelectItem>
-              <SelectItem value="price_desc">{t('sort.priceDesc')}</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="hidden sm:flex items-center gap-3">
+          {/* View Toggle */}
+          <div className="flex items-center bg-white p-1 rounded-full border border-slate-200">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 ${
+                viewMode === 'grid'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+              }`}
+              aria-label={t('view.grid')}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 ${
+                viewMode === 'list'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+              }`}
+              aria-label={t('view.list')}
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Sort */}
+          <div className="flex items-center bg-white p-1 rounded-full border border-slate-200">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-3">
+              {t('sort.label')}
+            </span>
+            <Select defaultValue="relevance">
+              <SelectTrigger className="w-[140px] h-8 text-xs rounded-full bg-slate-50 border-none shadow-none font-bold text-slate-700">
+                <SelectValue placeholder={t('sort.placeholder')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="relevance">{t('sort.relevance')}</SelectItem>
+                <SelectItem value="price_asc">{t('sort.priceAsc')}</SelectItem>
+                <SelectItem value="price_desc">{t('sort.priceDesc')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -417,11 +449,19 @@ export default function SearchClient({
             </AnimatePresence>
           </div>
           {isPending && psychologists.length === 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <PsychologistCardSkeleton key={i} />
-              ))}
-            </div>
+            viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <PsychologistCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <PsychologistListItemSkeleton key={i} />
+                ))}
+              </div>
+            )
           ) : psychologists.length === 0 && !isPending ? (
             <div className="text-center py-16 bg-white rounded-2xl border border-slate-200/60 shadow-sm">
               <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -443,12 +483,16 @@ export default function SearchClient({
             <>
               <AnimatePresence mode="popLayout">
                 <motion.div
-                  key="results-grid"
+                  key={`results-${viewMode}`}
                   variants={containerVars}
                   initial="initial"
                   animate="animate"
                   layout
-                  className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                  className={
+                    viewMode === 'grid'
+                      ? 'grid grid-cols-1 md:grid-cols-2 gap-6'
+                      : 'flex flex-col gap-4'
+                  }
                 >
                   {psychologists.map((psychologist) => (
                     <motion.div
@@ -458,9 +502,13 @@ export default function SearchClient({
                       initial="initial"
                       animate="animate"
                       exit="initial"
-                      className="h-full"
+                      className={viewMode === 'grid' ? 'h-full' : ''}
                     >
-                      <PsychologistCard psychologist={psychologist} />
+                      {viewMode === 'grid' ? (
+                        <PsychologistCard psychologist={psychologist} />
+                      ) : (
+                        <PsychologistListItem psychologist={psychologist} />
+                      )}
                     </motion.div>
                   ))}
                 </motion.div>

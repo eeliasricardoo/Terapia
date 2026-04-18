@@ -400,6 +400,10 @@
       "priceAsc": "Menor preço",
       "priceDesc": "Maior preço"
     },
+    "view": {
+      "grid": "Visualização em grade",
+      "list": "Visualização em lista"
+    },
     "filters": {
       "title": "Filtros",
       "description": "Refine sua busca para encontrar o psicólogo ideal.",
