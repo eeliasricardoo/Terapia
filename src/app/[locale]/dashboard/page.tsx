@@ -9,34 +9,55 @@ import { getCachedPsychologistDashboard, getCachedPatientDashboard } from '@/lib
 import { PatientDashboardClient } from './_components/PatientDashboardClient'
 
 export default async function DashboardPage() {
-  const userProfile = await getCurrentUserProfile()
+  // Read the user + role from JWT in parallel with the profile fetch.
+  // The role lives in JWT metadata (set at signup) so we can kick off the
+  // role-specific dashboard query without waiting for the profile round-trip.
+  const supabase = await createClient()
+  const userPromise = supabase.auth.getUser()
+  const profilePromise = getCurrentUserProfile()
+
+  const {
+    data: { user },
+  } = await userPromise
+
+  if (!user) {
+    redirect('/login/paciente')
+  }
+
+  const metaRole = (user.user_metadata?.role || user.app_metadata?.role || 'PATIENT') as
+    | 'PATIENT'
+    | 'PSYCHOLOGIST'
+    | 'ADMIN'
+    | 'COMPANY'
+
+  // Kick off the role-specific fetch immediately — don't wait for the profile.
+  const roleDataPromise: Promise<unknown> =
+    metaRole === 'PSYCHOLOGIST'
+      ? getCachedPsychologistDashboard(user.id)
+      : metaRole === 'ADMIN'
+        ? getAdminDashboardData()
+        : metaRole === 'COMPANY'
+          ? getCompanyDashboardData()
+          : getCachedPatientDashboard(user.id)
+
+  const userProfile = await profilePromise
 
   if (!userProfile) {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (user) {
-      // Se autenticado mas sem perfil, redireciona para onboarding ou gera erro controlado
-      const metaRole = user.user_metadata?.role as string | undefined
-      if (metaRole === 'PSYCHOLOGIST') {
-        redirect('/cadastro/profissional/dados')
-      } else {
-        redirect('/')
-      }
-    } else {
-      redirect('/login/paciente')
+    if (metaRole === 'PSYCHOLOGIST') {
+      redirect('/cadastro/profissional/dados')
     }
+    redirect('/')
   }
 
   if (userProfile.role === 'PSYCHOLOGIST') {
-    const dashboardData = await getCachedPsychologistDashboard(userProfile.user_id)
+    const dashboardData = (await roleDataPromise) as Awaited<
+      ReturnType<typeof getCachedPsychologistDashboard>
+    >
     return <PsychologistDashboard userProfile={userProfile} dashboardData={dashboardData} />
   }
 
   if (userProfile.role === 'ADMIN') {
-    const adminRes = await getAdminDashboardData()
+    const adminRes = (await roleDataPromise) as Awaited<ReturnType<typeof getAdminDashboardData>>
     const adminData = adminRes.success ? adminRes.data : null
 
     if (!adminData) {
@@ -51,7 +72,9 @@ export default async function DashboardPage() {
   }
 
   if (userProfile.role === 'COMPANY') {
-    const companyRes = await getCompanyDashboardData()
+    const companyRes = (await roleDataPromise) as Awaited<
+      ReturnType<typeof getCompanyDashboardData>
+    >
     const companyData = companyRes.success ? companyRes.data : null
 
     if (!companyData) {
@@ -69,8 +92,10 @@ export default async function DashboardPage() {
     )
   }
 
-  const userName = (userProfile?.full_name || '').split(' ')[0] || 'Usuário'
-  const patientData = await getCachedPatientDashboard(userProfile.user_id)
+  const userName = (userProfile.full_name || '').split(' ')[0] || 'Usuário'
+  const patientData = (await roleDataPromise) as Awaited<
+    ReturnType<typeof getCachedPatientDashboard>
+  >
 
   return <PatientDashboardClient userName={userName} patientData={patientData} />
 }
