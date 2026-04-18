@@ -105,79 +105,109 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
   const [loading, setLoading] = useState(!initialProfile)
 
   useEffect(() => {
+    // Fast path: server already provided the profile — skip the auth.getUser()
+    // + profiles fetch round-trip entirely. Subscribe to realtime updates only.
+    if (initialProfile?.user_id) {
+      const channel = supabase
+        .channel(`sidebar-profile-${initialProfile.user_id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'profiles',
+            filter: `user_id=eq.${initialProfile.user_id}`,
+          },
+          (payload) => {
+            const newProfile = payload.new as {
+              full_name: string | null
+              avatar_url: string | null
+            }
+            setUser((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    name: newProfile.full_name || prev.name,
+                    avatar_url: newProfile.avatar_url ?? undefined,
+                  }
+                : null
+            )
+          }
+        )
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(channel)
+      }
+    }
+
+    // Slow path: no server-rendered profile (edge case) — fall back to client fetch.
     let channel: ReturnType<typeof supabase.channel> | undefined
     async function loadUser() {
       try {
         const {
           data: { user: authUser },
         } = await supabase.auth.getUser()
-        if (authUser && !initialProfile) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, role, avatar_url')
-            .eq('user_id', authUser.id)
-            .single()
+        if (!authUser) return
 
-          const metaRole = authUser.user_metadata?.role as string | undefined
-          const finalRole =
-            profile?.role || (metaRole === 'PSYCHOLOGIST' ? 'PSYCHOLOGIST' : 'PATIENT')
-          const displayRole =
-            finalRole === 'ADMIN'
-              ? t('roles.admin')
-              : finalRole === 'PSYCHOLOGIST'
-                ? t('roles.psychologist')
-                : finalRole === 'COMPANY'
-                  ? t('roles.companyFull')
-                  : t('roles.patient')
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, role, avatar_url')
+          .eq('user_id', authUser.id)
+          .single()
 
-          if (
-            !initialProfile ||
-            !user?.name ||
-            user.name === t('roles.user') ||
-            user.name === 'Usuário'
-          ) {
-            setUser({
-              name:
-                profile?.full_name ||
-                authUser.user_metadata?.full_name ||
-                authUser.user_metadata?.name ||
-                authUser.email?.split('@')[0] ||
-                t('roles.user'),
-              email: authUser.email || '',
-              role: displayRole,
-              rawRole: finalRole,
-              avatar_url: profile?.avatar_url || undefined,
-            })
-          }
+        const metaRole = authUser.user_metadata?.role as string | undefined
+        const finalRole =
+          profile?.role || (metaRole === 'PSYCHOLOGIST' ? 'PSYCHOLOGIST' : 'PATIENT')
+        const displayRole =
+          finalRole === 'ADMIN'
+            ? t('roles.admin')
+            : finalRole === 'PSYCHOLOGIST'
+              ? t('roles.psychologist')
+              : finalRole === 'COMPANY'
+                ? t('roles.companyFull')
+                : t('roles.patient')
 
-          channel = supabase
-            .channel(`sidebar-profile-${authUser.id}`)
-            .on(
-              'postgres_changes',
-              {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'profiles',
-                filter: `user_id=eq.${authUser.id}`,
-              },
-              (payload) => {
-                const newProfile = payload.new as {
-                  full_name: string | null
-                  avatar_url: string | null
-                }
-                setUser((prev) =>
-                  prev
-                    ? {
-                        ...prev,
-                        name: newProfile.full_name || prev.name,
-                        avatar_url: newProfile.avatar_url ?? undefined,
-                      }
-                    : null
-                )
+        setUser({
+          name:
+            profile?.full_name ||
+            authUser.user_metadata?.full_name ||
+            authUser.user_metadata?.name ||
+            authUser.email?.split('@')[0] ||
+            t('roles.user'),
+          email: authUser.email || '',
+          role: displayRole,
+          rawRole: finalRole,
+          avatar_url: profile?.avatar_url || undefined,
+        })
+
+        channel = supabase
+          .channel(`sidebar-profile-${authUser.id}`)
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'profiles',
+              filter: `user_id=eq.${authUser.id}`,
+            },
+            (payload) => {
+              const newProfile = payload.new as {
+                full_name: string | null
+                avatar_url: string | null
               }
-            )
-            .subscribe()
-        }
+              setUser((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      name: newProfile.full_name || prev.name,
+                      avatar_url: newProfile.avatar_url ?? undefined,
+                    }
+                  : null
+              )
+            }
+          )
+          .subscribe()
       } catch (error) {
         logger.error('Error loading user:', error)
       } finally {
@@ -188,7 +218,7 @@ export function DashboardSidebar({ className, initialProfile }: DashboardSidebar
     return () => {
       if (channel) supabase.removeChannel(channel)
     }
-  }, [supabase, initialProfile, t, user?.name])
+  }, [supabase, initialProfile, t])
 
   const getInitials = (name: string) =>
     name
