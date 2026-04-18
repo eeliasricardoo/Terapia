@@ -58,9 +58,32 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Prefer getClaims() — validates JWT locally (no network round-trip) when the
+  // project uses asymmetric keys. Falls back to getUser() otherwise.
+  const { data: claimsData } = await supabase.auth.getClaims()
+
+  let user: {
+    id: string
+    email?: string
+    email_confirmed_at?: string | null
+    user_metadata?: Record<string, unknown>
+    app_metadata?: Record<string, unknown>
+  } | null = null
+
+  if (claimsData?.claims) {
+    const c = claimsData.claims as Record<string, unknown>
+    user = {
+      id: c.sub as string,
+      email: c.email as string | undefined,
+      email_confirmed_at: (c.email_confirmed_at ?? c.email_verified) as string | null | undefined,
+      user_metadata: (c.user_metadata as Record<string, unknown>) ?? {},
+      app_metadata: (c.app_metadata as Record<string, unknown>) ?? {},
+    }
+  } else {
+    const { data } = await supabase.auth.getUser()
+    user = data.user as typeof user
+  }
+
   const session = !!user
 
   // Extract custom route logic skipping locale
@@ -144,7 +167,7 @@ export async function middleware(request: NextRequest) {
     !pathnameWithoutLocale.includes('reset-password')
   ) {
     // Only redirect if email is confirmed
-    if (user.email_confirmed_at) {
+    if (user?.email_confirmed_at) {
       const url = request.nextUrl.clone()
       url.pathname = `${localePrefix}/dashboard`
       return NextResponse.redirect(url)
