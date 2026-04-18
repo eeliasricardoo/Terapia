@@ -84,22 +84,18 @@ export const getPendingPsychologists = createSafeAction(
 
     return await Promise.all(
       pending.map(async (p) => {
-        let diplomaSignedUrl = null
-        let licenseSignedUrl = null
+        // Sign both URLs in parallel rather than sequentially.
+        const [diplomaRes, licenseRes] = await Promise.all([
+          p.diplomaUrl
+            ? supabaseAdmin.storage.from('documents').createSignedUrl(p.diplomaUrl, 86400)
+            : Promise.resolve({ data: null }),
+          p.licenseUrl
+            ? supabaseAdmin.storage.from('documents').createSignedUrl(p.licenseUrl, 86400)
+            : Promise.resolve({ data: null }),
+        ])
 
-        if (p.diplomaUrl) {
-          const { data: signData } = await supabaseAdmin.storage
-            .from('documents')
-            .createSignedUrl(p.diplomaUrl, 86400)
-          diplomaSignedUrl = signData?.signedUrl
-        }
-
-        if (p.licenseUrl) {
-          const { data: signData } = await supabaseAdmin.storage
-            .from('documents')
-            .createSignedUrl(p.licenseUrl, 86400)
-          licenseSignedUrl = signData?.signedUrl
-        }
+        const diplomaSignedUrl = diplomaRes.data?.signedUrl ?? null
+        const licenseSignedUrl = licenseRes.data?.signedUrl ?? null
 
         return {
           id: p.id,
