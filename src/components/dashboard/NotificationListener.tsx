@@ -75,8 +75,7 @@ export function NotificationListener() {
 
     return () => {
       if (channel) {
-        const supabaseClient = createClient()
-        supabaseClient.removeChannel(channel)
+        supabase.removeChannel(channel)
       }
     }
   }, [router])
