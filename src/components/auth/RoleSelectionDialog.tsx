@@ -1,8 +1,9 @@
 'use client'
 
-import Link from 'next/link'
+import { Link, useRouter, usePathname } from '@/i18n/routing'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useTransition, useEffect } from 'react'
+import { Loader2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -45,10 +46,24 @@ export function RoleSelectionDialog({
   onOpenChange: controlledOnOpenChange,
 }: RoleSelectionDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const [selectedRole, setSelectedRole] = useState<string | null>(null)
+  const router = useRouter()
+  const pathname = usePathname()
 
   const isControlled = controlledOpen !== undefined
   const open = isControlled ? controlledOpen : internalOpen
   const setOpen = isControlled ? controlledOnOpenChange : setInternalOpen
+
+  // Automatically close dialog when pathname changes (navigation successful)
+  useEffect(() => {
+    if (open) {
+      handleOpenChange(false)
+      // Small delay to reset selection state after closing animation
+      const timer = setTimeout(() => setSelectedRole(null), 500)
+      return () => clearTimeout(timer)
+    }
+  }, [pathname])
 
   // Ensure setOpen is defined
   const handleOpenChange = (newOpen: boolean) => {
@@ -56,6 +71,24 @@ export function RoleSelectionDialog({
       setOpen(newOpen)
     }
   }
+
+  const handleRoleSelect = (type: 'paciente' | 'profissional' | 'empresa', e: React.MouseEvent) => {
+    e.preventDefault()
+    if (isPending) return
+
+    const targetUrl = getLink(type)
+
+    if (pathname === targetUrl) {
+      handleOpenChange(false)
+      return
+    }
+
+    setSelectedRole(type)
+    startTransition(() => {
+      router.push(targetUrl)
+    })
+  }
+
 
   const getTitle = () => {
     return mode === 'register' ? 'Escolha o seu caminho' : 'Bem-vindo de volta'
@@ -102,10 +135,19 @@ export function RoleSelectionDialog({
             <motion.div variants={itemVars}>
               <Link
                 href={getLink('paciente')}
-                onClick={() => handleOpenChange(false)}
-                className="block group h-full focus:outline-none"
+                onClick={(e) => handleRoleSelect('paciente', e)}
+                className={`block group h-full focus:outline-none transition-opacity duration-300 ${
+                  isPending && selectedRole !== 'paciente' ? 'opacity-50 pointer-events-none' : ''
+                }`}
               >
                 <div className="h-full relative overflow-hidden rounded-[2.5rem] bg-sentirz-teal-pastel border border-sentirz-teal/20 shadow-sm hover:shadow-xl hover:border-sentirz-teal/40 transition-all duration-500 hover:-translate-y-1 flex flex-col">
+                  {isPending && selectedRole === 'paciente' && (
+                    <div className="absolute inset-0 z-50 bg-white/40 backdrop-blur-[2px] flex items-center justify-center transition-all duration-300">
+                      <div className="bg-white p-4 rounded-full shadow-lg border border-sentirz-teal/20">
+                        <Loader2 className="h-8 w-8 text-sentirz-teal animate-spin" />
+                      </div>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-br from-sentirz-teal/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                   <div className="relative z-10 w-full h-44 overflow-hidden bg-sentirz-teal/10 border-b border-sentirz-teal/10 flex-shrink-0">
@@ -143,10 +185,19 @@ export function RoleSelectionDialog({
             <motion.div variants={itemVars}>
               <Link
                 href={getLink('profissional')}
-                onClick={() => handleOpenChange(false)}
-                className="block group h-full focus:outline-none"
+                onClick={(e) => handleRoleSelect('profissional', e)}
+                className={`block group h-full focus:outline-none transition-opacity duration-300 ${
+                  isPending && selectedRole !== 'profissional' ? 'opacity-50 pointer-events-none' : ''
+                }`}
               >
                 <div className="h-full relative overflow-hidden rounded-[2.5rem] bg-sentirz-green-pastel border border-sentirz-green/20 shadow-sm hover:shadow-xl hover:border-sentirz-green/40 transition-all duration-500 hover:-translate-y-1 flex flex-col">
+                  {isPending && selectedRole === 'profissional' && (
+                    <div className="absolute inset-0 z-50 bg-white/40 backdrop-blur-[2px] flex items-center justify-center transition-all duration-300">
+                      <div className="bg-white p-4 rounded-full shadow-lg border border-sentirz-green/20">
+                        <Loader2 className="h-8 w-8 text-sentirz-green animate-spin" />
+                      </div>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-br from-sentirz-green/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                   <div className="relative z-10 w-full h-44 overflow-hidden bg-sentirz-green/10 border-b border-sentirz-green/10 flex-shrink-0">
@@ -184,10 +235,19 @@ export function RoleSelectionDialog({
             <motion.div variants={itemVars}>
               <Link
                 href={getLink('empresa')}
-                onClick={() => handleOpenChange(false)}
-                className="block group h-full focus:outline-none"
+                onClick={(e) => handleRoleSelect('empresa', e)}
+                className={`block group h-full focus:outline-none transition-opacity duration-300 ${
+                  isPending && selectedRole !== 'empresa' ? 'opacity-50 pointer-events-none' : ''
+                }`}
               >
                 <div className="h-full relative overflow-hidden rounded-[2.5rem] bg-sentirz-orange-pastel border border-sentirz-orange/20 shadow-sm hover:shadow-xl hover:border-sentirz-orange/40 transition-all duration-500 hover:-translate-y-1 flex flex-col">
+                  {isPending && selectedRole === 'empresa' && (
+                    <div className="absolute inset-0 z-50 bg-white/40 backdrop-blur-[2px] flex items-center justify-center transition-all duration-300">
+                      <div className="bg-white p-4 rounded-full shadow-lg border border-sentirz-orange/20">
+                        <Loader2 className="h-8 w-8 text-sentirz-orange animate-spin" />
+                      </div>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-br from-sentirz-orange/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                   <div className="relative z-10 w-full h-44 overflow-hidden bg-sentirz-orange/10 border-b border-sentirz-orange/10 flex-shrink-0">
