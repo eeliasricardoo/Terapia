@@ -709,6 +709,29 @@
         "apiError": "Ocorreu um erro no servidor. Tente novamente.",
         "generic": "Ocorreu um erro ao processar seu cadastro."
       }
+    },
+    "emailVerification": {
+      "title": "Verifique seu e-mail",
+      "descriptionPart1": "Enviamos um código de verificação para ",
+      "descriptionPart2": ". Insira-o abaixo para confirmar sua conta.",
+      "code": "Código de 6 dígitos",
+      "codePlaceholder": "000000",
+      "submitting": "Verificando...",
+      "submit": "Confirmar E-mail",
+      "notReceived": "Não recebeu o código?",
+      "resending": "Reenviando...",
+      "resent": "Enviado!",
+      "resend": "Reenviar código",
+      "changeEmail": "Alterar e-mail",
+      "success": "E-mail verificado com sucesso!",
+      "resendSuccess": "Novo código enviado para seu e-mail.",
+      "errors": {
+        "notFound": "E-mail não encontrado. Por favor, inicie o cadastro novamente.",
+        "apiError": "Código inválido ou erro na verificação. Tente novamente.",
+        "generic": "Ocorreu um erro inesperado na verificação.",
+        "resendApiError": "Erro ao reenviar o código. Verifique se o e-mail está correto.",
+        "resendGeneric": "Erro ao processar o reenvio do código."
+      }
     }
   },
   "PsychologistDashboard": {

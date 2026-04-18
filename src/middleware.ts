@@ -116,6 +116,7 @@ export async function middleware(request: NextRequest) {
       return redirectWithCookies(url)
     }
 
+    /* 
     // Direct unconfirmed users to verification if they somehow have a session
     if (user && !user.email_confirmed_at && !pathnameWithoutLocale.includes('confirmar-email')) {
       const url = request.nextUrl.clone()
@@ -123,6 +124,7 @@ export async function middleware(request: NextRequest) {
       url.searchParams.set('email', user.email || '')
       return redirectWithCookies(url)
     }
+    */
 
     // ── RBAC: Role-Based Access Control ──────────────────────────────
     // Read role from JWT metadata (set at signup, no extra DB call needed)
@@ -168,8 +170,7 @@ export async function middleware(request: NextRequest) {
   // Redirect authenticated users away from login and register pages
   // BUT allow them to access onboarding/profile completion and verification
   if (
-    (pathnameWithoutLocale.startsWith('/login') ||
-      pathnameWithoutLocale.startsWith('/cadastro')) &&
+    (pathnameWithoutLocale.startsWith('/login') || pathnameWithoutLocale.startsWith('/cadastro')) &&
     session &&
     !pathnameWithoutLocale.includes('completar-perfil') &&
     !pathnameWithoutLocale.includes('onboarding') &&

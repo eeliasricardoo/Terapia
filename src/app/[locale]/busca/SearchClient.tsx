@@ -71,12 +71,14 @@ export default function SearchClient({
 
   // Initialize filters from URL search params
   const [filters, setFilters] = useState<PsychologistSearchFilters>(() => {
+    const sortBy = searchParams.get('o') as any
     return {
       specialties: searchParams.get('s')?.split(',').filter(Boolean) || [],
       healthInsurances: searchParams.get('i')?.split(',').filter(Boolean) || [],
       maxPrice: searchParams.get('p') ? Number(searchParams.get('p')) : 500,
       searchQuery: searchParams.get('q') || '',
       genders: searchParams.get('g')?.split(',').filter(Boolean) || [],
+      sortBy: ['relevance', 'price_asc', 'price_desc'].includes(sortBy) ? sortBy : 'relevance',
     }
   })
   const [page, setPage] = useState(1)
@@ -140,6 +142,7 @@ export default function SearchClient({
     if (filters.healthInsurances?.length) params.set('i', filters.healthInsurances.join(','))
     if (filters.maxPrice && filters.maxPrice < 500) params.set('p', filters.maxPrice.toString())
     if (filters.genders?.length) params.set('g', filters.genders.join(','))
+    if (filters.sortBy && filters.sortBy !== 'relevance') params.set('o', filters.sortBy)
 
     const query = params.toString()
     router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false })
@@ -216,6 +219,7 @@ export default function SearchClient({
       maxPrice: 500,
       searchQuery: '',
       genders: [],
+      sortBy: 'relevance',
     })
   }, [])
 
@@ -263,7 +267,10 @@ export default function SearchClient({
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-3">
               {t('sort.label')}
             </span>
-            <Select defaultValue="relevance">
+            <Select
+              value={filters.sortBy || 'relevance'}
+              onValueChange={(value) => handleFilterChange({ ...filters, sortBy: value as any })}
+            >
               <SelectTrigger className="w-[140px] h-8 text-xs rounded-full bg-slate-50 border-none shadow-none font-bold text-slate-700">
                 <SelectValue placeholder={t('sort.placeholder')} />
               </SelectTrigger>
@@ -303,7 +310,10 @@ export default function SearchClient({
             </SheetContent>
           </Sheet>
 
-          <Select defaultValue="relevance">
+          <Select
+            value={filters.sortBy || 'relevance'}
+            onValueChange={(value) => handleFilterChange({ ...filters, sortBy: value as any })}
+          >
             <SelectTrigger className="w-[140px] sm:w-[180px] h-9 rounded-full bg-white shadow-sm">
               <SelectValue placeholder={t('sort.placeholder')} />
             </SelectTrigger>

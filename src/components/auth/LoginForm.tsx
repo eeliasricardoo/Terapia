@@ -43,6 +43,8 @@ export function LoginForm() {
     },
   })
 
+  const locale = useLocale()
+
   async function onSubmit(values: LoginInput) {
     setIsLoading(true)
 
@@ -67,16 +69,26 @@ export function LoginForm() {
       // cookies. A soft router.push() can race against cookie propagation
       // and land on the dashboard without a valid session.
       let destination = returnTo || '/dashboard'
-      
-      // If the destination doesn't already have the locale prefix and we're not in the default locale,
-      // we might need to add it. But next-intl 'as-needed' handles this.
-      // However, window.location.href is outside next-intl, so we should be explicit.
-      if (locale !== 'pt' && !destination.startsWith(`/${locale}`)) {
-        destination = `/${locale}${destination.startsWith('/') ? '' : '/'}${destination}`
+
+      // Ensure destination has leading slash
+      if (!destination.startsWith('/')) {
+        destination = `/${destination}`
       }
-      
+
+      // If we're not in the default locale, ensure the locale prefix is present
+      // for window.location.href which is outside of next-intl Link routing
+      if (
+        locale &&
+        locale !== 'pt' &&
+        !destination.startsWith(`/${locale}/`) &&
+        destination !== `/${locale}`
+      ) {
+        destination = `/${locale}${destination}`
+      }
+
       window.location.href = destination
     } catch (error) {
+      console.error('Login redirection error:', error)
       toast.error(t('errors.generic'))
     } finally {
       setIsLoading(false)

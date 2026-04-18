@@ -552,4 +552,5 @@ export type PsychologistSearchFilters = {
   genders?: string[]
   page?: number
   pageSize?: number
+  sortBy?: 'relevance' | 'price_asc' | 'price_desc'
 }

@@ -103,28 +103,30 @@ export const getPsychologistById = createSafeAction(
 )
 
 const searchFiltersSchema = z.object({
-  page: z.number().int().min(1).optional().default(1),
-  pageSize: z.number().int().min(1).max(50).optional().default(12),
+  page: z.number().int().min(1).optional(),
+  pageSize: z.number().int().min(1).max(50).optional(),
   specialties: z.array(z.string()).optional(),
   healthInsurances: z.array(z.string().uuid()).optional(),
   minPrice: z.number().optional(),
   maxPrice: z.number().optional(),
   genders: z.array(z.string()).optional(),
   searchQuery: z.string().optional(),
+  sortBy: z.enum(['relevance', 'price_asc', 'price_desc']).optional(),
 })
 
 export const searchPsychologists = createSafeAction(
   searchFiltersSchema,
   async (filters) => {
     const {
-      page,
-      pageSize,
+      page = 1,
+      pageSize = 12,
       specialties,
       healthInsurances,
       minPrice,
       maxPrice,
       genders,
       searchQuery,
+      sortBy = 'relevance',
     } = filters
     const skip = (page - 1) * pageSize
 
@@ -158,13 +160,21 @@ export const searchPsychologists = createSafeAction(
         : {}),
     }
 
+    // Determine order
+    let orderBy: Prisma.PsychologistProfileOrderByWithRelationInput = { createdAt: 'desc' }
+    if (sortBy === 'price_asc') {
+      orderBy = { pricePerSession: 'asc' }
+    } else if (sortBy === 'price_desc') {
+      orderBy = { pricePerSession: 'desc' }
+    }
+
     const [psychologists, total] = await Promise.all([
       prisma.psychologistProfile.findMany({
         where,
         include: {
           user: { include: { profiles: true } },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         skip,
         take: pageSize,
       }),

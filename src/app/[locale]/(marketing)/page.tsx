@@ -1,4 +1,4 @@
-import { getCachedPsychologistCount } from '@/lib/cache/marketing'
+import { getCachedPsychologistCount as fetchPsychologistCount } from '@/lib/cache/marketing'
 import { Metadata } from 'next'
 
 // Above-fold: static imports for fastest LCP
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 
 export default async function Home() {
   // Get dynamic count of verified psychologists (cached)
-  const totalVerifiedPsychologists = await getCachedPsychologistCount()
+  const totalVerifiedPsychologists = await fetchPsychologistCount()
 
   const displayCount = Math.max(500, totalVerifiedPsychologists + 500)
 
