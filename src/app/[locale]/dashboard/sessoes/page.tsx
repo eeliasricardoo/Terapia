@@ -15,8 +15,12 @@ import { prisma } from '@/lib/prisma'
 import { getTranslations } from 'next-intl/server'
 
 export default async function SessionsPage() {
-  const t = await getTranslations('SessionsList')
-  const profile = await getCurrentUserProfile()
+  // Translations, profile and sessions are independent — fetch in parallel.
+  const [t, profile, sessionsRes] = await Promise.all([
+    getTranslations('SessionsList'),
+    getCurrentUserProfile(),
+    getUserSessions({ limit: 20 }),
+  ])
 
   if (!profile) {
     return (
@@ -29,14 +33,14 @@ export default async function SessionsPage() {
     )
   }
 
-  const sessionsRes = await getUserSessions({ limit: 20 })
   const {
     sessions = [],
     total = 0,
     nextCursor = null,
   } = sessionsRes.success ? sessionsRes.data : {}
 
-  // Fetch psychologist profiles for dynamic data in RescheduleDialog
+  // Fetch psychologist profiles for dynamic data in RescheduleDialog.
+  // Depends on sessions so runs after — keep it as narrow as possible.
   const psychologistIds = [...new Set(sessions.map((s) => s.psychologist_id))]
   const psychProfiles =
     psychologistIds.length > 0
