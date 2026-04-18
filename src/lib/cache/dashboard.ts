@@ -149,29 +149,24 @@ async function fetchPsychologistDashboard(userId: string): Promise<PsychologistD
     revenueChange = 100
   }
 
-  // Build patient link status map (only if profile found)
-  let statusByUserId = new Map<string, string>()
+  // Build patient link status map — single query via the patient relation,
+  // filtering by patient.user_id so we don't need a pre-query for profile IDs.
+  const statusByUserId = new Map<string, string>()
   if (psychUserProfile) {
     const uniquePatientUserIds = [...new Set(recentAppts.map((a) => a.patientId))]
-    const profileIds = await prisma.profile
-      .findMany({
-        where: { user_id: { in: uniquePatientUserIds } },
-        select: { id: true, user_id: true },
+    if (uniquePatientUserIds.length > 0) {
+      const patientLinks = await prisma.patientPsychologistLink.findMany({
+        where: {
+          psychologistId: psychUserProfile.id,
+          patient: { user_id: { in: uniquePatientUserIds } },
+        },
+        select: { status: true, patient: { select: { user_id: true } } },
       })
-      .then((profiles) => profiles)
 
-    const profileIdList = profileIds.map((p) => p.id)
-    const patientLinks = await prisma.patientPsychologistLink.findMany({
-      where: {
-        psychologistId: psychUserProfile.id,
-        patientId: { in: profileIdList },
-      },
-      include: { patient: { select: { user_id: true } } },
-    })
-
-    patientLinks.forEach((link) => {
-      statusByUserId.set(link.patient.user_id, link.status)
-    })
+      patientLinks.forEach((link) => {
+        statusByUserId.set(link.patient.user_id, link.status)
+      })
+    }
   }
 
   const formatTime = (date: Date) =>
