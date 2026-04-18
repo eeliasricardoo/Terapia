@@ -15,7 +15,6 @@ import { revalidatePath } from 'next/cache'
 export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => {
   const supabase = await createClient()
 
-  // Get current user from auth
   const {
     data: { user },
     error: authError,
@@ -26,92 +25,59 @@ export const getCurrentUserProfile = cache(async (): Promise<Profile | null> => 
     return null
   }
 
-  // Try to fetch via Prisma first (since we're already on the server) for better performance and reliability
   const { prisma } = await import('@/lib/prisma')
-  let userInDb = await prisma.user.findUnique({
-    where: { id: user.id },
-    include: { profiles: true },
+
+  // Fast path: single Prisma query fetches the profile directly.
+  const profile = await prisma.profile.findUnique({
+    where: { user_id: user.id },
   })
 
-  // If we found it in DB via Prisma, use that data
-  if (userInDb?.profiles) {
-    const p = userInDb.profiles
-    // Normalize Prisma camelCase back to Supabase snake_case to match Profile type
+  if (profile) {
     return {
-      ...p,
-      full_name: p.fullName,
-      avatar_url: p.avatarUrl,
-      user_id: p.user_id,
-      created_at: p.createdAt.toISOString(),
-      updated_at: p.updatedAt.toISOString(),
+      ...profile,
+      full_name: profile.fullName,
+      avatar_url: profile.avatarUrl,
+      user_id: profile.user_id,
+      created_at: profile.createdAt.toISOString(),
+      updated_at: profile.updatedAt.toISOString(),
     } as unknown as Profile
   }
 
-  // Fallback to Supabase if Prisma fails (unlikely) or just in case
-  let { data, error } = await supabase.from('profiles').select('*').eq('user_id', user.id).single()
+  // Slow path: profile missing — self-heal from Auth metadata.
+  const meta = user.user_metadata
+  const role = (meta?.role || 'PATIENT') as UserRole
+  const fullName = meta?.full_name || user.email?.split('@')[0] || 'Usuário'
 
-  // If profile is missing everywhere, try to recreate it from Auth metadata
-  if ((!userInDb?.profiles || (error && error.code === 'PGRST116')) && !data) {
-    const meta = user.user_metadata
-    const role = meta?.role || 'PATIENT'
-    const fullName = meta?.full_name || user.email?.split('@')[0] || 'Usuário'
-
-    // Create in Prisma first (required for FK constraints)
-    try {
-      await prisma.user.upsert({
-        where: { id: user.id },
-        update: { email: user.email!, name: fullName },
-        create: { id: user.id, email: user.email!, name: fullName, role: role as UserRole },
-      })
-
-      // Create in Supabase profiles table using Prisma to ensure defaults (like ID) are handled
-      // Using upsert instead of create to avoid P2002 loop
-      const newProfile = await prisma.profile.upsert({
-        where: { user_id: user.id },
-        update: { fullName: fullName },
-        create: {
-          user_id: user.id,
-          fullName: fullName,
-          role: role as UserRole,
-          avatarUrl: null,
-        },
-      })
-
-      if (newProfile) {
-        data = newProfile as unknown as typeof data // Cast to match the Supabase return type
-      }
-    } catch (err) {
-      logger.error('Error auto-syncing profile (Prisma/General):', err)
-    }
-  } else if (error && error.code !== 'PGRST116') {
-    logger.error('Error fetching user profile from Supabase:', error)
-  }
-
-  // Ensure User role and Profile role are in sync
   try {
-    const { prisma } = await import('@/lib/prisma')
-    const userInDb = await prisma.user.findUnique({
+    await prisma.user.upsert({
       where: { id: user.id },
+      update: { email: user.email!, name: fullName },
+      create: { id: user.id, email: user.email!, name: fullName, role },
     })
 
-    if (data && userInDb) {
-      if (userInDb.role !== (data as Profile).role) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { role: (data as Profile).role as UserRole },
-        })
-      }
-    } else {
-      // Log exactly what is missing for debugging
-      if (!data && !userInDb) logger.debug('Both profile data and userInDb are null')
-      else if (!data) logger.debug('Profile data is null')
-      else if (!userInDb) logger.debug('userInDb is null', { userId: user.id })
-    }
-  } catch (err) {
-    logger.error('Error syncing user role:', err)
-  }
+    const newProfile = await prisma.profile.upsert({
+      where: { user_id: user.id },
+      update: { fullName },
+      create: {
+        user_id: user.id,
+        fullName,
+        role,
+        avatarUrl: null,
+      },
+    })
 
-  return data as Profile
+    return {
+      ...newProfile,
+      full_name: newProfile.fullName,
+      avatar_url: newProfile.avatarUrl,
+      user_id: newProfile.user_id,
+      created_at: newProfile.createdAt.toISOString(),
+      updated_at: newProfile.updatedAt.toISOString(),
+    } as unknown as Profile
+  } catch (err) {
+    logger.error('Error auto-syncing profile:', err)
+    return null
+  }
 })
 
 const updateProfileSchema = z.object({
