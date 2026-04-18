@@ -52,6 +52,8 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
   const isLoggedIn = propIsLoggedIn ?? isAuthenticated
   const userRole = propUserRole ?? role
 
+  const homeHref = isLoggedIn ? '/dashboard' : '/'
+
   const getNavLinks = () => {
     if (!isLoggedIn) {
       return [
@@ -105,7 +107,7 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
             <Link
-              href="/"
+              href={homeHref}
               className="flex items-center gap-2.5 opacity-50 hover:opacity-100 transition-opacity"
             >
               <Logo size="sm" />
@@ -130,7 +132,7 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                   <AlertDialogCancel>{t('registration.backToRegister')}</AlertDialogCancel>
                   <AlertDialogAction
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90 w-full sm:w-auto mt-2 sm:mt-0 font-bold"
-                    onClick={() => router.push('/')}
+                    onClick={() => router.push(homeHref)}
                   >
                     {t('registration.exitAnyway')}
                   </AlertDialogAction>
@@ -147,7 +149,7 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
     <header className="sticky top-0 z-50 w-full bg-transparent border-none">
       <div className="container flex h-16 sm:h-20 items-center justify-between">
         <div className="flex items-center gap-4 sm:gap-10">
-          <Link href="/" className="flex items-center gap-2.5">
+          <Link href={homeHref} className="flex items-center gap-2.5">
             <Logo size="md" />
           </Link>
           <nav className="hidden md:flex items-center gap-4 lg:gap-8 text-sm font-medium">

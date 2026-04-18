@@ -167,22 +167,21 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect authenticated users away from login and register pages
-  // BUT allow them to access onboarding/profile completion and verification
+  // Redirect authenticated users away from landing, login and register pages
   if (
-    (pathnameWithoutLocale.startsWith('/login') || pathnameWithoutLocale.startsWith('/cadastro')) &&
+    (pathnameWithoutLocale === '/' ||
+      pathnameWithoutLocale === '' ||
+      pathnameWithoutLocale.startsWith('/login') ||
+      pathnameWithoutLocale.startsWith('/cadastro')) &&
     session &&
     !pathnameWithoutLocale.includes('completar-perfil') &&
     !pathnameWithoutLocale.includes('onboarding') &&
     !pathnameWithoutLocale.includes('confirmar-email') &&
     !pathnameWithoutLocale.includes('reset-password')
   ) {
-    // Only redirect if email is confirmed
-    if (user?.email_confirmed_at) {
-      const url = request.nextUrl.clone()
-      url.pathname = `${localePrefix}/dashboard`
-      return redirectWithCookies(url)
-    }
+    const url = request.nextUrl.clone()
+    url.pathname = `${localePrefix}/dashboard`
+    return redirectWithCookies(url)
   }
 
   return response

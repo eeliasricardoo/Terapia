@@ -29,6 +29,7 @@ import { X } from 'lucide-react'
 import { useAuth } from '@/components/providers/auth-provider'
 import { searchPsychologists } from '@/lib/actions/psychologists'
 import { PsychologistSearchFilters, PsychologistWithProfile } from '@/lib/supabase/types'
+import { cn } from '@/lib/utils'
 
 import { PsychologistCard } from './_components/psychologist-card'
 import { PsychologistListItem } from './_components/psychologist-list-item'
@@ -101,11 +102,20 @@ export default function SearchClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const lastFiltersRef = useRef<PsychologistSearchFilters>(filters)
+
   // Trigger search only when filters actually change (not on mount)
   useEffect(() => {
     if (!hasInteracted) return // Skip initial mount
 
     let cancelled = false
+
+    // Adaptive debounce: 300ms for text search/price, 0ms for dropdowns/checkboxes
+    const isTextSearchChange = filters.searchQuery !== lastFiltersRef.current.searchQuery
+    const isPriceChange = filters.maxPrice !== lastFiltersRef.current.maxPrice
+    const debounceTime = isTextSearchChange || isPriceChange ? 300 : 0
+
+    lastFiltersRef.current = filters
 
     const delayDebounceFn = setTimeout(() => {
       setPage(1)
@@ -124,7 +134,7 @@ export default function SearchClient({
         setPsychologists(results)
         if (results.length < pageSize) setHasMore(false)
       })
-    }, 400)
+    }, debounceTime)
 
     return () => {
       cancelled = true
@@ -498,11 +508,12 @@ export default function SearchClient({
                   initial="initial"
                   animate="animate"
                   layout
-                  className={
+                  className={cn(
                     viewMode === 'grid'
                       ? 'grid grid-cols-1 md:grid-cols-2 gap-6'
-                      : 'flex flex-col gap-4'
-                  }
+                      : 'flex flex-col gap-4',
+                    isPending && 'opacity-50 transition-opacity pointer-events-none'
+                  )}
                 >
                   {psychologists.map((psychologist) => (
                     <motion.div

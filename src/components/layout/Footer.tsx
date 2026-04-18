@@ -5,9 +5,14 @@ import { useTranslations } from 'next-intl'
 import { Logo } from '@/components/ui/Logo'
 import { BRAND_NAME, BRAND_SLOGAN } from '@/lib/constants/branding'
 
+import { useAuth } from '@/components/providers/auth-provider'
+
 export function Footer() {
+  const { isAuthenticated } = useAuth()
   const pathname = usePathname()
   const t = useTranslations('Footer')
+
+  const homeHref = isAuthenticated ? '/dashboard' : '/'
 
   if (pathname?.startsWith('/cadastro')) {
     return null
@@ -18,7 +23,9 @@ export function Footer() {
       <div className="container py-16 md:py-20 mx-auto max-w-5xl px-6">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
           <div className="space-y-6 md:col-span-1 text-left">
-            <Logo size="sm" className="mb-4" />
+            <Link href={homeHref} className="block transition-all hover:opacity-80">
+              <Logo size="sm" className="mb-4" />
+            </Link>
             <p className="text-sm text-foreground/80 leading-relaxed max-w-xs">
               {BRAND_SLOGAN} {t('description')}
             </p>
