@@ -93,6 +93,18 @@ export async function middleware(request: NextRequest) {
   const localePrefix = hasLocale ? `/${segments[1]}` : ''
   const pathnameWithoutLocale = hasLocale ? `/${segments.slice(2).join('/')}` : pathname
 
+  // ── Helper: redirect while preserving Supabase session cookies ───
+  // Every redirect MUST use this helper; otherwise the refreshed JWT
+  // cookies that Supabase set on `response` are silently dropped and
+  // the destination page won't see a valid session.
+  function redirectWithCookies(url: URL) {
+    const redirectResponse = NextResponse.redirect(url)
+    response.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value)
+    })
+    return redirectResponse
+  }
+
   // Protect dashboard and admin routes
   if (
     pathnameWithoutLocale.startsWith('/dashboard') ||
@@ -101,7 +113,7 @@ export async function middleware(request: NextRequest) {
     if (!session) {
       const url = request.nextUrl.clone()
       url.pathname = `${localePrefix}/login/paciente`
-      return NextResponse.redirect(url)
+      return redirectWithCookies(url)
     }
 
     // Direct unconfirmed users to verification if they somehow have a session
@@ -109,7 +121,7 @@ export async function middleware(request: NextRequest) {
       const url = request.nextUrl.clone()
       url.pathname = `${localePrefix}/cadastro/confirmar-email`
       url.searchParams.set('email', user.email || '')
-      return NextResponse.redirect(url)
+      return redirectWithCookies(url)
     }
 
     // ── RBAC: Role-Based Access Control ──────────────────────────────
@@ -123,7 +135,7 @@ export async function middleware(request: NextRequest) {
         const url = request.nextUrl.clone()
         url.pathname = `${localePrefix}/dashboard`
         url.searchParams.set('error', 'forbidden')
-        return NextResponse.redirect(url)
+        return redirectWithCookies(url)
       }
     }
 
@@ -138,7 +150,7 @@ export async function middleware(request: NextRequest) {
         const url = request.nextUrl.clone()
         url.pathname = `${localePrefix}/dashboard`
         url.searchParams.set('error', 'forbidden')
-        return NextResponse.redirect(url)
+        return redirectWithCookies(url)
       }
     }
 
@@ -148,17 +160,15 @@ export async function middleware(request: NextRequest) {
         const url = request.nextUrl.clone()
         url.pathname = `${localePrefix}/dashboard`
         url.searchParams.set('error', 'forbidden')
-        return NextResponse.redirect(url)
+        return redirectWithCookies(url)
       }
     }
   }
 
-  // Redirect authenticated users away from home, login, and register pages
+  // Redirect authenticated users away from login and register pages
   // BUT allow them to access onboarding/profile completion and verification
   if (
-    (pathnameWithoutLocale === '/' ||
-      pathnameWithoutLocale === '' ||
-      pathnameWithoutLocale.startsWith('/login') ||
+    (pathnameWithoutLocale.startsWith('/login') ||
       pathnameWithoutLocale.startsWith('/cadastro')) &&
     session &&
     !pathnameWithoutLocale.includes('completar-perfil') &&
@@ -170,7 +180,7 @@ export async function middleware(request: NextRequest) {
     if (user?.email_confirmed_at) {
       const url = request.nextUrl.clone()
       url.pathname = `${localePrefix}/dashboard`
-      return NextResponse.redirect(url)
+      return redirectWithCookies(url)
     }
   }
 

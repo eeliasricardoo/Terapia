@@ -1,6 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
+import { getCachedPsychologistCount } from '@/lib/cache/marketing'
+import { Metadata } from 'next'
 
 // Above-fold: static imports for fastest LCP
 import { Hero } from '@/components/landing/Hero'
@@ -22,27 +21,14 @@ const Testimonials = dynamic(() =>
   import('@/components/landing/Testimonials').then((m) => ({ default: m.Testimonials }))
 )
 const CTA = dynamic(() => import('@/components/landing/CTA').then((m) => ({ default: m.CTA })))
-import { Metadata } from 'next'
-
 export const metadata: Metadata = {
   title: 'Início',
   description: 'A terapia que se adapta à sua vida. Encontre o psicólogo ideal em minutos.',
 }
 
 export default async function Home() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (user) {
-    redirect('/dashboard')
-  }
-
-  // Get dynamic count of verified psychologists
-  const totalVerifiedPsychologists = await prisma.psychologistProfile.count({
-    where: { isVerified: true },
-  })
+  // Get dynamic count of verified psychologists (cached)
+  const totalVerifiedPsychologists = await getCachedPsychologistCount()
 
   const displayCount = Math.max(500, totalVerifiedPsychologists + 500)
 

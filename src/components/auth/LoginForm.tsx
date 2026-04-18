@@ -24,7 +24,7 @@ import { toast } from 'sonner'
 import { login } from '@/lib/actions/auth'
 import { auth } from '@/lib/supabase/auth'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 
 export function LoginForm() {
   const t = useTranslations('Auth.login')
@@ -62,8 +62,20 @@ export function LoginForm() {
       }
 
       toast.success(t('success'))
-      router.push(returnTo || '/dashboard')
-      router.refresh()
+
+      // Hard navigation to ensure the middleware picks up the fresh session
+      // cookies. A soft router.push() can race against cookie propagation
+      // and land on the dashboard without a valid session.
+      let destination = returnTo || '/dashboard'
+      
+      // If the destination doesn't already have the locale prefix and we're not in the default locale,
+      // we might need to add it. But next-intl 'as-needed' handles this.
+      // However, window.location.href is outside next-intl, so we should be explicit.
+      if (locale !== 'pt' && !destination.startsWith(`/${locale}`)) {
+        destination = `/${locale}${destination.startsWith('/') ? '' : '/'}${destination}`
+      }
+      
+      window.location.href = destination
     } catch (error) {
       toast.error(t('errors.generic'))
     } finally {
