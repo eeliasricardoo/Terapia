@@ -10,6 +10,8 @@ import { stripe } from '@/lib/stripe'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
 import { isWithinSessionWindow } from '@/lib/utils/session-utils'
+import { checkRateLimit } from '@/lib/security'
+import { headers } from 'next/headers'
 
 function mapProfile(
   profiles: { fullName: string | null; avatarUrl: string | null; role: string } | null | undefined
@@ -145,6 +147,12 @@ export const getSessionHistory = createSafeAction(
 )
 
 export const cancelSession = createSafeAction(z.string().uuid(), async (sessionId, user) => {
+  const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
+  const rateLimit = await checkRateLimit(`cancel_${user.id}_${ip}`)
+  if (!rateLimit.success) {
+    throw new Error('Muitas solicitações de cancelamento. Tente novamente mais tarde.')
+  }
+
   const appointment = await prisma.appointment.findUnique({
     where: { id: sessionId },
     include: { psychologist: true },
@@ -240,6 +248,12 @@ export const rescheduleSession = createSafeAction(
     newScheduledAt: z.string().datetime(),
   }),
   async (data, user) => {
+    const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
+    const rateLimit = await checkRateLimit(`reschedule_${user.id}_${ip}`)
+    if (!rateLimit.success) {
+      throw new Error('Muitas solicitações de reagendamento. Tente novamente mais tarde.')
+    }
+
     const appointment = await prisma.appointment.findUnique({
       where: { id: data.sessionId },
       include: { psychologist: true },

@@ -6,6 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { SessionDetailsDialog } from '@/components/dashboard/SessionDetailsDialog'
 import { RescheduleDialog } from '@/components/dashboard/RescheduleDialog'
+import { CancelAppointmentDialog } from '@/components/dashboard/CancelAppointmentDialog'
+import { Trash2 } from 'lucide-react'
 
 import { format } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
@@ -27,6 +29,7 @@ interface Props {
       image?: string
       timezone: string
     }
+    price: number
   } | null
 }
 
@@ -159,6 +162,20 @@ export function NextSessionHero({ session }: Props) {
                     {t('reschedule')}
                   </Button>
                 </RescheduleDialog>
+
+                <CancelAppointmentDialog
+                  appointmentId={session.id}
+                  scheduledAt={session.scheduledAt}
+                  price={session.price}
+                >
+                  <Button
+                    variant="ghost"
+                    className="h-9 rounded-xl px-3 text-sm font-medium text-slate-400 hover:text-rose-500 hover:bg-rose-50 flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    {t('cancel')}
+                  </Button>
+                </CancelAppointmentDialog>
               </div>
             </div>
           </div>

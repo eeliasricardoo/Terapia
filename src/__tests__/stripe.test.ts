@@ -68,6 +68,9 @@ jest.mock('@/lib/security', () => ({
   encryptData: jest.fn((data) => `encrypted-${data}`),
   decryptData: jest.fn((data) => data.replace('encrypted-', '')),
   isValidUUID: jest.fn(() => true),
+  checkRateLimit: jest.fn().mockResolvedValue({ success: true }),
+  checkLoginRateLimit: jest.fn().mockResolvedValue({ success: true }),
+  checkForgotPasswordRateLimit: jest.fn().mockResolvedValue({ success: true }),
   checkAppointmentRateLimit: jest.fn().mockResolvedValue({ success: true }),
 }))
 

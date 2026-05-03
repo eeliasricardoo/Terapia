@@ -8,6 +8,7 @@ import {
   getCancellationEmailForPsychologist,
   getRescheduleEmailForPatient,
   getRescheduleEmailForPsychologist,
+  getDisputeNotificationTemplate,
 } from '../utils/email-templates'
 import { prisma } from '../prisma'
 import { logger } from '../utils/logger'
@@ -282,6 +283,77 @@ export async function sendRescheduleNotifications(
       `[NOTIFICATION] Error sending reschedule notifications for ${appointmentId}:`,
       error
     )
+  }
+}
+
+export async function sendDisputeNotificationToAdmins(
+  appointmentId: string,
+  disputeData: {
+    amount: string
+    reason: string
+    status: string
+  }
+) {
+  try {
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        patient: { include: { profiles: true } },
+        psychologist: { include: { user: { include: { profiles: true } } } },
+      },
+    })
+
+    const admins = await prisma.user.findMany({
+      where: { role: 'ADMIN' },
+      select: { email: true, id: true },
+    })
+
+    if (admins.length === 0) {
+      logger.warn('[NOTIFICATION] No admins found to notify about dispute')
+      return
+    }
+
+    const patientName =
+      appointment?.patient.profiles?.fullName ||
+      appointment?.patient.name ||
+      'Paciente Desconhecido'
+    const psychologistName =
+      appointment?.psychologist.user.profiles?.fullName ||
+      appointment?.psychologist.user.name ||
+      'Psicólogo Desconhecido'
+
+    const emailHtml = getDisputeNotificationTemplate({
+      appointmentId,
+      patientName,
+      psychologistName,
+      amount: disputeData.amount,
+      reason: disputeData.reason,
+      status: disputeData.status,
+    })
+
+    await Promise.all(
+      admins.map(async (admin) => {
+        // 1. Send Email
+        dispatchEmailAsync({
+          to: admin.email,
+          subject: '⚠️ Alerta de Disputa Stripe - Sentirz',
+          html: emailHtml,
+        })
+
+        // 2. In-App Notification
+        await createInAppNotification(
+          admin.id,
+          '⚠️ Disputa de Pagamento Detectada',
+          `Uma disputa foi aberta para o agendamento ${appointmentId}. Verifique os detalhes.`,
+          'dispute',
+          '/dashboard/admin' // Assuming an admin dashboard exists or just the root
+        )
+      })
+    )
+
+    logger.info(`[NOTIFICATION] Dispute notifications sent to ${admins.length} admins`)
+  } catch (error) {
+    logger.error('[NOTIFICATION] Error sending dispute notifications:', error)
   }
 }
 

@@ -5,7 +5,10 @@ import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/utils/logger'
 import { revalidateTag } from 'next/cache'
-import { sendAppointmentNotifications } from '@/lib/actions/notifications'
+import {
+  sendAppointmentNotifications,
+  sendDisputeNotificationToAdmins,
+} from '@/lib/actions/notifications'
 import { checkAppointmentConflict } from '@/lib/actions/appointments-utils'
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -160,6 +163,89 @@ export async function POST(req: Request) {
       revalidateTag('psychologist-profile-view')
     } catch (error) {
       logger.error(`Error updating stripe onboarding status for ${account.id}:`, error)
+    }
+  } else if (event.type === 'charge.dispute.created') {
+    const dispute = event.data.object as Stripe.Dispute
+    const paymentIntentId =
+      typeof dispute.payment_intent === 'string'
+        ? dispute.payment_intent
+        : dispute.payment_intent?.id
+
+    if (paymentIntentId) {
+      try {
+        const appointment = await prisma.appointment.update({
+          where: { stripePaymentIntentId: paymentIntentId },
+          data: { status: 'DISPUTED' },
+        })
+
+        await sendDisputeNotificationToAdmins(appointment.id, {
+          amount: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+            dispute.amount / 100
+          ),
+          reason: dispute.reason,
+          status: dispute.status,
+        })
+
+        // Audit Logging (LGPD Compliance)
+        await prisma.auditLog.create({
+          data: {
+            userId: 'SYSTEM_STRIPE_WEBHOOK',
+            action: 'DISPUTE_CREATED',
+            entity: 'Appointment',
+            entityId: appointment.id,
+            newData: {
+              disputeId: dispute.id,
+              amount: dispute.amount,
+              reason: dispute.reason,
+              status: dispute.status,
+            },
+          },
+        })
+
+        logger.warn(`Dispute created for appointment ${appointment.id}. Status set to DISPUTED.`)
+        revalidateTag('appointments')
+      } catch (error) {
+        logger.error(`Error handling dispute.created for PI ${paymentIntentId}:`, error)
+      }
+    }
+  } else if (event.type === 'charge.dispute.closed') {
+    const dispute = event.data.object as Stripe.Dispute
+    const paymentIntentId =
+      typeof dispute.payment_intent === 'string'
+        ? dispute.payment_intent
+        : dispute.payment_intent?.id
+
+    if (paymentIntentId) {
+      try {
+        const resultStatus = dispute.status === 'won' ? 'COMPLETED' : 'CANCELED'
+
+        const appointment = await prisma.appointment.update({
+          where: { stripePaymentIntentId: paymentIntentId },
+          data: {
+            status: resultStatus as any,
+          },
+        })
+
+        // Audit Logging
+        await prisma.auditLog.create({
+          data: {
+            userId: 'SYSTEM_STRIPE_WEBHOOK',
+            action: 'DISPUTE_CLOSED',
+            entity: 'Appointment',
+            entityId: appointment.id,
+            newData: {
+              disputeId: dispute.id,
+              status: dispute.status,
+              result: resultStatus,
+            },
+          },
+        })
+
+        logger.info(`Dispute closed for appointment ${appointment.id}. Result: ${dispute.status}.`)
+        revalidateTag('appointments')
+      } catch (error) {
+        logger.error(`Error handling dispute.closed for PI ${paymentIntentId}:`, error)
+      }
     }
   }
 

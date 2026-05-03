@@ -31,6 +31,7 @@ export type PsychologistDashboardData = {
     image?: string
     duration: number
     details?: string
+    price: number
   }[]
   futureSessions: {
     id: string
@@ -42,6 +43,7 @@ export type PsychologistDashboardData = {
     status: string
     image?: string
     duration: number
+    price: number
   }[]
   recentPatients: {
     id: string
@@ -64,6 +66,7 @@ export type PatientDashboardData = {
       image?: string
       timezone: string
     }
+    price: number
   } | null
   recentSessions: {
     id: string
@@ -87,6 +90,7 @@ export type PatientDashboardData = {
       image?: string
       timezone: string
     }
+    price: number
   }[]
 }
 
@@ -294,6 +298,7 @@ export const getPsychologistDashboardData = createSafeAction(
         image: s.patient.profiles?.avatarUrl || undefined,
         duration: s.durationMinutes,
         details: s.status === 'SCHEDULED' ? 'Aguardando início' : 'Concluída',
+        price: Number(s.price),
       })),
       futureSessions: futureSessionsData.map((s) => ({
         id: s.id,
@@ -305,6 +310,7 @@ export const getPsychologistDashboardData = createSafeAction(
         status: s.status.toLowerCase(),
         image: s.patient.profiles?.avatarUrl || undefined,
         duration: s.durationMinutes,
+        price: Number(s.price),
       })),
       recentPatients: Array.from(uniquePatientsMap.values()).map((p) => ({
         ...p,
@@ -362,6 +368,7 @@ export const getPatientDashboardData = createSafeAction(
           image: pProfile?.avatarUrl || undefined,
           timezone: nextSessionAppt.psychologist.timezone || 'America/Sao_Paulo',
         },
+        price: Number(nextSessionAppt.price),
       }
     }
 
@@ -397,6 +404,7 @@ export const getPatientDashboardData = createSafeAction(
             image: pProfile?.avatarUrl || undefined,
             timezone: appt.psychologist.timezone || 'America/Sao_Paulo',
           },
+          price: Number(appt.price),
         }
       }),
     }

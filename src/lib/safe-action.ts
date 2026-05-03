@@ -105,11 +105,38 @@ export function createSafeAction<Schema extends z.ZodTypeAny, T>(
       }
 
       // 4. Execute Handler
+      if (process.env.NODE_ENV === 'production') {
+        const Sentry = await import('@sentry/nextjs')
+        Sentry.addBreadcrumb({
+          category: 'action',
+          message: 'Executing server action',
+          level: 'info',
+          data: {
+            isPublic: options?.isPublic,
+            requiredRole: options?.requiredRole,
+          },
+        })
+
+        if (userContext) {
+          Sentry.setUser({ id: userContext.id, email: userContext.email })
+        }
+      }
+
       const result = await handler(validationResult.data, userContext)
 
       return { success: true, data: result }
     } catch (error: unknown) {
       logger.error('SafeAction Error:', error)
+
+      if (process.env.NODE_ENV === 'production') {
+        const Sentry = await import('@sentry/nextjs')
+        Sentry.captureException(error, {
+          tags: {
+            action_error: 'true',
+          },
+        })
+      }
+
       const msg = error instanceof Error ? error.message : 'Ocorreu um erro inesperado.'
       const code =
         error instanceof Error && 'code' in error

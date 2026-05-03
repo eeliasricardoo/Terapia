@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { AlertTriangle, RotateCcw } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
+import * as Sentry from '@sentry/nextjs'
+
 export default function DashboardError({
   error,
   reset,
@@ -13,7 +15,7 @@ export default function DashboardError({
   reset: () => void
 }) {
   useEffect(() => {
-    // Pode logar o erro em um serviço de observabilidade (ex: Sentry) no futuro se necessário
+    Sentry.captureException(error)
     console.error('Dashboard Error boundary caught an error:', error)
   }, [error])
 

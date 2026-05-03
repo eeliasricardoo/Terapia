@@ -27,6 +27,7 @@ import { PsychologistDashboardData } from '@/lib/actions/dashboard'
 type AppointmentItem = PsychologistDashboardData['upcomingSessions'][number]
 type ScheduleOverrideMap = Record<string, { date: string; type: string; [key: string]: unknown }>
 import { RescheduleDialog } from '@/components/dashboard/RescheduleDialog'
+import { CancelAppointmentDialog } from '@/components/dashboard/CancelAppointmentDialog'
 import { format } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 import { ptBR } from 'date-fns/locale'
@@ -90,6 +91,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
             duration_minutes,
             status,
             session_type,
+            price,
             patient:patient_id (
               id,
               full_name,
@@ -112,6 +114,7 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
               status: a.status.toLowerCase(),
               image: (patient as { avatar_url?: string } | null)?.avatar_url || undefined,
               duration: a.duration_minutes,
+              price: Number(a.price),
             }
           })
           setAllAppointments(mappedAppts)
@@ -494,32 +497,62 @@ export function PsychologistDashboard({ userProfile, dashboardData }: Props) {
                                           {t('agenda.reschedule')}
                                         </Button>
                                       </RescheduleDialog>
+                                      <CancelAppointmentDialog
+                                        appointmentId={session.id}
+                                        scheduledAt={session.scheduledAt}
+                                        price={session.price}
+                                        isPsychologist
+                                      >
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-slate-300 hover:text-rose-500 transition-colors font-medium text-[11px] h-8 px-2"
+                                        >
+                                          {t('agenda.cancel')}
+                                        </Button>
+                                      </CancelAppointmentDialog>
                                     </>
                                   ) : (
-                                    <RescheduleDialog
-                                      session={{
-                                        id: session.id,
-                                        doctor: session.patientName,
-                                        role: 'Paciente',
-                                        image: session.image || '/avatars/01.png',
-                                        date: format(
-                                          new Date(session.scheduledAt),
-                                          "dd 'de' MMMM, yyyy",
-                                          { locale: ptBR }
-                                        ),
-                                        time: session.time,
-                                        psychologistId: session.psychologistId,
-                                        scheduledAt: session.scheduledAt,
-                                      }}
-                                    >
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-slate-300 hover:text-primary transition-colors font-medium text-[11px] h-8 px-2"
+                                    <>
+                                      <RescheduleDialog
+                                        session={{
+                                          id: session.id,
+                                          doctor: session.patientName,
+                                          role: 'Paciente',
+                                          image: session.image || '/avatars/01.png',
+                                          date: format(
+                                            new Date(session.scheduledAt),
+                                            "dd 'de' MMMM, yyyy",
+                                            { locale: ptBR }
+                                          ),
+                                          time: session.time,
+                                          psychologistId: session.psychologistId,
+                                          scheduledAt: session.scheduledAt,
+                                        }}
                                       >
-                                        {t('agenda.reschedule')}
-                                      </Button>
-                                    </RescheduleDialog>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-slate-300 hover:text-primary transition-colors font-medium text-[11px] h-8 px-2"
+                                        >
+                                          {t('agenda.reschedule')}
+                                        </Button>
+                                      </RescheduleDialog>
+                                      <CancelAppointmentDialog
+                                        appointmentId={session.id}
+                                        scheduledAt={session.scheduledAt}
+                                        price={session.price}
+                                        isPsychologist
+                                      >
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-slate-300 hover:text-rose-500 transition-colors font-medium text-[11px] h-8 px-2"
+                                        >
+                                          {t('agenda.cancel')}
+                                        </Button>
+                                      </CancelAppointmentDialog>
+                                    </>
                                   )}
                                 </div>
                               </div>

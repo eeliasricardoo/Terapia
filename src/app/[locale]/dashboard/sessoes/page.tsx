@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Calendar, Clock, Video, FileText, CalendarX } from 'lucide-react'
 import { ReceiptDialog } from '@/components/dashboard/ReceiptDialog'
 import { RescheduleDialog } from '@/components/dashboard/RescheduleDialog'
+import { CancelAppointmentDialog } from '@/components/dashboard/CancelAppointmentDialog'
 import { getCurrentUserProfile } from '@/lib/actions/profile'
 import { getUserSessions } from '@/lib/actions/sessions'
 import { format } from 'date-fns'
@@ -214,6 +215,21 @@ export default async function SessionsPage() {
                                 {t('enterSession')}
                               </Link>
                             </Button>
+                          )}
+                          {(isUpcoming || isPsychologist) && (
+                            <CancelAppointmentDialog
+                              appointmentId={session.id}
+                              scheduledAt={session.scheduled_at}
+                              price={Number(session.price)}
+                              isPsychologist={isPsychologist}
+                            >
+                              <Button
+                                variant="ghost"
+                                className="w-full sm:w-auto h-9 text-destructive hover:text-destructive hover:bg-destructive/5"
+                              >
+                                {t('cancel')}
+                              </Button>
+                            </CancelAppointmentDialog>
                           )}
                         </>
                       ) : (

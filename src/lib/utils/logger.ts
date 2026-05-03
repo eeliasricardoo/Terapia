@@ -114,6 +114,16 @@ class Logger {
   error(msg: string, ...args: unknown[]) {
     this.log('error', msg, ...args)
     this.syncToRedis('error', msg, ...args).catch(() => {})
+
+    // Send to Sentry in production
+    if (!this.isDevelopment) {
+      import('@sentry/nextjs').then((Sentry) => {
+        Sentry.captureException(new Error(msg), {
+          extra: { data: this.sanitizeData(args) },
+          level: 'error',
+        })
+      })
+    }
   }
 
   debug(msg: string, ...args: unknown[]) {

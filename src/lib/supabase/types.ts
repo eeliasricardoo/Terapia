@@ -390,7 +390,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      AppointmentStatus: 'SCHEDULED' | 'COMPLETED' | 'CANCELED' | 'NO_SHOW'
+      AppointmentStatus:
+        | 'SCHEDULED'
+        | 'COMPLETED'
+        | 'CANCELED'
+        | 'NO_SHOW'
+        | 'PENDING_PAYMENT'
+        | 'DISPUTED'
       UserRole: 'PATIENT' | 'PSYCHOLOGIST' | 'COMPANY' | 'ADMIN'
     }
     CompositeTypes: {
@@ -520,7 +526,14 @@ export const Constants = {
   },
   public: {
     Enums: {
-      AppointmentStatus: ['SCHEDULED', 'COMPLETED', 'CANCELED', 'NO_SHOW'],
+      AppointmentStatus: [
+        'SCHEDULED',
+        'COMPLETED',
+        'CANCELED',
+        'NO_SHOW',
+        'PENDING_PAYMENT',
+        'DISPUTED',
+      ],
       UserRole: ['PATIENT', 'PSYCHOLOGIST', 'COMPANY', 'ADMIN'],
     },
   },

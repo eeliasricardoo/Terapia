@@ -521,7 +521,8 @@
       "nextSession": "Próxima Sessão",
       "enterRoom": "Entrar na Sala",
       "documents": "Documentos",
-      "reschedule": "Reagendar"
+      "reschedule": "Reagendar",
+      "cancel": "Cancelar"
     },
     "findCta": {
       "title": "Encontre o psicólogo ideal agora",
@@ -534,7 +535,8 @@
     },
     "upcoming": {
       "title": "Próximas Sessões",
-      "accessLink": "Acessar Link"
+      "accessLink": "Acessar Link",
+      "cancel": "Cancelar"
     },
     "recentHistory": {
       "title": "Últimas Sessões",
@@ -773,7 +775,8 @@
       "completedBadge": "Finalizada",
       "nextBadge": "A seguir",
       "startSession": "Iniciar Sessão",
-      "reschedule": "Reagendar"
+      "reschedule": "Reagendar",
+      "cancel": "Cancelar"
     },
     "quickActions": {
       "title": "Ações Rápidas",
@@ -1127,5 +1130,44 @@
         }
       }
     }
+  },
+  "SessionsList": {
+    "title": "Minhas Sessões",
+    "description": "Veja e gerencie seus agendamentos.",
+    "loginRequired": "Você precisa estar logado para ver suas sessões.",
+    "loginButton": "Entrar",
+    "emptyTitle": "Nenhuma sessão encontrada",
+    "emptyDesc": "Você ainda não tem sessões agendadas.",
+    "searchPsychologists": "Buscar Psicólogos",
+    "badges": {
+      "scheduled": "Agendada",
+      "completed": "Concluída",
+      "cancelled": "Cancelada"
+    },
+    "roles": {
+      "patient": "Paciente",
+      "psychologist": "Psicólogo(a)",
+      "specialist": "Especialista"
+    },
+    "online": "Online",
+    "reschedule": "Reagendar",
+    "enterSession": "Entrar na Sala",
+    "receipt": "Recibo",
+    "scheduleAgain": "Agendar Novamente",
+    "cancel": "Cancelar",
+    "summaryPagination": "Mostrando {count} de {total} sessões",
+    "summaryTotal": "{total} sessões no total"
+  },
+  "Cancellation": {
+    "title": "Cancelar Sessão",
+    "description": "Tem certeza que deseja cancelar esta sessão?",
+    "policyWarning": "Atenção: Cancelamentos com menos de 24 horas de antecedência não são reembolsáveis.",
+    "refundInfo": "Valor a ser reembolsado: {amount}",
+    "reasonLabel": "Motivo do cancelamento",
+    "reasonPlaceholder": "Explique brevemente o motivo...",
+    "cancelButton": "Sim, cancelar sessão",
+    "backButton": "Voltar",
+    "success": "Sessão cancelada com sucesso.",
+    "error": "Erro ao cancelar sessão. Tente novamente."
   }
 }

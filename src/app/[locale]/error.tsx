@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Home, RotateCcw } from 'lucide-react'
 
+import * as Sentry from '@sentry/nextjs'
+
 export default function Error({
   error,
   reset,
@@ -13,6 +15,8 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
+    // Log the error to Sentry
+    Sentry.captureException(error)
     console.error(error)
   }, [error])
 

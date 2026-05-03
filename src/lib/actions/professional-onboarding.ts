@@ -8,10 +8,18 @@ import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { validateUpload } from '@/lib/utils/file-validation'
+import { checkRateLimit } from '@/lib/security'
+import { headers } from 'next/headers'
 
 export const saveProfessionalData = createSafeAction(
   z.instanceof(FormData),
   async (formData, user) => {
+    const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
+    const rateLimit = await checkRateLimit(`onboarding_data_${user.id}_${ip}`)
+    if (!rateLimit.success) {
+      throw new Error('Muitas solicitações. Tente novamente em alguns minutos.')
+    }
+
     const university = formData.get('university') as string
     const academicLevel = formData.get('academicLevel') as string
     const title = formData.get('title') as string
@@ -146,6 +154,12 @@ export const savePaymentConfig = createSafeAction(
     taxIdNumber: z.string(),
   }),
   async (data, user) => {
+    const ip = (await headers()).get('x-forwarded-for') || 'unknown_ip'
+    const rateLimit = await checkRateLimit(`payment_config_${user.id}_${ip}`)
+    if (!rateLimit.success) {
+      throw new Error('Muitas solicitações. Tente novamente em alguns minutos.')
+    }
+
     await prisma.psychologistProfile.update({
       where: { userId: user.id },
       data: {

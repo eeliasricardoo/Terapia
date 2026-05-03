@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
+import { CancelAppointmentDialog } from '@/components/dashboard/CancelAppointmentDialog'
+import { prisma } from '@/lib/prisma'
 
 interface UpcomingSession {
   id: string
@@ -21,6 +23,7 @@ interface UpcomingSession {
     image?: string
     timezone: string
   }
+  price: number
 }
 
 interface Props {
@@ -93,6 +96,18 @@ export function UpcomingSessionsList({ sessions }: Props) {
                       {t('accessLink')}
                     </Button>
                   </Link>
+                  <CancelAppointmentDialog
+                    appointmentId={session.id}
+                    scheduledAt={session.scheduledAt}
+                    price={session.price}
+                  >
+                    <Button
+                      variant="ghost"
+                      className="rounded-full h-10 px-5 text-xs font-bold text-rose-500 hover:bg-rose-50"
+                    >
+                      {t('cancel')}
+                    </Button>
+                  </CancelAppointmentDialog>
                 </div>
               </div>
             </Card>

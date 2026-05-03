@@ -548,3 +548,56 @@ export function getReminderEmailForPsychologist({
     </div>
   `
 }
+
+export function getDisputeNotificationTemplate({
+  appointmentId,
+  patientName,
+  psychologistName,
+  amount,
+  reason,
+  status,
+}: {
+  appointmentId: string
+  patientName: string
+  psychologistName: string
+  amount: string
+  reason: string
+  status: string
+}) {
+  return `
+    <div style="${baseStyles}">
+      <div style="${containerStyles}">
+        <div style="background-color: #f59e0b; padding: 40px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 800;">Alerta de Disputa Stripe ⚠️</h1>
+        </div>
+
+        <div style="padding: 40px;">
+          <h2 style="color: #0f172a; margin-top: 0;">Atenção Administrador,</h2>
+          <p>Uma nova disputa (chargeback) foi detectada pelo Stripe para o agendamento <strong>${appointmentId}</strong>.</p>
+
+          <div style="margin: 30px 0; border: 1px solid #fef3c7; border-radius: 16px; padding: 25px; background-color: #fffbeb;">
+            <p style="margin: 0; font-size: 14px; color: #92400e; font-weight: bold; text-transform: uppercase;">Detalhes da Disputa</p>
+            <p style="margin: 10px 0 5px 0;"><strong>Paciente:</strong> ${patientName}</p>
+            <p style="margin: 0 0 5px 0;"><strong>Psicólogo:</strong> ${psychologistName}</p>
+            <p style="margin: 0 0 5px 0;"><strong>Valor:</strong> ${amount}</p>
+            <p style="margin: 0 0 5px 0;"><strong>Motivo:</strong> ${reason}</p>
+            <p style="margin: 0;"><strong>Status Atual:</strong> ${status}</p>
+          </div>
+
+          <p style="color: #64748b;">O status do agendamento foi atualizado para <strong>DISPUTED</strong> e os fundos podem ter sido retidos.</p>
+          <p style="color: #64748b;">Por favor, acesse o dashboard do Stripe para fornecer evidências e resolver a disputa.</p>
+
+          <div style="text-align: center; margin-top: 40px;">
+            <a href="https://dashboard.stripe.com/disputes" style="background-color: #0f172a; color: #ffffff; padding: 16px 32px; border-radius: 40px; text-decoration: none; font-weight: bold; display: inline-block;">
+              Ver Disputas no Stripe
+            </a>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid #f1f5f9;">
+          ${footerContent}
+        </div>
+      </div>
+    </div>
+  `
+}

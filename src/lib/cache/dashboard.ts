@@ -226,6 +226,7 @@ async function fetchPsychologistDashboard(userId: string): Promise<PsychologistD
       image: s.patient.profiles?.avatarUrl || undefined,
       duration: s.durationMinutes,
       details: s.status === 'SCHEDULED' ? 'Aguardando início' : 'Concluída',
+      price: Number(s.price),
     })),
     futureSessions: futureSessionsData.map((s) => ({
       id: s.id,
@@ -237,6 +238,7 @@ async function fetchPsychologistDashboard(userId: string): Promise<PsychologistD
       status: s.status.toLowerCase(),
       image: s.patient.profiles?.avatarUrl || undefined,
       duration: s.durationMinutes,
+      price: Number(s.price),
     })),
     recentPatients: Array.from(uniquePatientsMap.values()).map((p) => ({
       ...p,
@@ -324,6 +326,7 @@ async function fetchPatientDashboard(userId: string): Promise<PatientDashboardDa
           image: pProfile?.avatarUrl || undefined,
           timezone: nextSessionAppt.psychologist.timezone || 'America/Sao_Paulo',
         },
+        price: Number(nextSessionAppt.price),
       }
     }
 
@@ -357,6 +360,7 @@ async function fetchPatientDashboard(userId: string): Promise<PatientDashboardDa
           image: pProfile?.avatarUrl || undefined,
           timezone: appt.psychologist.timezone || 'America/Sao_Paulo',
         },
+        price: Number(appt.price),
       }
     })
 
