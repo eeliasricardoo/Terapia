@@ -82,7 +82,7 @@ export const getUserSessions = createSafeAction(
   }
 )
 
-export const getNextSession = createSafeAction(z.any().optional(), async (_, user) => {
+export const getNextSession = createSafeAction(z.void(), async (_, user) => {
   const now = new Date()
   const appt = await prisma.appointment.findFirst({
     where: {

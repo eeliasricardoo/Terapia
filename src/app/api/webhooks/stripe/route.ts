@@ -164,7 +164,7 @@ export async function POST(req: Request) {
     } catch (error) {
       logger.error(`Error updating stripe onboarding status for ${account.id}:`, error)
     }
-  } else if (event.type === 'charge.dispute.created') {
+  } else if (event.type.startsWith('charge.dispute.')) {
     const dispute = event.data.object as Stripe.Dispute
     const paymentIntentId =
       typeof dispute.payment_intent === 'string'
@@ -173,78 +173,74 @@ export async function POST(req: Request) {
 
     if (paymentIntentId) {
       try {
-        const appointment = await prisma.appointment.update({
+        const appointment = await prisma.appointment.findUnique({
           where: { stripePaymentIntentId: paymentIntentId },
-          data: { status: 'DISPUTED' },
         })
 
-        await sendDisputeNotificationToAdmins(appointment.id, {
-          amount: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-            dispute.amount / 100
-          ),
-          reason: dispute.reason,
-          status: dispute.status,
+        if (!appointment) {
+          logger.warn(`Webhook ${event.type}: Appointment not found for PI ${paymentIntentId}`)
+          return NextResponse.json({ received: true })
+        }
+
+        let statusUpdate: any = {}
+        let action = ''
+
+        switch (event.type) {
+          case 'charge.dispute.created':
+            statusUpdate = { status: 'DISPUTED', disputeOutcome: 'OPEN' }
+            action = 'DISPUTE_CREATED'
+            break
+          case 'charge.dispute.funds_withdrawn':
+            statusUpdate = { disputeOutcome: 'FUNDS_WITHDRAWN' }
+            action = 'DISPUTE_FUNDS_WITHDRAWN'
+            break
+          case 'charge.dispute.funds_reinstated':
+            statusUpdate = { disputeOutcome: 'FUNDS_REINSTATED' }
+            action = 'DISPUTE_FUNDS_REINSTATED'
+            break
+          case 'charge.dispute.closed':
+            statusUpdate = { disputeOutcome: dispute.status.toUpperCase() }
+            action = 'DISPUTE_CLOSED'
+            // We don't overwrite status anymore to avoid fragile logic
+            break
+        }
+
+        const updatedAppointment = await prisma.appointment.update({
+          where: { id: appointment.id },
+          data: statusUpdate,
         })
+
+        if (event.type === 'charge.dispute.created') {
+          await sendDisputeNotificationToAdmins(updatedAppointment.id, {
+            amount: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+              dispute.amount / 100
+            ),
+            reason: dispute.reason,
+            status: dispute.status,
+          })
+        }
 
         // Audit Logging (LGPD Compliance)
         await prisma.auditLog.create({
           data: {
             userId: 'SYSTEM_STRIPE_WEBHOOK',
-            action: 'DISPUTE_CREATED',
+            action,
             entity: 'Appointment',
-            entityId: appointment.id,
+            entityId: updatedAppointment.id,
             newData: {
               disputeId: dispute.id,
               amount: dispute.amount,
               reason: dispute.reason,
               status: dispute.status,
+              outcome: statusUpdate.disputeOutcome,
             },
           },
         })
 
-        logger.warn(`Dispute created for appointment ${appointment.id}. Status set to DISPUTED.`)
+        logger.info(`Webhook ${event.type} handled for appointment ${updatedAppointment.id}.`)
         revalidateTag('appointments')
       } catch (error) {
-        logger.error(`Error handling dispute.created for PI ${paymentIntentId}:`, error)
-      }
-    }
-  } else if (event.type === 'charge.dispute.closed') {
-    const dispute = event.data.object as Stripe.Dispute
-    const paymentIntentId =
-      typeof dispute.payment_intent === 'string'
-        ? dispute.payment_intent
-        : dispute.payment_intent?.id
-
-    if (paymentIntentId) {
-      try {
-        const resultStatus = dispute.status === 'won' ? 'COMPLETED' : 'CANCELED'
-
-        const appointment = await prisma.appointment.update({
-          where: { stripePaymentIntentId: paymentIntentId },
-          data: {
-            status: resultStatus as any,
-          },
-        })
-
-        // Audit Logging
-        await prisma.auditLog.create({
-          data: {
-            userId: 'SYSTEM_STRIPE_WEBHOOK',
-            action: 'DISPUTE_CLOSED',
-            entity: 'Appointment',
-            entityId: appointment.id,
-            newData: {
-              disputeId: dispute.id,
-              status: dispute.status,
-              result: resultStatus,
-            },
-          },
-        })
-
-        logger.info(`Dispute closed for appointment ${appointment.id}. Result: ${dispute.status}.`)
-        revalidateTag('appointments')
-      } catch (error) {
-        logger.error(`Error handling dispute.closed for PI ${paymentIntentId}:`, error)
+        logger.error(`Error handling webhook ${event.type} for PI ${paymentIntentId}:`, error)
       }
     }
   }

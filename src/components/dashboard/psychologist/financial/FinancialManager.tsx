@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import {
   createStripeConnectAccountLink,
   getStripeDashboardLink,
-  syncStripeAccountStatus,
+  getPsychologistAccountStatus,
 } from '@/lib/actions/stripe'
 import { toast } from 'sonner'
 import { AlertCircle } from 'lucide-react'
@@ -88,7 +88,7 @@ export function FinancialManager() {
       try {
         const [statsResult, stripeResult] = await Promise.all([
           getFinancialStats(undefined),
-          syncStripeAccountStatus(undefined),
+          getPsychologistAccountStatus(undefined),
         ])
 
         if (statsResult.success) {

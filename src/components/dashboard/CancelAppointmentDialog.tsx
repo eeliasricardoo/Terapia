@@ -64,8 +64,9 @@ export function CancelAppointmentDialog({
       } else {
         toast.error(t('error'))
       }
-    } catch (error: any) {
-      toast.error(error.message || t('error'))
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : t('error')
+      toast.error(message)
     } finally {
       setIsPending(false)
     }

@@ -231,7 +231,7 @@ export const createStripeCheckoutSession = createSafeAction(
 )
 
 export const createStripeConnectAccountLink = createSafeAction(
-  z.any().optional(),
+  z.void(),
   async (_, user) => {
     const psych = await prisma.psychologistProfile.findUnique({
       where: { userId: user.id },
@@ -294,8 +294,8 @@ export const createStripeConnectAccountLink = createSafeAction(
 /**
  * Sincroniza o status real da conta Connect com o banco de dados.
  */
-export const syncStripeAccountStatus = createSafeAction(
-  z.any().optional(),
+export const getPsychologistAccountStatus = createSafeAction(
+  z.void(),
   async (_, user) => {
     const psych = await prisma.psychologistProfile.findUnique({
       where: { userId: user.id },
@@ -327,7 +327,7 @@ export const syncStripeAccountStatus = createSafeAction(
 )
 
 export const getStripeDashboardLink = createSafeAction(
-  z.any().optional(),
+  z.void(),
   async (_, user) => {
     const psych = await prisma.psychologistProfile.findUnique({
       where: { userId: user.id },

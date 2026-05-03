@@ -5,14 +5,18 @@ import { NextResponse } from 'next/server'
 import { logger } from '@/lib/utils/logger'
 import { checkRateLimit } from '@/lib/security'
 
+import { videoTokenSchema } from '@/lib/validations/api'
+
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { appointmentId } = body
+    const validation = videoTokenSchema.safeParse(body)
 
-    if (!appointmentId) {
-      return NextResponse.json({ error: 'ID do agendamento ausente' }, { status: 400 })
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error.errors[0].message }, { status: 400 })
     }
+
+    const { appointmentId } = validation.data
 
     const supabase = await createClient()
     const {

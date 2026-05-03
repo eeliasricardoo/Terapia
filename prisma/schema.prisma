@@ -54,6 +54,7 @@ model Appointment {
   cancellationReason    String?             @map("cancellation_reason")
   refundId              String?             @map("refund_id")
   refundAmount          Decimal?            @db.Decimal(10, 2) @map("refund_amount")
+  disputeOutcome        String?             @map("dispute_outcome")
   healthInsurance       HealthInsurance?    @relation(fields: [healthInsurancePlanId], references: [id])
   patient               User                @relation("PatientAppointments", fields: [patientId], references: [id])
   psychologist          PsychologistProfile @relation(fields: [psychologistId], references: [id])

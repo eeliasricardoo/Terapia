@@ -204,15 +204,17 @@ export const cancelAppointment = createSafeAction(cancelAppointmentSchema, async
         payment_intent: appointment.stripePaymentIntentId,
         amount: Math.round(refundAmount * 100),
         reverse_transfer: true,
+        refund_application_fee: true,
         metadata: {
           appointmentId: appointment.id,
           cancelledBy: isPatient ? 'PATIENT' : 'PSYCHOLOGIST',
         },
       })
       refundId = refund.id
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido no Stripe'
       logger.error('Stripe Refund Failed:', err)
-      throw new Error(`Falha ao processar reembolso: ${err.message}`)
+      throw new Error(`Falha ao processar reembolso: ${errorMessage}`)
     }
   }
 
