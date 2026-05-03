@@ -77,6 +77,7 @@ export const registerPatientSupabase = createSafeAction(
     })
 
     if (authError) {
+      logger.error('Supabase SignUp Error:', authError)
       if (authError.message.includes('Error sending confirmation email')) {
         throw new Error('Erro ao enviar e-mail de confirmação. Tente novamente mais tarde.')
       }
@@ -86,6 +87,12 @@ export const registerPatientSupabase = createSafeAction(
           : authError.message
       )
     }
+
+    logger.info('Supabase SignUp Success:', {
+      userId: authData.user?.id,
+      email: data.email,
+      confirmed: authData.user?.email_confirmed_at,
+    })
 
     // 5. Prisma Sync
     if (authData.user) {
@@ -301,6 +308,34 @@ export const updatePassword = createSafeAction(
 
     if (updateError) throw new Error(updateError.message)
 
+    return { success: true }
+  }
+)
+
+export const bypassVerification = createSafeAction(
+  z.object({ email: z.string().email() }),
+  async (data) => {
+    // 1. Get service role client
+    const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseServiceKey) throw new Error('Service key not found')
+
+    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
+    const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKey)
+
+    // 2. Find user
+    const user = await prisma.user.findUnique({ where: { email: data.email } })
+    if (!user) throw new Error('Usuário não encontrado no banco de dados.')
+
+    // 3. Confirm email via Admin API
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+      email_confirm: true,
+    })
+
+    if (error) throw new Error(error.message)
+
+    revalidatePath('/')
     return { success: true }
   }
 )

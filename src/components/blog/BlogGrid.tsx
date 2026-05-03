@@ -47,7 +47,7 @@ export function BlogGrid() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group flex flex-col bg-white rounded-[2rem] border border-slate-100 overflow-hidden hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] transition-all duration-500"
+              className="group flex flex-col bg-white rounded-xl border border-slate-100 overflow-hidden hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] transition-all duration-500"
             >
               <div className="relative aspect-[16/10] overflow-hidden">
                 <Image
@@ -57,7 +57,7 @@ export function BlogGrid() {
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute top-4 left-4">
-                  <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-xs font-bold text-purple-600 uppercase tracking-wider">
+                  <span className="px-3 py-1 rounded-lg bg-white/90 backdrop-blur-sm text-xs font-bold text-purple-600 uppercase tracking-wider">
                     {post.category}
                   </span>
                 </div>

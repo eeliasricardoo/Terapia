@@ -12,8 +12,8 @@ DROP POLICY IF EXISTS "appointments_participating_access" ON "appointments";
 CREATE POLICY "appointments_read_access" ON "appointments" 
     FOR SELECT TO authenticated 
     USING (
-        auth.uid() = patient_id OR 
-        auth.uid() IN (SELECT "userId" FROM "psychologist_profiles" WHERE id = psychologist_id)
+        auth.uid()::text = patient_id::text OR 
+        auth.uid()::text IN (SELECT "userId"::text FROM "psychologist_profiles" WHERE id::text = psychologist_id::text)
     );
 
 -- 3. Create the explicit UPDATE policy
@@ -22,10 +22,10 @@ CREATE POLICY "appointments_read_access" ON "appointments"
 CREATE POLICY "appointments_update_psych" ON "appointments" 
     FOR UPDATE TO authenticated 
     USING (
-        auth.uid() IN (SELECT "userId" FROM "psychologist_profiles" WHERE id = psychologist_id)
+        auth.uid()::text IN (SELECT "userId"::text FROM "psychologist_profiles" WHERE id::text = psychologist_id::text)
     )
     WITH CHECK (
-        auth.uid() IN (SELECT "userId" FROM "psychologist_profiles" WHERE id = psychologist_id)
+        auth.uid()::text IN (SELECT "userId"::text FROM "psychologist_profiles" WHERE id::text = psychologist_id::text)
     );
 
 -- 4. Revoke UPDATE access to sensitive financial columns

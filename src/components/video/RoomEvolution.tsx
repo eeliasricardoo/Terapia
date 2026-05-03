@@ -151,9 +151,9 @@ export function RoomEvolution({ appointmentId }: RoomEvolutionProps) {
       id: 'mal',
       label: t('moods.mal'),
       icon: Frown,
-      color: 'text-orange-500',
-      bg: 'bg-orange-50',
-      border: 'border-orange-200',
+      color: 'text-slate-500',
+      bg: 'bg-slate-50',
+      border: 'border-slate-200',
     },
     {
       id: 'crise',

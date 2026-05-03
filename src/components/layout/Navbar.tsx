@@ -173,13 +173,13 @@ export function Navbar({ isLoggedIn: propIsLoggedIn, userRole: propUserRole }: N
                 <Button
                   variant="outline"
                   onClick={() => setLoginOpen(true)}
-                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bold rounded-full px-6 transition-all"
+                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bold rounded-lg px-6 transition-all"
                 >
                   {t('buttons.login')}
                 </Button>
                 <Button
                   onClick={() => setRegisterOpen(true)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 font-medium shadow-sm transition-all"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-6 font-medium shadow-sm transition-all"
                 >
                   {t('buttons.getStarted')}
                 </Button>

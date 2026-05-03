@@ -43,7 +43,7 @@ export function BlogHero() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-purple-500 transition-colors" />
             <Input
               placeholder="O que você deseja ler hoje?"
-              className="h-14 pl-12 pr-4 rounded-2xl border-slate-200 bg-white/80 backdrop-blur-md shadow-xl focus-visible:ring-purple-400"
+              className="h-14 pl-12 pr-4 rounded-xl border-slate-200 bg-white/80 backdrop-blur-md shadow-xl focus-visible:ring-purple-400"
             />
           </div>
         </motion.div>
@@ -57,7 +57,7 @@ export function BlogHero() {
           {['Ansiedade', 'Relacionamentos', 'Carreira', 'Autoestima', 'Luto'].map((tag) => (
             <button
               key={tag}
-              className="px-4 py-2 rounded-full bg-white border border-slate-100 text-sm font-medium text-slate-600 hover:border-purple-200 hover:text-purple-600 transition-all shadow-sm"
+              className="px-4 py-2 rounded-lg bg-white border border-slate-100 text-sm font-medium text-slate-600 hover:border-purple-200 hover:text-purple-600 transition-all shadow-sm"
             >
               {tag}
             </button>

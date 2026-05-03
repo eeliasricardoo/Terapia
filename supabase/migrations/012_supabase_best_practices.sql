@@ -50,7 +50,7 @@ CREATE POLICY "profiles_read_own"
 ON "profiles" 
 FOR SELECT 
 TO authenticated 
-USING (auth.uid() = user_id);
+USING (auth.uid()::text = user_id::text);
 
 -- Psychologists can read profiles of their patients
 CREATE POLICY "profiles_read_linked_patients" 
@@ -60,8 +60,8 @@ TO authenticated
 USING (
     EXISTS (
         SELECT 1 FROM appointments 
-        WHERE (patient_id = profiles.id OR patient_id = profiles.user_id)
-        AND psychologist_id IN (SELECT id FROM psychologist_profiles WHERE "userId" = auth.uid())
+        WHERE (patient_id::text = profiles.id::text OR patient_id::text = profiles.user_id::text)
+        AND psychologist_id::text IN (SELECT id::text FROM psychologist_profiles WHERE "userId"::text = auth.uid()::text)
     )
 );
 

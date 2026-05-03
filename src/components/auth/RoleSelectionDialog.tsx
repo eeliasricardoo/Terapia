@@ -89,7 +89,6 @@ export function RoleSelectionDialog({
     })
   }
 
-
   const getTitle = () => {
     return mode === 'register' ? 'Escolha o seu caminho' : 'Bem-vindo de volta'
   }
@@ -140,7 +139,7 @@ export function RoleSelectionDialog({
                   isPending && selectedRole !== 'paciente' ? 'opacity-50 pointer-events-none' : ''
                 }`}
               >
-                <div className="h-full relative overflow-hidden rounded-[2.5rem] bg-sentirz-teal-pastel border border-sentirz-teal/20 shadow-sm hover:shadow-xl hover:border-sentirz-teal/40 transition-all duration-500 hover:-translate-y-1 flex flex-col">
+                <div className="h-full relative overflow-hidden rounded-xl bg-sentirz-teal-pastel border border-sentirz-teal/20 shadow-sm hover:shadow-xl hover:border-sentirz-teal/40 transition-all duration-500 hover:-translate-y-1 flex flex-col">
                   {isPending && selectedRole === 'paciente' && (
                     <div className="absolute inset-0 z-50 bg-white/40 backdrop-blur-[2px] flex items-center justify-center transition-all duration-300">
                       <div className="bg-white p-4 rounded-full shadow-lg border border-sentirz-teal/20">
@@ -187,10 +186,12 @@ export function RoleSelectionDialog({
                 href={getLink('profissional')}
                 onClick={(e) => handleRoleSelect('profissional', e)}
                 className={`block group h-full focus:outline-none transition-opacity duration-300 ${
-                  isPending && selectedRole !== 'profissional' ? 'opacity-50 pointer-events-none' : ''
+                  isPending && selectedRole !== 'profissional'
+                    ? 'opacity-50 pointer-events-none'
+                    : ''
                 }`}
               >
-                <div className="h-full relative overflow-hidden rounded-[2.5rem] bg-sentirz-green-pastel border border-sentirz-green/20 shadow-sm hover:shadow-xl hover:border-sentirz-green/40 transition-all duration-500 hover:-translate-y-1 flex flex-col">
+                <div className="h-full relative overflow-hidden rounded-xl bg-sentirz-green-pastel border border-sentirz-green/20 shadow-sm hover:shadow-xl hover:border-sentirz-green/40 transition-all duration-500 hover:-translate-y-1 flex flex-col">
                   {isPending && selectedRole === 'profissional' && (
                     <div className="absolute inset-0 z-50 bg-white/40 backdrop-blur-[2px] flex items-center justify-center transition-all duration-300">
                       <div className="bg-white p-4 rounded-full shadow-lg border border-sentirz-green/20">
@@ -240,7 +241,7 @@ export function RoleSelectionDialog({
                   isPending && selectedRole !== 'empresa' ? 'opacity-50 pointer-events-none' : ''
                 }`}
               >
-                <div className="h-full relative overflow-hidden rounded-[2.5rem] bg-sentirz-orange-pastel border border-sentirz-orange/20 shadow-sm hover:shadow-xl hover:border-sentirz-orange/40 transition-all duration-500 hover:-translate-y-1 flex flex-col">
+                <div className="h-full relative overflow-hidden rounded-xl bg-sentirz-orange-pastel border border-sentirz-orange/20 shadow-sm hover:shadow-xl hover:border-sentirz-orange/40 transition-all duration-500 hover:-translate-y-1 flex flex-col">
                   {isPending && selectedRole === 'empresa' && (
                     <div className="absolute inset-0 z-50 bg-white/40 backdrop-blur-[2px] flex items-center justify-center transition-all duration-300">
                       <div className="bg-white p-4 rounded-full shadow-lg border border-sentirz-orange/20">

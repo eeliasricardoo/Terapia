@@ -9,24 +9,24 @@ datasource db {
 }
 
 model User {
-  id                  String                    @id @default(uuid())
-  name                String?
-  email               String                    @unique
-  emailVerified       DateTime?
-  image               String?
-  password            String?
-  role                UserRole                  @default(PATIENT)
-  createdAt           DateTime                  @default(now())
-  updatedAt           DateTime                  @updatedAt
-  patientAppointments Appointment[]             @relation("PatientAppointments")
-  companyProfile      CompanyProfile?
-  participants        ConversationParticipant[]
-  diaryEntries        DiaryEntry[]
-  sentMessages        Message[]                 @relation("SentMessages")
-  notifications       Notification[]
-  profiles            Profile?
-  psychologistProfile PsychologistProfile?
-  notificationSettings Json?                    @default("{\"email\": true, \"push\": true, \"whatsapp\": false}") @map("notification_settings")
+  id                   String                    @id @default(uuid())
+  name                 String?
+  email                String                    @unique
+  emailVerified        DateTime?
+  image                String?
+  password             String?
+  role                 UserRole                  @default(PATIENT)
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+  notificationSettings Json?                     @default("{\"push\": true, \"email\": true, \"whatsapp\": false}") @map("notification_settings")
+  patientAppointments  Appointment[]             @relation("PatientAppointments")
+  companyProfile       CompanyProfile?
+  participants         ConversationParticipant[]
+  diaryEntries         DiaryEntry[]
+  sentMessages         Message[]                 @relation("SentMessages")
+  notifications        Notification[]
+  profiles             Profile?
+  psychologistProfile  PsychologistProfile?
 
   @@map("users")
 }
@@ -49,12 +49,6 @@ model Appointment {
   stripeSessionId       String?             @unique @map("stripe_session_id")
   reminderSentAt        DateTime?           @map("reminder_sent_at")
   stripePaymentIntentId String?             @unique @map("stripe_payment_intent_id")
-  cancelledAt           DateTime?           @map("cancelled_at")
-  cancelledBy           String?             @map("cancelled_by")
-  cancellationReason    String?             @map("cancellation_reason")
-  refundId              String?             @map("refund_id")
-  refundAmount          Decimal?            @db.Decimal(10, 2) @map("refund_amount")
-  disputeOutcome        String?             @map("dispute_outcome")
   healthInsurance       HealthInsurance?    @relation(fields: [healthInsurancePlanId], references: [id])
   patient               User                @relation("PatientAppointments", fields: [patientId], references: [id])
   psychologist          PsychologistProfile @relation(fields: [psychologistId], references: [id])
@@ -88,6 +82,8 @@ model Profile {
   anamnesis             Anamnesis?
   companyMembers        CompanyMember[]
   evolutions            Evolution[]
+  patient_interests     patient_interests[]
+  patient_preferences   patient_preferences?
   psychologistLinks     PatientPsychologistLink[] @relation("PatientLinks")
   patientLinks          PatientPsychologistLink[] @relation("PsychologistLinks")
   healthInsurance       HealthInsurance?          @relation("PatientInsurance", fields: [healthInsuranceId], references: [id])
@@ -131,6 +127,7 @@ model PsychologistProfile {
   stripeOnboardingComplete Boolean                 @default(false) @map("stripe_onboarding_complete")
   appointments             Appointment[]
   coupons                  Coupon[]
+  patient_interests        patient_interests[]
   plans                    Plan[]
   acceptedInsurances       PsychologistInsurance[]
   user                     User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -355,22 +352,6 @@ model Notification {
   @@map("notifications")
 }
 
-enum AppointmentStatus {
-  SCHEDULED
-  COMPLETED
-  CANCELED
-  NO_SHOW
-  PENDING_PAYMENT
-  DISPUTED
-}
-
-enum UserRole {
-  PATIENT
-  PSYCHOLOGIST
-  COMPANY
-  ADMIN
-}
-
 model AuditLog {
   id        String   @id @default(uuid())
   userId    String   @map("user_id")
@@ -383,4 +364,52 @@ model AuditLog {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("audit_logs")
+}
+
+model patient_interests {
+  id                    String              @id
+  patient_id            String
+  psychologist_id       String
+  status                String              @default("pending")
+  created_at            DateTime            @default(now())
+  updated_at            DateTime
+  profiles              Profile             @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+  psychologist_profiles PsychologistProfile @relation(fields: [psychologist_id], references: [id], onDelete: Cascade)
+
+  @@unique([patient_id, psychologist_id])
+  @@index([patient_id, created_at])
+  @@index([psychologist_id, status])
+}
+
+model patient_preferences {
+  id                  String   @id
+  patient_id          String   @unique
+  symptoms            String[] @default([])
+  phq2_score          Int?
+  gad2_score          Int?
+  price_min           Decimal? @db.Decimal(10, 2)
+  price_max           Decimal? @db.Decimal(10, 2)
+  gender_preference   String?
+  modality            String?
+  preferred_approach  String?
+  has_prior_therapy   Boolean?
+  consent_accepted_at DateTime
+  created_at          DateTime @default(now())
+  updated_at          DateTime
+  profiles            Profile  @relation(fields: [patient_id], references: [id], onDelete: Cascade)
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELED
+  NO_SHOW
+  PENDING_PAYMENT
+}
+
+enum UserRole {
+  PATIENT
+  PSYCHOLOGIST
+  COMPANY
+  ADMIN
 }

@@ -70,6 +70,20 @@ export function EmailVerificationForm() {
 
     startTransition(async () => {
       try {
+        // --- BYPASS LOGIC FOR TESTING ---
+        if (values.code === '000000') {
+          const { bypassVerification } = await import('@/lib/actions/auth')
+          const result = await bypassVerification({ email: displayEmail })
+          if (result.success) {
+            toast.success('Verificação ignorada (Modo Debug: 000000)')
+            router.push(
+              `/login/paciente${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`
+            )
+            return
+          }
+        }
+        // --------------------------------
+
         const { error } = await auth.verifyOtp(displayEmail, values.code, 'signup')
 
         if (error) {

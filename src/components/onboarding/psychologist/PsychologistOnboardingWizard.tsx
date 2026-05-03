@@ -244,7 +244,7 @@ export function PsychologistOnboardingWizard() {
               className="h-2 transition-all duration-700 bg-slate-100 [&>div]:bg-primary rounded-full"
             />
           </div>
-          <span className="text-[10px] font-black text-primary bg-sentirz-teal-pastel px-3 py-1.5 rounded-full uppercase tracking-tighter ring-1 ring-primary/10">
+          <span className="text-[10px] font-black text-primary bg-sentirz-teal-pastel px-3 py-1.5 rounded-lg uppercase tracking-tighter ring-1 ring-primary/10">
             Passo {step}/6
           </span>
         </div>
@@ -281,7 +281,7 @@ export function PsychologistOnboardingWizard() {
                         placeholder="Ex: Dra. Ana Silva"
                         value={formData.fullName}
                         onChange={(e) => updateField('fullName', e.target.value)}
-                        className="h-14 text-lg border-slate-200 bg-slate-50/50 focus:bg-white transition-all rounded-2xl shadow-sm"
+                        className="h-14 text-lg border-slate-200 bg-slate-50/50 focus:bg-white transition-all rounded-xl shadow-sm"
                       />
                     </div>
 
@@ -312,7 +312,7 @@ export function PsychologistOnboardingWizard() {
               {/* STEP 2: Validação */}
               {step === 2 && (
                 <div className="space-y-5">
-                  <div className="bg-amber-50 border border-amber-200/60 p-4 rounded-2xl flex gap-3 text-amber-800 shadow-sm">
+                  <div className="bg-amber-50 border border-amber-200/60 p-4 rounded-xl flex gap-3 text-amber-800 shadow-sm">
                     <ShieldAlert className="h-6 w-6 shrink-0 text-amber-500" />
                     <div className="text-sm">
                       <p className="font-bold mb-1">Processo de Segurança Rigoroso</p>
@@ -328,7 +328,7 @@ export function PsychologistOnboardingWizard() {
                     <div
                       onClick={() => docUploadStatus === 'idle' && docInputRef.current?.click()}
                       className={cn(
-                        'border-2 border-dashed rounded-3xl p-6 text-center transition-all relative overflow-hidden flex flex-col justify-center h-[200px]',
+                        'border-2 border-dashed rounded-xl p-6 text-center transition-all relative overflow-hidden flex flex-col justify-center h-[200px]',
                         docUploadStatus === 'idle'
                           ? 'border-slate-300 hover:border-primary hover:bg-sentirz-teal-pastel cursor-pointer'
                           : docUploadStatus === 'analyzing'
@@ -374,7 +374,7 @@ export function PsychologistOnboardingWizard() {
                         selfieUploadStatus === 'idle' && selfieInputRef.current?.click()
                       }
                       className={cn(
-                        'border-2 border-dashed rounded-3xl p-6 text-center transition-all relative overflow-hidden flex flex-col justify-center h-[200px]',
+                        'border-2 border-dashed rounded-xl p-6 text-center transition-all relative overflow-hidden flex flex-col justify-center h-[200px]',
                         selfieUploadStatus === 'idle'
                           ? 'border-slate-300 hover:border-purple-500 hover:bg-purple-50 cursor-pointer'
                           : selfieUploadStatus === 'analyzing'
@@ -567,7 +567,7 @@ export function PsychologistOnboardingWizard() {
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', damping: 12, delay: 0.1 }}
-                      className="h-24 w-24 bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-600 rounded-[2rem] flex items-center justify-center mx-auto shadow-sm ring-1 ring-emerald-200"
+                      className="h-24 w-24 bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mx-auto shadow-sm ring-1 ring-emerald-200"
                     >
                       <Sparkles className="h-12 w-12 animate-pulse" />
                     </motion.div>
@@ -590,7 +590,7 @@ export function PsychologistOnboardingWizard() {
                         placeholder="0,00"
                         value={formData.price}
                         onChange={(e) => updateField('price', e.target.value)}
-                        className="h-24 pl-16 pr-6 text-4xl font-black text-center border-2 border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 rounded-[2rem] transition-all bg-white shadow-sm"
+                        className="h-24 pl-16 pr-6 text-4xl font-black text-center border-2 border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 rounded-xl transition-all bg-white shadow-sm"
                       />
                     </div>
 
@@ -630,7 +630,7 @@ export function PsychologistOnboardingWizard() {
             disabled={
               step === 1 || docUploadStatus === 'analyzing' || selfieUploadStatus === 'analyzing'
             }
-            className="text-slate-500 font-bold hover:bg-slate-200/50 hover:text-slate-800 rounded-2xl px-6 h-12 transition-all"
+            className="text-slate-500 font-bold hover:bg-slate-200/50 hover:text-slate-800 rounded-xl px-6 h-12 transition-all"
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
           </Button>
@@ -638,7 +638,7 @@ export function PsychologistOnboardingWizard() {
           <Button
             onClick={nextStep}
             className={cn(
-              'px-8 h-14 text-sm font-black shadow-xl transition-all duration-300 rounded-2xl hover:scale-[1.03] active:scale-[0.97]',
+              'px-8 h-14 text-sm font-black shadow-xl transition-all duration-300 rounded-xl hover:scale-[1.03] active:scale-[0.97]',
               step === 6
                 ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/25 text-white ring-2 ring-emerald-600/20 ring-offset-2'
                 : 'bg-primary hover:bg-primary/90 shadow-primary/20 text-white'

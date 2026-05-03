@@ -13,7 +13,7 @@ export const MOODS = [
     emoji: '😕',
     tKey: 'sad',
     value: 2,
-    activeClass: 'bg-orange-50 border-orange-300 text-orange-700 shadow-orange-100 shadow-sm',
+    activeClass: 'bg-slate-50 border-slate-300 text-slate-700 shadow-slate-100 shadow-sm',
   },
   {
     emoji: '😐',

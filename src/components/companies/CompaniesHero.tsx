@@ -25,7 +25,7 @@ export function CompaniesHero() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50/80 backdrop-blur-sm border border-blue-200/50 text-blue-800 text-sm font-medium mb-2 shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-blue-50/80 backdrop-blur-sm border border-blue-200/50 text-blue-800 text-sm font-medium mb-2 shadow-sm"
             >
               <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
               {t('hero.badge')}
@@ -63,14 +63,14 @@ export function CompaniesHero() {
               <Button
                 asChild
                 size="lg"
-                className="h-16 px-10 text-lg shadow-2xl shadow-blue-600/20 hover:shadow-blue-600/40 transition-all hover:-translate-y-1 bg-gradient-to-br from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 border-0 rounded-2xl"
+                className="h-16 px-10 text-lg shadow-2xl shadow-blue-600/20 hover:shadow-blue-600/40 transition-all hover:-translate-y-1 bg-gradient-to-br from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 border-0 rounded-xl"
               >
                 <Link href="#contato">{t('hero.contact')}</Link>
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                className="h-16 px-10 text-lg border-2 border-slate-200/60 text-slate-700 hover:bg-white hover:border-blue-200 transition-all hover:-translate-y-1 bg-white/40 backdrop-blur-md rounded-2xl"
+                className="h-16 px-10 text-lg border-2 border-slate-200/60 text-slate-700 hover:bg-white hover:border-blue-200 transition-all hover:-translate-y-1 bg-white/40 backdrop-blur-md rounded-xl"
               >
                 {t('hero.demo')}
               </Button>
@@ -108,9 +108,9 @@ export function CompaniesHero() {
               <motion.div
                 animate={{ y: [0, -15, 0] }}
                 transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-                className="relative rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/80 bg-white/20 backdrop-blur-sm p-3"
+                className="relative rounded-xl overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white/80 bg-white/20 backdrop-blur-sm p-3"
               >
-                <div className="relative rounded-[2rem] overflow-hidden aspect-[4/4] w-full bg-white flex items-center justify-center p-8">
+                <div className="relative rounded-xl overflow-hidden aspect-[4/4] w-full bg-white flex items-center justify-center p-8">
                   {/* I'll use a placeholder image for now, but in a real scenario I'd generate or use a specific one */}
                   <Image
                     src="/corporate-wellness.png"

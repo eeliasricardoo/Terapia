@@ -18,8 +18,8 @@ ON storage.objects FOR SELECT
 TO authenticated
 USING (
   bucket_id = 'documents' AND 
-  (auth.uid() = owner OR EXISTS (
+  (auth.uid()::text = owner::text OR EXISTS (
     SELECT 1 FROM public.profiles 
-    WHERE user_id = auth.uid() AND role = 'ADMIN'
+    WHERE user_id::text = auth.uid()::text AND role = 'ADMIN'
   ))
 );

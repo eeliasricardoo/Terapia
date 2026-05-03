@@ -14,7 +14,7 @@ export function SearchHero() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-50/80 backdrop-blur-sm border border-rose-200/50 text-rose-800 text-sm font-medium mb-2 shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-rose-50/80 backdrop-blur-sm border border-rose-200/50 text-rose-800 text-sm font-medium mb-2 shadow-sm"
             >
               <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
               Terapeutas Verificados
@@ -22,7 +22,7 @@ export function SearchHero() {
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight font-outfit text-slate-900 leading-tight">
               Encontre o profissional <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-600 via-rose-500 to-amber-600">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-sentirz-teal via-sentirz-green to-sentirz-teal">
                 ideal para você.
               </span>
             </h1>
@@ -34,8 +34,8 @@ export function SearchHero() {
 
             <div className="flex flex-wrap justify-center md:justify-start gap-6 pt-4">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center">
-                  <CoreHeartIcon className="h-5 w-5 text-orange-600" />
+                <div className="h-10 w-10 rounded-xl bg-sentirz-teal-pastel flex items-center justify-center">
+                  <CoreHeartIcon className="h-5 w-5 text-sentirz-teal" />
                 </div>
                 <div className="text-left">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
@@ -64,11 +64,11 @@ export function SearchHero() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="flex-1 hidden md:block"
           >
-            <div className="bg-[#FFFAF3] p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-orange-100 shadow-xl shadow-orange-100/20">
+            <div className="bg-sentirz-teal-pastel/30 p-5 sm:p-8 rounded-xl border border-sentirz-teal/10 shadow-xl shadow-sentirz-teal/5">
               <h3 className="text-xl font-bold text-slate-900 mb-6">Como funciona a busca:</h3>
               <ul className="space-y-6">
                 <li className="flex gap-4">
-                  <div className="h-8 w-8 shrink-0 rounded-full bg-white flex items-center justify-center text-orange-600 font-bold shadow-sm border border-orange-100">
+                  <div className="h-8 w-8 shrink-0 rounded-full bg-white flex items-center justify-center text-sentirz-teal font-bold shadow-sm border border-sentirz-teal/10">
                     1
                   </div>
                   <div>
@@ -79,7 +79,7 @@ export function SearchHero() {
                   </div>
                 </li>
                 <li className="flex gap-4">
-                  <div className="h-8 w-8 shrink-0 rounded-full bg-white flex items-center justify-center text-orange-600 font-bold shadow-sm border border-orange-100">
+                  <div className="h-8 w-8 shrink-0 rounded-full bg-white flex items-center justify-center text-sentirz-teal font-bold shadow-sm border border-sentirz-teal/10">
                     2
                   </div>
                   <div>
@@ -90,7 +90,7 @@ export function SearchHero() {
                   </div>
                 </li>
                 <li className="flex gap-4">
-                  <div className="h-8 w-8 shrink-0 rounded-full bg-white flex items-center justify-center text-orange-600 font-bold shadow-sm border border-orange-100">
+                  <div className="h-8 w-8 shrink-0 rounded-full bg-white flex items-center justify-center text-sentirz-teal font-bold shadow-sm border border-sentirz-teal/10">
                     3
                   </div>
                   <div>

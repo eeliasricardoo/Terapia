@@ -207,7 +207,7 @@ export function OnboardingWizard() {
               className="h-2 transition-all duration-700 bg-slate-100 [&>div]:bg-primary rounded-full"
             />
           </div>
-          <span className="text-[10px] font-black text-primary bg-primary/10 px-3 py-1.5 rounded-full uppercase tracking-tighter ring-1 ring-primary/20">
+          <span className="text-[10px] font-black text-primary bg-primary/10 px-3 py-1.5 rounded-lg uppercase tracking-tighter ring-1 ring-primary/20">
             Passo {step}/4
           </span>
         </div>
@@ -390,7 +390,7 @@ export function OnboardingWizard() {
                           key={time.name}
                           onClick={() => toggleTime(time.name)}
                           className={cn(
-                            'px-4 py-6 rounded-3xl text-sm font-bold transition-all border-2 flex flex-col items-center gap-3',
+                            'px-4 py-6 rounded-xl text-sm font-bold transition-all border-2 flex flex-col items-center gap-3',
                             availability.times.includes(time.name)
                               ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[0.98]'
                               : 'bg-white border-slate-100 text-slate-500 hover:border-primary/20 hover:text-primary hover:bg-slate-50'
@@ -405,7 +405,7 @@ export function OnboardingWizard() {
                           {time.name}
                           <span
                             className={cn(
-                              'text-[10px] font-medium border px-2 py-0.5 rounded-full',
+                              'text-[10px] font-medium border px-2 py-0.5 rounded-lg',
                               availability.times.includes(time.name)
                                 ? 'border-white/30'
                                 : 'border-slate-200'
@@ -500,7 +500,7 @@ export function OnboardingWizard() {
             variant="ghost"
             onClick={prevStep}
             disabled={step === 1}
-            className="text-slate-500 font-bold hover:bg-slate-200/50 hover:text-slate-800 rounded-2xl px-6 h-12 transition-all"
+            className="text-slate-500 font-bold hover:bg-slate-200/50 hover:text-slate-800 rounded-xl px-6 h-12 transition-all"
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
           </Button>
@@ -509,7 +509,7 @@ export function OnboardingWizard() {
             onClick={nextStep}
             disabled={!isStepValid() || isSubmitting}
             className={cn(
-              'px-8 h-14 text-sm font-black shadow-xl transition-all duration-300 rounded-2xl hover:scale-[1.03] active:scale-[0.97]',
+              'px-8 h-14 text-sm font-black shadow-xl transition-all duration-300 rounded-xl hover:scale-[1.03] active:scale-[0.97]',
               step === 4
                 ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/25 text-white ring-2 ring-emerald-600/20 ring-offset-2'
                 : 'bg-primary hover:bg-primary/90 shadow-primary/25 text-primary-foreground'

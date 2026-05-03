@@ -124,7 +124,7 @@ export default async function SearchPage({ params }: { params: Promise<{ locale:
       <main className="flex-1 container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8 max-w-7xl">
         <div className="mb-5">
           <div className="flex items-center text-sm text-slate-500 gap-2 px-1">
-            <Link href="/" className="hover:text-orange-600 transition-colors">
+            <Link href="/" className="hover:text-primary transition-colors">
               Home
             </Link>
             <ChevronRight className="h-4 w-4" />

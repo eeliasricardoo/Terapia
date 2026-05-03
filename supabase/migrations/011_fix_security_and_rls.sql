@@ -35,22 +35,22 @@ END $$;
 -- === PROFILES ===
 -- Everyone can read profiles (to see names/avatars), but only owners can edit
 CREATE POLICY "profiles_read_all" ON "profiles" FOR SELECT USING (true);
-CREATE POLICY "profiles_update_own" ON "profiles" FOR UPDATE TO authenticated USING (auth.uid() = user_id);
-CREATE POLICY "profiles_insert_own" ON "profiles" FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "profiles_update_own" ON "profiles" FOR UPDATE TO authenticated USING (auth.uid()::text = user_id::text);
+CREATE POLICY "profiles_insert_own" ON "profiles" FOR INSERT TO authenticated WITH CHECK (auth.uid()::text = user_id::text);
 
 -- === PSYCHOLOGIST PROFILES ===
 -- Everyone can see (for the marketplace), but only owner can edit
 CREATE POLICY "psych_profiles_read_all" ON "psychologist_profiles" FOR SELECT USING (true);
-CREATE POLICY "psych_profiles_update_own" ON "psychologist_profiles" FOR UPDATE TO authenticated USING (auth.uid() = "userId");
-CREATE POLICY "psych_profiles_insert_own" ON "psychologist_profiles" FOR INSERT TO authenticated WITH CHECK (auth.uid() = "userId");
+CREATE POLICY "psych_profiles_update_own" ON "psychologist_profiles" FOR UPDATE TO authenticated USING (auth.uid()::text = "userId"::text);
+CREATE POLICY "psych_profiles_insert_own" ON "psychologist_profiles" FOR INSERT TO authenticated WITH CHECK (auth.uid()::text = "userId"::text);
 
 -- === APPOINTMENTS ===
 -- Only participating patient OR psychologist can see/edit
 CREATE POLICY "appointments_participating_access" ON "appointments" 
     FOR ALL TO authenticated 
     USING (
-        auth.uid() = patient_id OR 
-        auth.uid() IN (SELECT "userId" FROM "psychologist_profiles" WHERE id = psychologist_id)
+        auth.uid()::text = patient_id::text OR 
+        auth.uid()::text IN (SELECT "userId"::text FROM "psychologist_profiles" WHERE id::text = psychologist_id::text)
     );
 
 -- === ANAMNESIS ===
@@ -58,7 +58,7 @@ CREATE POLICY "appointments_participating_access" ON "appointments"
 CREATE POLICY "anamnesis_psychologist_access" ON "anamnesis" 
     FOR ALL TO authenticated 
     USING (
-        auth.uid() IN (SELECT "userId" FROM "psychologist_profiles" WHERE id = psychologist_id)
+        auth.uid()::text IN (SELECT "userId"::text FROM "psychologist_profiles" WHERE id::text = psychologist_id::text)
     );
 
 -- === EVOLUTIONS ===
@@ -67,32 +67,32 @@ CREATE POLICY "anamnesis_psychologist_access" ON "anamnesis"
 CREATE POLICY "evolutions_psychologist_access" ON "evolutions" 
     FOR ALL TO authenticated 
     USING (
-        auth.uid() IN (SELECT "userId" FROM "psychologist_profiles" WHERE id = psychologist_id)
+        auth.uid()::text IN (SELECT "userId"::text FROM "psychologist_profiles" WHERE id::text = psychologist_id::text)
     );
 
 -- === DIARY ENTRIES ===
 -- Only the owner can see/edit their own diary
 CREATE POLICY "diary_entries_own_access" ON "diary_entries" 
     FOR ALL TO authenticated 
-    USING (auth.uid() = user_id);
+    USING (auth.uid()::text = user_id::text);
 
 -- === CONVERSATIONS & MESSAGES ===
 -- Participants only
 CREATE POLICY "conversations_participant_access" ON "conversations" 
     FOR SELECT TO authenticated 
     USING (
-        EXISTS (SELECT 1 FROM "conversation_participants" WHERE conversation_id = "conversations".id AND user_id = auth.uid())
+        EXISTS (SELECT 1 FROM "conversation_participants" WHERE conversation_id = "conversations".id AND user_id::text = auth.uid()::text)
     );
 
 CREATE POLICY "messages_participant_access" ON "messages" 
     FOR ALL TO authenticated 
     USING (
-        EXISTS (SELECT 1 FROM "conversation_participants" WHERE conversation_id = "messages".conversation_id AND user_id = auth.uid())
+        EXISTS (SELECT 1 FROM "conversation_participants" WHERE conversation_id = "messages".conversation_id AND user_id::text = auth.uid()::text)
     );
 
 CREATE POLICY "participants_involved_access" ON "conversation_participants" 
     FOR ALL TO authenticated 
-    USING (user_id = auth.uid());
+    USING (user_id::text = auth.uid()::text);
 
 -- === COUPONS ===
 -- Psychologists can manage their own; Everyone can see for validation? 
@@ -101,7 +101,7 @@ CREATE POLICY "coupons_read_all" ON "coupons" FOR SELECT USING (true);
 CREATE POLICY "coupons_manage_own" ON "coupons" 
     FOR ALL TO authenticated 
     USING (
-        auth.uid() IN (SELECT "userId" FROM "psychologist_profiles" WHERE id = psychologist_id)
+        auth.uid()::text IN (SELECT "userId"::text FROM "psychologist_profiles" WHERE id::text = psychologist_id::text)
     );
 
 -- === SCHEDULE OVERRIDES ===
@@ -109,22 +109,22 @@ CREATE POLICY "schedule_overrides_read_all" ON "schedule_overrides" FOR SELECT U
 CREATE POLICY "schedule_overrides_manage_own" ON "schedule_overrides" 
     FOR ALL TO authenticated 
     USING (
-        auth.uid() IN (SELECT "userId" FROM "psychologist_profiles" WHERE id = psychologist_id)
+        auth.uid()::text IN (SELECT "userId"::text FROM "psychologist_profiles" WHERE id::text = psychologist_id::text)
     );
 
 -- === PATIENT PSYCHOLOGIST LINKS ===
 CREATE POLICY "links_participant_access" ON "patient_psychologist_links" 
     FOR SELECT TO authenticated 
     USING (
-        patient_id IN (SELECT id FROM "profiles" WHERE user_id = auth.uid()) OR 
-        psychologist_id IN (SELECT id FROM "profiles" WHERE user_id = auth.uid())
+        patient_id::text IN (SELECT id::text FROM "profiles" WHERE user_id::text = auth.uid()::text) OR 
+        psychologist_id::text IN (SELECT id::text FROM "profiles" WHERE user_id::text = auth.uid()::text)
     );
 
 -- === USERS (Public table) ===
 -- Self access only
 CREATE POLICY "users_own_access" ON "users" 
     FOR ALL TO authenticated 
-    USING (auth.uid() = id);
+    USING (auth.uid()::text = id::text);
 
 -- 4. PERFORMANCE FIX: ADD MISSING INDEXES ON FOREIGN KEYS
 -- Addressing "Unindexed foreign keys" warning.
