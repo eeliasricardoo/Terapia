@@ -405,6 +405,7 @@ enum AppointmentStatus {
   CANCELED
   NO_SHOW
   PENDING_PAYMENT
+  DISPUTED
 }
 
 enum UserRole {
