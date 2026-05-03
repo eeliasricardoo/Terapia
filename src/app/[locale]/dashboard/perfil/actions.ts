@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { checkRateLimit } from '@/lib/security'
 import { headers } from 'next/headers'
 import { logger } from '@/lib/utils/logger'
+import { validateUpload } from '@/lib/utils/file-validation'
 
 export async function uploadProfileImage(formData: FormData) {
   const supabase = await createClient()
@@ -26,20 +27,14 @@ export async function uploadProfileImage(formData: FormData) {
     return { error: 'Muitos uploads enviados. Tente novamente mais tarde.' }
   }
 
-  // 2. Get file from form data
-  const file = formData.get('file') as File
-  if (!file) {
-    return { error: 'Nenhum arquivo enviado' }
-  }
-
-  // Security: Strict MIME type checking
-  const validTypes = ['image/jpeg', 'image/png', 'image/webp']
-  if (!validTypes.includes(file.type)) {
-    return { error: 'Tipo de arquivo inválido. Use JPG, PNG ou WEBP.' }
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    return { error: 'O arquivo deve ter no máximo 5MB' }
+  // 2. Get file from form data and validate (size + MIME + magic bytes)
+  const file = formData.get('file') as File | null
+  const validation = await validateUpload(file, {
+    maxBytes: 5 * 1024 * 1024,
+    allow: ['jpeg', 'png', 'webp'],
+  })
+  if (!validation.ok || !validation.buffer) {
+    return { error: validation.error ?? 'Arquivo inválido' }
   }
 
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -58,17 +53,13 @@ export async function uploadProfileImage(formData: FormData) {
       }
     )
 
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`
+    const fileName = `${user.id}-${Date.now()}.${validation.kind}`
     const filePath = `${fileName}`
-
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
 
     const { error: uploadError } = await adminSupabase.storage
       .from('avatars')
-      .upload(filePath, buffer, {
-        contentType: file.type,
+      .upload(filePath, validation.buffer, {
+        contentType: file!.type,
         upsert: true,
       })
 

@@ -7,6 +7,7 @@ import { logger } from '@/lib/utils/logger'
 import { createSafeAction } from '@/lib/safe-action'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { validateUpload } from '@/lib/utils/file-validation'
 
 export const saveProfessionalData = createSafeAction(
   z.instanceof(FormData),
@@ -33,19 +34,26 @@ export const saveProfessionalData = createSafeAction(
     const licenseFile = formData.get('license') as File | null
 
     const MAX_FILE_SIZE = 5 * 1024 * 1024
-    const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
+    const ALLOW = ['pdf', 'jpeg', 'png'] as const
+
+    let diplomaValidation: Awaited<ReturnType<typeof validateUpload>> | null = null
+    let licenseValidation: Awaited<ReturnType<typeof validateUpload>> | null = null
 
     if (diplomaFile && diplomaFile.size > 0) {
-      if (diplomaFile.size > MAX_FILE_SIZE) throw new Error('O diploma deve ter no máximo 5MB')
-      if (!ALLOWED_TYPES.includes(diplomaFile.type))
-        throw new Error('O diploma deve ser um PDF ou imagem')
+      diplomaValidation = await validateUpload(diplomaFile, {
+        maxBytes: MAX_FILE_SIZE,
+        allow: [...ALLOW],
+      })
+      if (!diplomaValidation.ok) throw new Error(`Diploma: ${diplomaValidation.error}`)
     }
 
     if (licenseFile && licenseFile.size > 0) {
-      if (licenseFile.size > MAX_FILE_SIZE)
-        throw new Error('A carteira profissional deve ter no máximo 5MB')
-      if (!ALLOWED_TYPES.includes(licenseFile.type))
-        throw new Error('A carteira profissional deve ser um PDF ou imagem')
+      licenseValidation = await validateUpload(licenseFile, {
+        maxBytes: MAX_FILE_SIZE,
+        allow: [...ALLOW],
+      })
+      if (!licenseValidation.ok)
+        throw new Error(`Carteira profissional: ${licenseValidation.error}`)
     }
 
     const supabase = await createClient()
@@ -60,17 +68,25 @@ export const saveProfessionalData = createSafeAction(
     let diplomaUrl = null
     let licenseUrl = null
 
-    if (diplomaFile && diplomaFile.size > 0) {
+    if (diplomaValidation?.ok && diplomaValidation.buffer) {
       const { data: uploadData } = await supabase.storage
         .from('documents')
-        .upload(`${user.id}/diploma_${Date.now()}`, diplomaFile)
+        .upload(
+          `${user.id}/diploma_${Date.now()}.${diplomaValidation.kind}`,
+          diplomaValidation.buffer,
+          { contentType: diplomaFile!.type }
+        )
       if (uploadData) diplomaUrl = uploadData.path
     }
 
-    if (licenseFile && licenseFile.size > 0) {
+    if (licenseValidation?.ok && licenseValidation.buffer) {
       const { data: uploadData } = await supabase.storage
         .from('documents')
-        .upload(`${user.id}/license_${Date.now()}`, licenseFile)
+        .upload(
+          `${user.id}/license_${Date.now()}.${licenseValidation.kind}`,
+          licenseValidation.buffer,
+          { contentType: licenseFile!.type }
+        )
       if (uploadData) licenseUrl = uploadData.path
     }
 

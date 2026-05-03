@@ -69,7 +69,7 @@ describe('profile actions', () => {
       formData.append('file', badFile)
 
       const result = await uploadProfileImage(formData)
-      expect(result.error).toContain('Tipo de arquivo inválido')
+      expect(result.error).toContain('não permitido')
     })
 
     it('should return error if file size is too large', async () => {
@@ -85,10 +85,13 @@ describe('profile actions', () => {
 
     it('should succeed with valid image', async () => {
       const formData = new FormData()
-      const validFile = new File(['dummy content'], 'avatar.png', { type: 'image/png' })
-      // Polyfill arrayBuffer for jsdom if missing
+      // Real PNG signature (magic bytes) so server-side validation passes
+      const pngSignature = new Uint8Array([
+        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
+      ])
+      const validFile = new File([pngSignature], 'avatar.png', { type: 'image/png' })
       Object.defineProperty(validFile, 'arrayBuffer', {
-        value: jest.fn().mockResolvedValue(new ArrayBuffer(13)),
+        value: jest.fn().mockResolvedValue(pngSignature.buffer),
         writable: true,
       })
       formData.append('file', validFile)
