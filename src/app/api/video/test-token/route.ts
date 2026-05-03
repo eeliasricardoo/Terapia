@@ -1,6 +1,7 @@
 import { createDailyRoom, createDailyToken, getDailyRoom } from '@/lib/daily'
 import { NextResponse } from 'next/server'
 import { logger } from '@/lib/utils/logger'
+import { videoTestTokenSchema } from '@/lib/validations/api'
 
 export async function POST(req: Request) {
   // Test-only endpoint: disabled in production to prevent unauthenticated Daily.co room creation
@@ -10,11 +11,14 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json()
-    const { role } = body
-
-    if (!role || !['psychologist', 'patient'].includes(role)) {
-      return NextResponse.json({ error: 'Role inválido' }, { status: 400 })
+    const parsed = videoTestTokenSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? 'Dados inválidos' },
+        { status: 400 }
+      )
     }
+    const { role } = parsed.data
 
     const testRoomName = 'test-room-mindcares'
     let roomUrl = ''

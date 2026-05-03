@@ -15,3 +15,9 @@ export const logsSchema = z.object({
   message: z.string().min(1),
   data: z.any().optional(),
 })
+
+export const videoTestTokenSchema = z.object({
+  role: z.enum(['psychologist', 'patient'], {
+    errorMap: () => ({ message: 'Role inválido' }),
+  }),
+})

@@ -3,17 +3,16 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
+import { AppointmentStatus, Prisma } from '@prisma/client'
 import { logger } from '@/lib/utils/logger'
 import { revalidateTag } from 'next/cache'
 import {
   sendAppointmentNotifications,
   sendDisputeNotificationToAdmins,
 } from '@/lib/actions/notifications'
-import { checkAppointmentConflict } from '@/lib/actions/appointments-utils'
-
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
 
 export async function POST(req: Request) {
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
   const body = await req.text()
   const sig = (await headers()).get('stripe-signature') as string
 
@@ -182,26 +181,26 @@ export async function POST(req: Request) {
           return NextResponse.json({ received: true })
         }
 
-        let statusUpdate: any = {}
+        const statusUpdate: Prisma.AppointmentUpdateInput = {}
         let action = ''
 
         switch (event.type) {
           case 'charge.dispute.created':
-            statusUpdate = { status: 'DISPUTED', disputeOutcome: 'OPEN' }
+            statusUpdate.status = AppointmentStatus.DISPUTED
+            statusUpdate.disputeOutcome = 'OPEN'
             action = 'DISPUTE_CREATED'
             break
           case 'charge.dispute.funds_withdrawn':
-            statusUpdate = { disputeOutcome: 'FUNDS_WITHDRAWN' }
+            statusUpdate.disputeOutcome = 'FUNDS_WITHDRAWN'
             action = 'DISPUTE_FUNDS_WITHDRAWN'
             break
           case 'charge.dispute.funds_reinstated':
-            statusUpdate = { disputeOutcome: 'FUNDS_REINSTATED' }
+            statusUpdate.disputeOutcome = 'FUNDS_REINSTATED'
             action = 'DISPUTE_FUNDS_REINSTATED'
             break
           case 'charge.dispute.closed':
-            statusUpdate = { disputeOutcome: dispute.status.toUpperCase() }
+            statusUpdate.disputeOutcome = dispute.status.toUpperCase()
             action = 'DISPUTE_CLOSED'
-            // We don't overwrite status anymore to avoid fragile logic
             break
         }
 
