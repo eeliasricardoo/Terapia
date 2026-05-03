@@ -49,6 +49,7 @@ model Appointment {
   stripeSessionId       String?             @unique @map("stripe_session_id")
   reminderSentAt        DateTime?           @map("reminder_sent_at")
   stripePaymentIntentId String?             @unique @map("stripe_payment_intent_id")
+  disputeOutcome        String?             @map("dispute_outcome")
   healthInsurance       HealthInsurance?    @relation(fields: [healthInsurancePlanId], references: [id])
   patient               User                @relation("PatientAppointments", fields: [patientId], references: [id])
   psychologist          PsychologistProfile @relation(fields: [psychologistId], references: [id])
